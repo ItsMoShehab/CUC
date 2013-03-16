@@ -1,0 +1,18 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ConnectionCUPIFunctionsTest.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ConnectionServer" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">lindborgload6.cisco.com</Value>
+    </Setting>
+    <Setting Name="ConnectionLogin" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">jlindborg</Value>
+    </Setting>
+    <Setting Name="ConnectionPW" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Ecsbulab!</Value>
+    </Setting>
+    <Setting Name="ExtensionToDial" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1003</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
