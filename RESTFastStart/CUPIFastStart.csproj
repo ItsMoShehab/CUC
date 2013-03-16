@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{099D0886-5671-470A-8C2A-C216AEF515C1}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CUPIFastStart</RootNamespace>
+    <AssemblyName>CUPIFastStart</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AboutBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AboutBox.Designer.cs">
+      <DependentUpon>AboutBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormCallHandlerFunctions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormCallHandlerFunctions.Designer.cs">
+      <DependentUpon>FormCallHandlerFunctions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormCollectPIN.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormCollectPIN.Designer.cs">
+      <DependentUpon>FormCollectPIN.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormDistributionListFunctions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormDistributionListFunctions.Designer.cs">
+      <DependentUpon>FormDistributionListFunctions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormDistributionListMembers.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormDistributionListMembers.Designer.cs">
+      <DependentUpon>FormDistributionListMembers.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormFindUser.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormFindUser.Designer.cs">
+      <DependentUpon>FormFindUser.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormHttpTraffic.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormHttpTraffic.Designer.cs">
+      <DependentUpon>FormHttpTraffic.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormLogin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormLogin.Designer.cs">
+      <DependentUpon>FormLogin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormMain.Designer.cs">
+      <DependentUpon>FormMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormNewCallHandlerInfo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormNewCallHandlerInfo.Designer.cs">
+      <DependentUpon>FormNewCallHandlerInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormNewDistributionListInfo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormNewDistributionListInfo.Designer.cs">
+      <DependentUpon>FormNewDistributionListInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormNewUserInfo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormNewUserInfo.Designer.cs">
+      <DependentUpon>FormNewUserInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormUserFunctions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormUserFunctions.Designer.cs">
+      <DependentUpon>FormUserFunctions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormUserMessages.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormUserMessages.Designer.cs">
+      <DependentUpon>FormUserMessages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GlobalItems.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Settings.cs" />
+    <EmbeddedResource Include="AboutBox.resx">
+      <DependentUpon>AboutBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormCallHandlerFunctions.resx">
+      <DependentUpon>FormCallHandlerFunctions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormCollectPIN.resx">
+      <DependentUpon>FormCollectPIN.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormDistributionListFunctions.resx">
+      <DependentUpon>FormDistributionListFunctions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormDistributionListMembers.resx">
+      <DependentUpon>FormDistributionListMembers.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormFindUser.resx">
+      <DependentUpon>FormFindUser.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormHttpTraffic.resx">
+      <DependentUpon>FormHttpTraffic.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormLogin.resx">
+      <DependentUpon>FormLogin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormMain.resx">
+      <DependentUpon>FormMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormNewCallHandlerInfo.resx">
+      <DependentUpon>FormNewCallHandlerInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormNewDistributionListInfo.resx">
+      <DependentUpon>FormNewDistributionListInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormNewUserInfo.resx">
+      <DependentUpon>FormNewUserInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormUserFunctions.resx">
+      <DependentUpon>FormUserFunctions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormUserMessages.resx">
+      <DependentUpon>FormUserMessages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="app.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>PublicSettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ConnectionRESTFunctions\ConnectionCUPIFunctions.csproj">
+      <Project>{10F25421-4FFC-419A-A32D-E48BE12B31A8}</Project>
+      <Name>ConnectionCUPIFunctions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SimpleLogger\SimpleLogger.csproj">
+      <Project>{A86C19FC-9F81-4EDA-9B51-44A5A1399089}</Project>
+      <Name>SimpleLogger</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\authentication_lock_128.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\help_24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ok_24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\x_24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\binoculars_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\more_24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\less_24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\erasure_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\microphone_down_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\microphone_up_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\primary_key_refresh_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\group_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\alias_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\hang_up_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\door_back_24.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
