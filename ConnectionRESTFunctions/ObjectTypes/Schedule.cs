@@ -209,7 +209,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}schedules/{1}", _homeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -217,16 +217,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //populate this call handler instance with data from the XML fetch
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             return res;
@@ -247,7 +247,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}schedules/?query=(DisplayName is {1})", _homeServer.BaseUrl, pName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -255,12 +255,12 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 return "";
             }
 
-            foreach (var oElement in res.XMLElement.Elements().Elements())
+            foreach (var oElement in res.XmlElement.Elements().Elements())
             {
                 if (oElement.Name.ToString().Equals("ObjectId"))
                 {
@@ -368,7 +368,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = pConnectionServer.BaseUrl + "schedules";
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -376,13 +376,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements can be empty
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pSchedules = new List<Schedule>();
                 return res;
             }
 
-            pSchedules = GetSchedulesFromXElements(pConnectionServer, res.XMLElement);
+            pSchedules = GetSchedulesFromXElements(pConnectionServer, res.XmlElement);
             return res;
         }
 
@@ -408,7 +408,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlSchedule.Elements())
                 {
                     //adds the XML property to the object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oSchedule, oElement);
+                    pConnectionServer.SafeXmlFetch(oSchedule, oElement);
                 }
 
                 //add the fully populated object to the list that will be returned to the calling routine.
@@ -499,7 +499,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Schedule>";
 
-            res = HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "schedules", MethodType.POST, pConnectionServer, strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "schedules", MethodType.Post, pConnectionServer, strBody);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -700,7 +700,7 @@ namespace ConnectionCUPIFunctions
             strBody += "</ScheduleDetail>";
 
             string strPath = string.Format("schedules/{0}/scheduledetails", pScheduleObjectId);
-            res = HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + strPath, MethodType.POST, pConnectionServer, strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + strPath, MethodType.Post, pConnectionServer, strBody);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             strPath += "/";
@@ -762,8 +762,8 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "schedules/" + pScheduleObjectId,
-                                            MethodType.DELETE, pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "schedules/" + pScheduleObjectId,
+                                            MethodType.Delete, pConnectionServer, "");
         }
 
         #endregion

@@ -119,7 +119,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = _homeServer.BaseUrl + "policies/" + pObjectId;
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -127,16 +127,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 res.ErrorText = "No XML elements returned from policy fetch";
                 return res;
             }
 
-            foreach (var oElement in res.XMLElement.Elements())
+            foreach (var oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             res.Success = true;
@@ -213,7 +213,7 @@ namespace ConnectionCUPIFunctions
 
         //    strBody += "</Policy>";
 
-        //    res = HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "policies", MethodType.POST,pConnectionServer,strBody);
+        //    res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "policies", MethodType.POST,pConnectionServer,strBody);
 
         //    //if the call went through then the ObjectId will be returned in the URI form.
         //    if (res.Success)
@@ -250,7 +250,7 @@ namespace ConnectionCUPIFunctions
         //        return res;
         //    }
 
-        //    return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "policies/" + pObjectId,MethodType.DELETE,pConnectionServer, "");
+        //    return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "policies/" + pObjectId,MethodType.DELETE,pConnectionServer, "");
         //}
 
 
@@ -316,7 +316,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -324,13 +324,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements can be empty, that's legal
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pPolicies= new List<Policy>();
                 return res;
             }
 
-            pPolicies = GetPoliciesFromXElements(pConnectionServer, res.XMLElement);
+            pPolicies = GetPoliciesFromXElements(pConnectionServer, res.XmlElement);
             return res;
 
         }
@@ -463,7 +463,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlPolicy.Elements())
                 {
                     //adds the XML property to the Policy object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oPolicy, oElement);
+                    pConnectionServer.SafeXmlFetch(oPolicy, oElement);
                 }
 
                 //add the fully populated Policy object to the list that will be returned to the calling routine.

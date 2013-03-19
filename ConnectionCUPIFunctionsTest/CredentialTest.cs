@@ -53,7 +53,7 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure_nullServer()
         {
-            Credential oTest = new Credential(null,"blah",CredentialType.PIN);
+            Credential oTest = new Credential(null,"blah",CredentialType.Pin);
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(Exception))]
         public void ClassCreationFailure_InvalidObjectId()
         {
-            Credential oTest = new Credential(_connectionServer, "blah", CredentialType.PIN);
+            Credential oTest = new Credential(_connectionServer, "blah", CredentialType.Pin);
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure_EmptyObjectId()
         {
-            Credential oTest = new Credential(_connectionServer, "", CredentialType.PIN);
+            Credential oTest = new Credential(_connectionServer, "", CredentialType.Pin);
         }
 
 

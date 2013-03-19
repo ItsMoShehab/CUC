@@ -141,7 +141,7 @@ namespace ConnectionCUPIFunctions
             strUrl = string.Format("{0}restrictiontables/{1}/restrictionpatterns/{2}", _homeServer.BaseUrl,RestrictionTableObjectId, pObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -149,16 +149,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //populate this call handler instance with data from the XML fetch
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             return res;
@@ -207,7 +207,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = pConnectionServer.BaseUrl + string.Format("restrictiontables/{0}/restrictionpatterns",pRestrictionTableObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -215,13 +215,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements can be empty, that's legal
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pRestrictionPatterns = new List<RestrictionPattern>();
                 return res;
             }
 
-            pRestrictionPatterns = GetRestrictionPatternsFromXElements(pConnectionServer, pRestrictionTableObjectId, res.XMLElement);
+            pRestrictionPatterns = GetRestrictionPatternsFromXElements(pConnectionServer, pRestrictionTableObjectId, res.XmlElement);
             return res;
         }
 
@@ -249,7 +249,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlRestrictionPattern.Elements())
                 {
                     //adds the XML property to the object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oRestrictionPattern, oElement);
+                    pConnectionServer.SafeXmlFetch(oRestrictionPattern, oElement);
                 }
 
                 //add the fully populated object to the list that will be returned to the calling routine.

@@ -554,7 +554,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -563,13 +563,13 @@ namespace ConnectionCUPIFunctions
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
             //if this is empty that does not mean an error - return true here along with an empty list.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pCallHandlers = new List<CallHandler>();
                 return res;
             }
 
-            pCallHandlers = GetCallHandlersFromXElements(pConnectionServer, res.XMLElement);
+            pCallHandlers = GetCallHandlersFromXElements(pConnectionServer, res.XmlElement);
             return res;
 
         }
@@ -701,7 +701,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Callhandler>";
 
-            res = HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "handlers/callhandlers?templateObjectId=" + pTemplateObjectId, MethodType.POST,
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/callhandlers?templateObjectId=" + pTemplateObjectId, MethodType.Post,
                                             pConnectionServer,strBody);
 
             //if the call went through then the ObjectId will be returned in the URI form.
@@ -795,8 +795,8 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "handlers/callhandlers/" + pObjectId,
-                                            MethodType.DELETE,pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/callhandlers/" + pObjectId,
+                                            MethodType.Delete,pConnectionServer, "");
         }
 
 
@@ -848,8 +848,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</CallHandler>";
 
-            return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "handlers/callhandlers/" + pObjectId,
-                                            MethodType.PUT,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/callhandlers/" + pObjectId,
+                                            MethodType.Put,pConnectionServer,strBody);
 
         }
 
@@ -879,7 +879,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlHandler.Elements())
                 {
                     //adds the XML property to the CallHandler object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oHandler, oElement);
+                    pConnectionServer.SafeXmlFetch(oHandler, oElement);
                 }
 
                 oHandler.ClearPendingChanges();
@@ -1016,7 +1016,7 @@ namespace ConnectionCUPIFunctions
             //if the user wants to try and rip the WAV file into PCM 16/8/1 first before uploading the file, do that conversion here
             if (pConvertToPcmFirst)
             {
-                strConvertedWavFilePath = pConnectionServer.ConvertWAVFileToPCM(pSourceLocalFilePath);
+                strConvertedWavFilePath = pConnectionServer.ConvertWavFileToPcm(pSourceLocalFilePath);
 
                 if (string.IsNullOrEmpty(strConvertedWavFilePath))
                 {
@@ -1117,7 +1117,7 @@ namespace ConnectionCUPIFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            res = HTTPFunctions.GetJSONResponse(strUrl, MethodType.PUT, pConnectionServer.LoginName,
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.Put, pConnectionServer.LoginName,
                                                  pConnectionServer.LoginPw, oParams, out oOutput);
 
             return res;
@@ -1210,7 +1210,7 @@ namespace ConnectionCUPIFunctions
             }
             
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -1218,16 +1218,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //populate this call handler instance with data from the XML fetch
-            foreach (XElement oElement in res.XMLElement.Elements().Elements())
+            foreach (XElement oElement in res.XmlElement.Elements().Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             //all the updates above will flip pending changes into the queue - clear that here.

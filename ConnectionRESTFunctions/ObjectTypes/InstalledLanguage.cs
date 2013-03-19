@@ -47,7 +47,7 @@ namespace ConnectionCUPIFunctions
         /// <returns></returns>
         public string LanguageDescription()
         {
-            return LanguageHelper.GetLanguageNameFromLanguageID(LanguageCode);
+            return LanguageHelper.GetLanguageNameFromLanguageId(LanguageCode);
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = _homeServer.BaseUrl + "installedlanguages";
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -119,13 +119,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
-            InstalledLanguages = GetInstalledLanguagesFromXElements(_homeServer, res.XMLElement);
+            InstalledLanguages = GetInstalledLanguagesFromXElements(_homeServer, res.XmlElement);
             return res;
         }
 
@@ -182,7 +182,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlLanguage.Elements())
                 {
                     //adds the XML property to the object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oLanguage, oElement);
+                    pConnectionServer.SafeXmlFetch(oLanguage, oElement);
                 }
 
                 //add the fully populated object to the list that will be returned to the calling routine.

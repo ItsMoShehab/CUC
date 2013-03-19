@@ -279,7 +279,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/menuentries", pConnectionServer.BaseUrl, pCallHandlerObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -287,13 +287,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
-            pMenuEntries = GetMenuEntriesFomXElements(pConnectionServer, pCallHandlerObjectId, res.XMLElement);
+            pMenuEntries = GetMenuEntriesFomXElements(pConnectionServer, pCallHandlerObjectId, res.XmlElement);
             return res;
 
         }
@@ -328,7 +328,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlMenuEntry.Elements())
                 {
                     //adds the XML property to the MenuEntry object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oMenuEntry, oElement);
+                    pConnectionServer.SafeXmlFetch(oMenuEntry, oElement);
                 }
 
                 oMenuEntry.ClearPendingChanges();
@@ -399,8 +399,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</MenuEntry>";
 
-            return HTTPFunctions.GetCUPIResponse(string.Format("{0}handlers/callhandlers/{1}/menuentries/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, pKeyName),
-                                            MethodType.PUT,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/menuentries/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, pKeyName),
+                                            MethodType.Put,pConnectionServer,strBody);
 
         }
 
@@ -473,7 +473,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/menuentries/{2}", _homeServer.BaseUrl, CallHandlerObjectId, pKey);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -481,16 +481,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //load all of the elements returned into the class object properties
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             //all the updates above will flip pending changes into the queue - clear that here.

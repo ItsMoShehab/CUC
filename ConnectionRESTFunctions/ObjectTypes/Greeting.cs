@@ -373,7 +373,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/greetings", pConnectionServer.BaseUrl, pCallHandlerObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -381,13 +381,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
-            pGreetings = GetGreetingsFomXElements(pConnectionServer, pCallHandlerObjectId, res.XMLElement);
+            pGreetings = GetGreetingsFomXElements(pConnectionServer, pCallHandlerObjectId, res.XmlElement);
             return res;
 
         }
@@ -420,7 +420,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlGreeting.Elements())
                 {
                     //adds the XML property to the TransferOption object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oGreeting, oElement);
+                    pConnectionServer.SafeXmlFetch(oGreeting, oElement);
                 }
 
                 oGreeting.ClearPendingChanges();
@@ -487,8 +487,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Greeting>";
 
-            return HTTPFunctions.GetCUPIResponse(string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, pGreetingType),
-                                            MethodType.PUT,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, pGreetingType),
+                                            MethodType.Put,pConnectionServer,strBody);
 
         }
 
@@ -612,8 +612,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Greeting>";
 
-            return HTTPFunctions.GetCUPIResponse(string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, pGreetingType),
-                                            MethodType.PUT,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, pGreetingType),
+                                            MethodType.Put,pConnectionServer,strBody);
         }
 
 
@@ -673,7 +673,7 @@ namespace ConnectionCUPIFunctions
             //if the user wants to try and rip the WAV file into G711 first before uploading the file, do that conversion here
             if (pConvertToPcmFirst)
             {
-                string strConvertedWavFilePath = pConnectionServer.ConvertWAVFileToPCM(pSourceLocalFilePath);
+                string strConvertedWavFilePath = pConnectionServer.ConvertWavFileToPcm(pSourceLocalFilePath);
 
                 if (string.IsNullOrEmpty(strConvertedWavFilePath))
                 {
@@ -728,11 +728,11 @@ namespace ConnectionCUPIFunctions
             ////in place and a PUT if there is.  
             //if (DoesGreetingStreamExist(pConnectionServer,pCallHandlerObjectId,pGreetingType,pLanguageId))
             //{
-            //    res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.PUT, pConnectionServer.LoginName, pConnectionServer.LoginPw, strBody);    
+            //    res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.PUT, pConnectionServer.LoginName, pConnectionServer.LoginPw, strBody);    
             //}
             //else
             //{
-            //    res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.POST, pConnectionServer.LoginName, pConnectionServer.LoginPw,strBody);    
+            //    res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, pConnectionServer.LoginName, pConnectionServer.LoginPw,strBody);    
             //}
             
             return res;
@@ -802,7 +802,7 @@ namespace ConnectionCUPIFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            return HTTPFunctions.GetJSONResponse(strUrl, MethodType.PUT, pConnectionServer.LoginName,
+            return HTTPFunctions.GetJsonResponse(strUrl, MethodType.Put, pConnectionServer.LoginName,
                                                  pConnectionServer.LoginPw, oParams, out oOutput);
         }
 
@@ -838,7 +838,7 @@ namespace ConnectionCUPIFunctions
                                           pGreetingType, 
                                           pLanguageId);
             
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             //the only reason this will fail is if it doesn't exists - return that here
             return res.Success;
@@ -910,7 +910,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", _homeServer.BaseUrl, pCallHandlerObjectId, pGreetingType);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -918,16 +918,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //load all of the elements returned into the class object properties
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             //all the updates above will flip pending changes into the queue - clear that here.

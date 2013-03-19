@@ -87,7 +87,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = pConnectionServer.BaseUrl + "smppproviders/" + pObjectId;
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -95,16 +95,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 res.ErrorText = "No XML elements returned from search space fetch";
                 return res;
             }
 
-            foreach (var oElement in res.XMLElement.Elements())
+            foreach (var oElement in res.XmlElement.Elements())
             {
-                pConnectionServer.SafeXMLFetch(this, oElement);
+                pConnectionServer.SafeXmlFetch(this, oElement);
             }
 
             res.Success = true;
@@ -139,7 +139,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = pConnectionServer.BaseUrl + "smppproviders";
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -147,13 +147,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements can be empty
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pSMppProviders=new List<SmppProvider>();
                 return res;
             }
 
-            pSMppProviders = GetSmppProvidersFromXElements(pConnectionServer, res.XMLElement);
+            pSMppProviders = GetSmppProvidersFromXElements(pConnectionServer, res.XmlElement);
             return res;
         }
 

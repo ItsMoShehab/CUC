@@ -62,7 +62,7 @@ namespace CUPIFastStart
             string strMessageObjectId = gridMessages.SelectedRows[0].Cells["MsgId"].Value.ToString();
             
             WebCallResult res;
-            int iCount;
+            int iCount;            
             
             //see how many attachments are on the message - typically this is only 1 but with forwarding scenarios it might be more.
             res = UserMessage.GetMessageAttachmentCount(GlobalItems.CurrentConnectionServer,

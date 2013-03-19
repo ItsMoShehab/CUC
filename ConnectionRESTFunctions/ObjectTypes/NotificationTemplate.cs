@@ -104,7 +104,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}notificationtemplates/{1}", _homeServer.BaseUrl, pObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -112,16 +112,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //load all of the elements returned into the class object properties
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             return res;
@@ -161,7 +161,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = pConnectionServer.BaseUrl + "notificationtemplates";
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -169,13 +169,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
-            pTemplates = GetNotificationTemplatesFromXElements(pConnectionServer, res.XMLElement);
+            pTemplates = GetNotificationTemplatesFromXElements(pConnectionServer, res.XmlElement);
             return res;
         }
 
@@ -205,7 +205,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlTemplates.Elements())
                 {
                     //adds the XML property to the UserBase object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oTemplate, oElement);
+                    pConnectionServer.SafeXmlFetch(oTemplate, oElement);
                 }
 
                 //add the fully populated UserBase object to the list that will be returned to the calling routine.

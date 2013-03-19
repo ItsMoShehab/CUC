@@ -65,8 +65,7 @@ namespace CUPIVerySimple
             //Fetch the messages for a user - the default for this method is to fetch 
             //the first page of results 10 at a time if you pass no additional parameters. 
             List<UserMessage> oMyMessages; 
-            res=UserMessage.GetMessages(connectionServer,
-                oUserTestDude.ObjectId, out oMyMessages); 
+            res=UserMessage.GetMessages(connectionServer,oUserTestDude.ObjectId, out oMyMessages); 
             
             if (res.Success == false)
                 {
@@ -74,34 +73,6 @@ namespace CUPIVerySimple
                     Console.ReadLine();
                     return;
                 } 
-            //iterate over all messages fetched returning top level information, attachment 
-            //count and then save the first attachment (if present) into c:\temp\ using 
-            //the GUID of the message. 
-            foreach (var oMyMessage in oMyMessages)
-            {
-                Console.WriteLine(oMyMessage.ToString());
-                //get how many attachments are present in the message - usually 1
-                int iCount;
-                oMyMessage.GetMessageAttachmentCount(out iCount);
-                Console.WriteLine(" Attachment count=" + iCount);
-
-                //Extract the first message attachment to a local file 
-                if (iCount > 0)
-                {
-                    for (int iTemp = 0; iTemp < iCount; iTemp++)
-                    {
-                        //note that the MsgId includes a "0:xxx" tacked onto the beginning which 
-                        //is used for forwarding scenarios - Windows does not like colons in paths 
-                        //so if you want to use this construction you must remove it 
-                        string sFile = string.Format(@"c:\{0}_{1}.wav", oMyMessage.MsgId.Replace(":", ""),iTemp);
-                        res = oMyMessage.GetMessageAttachment(sFile, iTemp);
-                        if (res.Success == false)
-                        {
-                            Console.WriteLine("Failed saving attachment:" + res);
-                        }
-                    }
-                }
-            }
 
             ////****
             ////play voice messages using the phone as a media device - aka TRAP 
@@ -110,7 +81,7 @@ namespace CUPIVerySimple
 
             try
             {
-                oPhone = new PhoneRecording(connectionServer, "1003");
+                oPhone = new PhoneRecording(connectionServer, "1001");
             }
 
             catch (Exception ex)
@@ -131,7 +102,7 @@ namespace CUPIVerySimple
 
             foreach (var oMessage in oTestUserMessages)
             {
-                res = oPhone.PlayMessageFile(oMessage.MsgId,200);
+                res = oPhone.PlayMessageFile(oMessage.MsgId,100,100,0,oUserTestDude.ObjectId);
 
                 if (res.Success == false)
                 {

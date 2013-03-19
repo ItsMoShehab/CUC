@@ -167,7 +167,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}schedulesets/{1}", _homeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -175,16 +175,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //populate this call handler instance with data from the XML fetch
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             return res;
@@ -205,7 +205,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = _homeServer.BaseUrl + string.Format("schedulesets/?query=(DisplayName is {0})", pName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -213,12 +213,12 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 return "";
             }
 
-            foreach (var oElement in res.XMLElement.Elements().Elements())
+            foreach (var oElement in res.XmlElement.Elements().Elements())
             {
                 if (oElement.Name.ToString().Equals("ObjectId"))
                 {
@@ -396,7 +396,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = pConnectionServer.BaseUrl + "schedulesets";
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -404,13 +404,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements can be empty
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pScheduleSets = new List<ScheduleSet>();
                 return res;
             }
 
-            pScheduleSets = GetScheduleSetsFromXElements(pConnectionServer, res.XMLElement);
+            pScheduleSets = GetScheduleSetsFromXElements(pConnectionServer, res.XmlElement);
             return res;
         }
 
@@ -466,7 +466,7 @@ namespace ConnectionCUPIFunctions
 
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -474,13 +474,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements can be empty
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pScheduleSetsMembers= new List<ScheduleSetMember>();
                 return res;
             }
 
-            pScheduleSetsMembers = GetScheduleSetMembersFromXElements(res.XMLElement);
+            pScheduleSetsMembers = GetScheduleSetMembersFromXElements(res.XmlElement);
             return res;
         }
 
@@ -573,7 +573,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</ScheduleSet>";
 
-            res = HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "schedulesets", MethodType.POST, pConnectionServer, strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "schedulesets", MethodType.Post, pConnectionServer, strBody);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -663,8 +663,8 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "schedulesets/" + pScheduleSetObjectId,
-                                            MethodType.DELETE, pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "schedulesets/" + pScheduleSetObjectId,
+                                            MethodType.Delete, pConnectionServer, "");
         }
 
 
@@ -711,7 +711,7 @@ namespace ConnectionCUPIFunctions
             strBody += "</ScheduleSetMember>";
 
             string strPath = string.Format("schedulesets/{0}/schedulesetmembers", pScheduleSetObjectId);
-            res = HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + strPath, MethodType.POST, pConnectionServer, strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + strPath, MethodType.Post, pConnectionServer, strBody);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             strPath += "/";

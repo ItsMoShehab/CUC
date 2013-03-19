@@ -720,7 +720,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -728,13 +728,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements can be empty, that's legal
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pClassOfServices = new List<ClassOfService>();
                 return res;
             }
 
-            pClassOfServices = GetClassesOfServiceFromXmlElements(pConnectionServer, res.XMLElement);
+            pClassOfServices = GetClassesOfServiceFromXmlElements(pConnectionServer, res.XmlElement);
             return res;
 
         }
@@ -849,7 +849,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Cos>";
 
-            res = HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "coses", MethodType.POST,pConnectionServer,strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "coses", MethodType.Post,pConnectionServer,strBody);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -954,8 +954,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Cos>";
 
-            return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "coses/" + pObjectId,
-                                            MethodType.PUT,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "coses/" + pObjectId,
+                                            MethodType.Put,pConnectionServer,strBody);
 
         }
 
@@ -981,7 +981,7 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "coses/" + pObjectId,MethodType.DELETE,pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "coses/" + pObjectId,MethodType.Delete,pConnectionServer, "");
         }
 
 
@@ -1007,7 +1007,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlList.Elements())
                 {
                     //adds the XML property to the CallHandler object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oCos, oElement);
+                    pConnectionServer.SafeXmlFetch(oCos, oElement);
                 }
 
                 oCos.ClearPendingChanges();
@@ -1121,7 +1121,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}coses/{1}", _homeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -1129,16 +1129,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //populate this call handler instance with data from the XML fetch
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             ClearPendingChanges();
@@ -1163,7 +1163,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}coses/?query=(DisplayName is {1})", _homeServer.BaseUrl, pCosName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -1171,14 +1171,14 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return "";
             }
 
             //populate this call handler instance with data from the XML fetch
-            foreach (XElement oElement in res.XMLElement.Elements().Elements())
+            foreach (XElement oElement in res.XmlElement.Elements().Elements())
             {
                 if (oElement.Name.ToString().Equals("ObjectId"))
                 {

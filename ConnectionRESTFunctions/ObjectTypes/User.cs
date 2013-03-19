@@ -643,7 +643,7 @@ namespace ConnectionCUPIFunctions
         {
             if (_pin==null)
             {
-                _pin= new Credential(this.HomeServer,this.ObjectId,CredentialType.PIN);
+                _pin= new Credential(this.HomeServer,this.ObjectId,CredentialType.Pin);
             }
 
             return _pin;
@@ -746,7 +746,7 @@ namespace ConnectionCUPIFunctions
                 }
             }
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -754,20 +754,20 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null) 
+            if (res.XmlElement == null) 
             {
                 res.Success = false;
                 return res;
             }
 
             //it's possible to have no user elements returned and yet have a valid call - no users returned for instance.
-            if (res.XMLElement.HasAttributes == false)
+            if (res.XmlElement.HasAttributes == false)
             {
                 res.Success = true;
                 return res;
             }
 
-            pUsers = GetUsersFromXElements(pConnectionServer, res.XMLElement);
+            pUsers = GetUsersFromXElements(pConnectionServer, res.XmlElement);
             return res;
 
         }
@@ -955,7 +955,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</User>";
 
-            res = HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "users?templateAlias=" + pTemplateAlias, MethodType.POST,pConnectionServer,strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "users?templateAlias=" + pTemplateAlias, MethodType.Post,pConnectionServer,strBody);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -1020,8 +1020,8 @@ namespace ConnectionCUPIFunctions
            strBody += "</Mwi>";
 
             res =
-                HTTPFunctions.GetCUPIResponse(string.Format("{0}users/{1}/mwis", pConnectionServer.BaseUrl, pUserObjectId),
-                    MethodType.POST,pConnectionServer,strBody);
+                HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/mwis", pConnectionServer.BaseUrl, pUserObjectId),
+                    MethodType.Post,pConnectionServer,strBody);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -1146,7 +1146,7 @@ namespace ConnectionCUPIFunctions
             return ResetUserCredential(pConnectionServer, 
                                         pObjectId, 
                                         pNewPin, 
-                                        CredentialType.PIN, 
+                                        CredentialType.Pin, 
                                         pLocked, 
                                         pMustChange,
                                         pCantChange, 
@@ -1207,7 +1207,7 @@ namespace ConnectionCUPIFunctions
             //the only difference between setting a PIN vs. Password is the URL path used.  The body/property names are identical
             //otherwise.
             string strUrl;
-            if (pCredentialType==CredentialType.PIN)
+            if (pCredentialType==CredentialType.Pin)
             {
                 strUrl = pConnectionServer.BaseUrl + "users/" + pObjectId + "/credential/pin";
             }
@@ -1216,7 +1216,7 @@ namespace ConnectionCUPIFunctions
                 strUrl=pConnectionServer.BaseUrl + "users/" + pObjectId + "/credential/password";
             }
 
-            return HTTPFunctions.GetCUPIResponse(strUrl,MethodType.PUT,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Put,pConnectionServer,strBody);
         }
 
 
@@ -1297,7 +1297,7 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "users/" + pObjectId,MethodType.DELETE,pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "users/" + pObjectId,MethodType.Delete,pConnectionServer, "");
         }
 
 
@@ -1351,7 +1351,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</User>";
 
-            return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "users/" + pObjectId,MethodType.PUT,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "users/" + pObjectId,MethodType.Put,pConnectionServer,strBody);
         }
 
 
@@ -1480,7 +1480,7 @@ namespace ConnectionCUPIFunctions
             //if the user wants to try and rip the WAV file into PCM 16/8/1 first before uploading the file, do that conversion here
             if (pConvertToPcmFirst)
             {
-                strConvertedWavFilePath = pConnectionServer.ConvertWAVFileToPCM(pSourceLocalFilePath);
+                strConvertedWavFilePath = pConnectionServer.ConvertWavFileToPcm(pSourceLocalFilePath);
 
                 if (string.IsNullOrEmpty(strConvertedWavFilePath))
                 {
@@ -1581,7 +1581,7 @@ namespace ConnectionCUPIFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            res = HTTPFunctions.GetJSONResponse(strUrl, MethodType.PUT, pConnectionServer.LoginName,
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.Put, pConnectionServer.LoginName,
                                                  pConnectionServer.LoginPw, oParams, out oOutput);
 
             return res;
@@ -1609,7 +1609,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlUser.Elements())
                 {
                     //adds the XML property to the UserBase object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oUser, oElement);
+                    pConnectionServer.SafeXmlFetch(oUser, oElement);
                 }
 
                 oUser.ClearPendingChanges();
@@ -1674,7 +1674,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, HomeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, HomeServer, "");
 
             if (res.Success == false)
             {
@@ -1682,7 +1682,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
@@ -1692,9 +1692,9 @@ namespace ConnectionCUPIFunctions
             //a "uers" sub element, not at the top level as a full user fetch is - so we have to go another level deep here.
             //Call the same SafeXMLFetch routine for each to let the full user class instance "drive" the fetching of data
             //from the XML elements.
-            foreach (XElement oElement in res.XMLElement.Elements().Elements())
+            foreach (XElement oElement in res.XmlElement.Elements().Elements())
             {
-                HomeServer.SafeXMLFetch(this, oElement);
+                HomeServer.SafeXmlFetch(this, oElement);
             }
 
             //the above fetch will set the proeprties as "changed", need to clear them out here
@@ -3837,7 +3837,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = HomeServer.BaseUrl + "users/" + pObjectId;
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, HomeServer, "");
 
             if (res.Success == false)
             {
@@ -3845,7 +3845,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
@@ -3854,9 +3854,9 @@ namespace ConnectionCUPIFunctions
             //in the case of a single user fetch construct, the list of elements is the full list of properties for the user, not a nested list
             //of user definitions - call the same SafeXMLFetch routine for each to let the full user class instance "drive" the fetching of data
             //from the XML elements.
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                HomeServer.SafeXMLFetch(this, oElement);
+                HomeServer.SafeXmlFetch(this, oElement);
             }
 
             return res;
@@ -3877,7 +3877,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}users/?query=(Alias is {1})", HomeServer.BaseUrl, pAlias);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, HomeServer, "");
 
             if (res.Success == false)
             {
@@ -3885,12 +3885,12 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 return "";
             }
 
-            foreach (var oElement in res.XMLElement.Elements().Elements())
+            foreach (var oElement in res.XmlElement.Elements().Elements())
             {
                 if (oElement.Name.ToString().Equals("ObjectId"))
                 {

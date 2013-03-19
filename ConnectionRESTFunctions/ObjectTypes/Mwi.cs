@@ -316,7 +316,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}users/{1}/mwis", pConnectionServer.BaseUrl, pUserObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -324,14 +324,14 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //
-            pMwiDevices = GetMwiDevicesFomXElements(pConnectionServer,pUserObjectId, res.XMLElement);
+            pMwiDevices = GetMwiDevicesFomXElements(pConnectionServer,pUserObjectId, res.XmlElement);
             return res;
 
         }
@@ -375,7 +375,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlMwiDevice.Elements())
                 {
                     //adds the XML property to the Mwi object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oMwiDevice, oElement);
+                    pConnectionServer.SafeXmlFetch(oMwiDevice, oElement);
                 }
 
                 oMwiDevice.ClearPendingChanges();
@@ -441,8 +441,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Mwi>";
 
-            res = HTTPFunctions.GetCUPIResponse(
-                    string.Format("{0}users/{1}/mwis", pConnectionServer.BaseUrl, pUserObjectId),MethodType.POST,pConnectionServer,strBody);
+            res = HTTPFunctions.GetCupiResponse(
+                    string.Format("{0}users/{1}/mwis", pConnectionServer.BaseUrl, pUserObjectId),MethodType.Post,pConnectionServer,strBody);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -496,7 +496,7 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCUPIResponse(strUrl,MethodType.DELETE,pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Delete,pConnectionServer, "");
         }
 
 
@@ -558,7 +558,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Mwi>";
 
-            return HTTPFunctions.GetCUPIResponse(strUrl,MethodType.PUT,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Put,pConnectionServer,strBody);
         }
 
 
@@ -664,7 +664,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}users/{1}/mwis/{2}", _homeServer.BaseUrl,pUserObjectId, pObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -672,16 +672,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //load all of the elements returned into the class object properties
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             //all the updates above will flip pending changes into the queue - clear that here.

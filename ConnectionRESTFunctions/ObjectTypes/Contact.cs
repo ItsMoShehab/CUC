@@ -315,7 +315,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -323,13 +323,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements can be empty, that's legal
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pContacts= new List<Contact>();
                 return res;
             }
 
-            pContacts = GetContactsFromXElements(pConnectionServer, res.XMLElement);
+            pContacts = GetContactsFromXElements(pConnectionServer, res.XmlElement);
             return res;
 
         }
@@ -464,7 +464,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Contact>";
 
-            res = HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "contacts?templateAlias="+pContactTemplateAlias, MethodType.POST,
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "contacts?templateAlias="+pContactTemplateAlias, MethodType.Post,
                                             pConnectionServer,strBody);
 
             //if the call went through then the ObjectId will be returned in the URI form.
@@ -555,7 +555,7 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "contacts/" + pObjectId,MethodType.DELETE,pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "contacts/" + pObjectId,MethodType.Delete,pConnectionServer, "");
         }
 
 
@@ -607,8 +607,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Contact>";
 
-            return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "contacts/" + pObjectId,
-                                            MethodType.PUT,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "contacts/" + pObjectId,
+                                            MethodType.Put,pConnectionServer,strBody);
 
         }
 
@@ -633,7 +633,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlContact.Elements())
                 {
                     //adds the XML property to the Contact object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oContact, oElement);
+                    pConnectionServer.SafeXmlFetch(oContact, oElement);
                 }
 
                 oContact.ClearPendingChanges();
@@ -768,7 +768,7 @@ namespace ConnectionCUPIFunctions
             //if the user wants to try and rip the WAV file into PCM 16/8/1 first before uploading the file, do that conversion here
             if (pConvertToPcmFirst)
             {
-                strConvertedWavFilePath = pConnectionServer.ConvertWAVFileToPCM(pSourceLocalFilePath);
+                strConvertedWavFilePath = pConnectionServer.ConvertWavFileToPcm(pSourceLocalFilePath);
 
                 if (string.IsNullOrEmpty(strConvertedWavFilePath))
                 {
@@ -868,7 +868,7 @@ namespace ConnectionCUPIFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            res = HTTPFunctions.GetJSONResponse(strUrl, MethodType.PUT, pConnectionServer.LoginName,
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.Put, pConnectionServer.LoginName,
                                                  pConnectionServer.LoginPw, oParams, out oOutput);
 
             return res;
@@ -950,7 +950,7 @@ namespace ConnectionCUPIFunctions
              strUrl = string.Format("{0}contacts/{1}", _homeServer.BaseUrl, strObjectId);
             
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -958,16 +958,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //populate this contact instance with data from the XML fetch
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             //all the updates above will flip pending changes into the queue - clear that here.
@@ -990,7 +990,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}contacts/?query=(Alias is {1})", _homeServer.BaseUrl, pAlias);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -998,12 +998,12 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 return "";
             }
 
-            foreach (var oElement in res.XMLElement.Elements().Elements())
+            foreach (var oElement in res.XmlElement.Elements().Elements())
             {
                 if (oElement.Name.ToString().Equals("ObjectId"))
                 {

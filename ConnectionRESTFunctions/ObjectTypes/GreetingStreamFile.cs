@@ -377,7 +377,7 @@ namespace ConnectionCUPIFunctions
                                           pConnectionServer.BaseUrl, pCallHandlerObjectId, pGreetingType);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -385,14 +385,14 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements can be empty, that's legal
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pGreetingStreamFiles= new List<GreetingStreamFile>();
                 return res;
             }
 
             pGreetingStreamFiles = GetGreetingStreamFilesFomXElements(pConnectionServer, pCallHandlerObjectId,
-                                                                      pGreetingType, res.XMLElement);
+                                                                      pGreetingType, res.XmlElement);
             return res;
 
         }
@@ -427,7 +427,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlGreetingStreamFile.Elements())
                 {
                     //adds the XML property to the TransferOption object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oGreetingStreamFile, oElement);
+                    pConnectionServer.SafeXmlFetch(oGreetingStreamFile, oElement);
                 }
 
                 //add the fully populated TransferOption object to the list that will be returned to the calling routine.
@@ -668,7 +668,7 @@ namespace ConnectionCUPIFunctions
                                          _homeServer.BaseUrl, pCallHandlerObjectId, pGreetingType,pLanguageCode);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -676,16 +676,16 @@ namespace ConnectionCUPIFunctions
             }
             
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //load all of the elements returned into the class object properties
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             return res;

@@ -230,7 +230,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}users/{1}/alternateextensions", pConnectionServer.BaseUrl, pUserObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -238,13 +238,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements may be empty, that's legal
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pAlternateExtension= new List<AlternateExtension>();
                 return res;
             }
 
-            pAlternateExtension = GetAlternateExtensionsFomXElements(pConnectionServer,pUserObjectId, res.XMLElement);
+            pAlternateExtension = GetAlternateExtensionsFomXElements(pConnectionServer,pUserObjectId, res.XmlElement);
             return res;
 
         }
@@ -274,7 +274,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlAltExtension.Elements())
                 {
                     //adds the XML property to the AlternateExtension object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oAlternateExtension, oElement);
+                    pConnectionServer.SafeXmlFetch(oAlternateExtension, oElement);
                 }
 
                 oAlternateExtension.ClearPendingChanges();
@@ -346,9 +346,9 @@ namespace ConnectionCUPIFunctions
             strBody += "</AlternateExtension>";
 
             res =
-                HTTPFunctions.GetCUPIResponse(
+                HTTPFunctions.GetCupiResponse(
                     string.Format("{0}users/{1}/alternateextensions", pConnectionServer.BaseUrl, pUserObjectId),
-                    MethodType.POST,pConnectionServer,strBody);
+                    MethodType.Post,pConnectionServer,strBody);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -431,8 +431,8 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCUPIResponse(string.Format("{0}users/{1}/alternateextensions/{2}",pConnectionServer.BaseUrl,pUserObjectId, pObjectId),
-                                            MethodType.DELETE,pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/alternateextensions/{2}",pConnectionServer.BaseUrl,pUserObjectId, pObjectId),
+                                            MethodType.Delete,pConnectionServer, "");
         }
 
         /// <summary>
@@ -486,8 +486,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</AlternateExtension>";
 
-            return HTTPFunctions.GetCUPIResponse(string.Format("{0}users/{1}/alternateextensions/{2}", pConnectionServer.BaseUrl, pUserObjectId, pObjectId),
-                                            MethodType.PUT,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/alternateextensions/{2}", pConnectionServer.BaseUrl, pUserObjectId, pObjectId),
+                                            MethodType.Put,pConnectionServer,strBody);
 
         }
 
@@ -613,7 +613,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}users/{1}/alternateextensions/{2}", _homeServer.BaseUrl,UserObjectId, pObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -621,16 +621,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //load all of the elements returned into the class object properties
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             //all the updates above will flip pending changes into the queue - clear that here.

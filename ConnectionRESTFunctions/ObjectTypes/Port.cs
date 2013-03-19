@@ -140,7 +140,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}ports/{1}", _homeServer.BaseUrl, pObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -148,16 +148,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //load all of the elements returned into the class object properties
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             return res;
@@ -196,7 +196,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = pConnectionServer.BaseUrl + "ports";
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -204,13 +204,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements can be empty, that's legal
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pPorts = new List<Port>();
                 return res;
             }
 
-            pPorts = GetPortsFromXElements(pConnectionServer, res.XMLElement);
+            pPorts = GetPortsFromXElements(pConnectionServer, res.XmlElement);
             return res;
         }
 
@@ -236,7 +236,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlPort.Elements())
                 {
                     //adds the XML property to the object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oPort, oElement);
+                    pConnectionServer.SafeXmlFetch(oPort, oElement);
                 }
 
                 //add the fully populated object to the list that will be returned to the calling routine.

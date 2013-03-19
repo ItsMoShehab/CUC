@@ -146,7 +146,7 @@ namespace ConnectionCUPIFunctions
                 }
 
                 //issue the command to the CUPI interface
-                res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
                 if (res.Success == false)
                 {
@@ -154,13 +154,13 @@ namespace ConnectionCUPIFunctions
                 }
 
                 //if the call was successful the XML elements can be empty, that's legal
-                if (res.XMLElement == null || res.XMLElement.HasElements == false)
+                if (res.XmlElement == null || res.XmlElement.HasElements == false)
                 {
                     pConfigurationValues = new List<ConfigurationValue>();
                     return res;
                 }
 
-                pConfigurationValues = GetConfigurationValuesFromXElements(pConnectionServer, res.XMLElement);
+                pConfigurationValues = GetConfigurationValuesFromXElements(pConnectionServer, res.XmlElement);
                 return res;
 
             }
@@ -247,7 +247,7 @@ namespace ConnectionCUPIFunctions
                     foreach (XElement oElement in oXmlConfigurationValue.Elements())
                     {
                         //adds the XML property to the ConfigurationValue object if the proeprty name is found as a property on the object.
-                        pConnectionServer.SafeXMLFetch(oConfiguration, oElement);
+                        pConnectionServer.SafeXmlFetch(oConfiguration, oElement);
                     }
 
                     //add the fully populated ConfigurationValue object to the list that will be returned to the calling routine.
@@ -312,7 +312,7 @@ namespace ConnectionCUPIFunctions
                 string strUrl = string.Format("{0}configurationvalues/{1}", HomeServer.BaseUrl, pFullName);
 
                 //issue the command to the CUPI interface
-                res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, HomeServer, "");
+                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, HomeServer, "");
 
                 if (res.Success == false)
                 {
@@ -320,16 +320,16 @@ namespace ConnectionCUPIFunctions
                 }
 
                 //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-                if (res.XMLElement == null || res.XMLElement.HasElements == false)
+                if (res.XmlElement == null || res.XmlElement.HasElements == false)
                 {
                     res.Success = false;
                     return res;
                 }
 
                 //populate this configuration value instance with data from the XML fetch
-                foreach (XElement oElement in res.XMLElement.Elements())
+                foreach (XElement oElement in res.XmlElement.Elements())
                 {
-                    HomeServer.SafeXMLFetch(this, oElement);
+                    HomeServer.SafeXmlFetch(this, oElement);
                 }
 
                 return res;

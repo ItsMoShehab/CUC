@@ -148,7 +148,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = _homeServer.BaseUrl + "partitions/" + strObjectId;
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -156,16 +156,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 res.ErrorText = "No XML elements returned from search space fetch";
                 return res;
             }
 
-            foreach (var oElement in res.XMLElement.Elements())
+            foreach (var oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             res.Success = true;
@@ -187,7 +187,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = _homeServer.BaseUrl + string.Format("partitions/?query=(Name is {0})", pName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -195,12 +195,12 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 return "";
             }
 
-            foreach (var oElement in res.XMLElement.Elements().Elements())
+            foreach (var oElement in res.XmlElement.Elements().Elements())
             {
                 if (oElement.Name.ToString().Equals("ObjectId"))
                 {
@@ -275,7 +275,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = pConnectionServer.BaseUrl + "partitions";
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -283,13 +283,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements can be empty
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pPartitions = new List<Partition>();
                 return res;
             }
 
-            pPartitions = GetPartitionsFromXElements(pConnectionServer, res.XMLElement);
+            pPartitions = GetPartitionsFromXElements(pConnectionServer, res.XmlElement);
             return res;
         }
 
@@ -315,7 +315,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlPartition.Elements())
                 {
                     //adds the XML property to the UserBase object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oPartition, oElement);
+                    pConnectionServer.SafeXmlFetch(oPartition, oElement);
                 }
 
                 //add the fully populated UserBase object to the list that will be returned to the calling routine.
@@ -433,7 +433,7 @@ namespace ConnectionCUPIFunctions
 
              strBody += "</Partition>";
 
-             res = HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "partitions", MethodType.POST,pConnectionServer,strBody);
+             res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "partitions", MethodType.Post,pConnectionServer,strBody);
 
              //if the call went through then the ObjectId will be returned in the URI form.
              if (res.Success)
@@ -479,8 +479,8 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "partitions/" + pPartitionObjectId,
-                                            MethodType.DELETE,pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "partitions/" + pPartitionObjectId,
+                                            MethodType.Delete,pConnectionServer, "");
         }
 
 
@@ -537,7 +537,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Partition>";
 
-            return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "partitions/" + pObjectId,MethodType.PUT,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "partitions/" + pObjectId,MethodType.Put,pConnectionServer,strBody);
         }
 
         #endregion
