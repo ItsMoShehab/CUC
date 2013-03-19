@@ -221,7 +221,7 @@ namespace ConnectionCUPIFunctionsTest
 
             //Fetch credentials via static function
             Credential oCredential;
-            res=Credential.GetCredential(_connectionServer, oUserFull.ObjectId, CredentialType.PIN, out oCredential);
+            res=Credential.GetCredential(_connectionServer, oUserFull.ObjectId, CredentialType.Pin, out oCredential);
             Assert.IsTrue(res.Success, "Failed to fetch PIN credential manually:"+res.ToString());
 
             res = Credential.GetCredential(_connectionServer, oUserFull.ObjectId, CredentialType.Password, out oCredential);

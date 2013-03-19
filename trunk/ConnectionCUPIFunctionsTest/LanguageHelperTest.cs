@@ -84,10 +84,10 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod()]
         public void GetLanguageNameFromLanguageIDTest()
         {
-            string strRet = LanguageHelper.GetLanguageNameFromLanguageID(1033);
+            string strRet = LanguageHelper.GetLanguageNameFromLanguageId(1033);
             Assert.AreEqual(strRet,"EnglishUnitedStates","US English name not returned for 1033");
 
-            strRet = LanguageHelper.GetLanguageNameFromLanguageID(10);
+            strRet = LanguageHelper.GetLanguageNameFromLanguageId(10);
             Assert.AreEqual(strRet, "Undefined","Invalid language ID should return 'Invalid' string for name");
 
         }

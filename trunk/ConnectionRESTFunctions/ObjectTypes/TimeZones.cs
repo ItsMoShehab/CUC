@@ -94,7 +94,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = pConnectionServer.BaseUrl + "timezones";
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -102,19 +102,19 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //populate a list of ConnectionTimeZone structs with data for each timezone found in the system and add it to the private timezone dictionary.
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
                 ConnectionTimeZone oConnectionTimeZone = new ConnectionTimeZone();
                 foreach (XElement oSubElement in oElement.Elements())
                 {
-                    pConnectionServer.SafeXMLFetch(oConnectionTimeZone, oSubElement);
+                    pConnectionServer.SafeXmlFetch(oConnectionTimeZone, oSubElement);
                 }
 
                 try

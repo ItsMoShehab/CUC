@@ -202,7 +202,7 @@ namespace ConnectionCUPIFunctions
                 }
             }
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -210,13 +210,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements can be empty, that's legal
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pUsers= new List<GlobalUser>();
                 return res;
             }
 
-            pUsers = GetUsersFromXElements(pConnectionServer, res.XMLElement);
+            pUsers = GetUsersFromXElements(pConnectionServer, res.XmlElement);
             return res;
 
         }
@@ -299,7 +299,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlUser.Elements())
                 {
                     //adds the XML property to the GlobalUser object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oUser, oElement);
+                    pConnectionServer.SafeXmlFetch(oUser, oElement);
                 }
 
                 //add the fully populated GlobalUser object to the list that will be returned to the calling routine.
@@ -362,7 +362,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}globalusers/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, HomeServer, "");
 
             if (res.Success == false)
             {
@@ -370,7 +370,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
@@ -380,9 +380,9 @@ namespace ConnectionCUPIFunctions
             //a "uers" sub element, not at the top level as a full user fetch is - so we have to go another level deep here.
             //Call the same SafeXMLFetch routine for each to let the full user class instance "drive" the fetching of data
             //from the XML elements.
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                HomeServer.SafeXMLFetch(this, oElement);
+                HomeServer.SafeXmlFetch(this, oElement);
             }
 
             return res;
@@ -402,7 +402,7 @@ namespace ConnectionCUPIFunctions
            string strUrl = string.Format("{0}globalusers?query=(Alias is {1})", HomeServer.BaseUrl, pAlias);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, HomeServer, "");
 
             if (res.Success == false)
             {
@@ -410,12 +410,12 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 return "";
             }
 
-            foreach (var oElement in res.XMLElement.Elements().Elements())
+            foreach (var oElement in res.XmlElement.Elements().Elements())
             {
                 if (oElement.Name.ToString().Equals("ObjectId"))
                 {

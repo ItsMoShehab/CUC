@@ -128,7 +128,7 @@ namespace ConnectionCUPIFunctions
 
             foreach (ConnectionObjectPropertyPair oPair in this)
             {
-                strRet += oPair.ToString() + Environment.NewLine;
+                strRet += oPair + Environment.NewLine;
             }
             return strRet;
         }
@@ -145,25 +145,25 @@ namespace ConnectionCUPIFunctions
         User = 3,
         DistributionList = 4,
         UserWithoutMailbox = 5,
-        VPIMContact = 6,
+        VpimContact = 6,
         BridgeContact = 7,
         SystemContact = 8,
         UnityContact = 9,
         NameLookupHandler = 10,
         InterviewHandler = 11,
         GlobalUser = 12,
-        RoutingRule_Direct = 13,
-        RoutingRule_Forwarded = 14,
+        RoutingRuleDirect = 13,
+        RoutingRuleForwarded = 14,
         SubscriberTemplate = 15,
         CallHandlerTemplate = 16,
-        SMPPProvider = 17,
+        SmppProvider = 17,
         Schedule = 18,
         Partition = 19,
         SearchSpace = 20,
         Switch = 21,
         PersonalCallTransferRule = 28,
         Location = 22,
-        COS = 50
+        Cos = 50
     }
 
 
@@ -188,10 +188,10 @@ namespace ConnectionCUPIFunctions
     /// </summary>
     public enum ConversationNames
     {
-        AD,
-        PHTransfer,
-        PHGreeting,
-        PHInterview,
+        Ad,
+        PhTransfer,
+        PhGreeting,
+        PhInterview,
         BroadcastMessageAdministrator,
         GreetingsAdministrator,
         SubSignIn,
@@ -242,26 +242,26 @@ namespace ConnectionCUPIFunctions
     /// <summary>
     /// Credential types used by CUPI (3=GUI Password, 4 = Phone PIN.  Other types (Domino, Windows...) do not get used in CUPI.
     /// </summary>
-    public enum CredentialType {Password=3, PIN=4}
+    public enum CredentialType {Password=3, Pin=4}
 
     /// <summary>
     /// List of notification device types.  Be aware that MP3 is a defined type but is not supported or used in Connection.
     /// </summary>
-    public enum NotificationDeviceTypes {Fax=3, MP3=7, Pager=2, Phone=1, SMS=6, SMTP=4}
+    public enum NotificationDeviceTypes {Fax=3, Mp3=7, Pager=2, Phone=1, Sms=6, Smtp=4}
 
     /// <summary>
     /// Couple helper functions for displaying and converting language codes from the big enum of them all.
     /// </summary>
     public static class LanguageHelper
     {
-        public static string GetLanguageNameFromLanguageID(int pLanguageID)
+        public static string GetLanguageNameFromLanguageId(int pLanguageId)
         {
-            if (Enum.IsDefined(typeof(LanguageCodes),pLanguageID)==false)
+            if (Enum.IsDefined(typeof(LanguageCodes),pLanguageId)==false)
             {
                 return "Undefined";
             }
             
-            return ((LanguageCodes)pLanguageID).ToString();
+            return ((LanguageCodes)pLanguageId).ToString();
         }
 
         public static int GetLanguageIdFromLanguageEnum(LanguageCodes pLanguageCode)
@@ -301,7 +301,7 @@ namespace ConnectionCUPIFunctions
         ArabicSaudiArabia = 1025,
         ArabicSyria = 10241,
         ArabicTunisia = 7169,
-        ArabicUAE = 14337,
+        ArabicUae = 14337,
         ArabicYemen = 9217,
         Armenian = 1067,
         AzeriCyrillic = 2092,
@@ -312,7 +312,7 @@ namespace ConnectionCUPIFunctions
         Catalan = 1027,
         ChineseHongKong = 3076,
         ChineseMacau = 5124,
-        ChinesePRC = 2052,
+        ChinesePrc = 2052,
         ChineseSingapore = 4100,
         ChineseTaiwan = 1028,
         Croatian = 1050,
@@ -432,7 +432,7 @@ namespace ConnectionCUPIFunctions
         Xhosa = 1076,
         Yiddish = 1085,
         Zulu = 1077,
-        ENX = 33801,
+        Enx = 33801,
         EnglishIndian = 16393,
     }
 
@@ -460,6 +460,8 @@ namespace ConnectionCUPIFunctions
     /// <summary>
     /// All the valid conversations a subscriber can be assigned to for their inbox conversation (i.e. what they hear when they call 
     /// in to check messages).  This list has remained static since 7.0(2) thorugh 8.6.
+    /// Note, the naming convention on these values must remain as is with underscores or they will not match what comes out of the 
+    /// database for string matching.
     /// </summary>
     public enum SubscriberConversationTui
     {
@@ -511,5 +513,5 @@ namespace ConnectionCUPIFunctions
     /// <summary>
     /// Location objects can point to 4 different location types
     /// </summary>
-    public enum LocationDestinationTypes {UnityConnection=1, Unity=2, UnityConnectionBridge = 7, VPIM=8}
+    public enum LocationDestinationTypes {UnityConnection=1, Unity=2, UnityConnectionBridge = 7, Vpim=8}
 }

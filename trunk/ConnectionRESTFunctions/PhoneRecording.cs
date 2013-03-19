@@ -111,7 +111,7 @@ namespace ConnectionCUPIFunctions
  
             Dictionary<string, object> oResults;
 
-            res = HTTPFunctions.GetJSONResponse(strUrl, MethodType.POST, _homeServer.LoginName, _homeServer.LoginPw, oParams,out oResults);
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.Post, _homeServer.LoginName, _homeServer.LoginPw, oParams,out oResults);
 
             if (res.Success==false)
             {
@@ -169,7 +169,7 @@ namespace ConnectionCUPIFunctions
 
             Dictionary<string, object> oResults;
 
-            res = HTTPFunctions.GetJSONResponse(strUrl, MethodType.GET, _homeServer.LoginName, _homeServer.LoginPw,null, out oResults);
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.Get, _homeServer.LoginName, _homeServer.LoginPw,null, out oResults);
 
             if (res.Success == false)
             {
@@ -200,7 +200,7 @@ namespace ConnectionCUPIFunctions
 
             Dictionary<string, object> oResults;
 
-            HTTPFunctions.GetJSONResponse(strUrl, MethodType.DELETE, _homeServer.LoginName, _homeServer.LoginPw,null, out oResults);
+            HTTPFunctions.GetJsonResponse(strUrl, MethodType.Delete, _homeServer.LoginName, _homeServer.LoginPw,null, out oResults);
         }
 
 
@@ -226,7 +226,7 @@ namespace ConnectionCUPIFunctions
             //the results from the call are returned in a string/object pair dictionary
             Dictionary<string, object> oResults;
 
-            res = HTTPFunctions.GetJSONResponse(strUrl, MethodType.POST, _homeServer.LoginName, _homeServer.LoginPw, oParams, out oResults);
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.Post, _homeServer.LoginName, _homeServer.LoginPw, oParams, out oResults);
 
             if (res.Success == false)
             {
@@ -315,7 +315,7 @@ namespace ConnectionCUPIFunctions
             //results are passed back in a string/object pair dictionary
             Dictionary<string, object> oResults;
 
-            res = HTTPFunctions.GetJSONResponse(strUrl, MethodType.POST, _homeServer.LoginName, _homeServer.LoginPw, oParams, out oResults);
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.Post, _homeServer.LoginName, _homeServer.LoginPw, oParams, out oResults);
 
             if (res.Success == false)
             {
@@ -397,7 +397,7 @@ namespace ConnectionCUPIFunctions
             //results are passed back in a string/object pair dictionary
             Dictionary<string, object> oResults;
 
-            res = HTTPFunctions.GetJSONResponse(strUrl, MethodType.POST, _homeServer.LoginName, _homeServer.LoginPw, oParams, out oResults);
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.Post, _homeServer.LoginName, _homeServer.LoginPw, oParams, out oResults);
 
             if (res.Success == false)
             {

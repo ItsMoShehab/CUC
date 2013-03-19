@@ -454,7 +454,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/transferoptions", pConnectionServer.BaseUrl, pCallHandlerObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -462,13 +462,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
-            pTransferOptions = GetTransferOptionsFomXElements(pConnectionServer, pCallHandlerObjectId, res.XMLElement);
+            pTransferOptions = GetTransferOptionsFomXElements(pConnectionServer, pCallHandlerObjectId, res.XmlElement);
             return res;
 
         }
@@ -501,7 +501,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlTransferOption.Elements())
                 {
                     //adds the XML property to the TransferOption object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oTransferOption, oElement);
+                    pConnectionServer.SafeXmlFetch(oTransferOption, oElement);
                 }
 
                 oTransferOption.ClearPendingChanges();
@@ -568,8 +568,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</TransferOption>";
 
-            return HTTPFunctions.GetCUPIResponse(string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, 
-                pTransferOptionType),MethodType.PUT,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, 
+                pTransferOptionType),MethodType.Put,pConnectionServer,strBody);
 
         }
 
@@ -683,8 +683,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</TransferOption>";
 
-            return HTTPFunctions.GetCUPIResponse(string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, 
-                pTransferOptionType),MethodType.PUT,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, 
+                pTransferOptionType),MethodType.Put,pConnectionServer,strBody);
         }
 
 
@@ -755,7 +755,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", _homeServer.BaseUrl, CallHandlerObjectId, pTransferOptionType);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -763,16 +763,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //load all of the elements returned into the class object properties
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             //all the updates above will flip pending changes into the queue - clear that here.

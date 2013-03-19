@@ -241,7 +241,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}schedules/{1}/scheduledetails/{2}", _homeServer.BaseUrl, pScheduleObjectId,pScheduleDetailObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -249,16 +249,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //populate this call handler instance with data from the XML fetch
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             return res;
@@ -301,7 +301,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}schedules/{1}/scheduledetails", pConnectionServer.BaseUrl,pScheduleObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -309,13 +309,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements can be empty.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pScheduleDetails= new List<ScheduleDetail>();
                 return res;
             }
 
-            pScheduleDetails = GetScheduleDetailsFromXElements(pConnectionServer, res.XMLElement);
+            pScheduleDetails = GetScheduleDetailsFromXElements(pConnectionServer, res.XmlElement);
             return res;
         }
 
@@ -353,8 +353,8 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + string.Format("schedules/{0}/scheduledetails/{1}",
-                pScheduleObjectId, pScheduleDetailObjectId),MethodType.DELETE, pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("schedules/{0}/scheduledetails/{1}",
+                pScheduleObjectId, pScheduleDetailObjectId),MethodType.Delete, pConnectionServer, "");
         }
 
 
@@ -380,7 +380,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlScheduleDetail.Elements())
                 {
                     //adds the XML property to the object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oScheduleDetail, oElement);
+                    pConnectionServer.SafeXmlFetch(oScheduleDetail, oElement);
                 }
 
                 //add the fully populated object to the list that will be returned to the calling routine.

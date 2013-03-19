@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Xml.Linq;
 using System.Diagnostics;
 
@@ -28,29 +29,26 @@ namespace ConnectionCUPIFunctions
         public int Minor;
         public int Build;
         public int Rev;
-        public int ES;
+        public int Es;
 
         //constructor requires all values for version number - pass 0 for values that are not present.
-        public ConnectionVersion(int pMajor, int pMinor, int pBuild, int pRev, int pES) 
+        public ConnectionVersion(int pMajor, int pMinor, int pBuild, int pRev, int pEs) 
         {
             Major = pMajor;
             Minor = pMinor;
             Build = pBuild;
             Rev = pRev;
-            ES = pES;
+            Es = pEs;
         }
 
         //displays version in a readable format for logging and display purposes.
         public override string ToString()
         {
-            if (ES>0)
+            if (Es>0)
             {
-                return string.Format("{0}.{1}({2}.{3}) ES {4}",Major,Minor,Rev, Build,ES);
+                return string.Format("{0}.{1}({2}.{3}) ES {4}",Major,Minor,Rev, Build,Es);
             }
-            else
-            {
-                return string.Format("{0}.{1}({2}.{3})",Major,Minor,Rev,Build);
-            }
+            return string.Format("{0}.{1}({2}.{3})",Major,Minor,Rev,Build);
         }
 
 
@@ -70,6 +68,9 @@ namespace ConnectionCUPIFunctions
         /// <param name="pRev">
         /// Rev version
         /// </param>
+        /// <param name="pEs">
+        /// Engineering special number
+        /// </param>
         /// <returns>
         /// TRUE is returned if the version passed in is the same as or less than the version of Connection.
         /// </returns>
@@ -79,7 +80,7 @@ namespace ConnectionCUPIFunctions
                 | Major == pMajor & Minor > pMinor
                 | Major == pMajor & Minor == pMinor & Rev > pRev
                 | Major == pMajor & Minor == pMinor & Rev == pRev & Build > pBuild
-                | Major == pMajor & Minor == pMinor & Rev == pRev & Build == pBuild & ES >= pEs)
+                | Major == pMajor & Minor == pMinor & Rev == pRev & Build == pBuild & Es >= pEs)
             {
                 return true;
             }
@@ -93,7 +94,7 @@ namespace ConnectionCUPIFunctions
     /// Primary class for teh ConnectionRestFunctions library.  This is used to connect to and get/set data to and from a remote Connection
     /// server via the CUPI REST based web interface.
     /// </summary>
-    public partial class ConnectionServer
+    public class ConnectionServer
     {
 
         #region Properties
@@ -154,18 +155,18 @@ namespace ConnectionCUPIFunctions
         /// <param name="pLoginName">
         /// Login name used to authenticate to the CUPI interface on the Connection server provided.
         /// </param>
-        /// <param name="pLoginPW">
+        /// <param name="pLoginPw">
         /// Login password used to authenticate to the CUPI interface on the Connection server provided.
         /// </param>
         /// <returns>
         /// Instance of the ConnectionServer class
         /// </returns>
-        public ConnectionServer (string pServerName, string pLoginName, string pLoginPW)
+        public ConnectionServer (string pServerName, string pLoginName, string pLoginPw)
         {
             BaseUrl = string.Format("https://{0}:8443/vmrest/", pServerName);
             Version = new ConnectionVersion(0,0,0,0,0);
             
-            if (string.IsNullOrEmpty(pServerName) | string.IsNullOrEmpty(pLoginName) | string.IsNullOrEmpty(pLoginPW))
+            if (string.IsNullOrEmpty(pServerName) | string.IsNullOrEmpty(pLoginName) | string.IsNullOrEmpty(pLoginPw))
             {
                 throw new ArgumentException("Empty server name, login name or password provided on constructor");
             }
@@ -174,18 +175,18 @@ namespace ConnectionCUPIFunctions
             LastSessionActivity = DateTime.MinValue;
 
             //validate login.  This fills in the version and primary location object ID details.
-            if (LoginToConnectionServer(pServerName,pLoginName,pLoginPW).Success==false)
+            if (LoginToConnectionServer(pServerName,pLoginName,pLoginPw).Success==false)
             {
                 ServerName = "";
                 LoginName = "";
                 LoginPw = "";
                 BaseUrl = "";
-                throw new System.Exception ("Login failed to Connection server:"+pServerName);
+                throw new Exception ("Login failed to Connection server:"+pServerName);
             }
 
             ServerName = pServerName;
             LoginName = pLoginName;
-            LoginPw = pLoginPW;
+            LoginPw = pLoginPw;
         }
 
         #endregion
@@ -220,14 +221,14 @@ namespace ConnectionCUPIFunctions
             this.LoginName = pLoginName;
             this.LoginPw = pLoginPw;
 
-            WebCallResult ret = HTTPFunctions.GetCUPIResponse(BaseUrl + "version", MethodType.GET, this,"");
+            WebCallResult ret = HTTPFunctions.GetCupiResponse(BaseUrl + "version", MethodType.Get, this,"");
 
             if (ret.Success==false)
             {
                 return ret;
             }
 
-            if (ret.XMLElement == null || (ret.XMLElement.HasElements == false) || ret.XMLElement.Element("version") == null)
+            if (ret.XmlElement == null || (ret.XmlElement.HasElements == false) || ret.XmlElement.Element("version") == null)
             {
                 //invalid XML returned
                 ret.ErrorText=string.Format("Invalid version XML returned logging into Connection server: {0}, return text={1}", pServerName, ret.ResponseText);
@@ -235,7 +236,7 @@ namespace ConnectionCUPIFunctions
                 return ret;
             }
 
-            if (ParseVersionString(ret.XMLElement.Element("version").Value) == false)
+            if (ParseVersionString(ret.XmlElement.Element("version").Value) == false)
             {
               	//Invalid version string encountered (or no version string returned).
                ret.ErrorText= String.Format("No version version returned in XML logging into Connection server: {0}, return text={1}", pServerName, ret.ResponseText);
@@ -299,7 +300,7 @@ namespace ConnectionCUPIFunctions
             if (strVersionChunks.Count()<4)
             {
                 Version.Build = 0;
-                Version.ES = 0;
+                Version.Es = 0;
                 return true;
             }
 
@@ -307,23 +308,23 @@ namespace ConnectionCUPIFunctions
             if (strVersionChunks[3].Contains("ES"))
             {
               	//there will be a leading digit or digits, followed by an "ES" followed by trailing digit/digits
-                string[] ESChunks = strVersionChunks[3].Replace("ES", ".").Split('.');
-                if (ESChunks.Count()!=2)
+                string[] esChunks = strVersionChunks[3].Replace("ES", ".").Split('.');
+                if (esChunks.Count()!=2)
                 {
                     return false;
                 }
 
                 //In rare cases the build can be blank - don't treat that as a failur although you shouldn't run into this in production builds.
-                if (int.TryParse(ESChunks[0], out iTemp))
+                if (int.TryParse(esChunks[0], out iTemp))
                 {
                     Version.Build = iTemp;
                 }
 
-                //get ES - in rare cases the ES will not be a number - this is technically a bug in the versioning scheme but don't 
+                //get ES - in rare cases the ES will not be a number - this is technically a problem in the versioning scheme but don't 
                 //treat it as a failure here
-                if (int.TryParse(ESChunks[1], out iTemp))
+                if (int.TryParse(esChunks[1], out iTemp))
                 {
-                    Version.ES = iTemp;    
+                    Version.Es = iTemp;    
                 }
             }
             else
@@ -343,7 +344,7 @@ namespace ConnectionCUPIFunctions
 
         /// <summary>
         ///General purpose routine that will take an instance of an object (forinstance a User instance) and an XMLElement (i.e. looks like
-        /// "<FirstName>Jeff</LastName>" and populates the appropriate field in the class instance with the value from the element.
+        /// "<FirstName>Jeff</FirstName>" and populates the appropriate field in the class instance with the value from the element.
         ///This requires that the name of the property on the class matches the element name (including case).  Proper type conversion is 
         ///handled and logic to make sure the property is represented on the class and the value is valid (exists) is included.
         ///NOTE: The User, CallHandler etc... classes all define the object id as "ObjectId" and in XML its preresented as "ObjectId" - this 
@@ -356,36 +357,46 @@ namespace ConnectionCUPIFunctions
         /// <param name="pElement">
         /// XML Element that holds a value/name corresponding to a value in the object
         /// </param>
-        internal void SafeXMLFetch(Object pObject, XElement pElement)
+        internal void SafeXmlFetch(Object pObject, XElement pElement)
         {
-
-            //the names of the properties (including case) found in the XML return and those properties defined on the User class
-            //will match here - so ftetch the name of the XML element and we can figure out its type and stuff it onto the appropriate
-            //property on the User object.
-            string strName = pElement.Name.LocalName;
-
             //if this is a "complex" type, process the sub elements - this comes into play mostly for messages which got a little cute with 
             //complex types for numerous properties
             if (pElement.HasElements)
             {
+                //grab the handle to the sub object and then process the sub elements onto it.  If this is a generic list of instances
+                //of a type then this scenario needs to be handled by hand.
+                object pSubObject;
+                PropertyInfo propInfo = pObject.GetType().GetProperty(pElement.Name.LocalName);
+                if (propInfo != null)
+                {
+                    pSubObject = propInfo.GetValue(pObject, null);
+                }
+                else
+                {
+                    return;
+                }
+
+                if (pSubObject == null)
+                {
+                    return;
+                }
+                
+
+
                 foreach (XElement subElement in pElement.Elements())
                 {
-                    strName = string.Format("{0}_{1}", subElement.Parent.Name.LocalName, subElement.Name.LocalName);
-                    GetXMLProperty(pObject, subElement, strName);
+                    GetXMLProperty(pSubObject, subElement, subElement.Name.LocalName);
                 }
             }
             else
             {
-                strName = pElement.Name.LocalName;
-                GetXMLProperty(pObject,pElement,strName);
+                GetXMLProperty(pObject, pElement, pElement.Name.LocalName);
             }
-
-
         }
 
         /// <summary>
         ///General purpose routine that will take an instance of an object (forinstance a User instance) and an XMLElement (i.e. looks like
-        /// "<FirstName>Jeff</LastName>" and populates the appropriate field in the class instance with the value from the element.
+        /// "<FirstName>Jeff</FirstName>" and populates the appropriate field in the class instance with the value from the element.
         ///This requires that the name of the property on the class matches the element name (including case).  Proper type conversion is 
         ///handled and logic to make sure the property is represented on the class and the value is valid (exists) is included.
         ///NOTE: The User, CallHandler etc... classes all define the object id as "ObjectId" and in XML its preresented as "ObjectId" - this 
@@ -404,26 +415,16 @@ namespace ConnectionCUPIFunctions
         private void GetXMLProperty(object pObject, XElement pElement, string pName)
         {
             //four value types to handle the four values we can pull from XML via the CUPI interface.
-            string strValue = "";
-            int intValue = 0;
-            long longValue = 0;
-            bool? boolValue = false;
-            DateTime dateValue = DateTime.Parse("1/1/2200");
-            string[] test = { "1", "2" };
-            test.Count();
 
             //if the property is not defined on our class (some of the URI properties are redundant) return.
             if (pObject.GetType().GetProperty(pName) == null)
             {
                 if (pName.Contains("URI"))
-                    return;
-                else
                 {
-                    Console.WriteLine("Missing property value:" + pName);    
+                    return;
                 }
-
+                Console.WriteLine("Missing property value:" + pName);
                 return;
-
             }
 
             //we need to know to target type of the element so we can cast is properly - for each type parse out the value field 
@@ -431,39 +432,25 @@ namespace ConnectionCUPIFunctions
             switch (pObject.GetType().GetProperty(pName).PropertyType.FullName.ToLower())
             {
                 case "system.int32":
-                    intValue = (pElement.Value == null) ? 0 : int.Parse(pElement.Value);
+                    int intValue = (pElement.Value == null) ? 0 : int.Parse(pElement.Value);
                     pObject.GetType().GetProperty(pName).SetValue(pObject, intValue, null);
                     break;
                 case "system.int64":
-                    longValue = (pElement.Value == null) ? 0 : long.Parse(pElement.Value);
+                    long longValue = (pElement.Value == null) ? 0 : long.Parse(pElement.Value);
                     pObject.GetType().GetProperty(pName).SetValue(pObject, longValue, null);
                     break;
                 case "system.string":
-                    strValue = (pElement.Value == null) ? "" : pElement.Value.ToString();
+                    string strValue = (pElement.Value == null) ? "" : pElement.Value.ToString();
                     pObject.GetType().GetProperty(pName).SetValue(pObject, strValue, null);
                     break;
                 case "system.boolean":
-                    if (pElement.Value == null)
-                    {
-                        boolValue = null;
-                    }
-                    else
-                    {
-                        boolValue= bool.Parse(pElement.Value);
-                    }
+                    bool? boolValue = bool.Parse(pElement.Value);
                     pObject.GetType().GetProperty(pName).SetValue(pObject, boolValue, null);
                     break;
                 case "system.datetime":
-                        if (pElement.Value == null)
-                        {
-                            dateValue = DateTime.Parse("1/1/2200");
-                        }
-                        else
-                        {
-                            dateValue = DateTime.Parse(pElement.Value);
-                        }
+                    DateTime dateValue = DateTime.Parse(pElement.Value);
 
-                        pObject.GetType().GetProperty(pName).SetValue(pObject, dateValue, null);
+                    pObject.GetType().GetProperty(pName).SetValue(pObject, dateValue, null);
                     break;
                 default:
                     if (Debugger.IsAttached) Debugger.Break();
@@ -471,8 +458,6 @@ namespace ConnectionCUPIFunctions
                                    + pObject.GetType().GetProperty(pName).PropertyType.FullName.ToLower());
                     break;
             }
-
-            return;
         }
 
 
@@ -480,10 +465,10 @@ namespace ConnectionCUPIFunctions
         //happy with.  This will handle GSM6.10, mp3, G729a, G726 and many other WAV formats I've run into in the field - the same library
         //is used in COBRAS when importing Windows based backups (which may have numerous WAV formats for greetings and voice names) into 
         //Connection.
-        public string ConvertWAVFileToPCM(string pPathToWAVFile)
+        public string ConvertWavFileToPcm(string pPathToWavFile)
         {
             //create a temporary file with a GUID file name in the temporary folder for the local OS install.
-            string strConvertedWAVFilePath = Path.GetTempFileName() + ".wav";
+            string strConvertedWavFilePath = Path.GetTempFileName() + ".wav";
 
 
             // Use ProcessStartInfo class - this lets us set properties, hide the "box" window and wait for the process to complete before 
@@ -507,7 +492,7 @@ namespace ConnectionCUPIFunctions
             startInfo.WindowStyle = ProcessWindowStyle.Hidden;
 
             //Connection is happier with PCM at 8Khz, 16 bit and mono - to rip the wav file into that format if requested.
-            startInfo.Arguments = string.Format("\"{0}\" \"{1}\" -pcm:8000,16,1", pPathToWAVFile, strConvertedWAVFilePath);
+            startInfo.Arguments = string.Format("\"{0}\" \"{1}\" -pcm:8000,16,1", pPathToWavFile, strConvertedWavFilePath);
             try
             {
                 // Start the process with the info we specified.
@@ -521,10 +506,10 @@ namespace ConnectionCUPIFunctions
             {
                 //log the error here in a production application - for our purposes we just pass back blank for the file 
                 //name indicating there was an issue.
-                strConvertedWAVFilePath = "";
+                strConvertedWavFilePath = "";
             }
 
-            return strConvertedWAVFilePath;
+            return strConvertedWavFilePath;
 
         }
 
@@ -552,9 +537,6 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public string GetActionDescription(int pAction, string pConversationName, string pTargetHandlerObjectId)
         {
-            WebCallResult ret;
-            CallHandler oHandler;
-
             switch (pAction)
             {
                     //Take care of the action types that do not reference any target or conversation name first.
@@ -584,6 +566,8 @@ namespace ConnectionCUPIFunctions
                             return "(error) invalid empty conversaton name passed to GetActionDescription ";
                         }
 
+                        WebCallResult ret;
+                        CallHandler oHandler;
                         switch (pConversationName.ToLower())
                         {
                             case "subsignin":
@@ -710,9 +694,9 @@ namespace ConnectionCUPIFunctions
             pUser = null;
             try
             {
-                ConnectionServer oConnection = new ConnectionServer(this.ServerName, pLoginName, pPassword);
+                new ConnectionServer(this.ServerName, pLoginName, pPassword);
             }
-            catch (Exception ex)
+            catch 
             {
                 return false;
             }
@@ -742,9 +726,9 @@ namespace ConnectionCUPIFunctions
         {
             try
             {
-                ConnectionServer oConnection = new ConnectionServer(this.ServerName, pLoginName, pPassword);
+                new ConnectionServer(this.ServerName, pLoginName, pPassword);
             }
-            catch (Exception ex)
+            catch 
             {
                 return false;
             }
@@ -813,13 +797,13 @@ namespace ConnectionCUPIFunctions
                 case ConnectionObjectType.SystemCallHandler:
                     strUrl += "callhandler.do?op=read&objectId=" + strObjectId;
                     break;
-                case ConnectionObjectType.RoutingRule_Direct:
+                case ConnectionObjectType.RoutingRuleDirect:
                     strUrl += "routing-rule.do?op=readDirectRule&objectId=" + strObjectId;
                     break;
-                case ConnectionObjectType.RoutingRule_Forwarded:
+                case ConnectionObjectType.RoutingRuleForwarded:
                     strUrl += "routing-rule.do?op=readForwardedRule&objectId=" + strObjectId;
                     break;
-                case ConnectionObjectType.SMPPProvider:
+                case ConnectionObjectType.SmppProvider:
                     strUrl += "smpp-provider.do?op=read&objectId=" + strObjectId;
                     break;
                 case ConnectionObjectType.SubscriberTemplate:
@@ -848,10 +832,10 @@ namespace ConnectionCUPIFunctions
                     strUrl = "https://" + this.ServerName + ":8443/ciscopca/runas.do?userid=" + strObjectId + "&startat=unitycallroutingrules/rulesets.do";
                     break;
                 case ConnectionObjectType.SystemContact:
-                case ConnectionObjectType.VPIMContact:
+                case ConnectionObjectType.VpimContact:
                     strUrl += "contact.do?op=read&objectId=" + strObjectId;
                     break;
-                case ConnectionObjectType.COS:
+                case ConnectionObjectType.Cos:
                     //https://fmstest3.cisco.com:8443/cuadmin/cos.do?op=read&objectId=85ba8e9b-1f46-491c-b9e1-8e03e3c89124
                     strUrl += "cos.do?op=read&objectId=" + strObjectId;
                     break;

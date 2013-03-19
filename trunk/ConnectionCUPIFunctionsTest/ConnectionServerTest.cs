@@ -121,28 +121,28 @@ namespace ConnectionCUPIFunctionsTest
 
             //integer
             oElement = XElement.Parse("<Language>1234</Language>");
-            _connectionServer.SafeXMLFetch(oUser,oElement);
+            _connectionServer.SafeXmlFetch(oUser,oElement);
             Assert.AreEqual(oUser.Language, 1234, "Language integer did not insert properly.");
 
             //string
             oElement = XElement.Parse("<ConversationTui>SubMenu</ConversationTui>");
-            _connectionServer.SafeXMLFetch(oUser, oElement);
+            _connectionServer.SafeXmlFetch(oUser, oElement);
             Assert.AreEqual(oUser.ConversationTui, "SubMenu", "SubMenu string did not insert properly");
 
             //boolean
             oElement = XElement.Parse("<IsTemplate>false</IsTemplate>");
-            _connectionServer.SafeXMLFetch(oUser, oElement);
+            _connectionServer.SafeXmlFetch(oUser, oElement);
             Assert.IsFalse(oUser.IsTemplate,"IsTemplate boolean did not insert properly");
 
             //DateTime
             oElement = XElement.Parse("<CreationTime>2011-08-27T05:00:21Z</CreationTime>");
-            _connectionServer.SafeXMLFetch(oUser, oElement);
+            _connectionServer.SafeXmlFetch(oUser, oElement);
             //Time above is universal time
             Assert.IsTrue(oUser.CreationTime.Equals(DateTime.Parse("2011/08/27 5:00:21").ToLocalTime()),"Creation time failed to parse correctly");
 
             //Unknown property name
             oElement = XElement.Parse("<Bogus>false</Bogus>");
-            _connectionServer.SafeXMLFetch(oUser, oElement);
+            _connectionServer.SafeXmlFetch(oUser, oElement);
 
         }
 
@@ -217,7 +217,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.AreEqual(oTempServer.Version.Minor, 2, "Minor is not parsed out correctly");
             Assert.AreEqual(oTempServer.Version.Rev, 3, "Rev is not parsed out correctly");
             Assert.AreEqual(oTempServer.Version.Build,4,"Build is not parsed out correctly");
-            Assert.AreEqual(oTempServer.Version.ES, 5, "ES is not parsed out correctly");
+            Assert.AreEqual(oTempServer.Version.Es, 5, "ES is not parsed out correctly");
 
         }
 

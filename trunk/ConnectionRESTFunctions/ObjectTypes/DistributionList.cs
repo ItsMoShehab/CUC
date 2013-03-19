@@ -371,7 +371,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -380,13 +380,13 @@ namespace ConnectionCUPIFunctions
 
             //if the call was successful the XML elements can be empty - that's not an error, it could just
             //mean no lists were found for the query - return true with an empty list
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pDistributionLists=new List<DistributionList>();
                 return res;
             }
 
-            pDistributionLists = GetDistributionListsFromXElements(pConnectionServer, res.XMLElement);
+            pDistributionLists = GetDistributionListsFromXElements(pConnectionServer, res.XmlElement);
             return res;
 
         }
@@ -465,7 +465,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</DistributionList>";
 
-            res = HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "distributionlists", MethodType.POST,pConnectionServer,strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "distributionlists", MethodType.Post,pConnectionServer,strBody);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -638,8 +638,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</DistributionList>";
 
-            return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "distributionlists/" + pObjectId,
-                                            MethodType.PUT,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "distributionlists/" + pObjectId,
+                                            MethodType.Put,pConnectionServer,strBody);
         }
 
 
@@ -664,8 +664,8 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "distributionlists/" + pObjectId,
-                                            MethodType.DELETE,pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "distributionlists/" + pObjectId,
+                                            MethodType.Delete,pConnectionServer, "");
         }
 
 
@@ -696,7 +696,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlList.Elements())
                 {
                     //adds the XML property to the CallHandler object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oDistributionList, oElement);
+                    pConnectionServer.SafeXmlFetch(oDistributionList, oElement);
                 }
 
                 oDistributionList.ClearPendingChanges();
@@ -833,7 +833,7 @@ namespace ConnectionCUPIFunctions
             //if the user wants to try and rip the WAV file into PCM 16/8/1 first before uploading the file, do that conversion here
             if (pConvertToPcmFirst)
             {
-                strConvertedWavFilePath = pConnectionServer.ConvertWAVFileToPCM(pSourceLocalFilePath);
+                strConvertedWavFilePath = pConnectionServer.ConvertWavFileToPcm(pSourceLocalFilePath);
 
                 if (string.IsNullOrEmpty(strConvertedWavFilePath))
                 {
@@ -933,7 +933,7 @@ namespace ConnectionCUPIFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            res = HTTPFunctions.GetJSONResponse(strUrl, MethodType.PUT, pConnectionServer.LoginName,
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.Put, pConnectionServer.LoginName,
                                                  pConnectionServer.LoginPw, oParams, out oOutput);
 
             return res;
@@ -978,7 +978,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</DistributionListMember>\n\r";
 
-            return HTTPFunctions.GetCUPIResponse(strUrl,MethodType.POST,pConnectionServer, strBody);
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Post,pConnectionServer, strBody);
         }
 
 
@@ -999,7 +999,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</DistributionListMember>\n\r";
 
-            return HTTPFunctions.GetCUPIResponse(strUrl,MethodType.POST,pConnectionServer, strBody);
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Post,pConnectionServer, strBody);
         }
 
 
@@ -1017,7 +1017,7 @@ namespace ConnectionCUPIFunctions
                         pDistributionListObjectId,
                         pMemberUserObjectId);
 
-            return HTTPFunctions.GetCUPIResponse(strUrl,MethodType.DELETE,pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Delete,pConnectionServer, "");
         }
 
 
@@ -1119,7 +1119,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}distributionlists/{1}", _homeServer.BaseUrl, pObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -1127,16 +1127,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
             //populate this distribution list instance with data from the XML fetch
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             //flip the flag indicating all properties are filled in for the list now- if this had been a "search list" result a few properties
@@ -1164,14 +1164,14 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}distributionlists?query=(Alias is {1})", _homeServer.BaseUrl, pAlias);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
@@ -1179,7 +1179,7 @@ namespace ConnectionCUPIFunctions
 
             //fish out just the ObjectId value here
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            foreach (XElement oElement in res.XMLElement.Elements().Elements())
+            foreach (XElement oElement in res.XmlElement.Elements().Elements())
             {
                 if (oElement.Name=="ObjectId")
                 {

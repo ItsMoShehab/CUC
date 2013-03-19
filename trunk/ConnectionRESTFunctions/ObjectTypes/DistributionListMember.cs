@@ -100,7 +100,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}distributionlists/{1}/distributionlistmembers", pConnectionServer.BaseUrl,pDistributionListObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -108,13 +108,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements may be empty - that's legal - return an empty list here
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pMemberList = new List<DistributionListMember>();
                 return res;
             }
 
-            pMemberList = GetDistributionListMembersFromXElements(pConnectionServer, res.XMLElement);
+            pMemberList = GetDistributionListMembersFromXElements(pConnectionServer, res.XmlElement);
             return res;
         }
 
@@ -146,7 +146,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlListMembers.Elements())
                 {
                     //adds the XML property to the CallHandler object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oDistributionListMember, oElement);
+                    pConnectionServer.SafeXmlFetch(oDistributionListMember, oElement);
                 }
 
                 //manually determine the member type here - this is a little hacky but it make life a bit easier by being able to filter

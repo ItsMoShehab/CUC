@@ -80,7 +80,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}users/{1}/privatelists/{2}/privatelistmembers", pConnectionServer.BaseUrl,pOwnerUserObjectId, pPrivateListObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -88,13 +88,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements can be empty, that's legal
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 pMemberList = new List<PrivateListMember>();
                 return res;
             }
 
-            pMemberList = GetPrivateListMembersFromXElements(pConnectionServer, res.XMLElement);
+            pMemberList = GetPrivateListMembersFromXElements(pConnectionServer, res.XmlElement);
             return res;
         }
 
@@ -121,7 +121,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlListMembers.Elements())
                 {
                     //adds the XML property to the CallHandler object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oPrivateListMember, oElement);
+                    pConnectionServer.SafeXmlFetch(oPrivateListMember, oElement);
                 }
 
                 //manually determine the member type here - this is a little hacky but it make life a bit easier by being able to filter

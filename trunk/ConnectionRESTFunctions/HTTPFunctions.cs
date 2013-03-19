@@ -35,9 +35,9 @@ namespace ConnectionCUPIFunctions
         public string ErrorText;    //human readable error reason (if any)
         public int StatusCode;      //HTTP status code = 200 (OK), 204 (accepted) etc...
         public string StatusDescription;  //Additional status info sent by server (if any)
-        public XElement XMLElement;  //raw text result parsed into XML elements for easy processing.
+        public XElement XmlElement;  //raw text result parsed into XML elements for easy processing.
         public int TotalObjectCount; //for GET operations, even if returing only some users via paging, the total number is always returned.
-        public string URL;           //Full URL that was sent to the server.
+        public string Url;           //Full URL that was sent to the server.
         public string Method;        //Method used (POST, PUT, GET...)
         public string RequestBody;   //Request body that was sent to the server.
         public string Misc;         //string to hold other data the calling/caller may wish to log such as full paths to file names processed and such.
@@ -52,7 +52,7 @@ namespace ConnectionCUPIFunctions
             StringBuilder strRet=new StringBuilder();
 
             strRet.AppendLine("    WebCallResults contents:");
-            strRet.AppendLine("    URL Sent: " + URL);
+            strRet.AppendLine("    URL Sent: " + Url);
             strRet.AppendLine("    Method Sent: " + Method);
             strRet.AppendLine("    Body Sent: " + RequestBody);
             strRet.AppendLine("    Success returned: " + Success);
@@ -76,7 +76,7 @@ namespace ConnectionCUPIFunctions
     /// <summary>
     /// list of possible methods supported by CUPI for getting/setting properties. 
     /// </summary>
-    public enum MethodType {PUT, POST, GET, DELETE}
+    public enum MethodType {Put, Post, Get, Delete}
 
     /// <summary>
     /// List of common HTTP status codes used in providing diagnoostic/log output and such.
@@ -153,7 +153,6 @@ namespace ConnectionCUPIFunctions
         {
             //if no rich text control has been passed in then this is a no op
             if (RichTextControlToOutputTo == null) return;
-            int iPos; //used to keep track of the current text position when writing out data.
 
             if ((RichTextControlToOutputTo == null) || RichTextControlToOutputTo.IsDisposed)
             {
@@ -170,7 +169,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //tack the text onto the RTE control and color it appropriately
-            iPos = RichTextControlToOutputTo.Text.Length;
+            int iPos = RichTextControlToOutputTo.Text.Length;
             RichTextControlToOutputTo.AppendText(pLine + "\n");
             RichTextControlToOutputTo.SelectionStart = iPos;
             RichTextControlToOutputTo.SelectionLength = pLine.Length;
@@ -194,11 +193,9 @@ namespace ConnectionCUPIFunctions
         //For instance the string "this is a test" would look like "this%20is%20a%20test".  Currently the space character
         //is all it handles but the RFC for URI construction does indicate there are other possibilities here so I leave it
         //in its own routine just in case.
-        private static string EscapeCharactersInURL(string pUri)
+        private static string EscapeCharactersInUrl(string pUri)
         {
-            string res;
-            res = pUri.Replace(" ", "%20");
-            return res;
+            return pUri.Replace(" ", "%20");
         }
 
         /// <summary>
@@ -224,7 +221,7 @@ namespace ConnectionCUPIFunctions
         /// <summary>
         /// Primary method for sending/fetching data to and from the Connection server via CUPI.  
         /// </summary>
-        /// <param name="pURL">
+        /// <param name="pUrl">
         /// Full URL to send to Connection - format should look like:
         /// https://{Connection Server Name}:8443/vmrest/users
         /// </param>
@@ -244,12 +241,13 @@ namespace ConnectionCUPIFunctions
         /// <param name="pIsJson">
         /// If passed as true the resquest is formed as a JSON request and the results are assumed to be in the same format.  If the default of 
         /// false is passed it's sent as XML and the response is assumed to be the same.
-        ///  </param>        
+        ///  </param>
+        /// <param name="pJsessionId"></param>
         /// <returns>
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
         /// with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        private static WebCallResult GetHttpResponse(string pURL, MethodType pMethod, string pLoginName, string pLoginPw,
+        private static WebCallResult GetHttpResponse(string pUrl, MethodType pMethod, string pLoginName, string pLoginPw,
                         string pRequestBody, bool pIsJson = false, string pJsessionId = "")
         {
             WebCallResult res = new WebCallResult();
@@ -257,7 +255,7 @@ namespace ConnectionCUPIFunctions
             HttpWebResponse response = null;
 
             //store the request parts in the resonse structure for ease of reference for error logging and such.
-            res.URL = EscapeCharactersInURL(pURL);
+            res.Url = EscapeCharactersInUrl(pUrl);
             res.Method = pMethod.ToString();
             res.RequestBody = pRequestBody;
             res.Success = false;
@@ -267,11 +265,11 @@ namespace ConnectionCUPIFunctions
             {
                 try
                 {
-                    HttpWebRequest request = WebRequest.Create(pURL) as HttpWebRequest;
+                    HttpWebRequest request = WebRequest.Create(pUrl) as HttpWebRequest;
 
                     if (request == null)
                     {
-                        res.ErrorText ="Error - null returned for WebRequest create in GetResponse on HTTPFunctions.cs using URL=" +pURL;
+                        res.ErrorText ="Error - null returned for WebRequest create in GetResponse on HTTPFunctions.cs using URL=" +pUrl;
                         return res;
                     }
 
@@ -318,24 +316,28 @@ namespace ConnectionCUPIFunctions
                     {
                         response = request.GetResponse() as HttpWebResponse;
                         
-                        //if the server set a session cookie in the header, return it here
-                        var cookie = response.Headers["Set-Cookie"];
-                        if (cookie != null)
+                        if (response != null)
                         {
-                            res.SessionCookie = cookie;
-                        } 
+                            //if the server set a session cookie in the header, return it here
+                            var cookie = response.Headers["Set-Cookie"];
+                            if (cookie != null)
+                            {
+                                res.SessionCookie = cookie;
+                            }
+                        }
+                         
 
                     }
                     catch (WebException ex)
                     {
                         //CUPI will return additional information about the error reason in teh ResponseText tucked into the exception's Resonse object
                         //here - this only applies if the WebException thrown is a protocol error which in most cases it will be.
-                        if (ex.Status == WebExceptionStatus.ProtocolError)
+                        if (ex.Status == WebExceptionStatus.ProtocolError && ex.Response !=null)
                         {
                             //fill out the return structure with as much detail as we call for the calling client to use to figure out what went wrong.
                             res.ErrorText = ((HttpWebResponse)ex.Response).StatusDescription;
                             res.ResponseText = GetResponseText(ex.Response as HttpWebResponse);
-                            res.XMLElement = GetXElementFromString(res.ResponseText);
+                            res.XmlElement = GetXElementFromString(res.ResponseText);
                             res.StatusDescription = ((HttpWebResponse)ex.Response).StatusDescription;
                             res.StatusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
                             
@@ -437,7 +439,7 @@ namespace ConnectionCUPIFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
         /// with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        private static WebCallResult GetCUPIResponse(string pUrl, MethodType pMethod, string pLoginName, string pLoginPw, string pRequestBody, 
+        private static WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, string pLoginName, string pLoginPw, string pRequestBody, 
             string pSessionCookie="")
         {
 
@@ -451,16 +453,16 @@ namespace ConnectionCUPIFunctions
             }
 
             //return the results as an XML set if there's anything provided.
-            res.XMLElement = GetXElementFromString(res.ResponseText);
+            res.XmlElement = GetXElementFromString(res.ResponseText);
 
             //if we're doing a GET query there will be a "total" attribute on the returned XML indicating how many objects matched on the server
             //side which may be more than the result set being returned if we're paging results (which we must on large systems).  Fetch this 
             //value off and include it in the result set if its there.
             res.TotalObjectCount = 0;
 
-            if ((res.XMLElement != null) && res.XMLElement.Attribute("total") != null)
+            if ((res.XmlElement != null) && res.XmlElement.Attribute("total") != null)
             {
-                var xAttribute = res.XMLElement.Attribute("total");
+                var xAttribute = res.XmlElement.Attribute("total");
                 if (xAttribute != null)
                 {
                     res.TotalObjectCount = int.Parse(xAttribute.Value);
@@ -492,7 +494,7 @@ namespace ConnectionCUPIFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
         /// with the call so the calling party can easily log details in the event of a failure.
         /// </returns>        
-        public static WebCallResult GetCUPIResponse(string pUrl, MethodType pMethod, ConnectionServer pConnectionServer,string pRequestBody)
+        public static WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServer pConnectionServer,string pRequestBody)
         {
             //invalidate the cookie if it's been more than a minute - more aggressive than necessary but safe.
             if ((DateTime.Now - pConnectionServer.LastSessionActivity).TotalSeconds > 60)
@@ -500,7 +502,7 @@ namespace ConnectionCUPIFunctions
                 pConnectionServer.LastSessionCookie = "";
             }
 
-            WebCallResult res = GetCUPIResponse(pUrl, pMethod, pConnectionServer.LoginName, pConnectionServer.LoginPw,pRequestBody, 
+            WebCallResult res = GetCupiResponse(pUrl, pMethod, pConnectionServer.LoginName, pConnectionServer.LoginPw,pRequestBody, 
                 pConnectionServer.LastSessionCookie);
 
             //update the details of the session cookie and last connect time.
@@ -573,7 +575,7 @@ namespace ConnectionCUPIFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
         /// with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        public static WebCallResult GetJSONResponse(string pUrl, MethodType pMethod, string pLoginName, string pLoginPw,
+        public static WebCallResult GetJsonResponse(string pUrl, MethodType pMethod, string pLoginName, string pLoginPw,
                                                     Dictionary<string, string> pJsonParams, out Dictionary<string, object> pResults)
         {
             pResults = new Dictionary<string, object>();
@@ -624,7 +626,7 @@ namespace ConnectionCUPIFunctions
             }
             catch (Exception ex)
             {
-                AddToOutputConsole("(error)Failed to parse JSON response:" + ex.ToString(),Color.Red);
+                AddToOutputConsole("(error)Failed to parse JSON response:" + ex,Color.Red);
             }
             return res;
         }
@@ -656,12 +658,14 @@ namespace ConnectionCUPIFunctions
         /// Results (if any) are passed back as a string/object dictionary - you must always pass this in even if you don't expect the server 
         /// to return any results.
         ///  </param>
+        /// <param name="pSessionCookie"></param>
         /// <returns>
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
         /// with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        public static WebCallResult GetJSONResponseMediaSense(string pUrl, MethodType pMethod, string pLoginName, string pLoginPw,
-                                                    Dictionary<string, string> pJsonParams, out Dictionary<string, object> pResults, string pSessionCookie="")
+        public static WebCallResult GetJsonResponseMediaSense(string pUrl, MethodType pMethod, string pLoginName, string pLoginPw,
+                                                    Dictionary<string, string> pJsonParams, out Dictionary<string, object> pResults, 
+                                                    string pSessionCookie="")
         {
             pResults = new Dictionary<string, object>();
 
@@ -706,7 +710,7 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            Dictionary<string, object> oTopLevel=null;
+            Dictionary<string, object> oTopLevel;
 
             //use the JavaScriptSerializer to dump what's in the returned text into the string/object dictionary.  
             try
@@ -716,7 +720,7 @@ namespace ConnectionCUPIFunctions
             }
             catch (Exception ex)
             {
-                res.ErrorText = "(error)Failed to parse JSON response:" + ex.ToString();
+                res.ErrorText = "(error)Failed to parse JSON response:" + ex;
                 res.Success = false;
                 return res;
             }
@@ -737,9 +741,9 @@ namespace ConnectionCUPIFunctions
             }
 
             //not all requests have response bodies but if they do, include them here
-            if (oTopLevel.TryGetValue("responseBody", out oValue) != false)
+            if (oTopLevel.TryGetValue("responseBody", out oValue))
             {
-                if (oValue == null | !oValue.GetType().Name.Contains("Dictionary"))
+                if (oValue == null || !oValue.GetType().Name.Contains("Dictionary"))
                 {
                     res.ErrorText = "responseBody not returned as a dictionary from JSON parser";
                     res.Success = false;
@@ -751,130 +755,6 @@ namespace ConnectionCUPIFunctions
             
             return res;
         }
-
-
-        /// <summary>
-        /// Provides a mechanism to to dimple read only queries on a Call Manager's database via a SOAP based AXL call.  The data is returned via the standard
-        /// WebCallResults structure and the query results in particular (assuming they are retunred at all) can be found in the ResponseText field.  This routing
-        /// does not parse them out into XML elements for you, that's left to the client.
-        /// You need to have Call Manager configured to have AXL active and provide the login/PW of a user that has the AXL administrator role - refer to the 
-        /// Call Manager documentation for details on how to go about this.
-        /// </summary>
-        /// <param name="pServerName">
-        /// Server name or IP address of the Call Manager to query.
-        /// </param>
-        /// <param name="pQuery">
-        /// Query to issue to the server - no syntax checking is done here, it's sent over "as is" to the server.
-        /// </param>
-        /// <param name="pLoginName">
-        /// Call Manager user login name for an account that has AXL rights on the server.
-        /// </param>
-        /// <param name="pLoginPw">
-        /// Passowrd for Call Manager account name provided.
-        /// </param>
-        /// <returns>
-        /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
-        /// with the call so the calling party can easily log details in the event of a failure.
-        /// </returns>
-        private static WebCallResult GetAXLQuery(string pServerName, string pQuery, string pLoginName, string pLoginPw)
-        {
-            WebCallResult res = new WebCallResult();
-            string strURL = "";
-            string strResponse;
-            string strXML;
-            byte[] buffer;
-            ASCIIEncoding enc = new ASCIIEncoding();
-            
-            StreamReader reader = null;
-            HttpWebResponse response = null;
-
-            if (string.IsNullOrEmpty(pServerName))
-            {
-                res.ErrorText = "Empty server name passed to GetAXLQuery";
-                return res;
-            }
-
-            if (string.IsNullOrEmpty(pQuery))
-            {
-                res.ErrorText = "Empty query passed to GetAXLQuery";
-                return res;
-            }
-
-            if (string.IsNullOrEmpty(pLoginName) | string.IsNullOrEmpty(pLoginPw))
-            {
-                res.ErrorText = "Empty login name or password passed to GetAXLQuery";
-                return res;
-            }
-            
-            strURL = @"https://" + pServerName + ":8443/axl/";
-        
-            //a typical AXL query would look something like this:
-            //select enduser.passwordreverse, enduser.pkid from enduser INNER JOIN enduserappservermap ON enduser.pkid = enduserappservermap.fkenduser
-            strXML ="<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body><executeSQLQuery sequence=\"1\"><sql>" +
-                pQuery + "</sql></executeSQLQuery></SOAP-ENV:Body></SOAP-ENV:Envelope>";
-
-            //store the SOAP wrapped query in a byte array which will be stuffed into the POST request in a bit
-            buffer = enc.GetBytes(strXML);
-
-            //store the request parts in the resonse structure for ease of reference for error logging and such.
-            res.URL = EscapeCharactersInURL(strURL);
-            res.Method = "POST"; 
-            res.RequestBody = strXML;
-            res.Success = false;
-
-            //ensure that only one thread at a time is in the web request/response section at a time
-            lock (_thisLock)
-            {
-                try
-                {
-                    HttpWebRequest request = WebRequest.Create(strURL) as HttpWebRequest;
-
-                    request.Method = "POST";
-                    request.ContentType = "text/xml";
-                    request.ContentLength = strXML.Length;
-                    request.Credentials = new NetworkCredential(pLoginName, pLoginPw);
-                    request.KeepAlive = false;
-
-                    Stream postData = request.GetRequestStream();
-                    postData.Write(buffer, 0, buffer.Length);
-                    postData.Close();
-
-                    //Get the response handle which we'll use to get the results back
-                    response = (HttpWebResponse)request.GetResponse();
-                    
-                    //Now, read the response (the string), and output it.
-                    Stream answer = response.GetResponseStream();
-                    reader = new StreamReader(answer);
-                    strResponse = reader.ReadToEnd();
-
-                    reader.Dispose();
-                    answer.Dispose();
-                    response.Close();
-
-                    //the response SHOULD have something in it - if it's not blank but did not raise an error, that's weird but 
-                    //not technically something to get worked up about - note it.
-                    if (strResponse.Length > 0)
-                    {
-                        //return the results as an XML set if there's anything provided.
-                        res.ResponseText = strResponse;
-
-                        //TO-DO 
-                        //Parse the AXL response into an XML format for easy client consumption.
-                        res.Success = true;
-                    }
-                    else
-                    {
-                        res.ErrorText = "No response recieved back from the server";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    res.ErrorText = string.Format("Error fetching AXL query: {0}", ex.Message);
-                }
-            }
-            return res;
-        }
-
 
         /// <summary>
         /// helper function to fetch the resonse text stream off a HTTPWebResponse object - this gets used to both get the response back from the server
@@ -889,7 +769,6 @@ namespace ConnectionCUPIFunctions
         private static string GetResponseText(HttpWebResponse pResponse)
         {
             StreamReader reader;
-            string strRet;
 
             if (pResponse==null)
             {
@@ -905,7 +784,7 @@ namespace ConnectionCUPIFunctions
                 return "Failure getting stream reader from response stream in GetResponseText on HTTPFunctions.cs:" + ex.Message;
             }
 
-            strRet = reader.ReadToEnd();
+            string strRet = reader.ReadToEnd();
 
             reader.Dispose();
 
@@ -970,16 +849,14 @@ namespace ConnectionCUPIFunctions
         /// </returns>    
         public static WebCallResult DownloadWavFile(string pServerName, string pLogin, string pPassword, string pLocalWavFilePath, string pConnectionFileName)
         {
-            string strURL;
-
             //if the target file is already occupied, delete it here.
             if (File.Exists(pLocalWavFilePath))
                 File.Delete(pLocalWavFilePath);
 
             //this is the general CUALS web interface that will fetch any stream file exposed in the streams folder by name.
-            strURL = @"https://" + pServerName + "/cuals/VoiceServlet?filename=" + pConnectionFileName;
+            string strUrl = @"https://" + pServerName + "/cuals/VoiceServlet?filename=" + pConnectionFileName;
 
-            return DownloadMediaFile(strURL, pLogin, pPassword, pLocalWavFilePath);
+            return DownloadMediaFile(strUrl, pLogin, pPassword, pLocalWavFilePath);
 
         }
 
@@ -1013,22 +890,21 @@ namespace ConnectionCUPIFunctions
         /// Zero based number indicating which attachment for a message to fetch.
         /// </param>
         /// <returns>
-        ///     An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
-        ///     associiated with the call so the calling party can easily log details in the event of a failure.
+        /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
+        /// associiated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>    
         public static WebCallResult DownloadMessageAttachment(string pBaseUrl, string pLogin, string pPassword, string pLocalWavFilePath, 
                                                                 string pUserObjectId, string pMessageObjectId, int pAttachmentNumber)
         {
-            string strURL;
-
             //if the target file is already occupied, delete it here.
             if (File.Exists(pLocalWavFilePath))
                 File.Delete(pLocalWavFilePath);
 
             //this is the general CUALS web interface that will fetch any stream file exposed in the streams folder by name.
-            strURL = string.Format(@"{0}messages/{1}/attachments/{2}?userobjectid={3}", pBaseUrl, pMessageObjectId, pAttachmentNumber, pUserObjectId);
+            string strUrl = string.Format(@"{0}messages/{1}/attachments/{2}?userobjectid={3}", pBaseUrl, pMessageObjectId, 
+                pAttachmentNumber, pUserObjectId);
 
-            return DownloadMediaFile(strURL, pLogin, pPassword, pLocalWavFilePath);
+            return DownloadMediaFile(strUrl, pLogin, pPassword, pLocalWavFilePath);
 
         }
 
@@ -1064,12 +940,7 @@ namespace ConnectionCUPIFunctions
         {
 
             WebCallResult res = new WebCallResult();
-            string strResponse;
-            HttpWebRequest webReq;
-            Stream sourceStream;
-            HttpWebResponse response;
             byte[] buffer = new byte[4097];
-            int blockSize;
 
 
             //ensure that only one thread at a time is in the web request/response section at a time
@@ -1087,18 +958,19 @@ namespace ConnectionCUPIFunctions
                 try
                 {
                     //create a web request to the URL   
-                    webReq = (HttpWebRequest)WebRequest.Create(pFullUrl);
+                    HttpWebRequest webReq = (HttpWebRequest)WebRequest.Create(pFullUrl);
 
                     webReq.Credentials = new NetworkCredential(pLogin, pPassword);
                     webReq.KeepAlive = false;
-                    response = (HttpWebResponse)webReq.GetResponse();
-                    sourceStream = response.GetResponseStream();
+                    HttpWebResponse response = (HttpWebResponse)webReq.GetResponse();
+                    Stream sourceStream = response.GetResponseStream();
 
                     //SourceStream has no ReadAll, so we must read data block-by-block   
 
                     //file stream to store wave file to
                     using (FileStream tempStream = File.Create(pLocalWavFilePath))
                     {
+                        int blockSize;
                         do
                         {
                             if (sourceStream != null)
@@ -1121,9 +993,9 @@ namespace ConnectionCUPIFunctions
                     HttpWebResponse webResp = (HttpWebResponse)webReq.GetResponse();
 
                     //Now, read the response (the string), and output it.
-                    Stream answer;
-                    answer = webResp.GetResponseStream();
+                    Stream answer = webResp.GetResponseStream();
 
+                    string strResponse;
                     if (answer != null)
                     {
                         StreamReader myReader = new StreamReader(answer);
@@ -1197,9 +1069,6 @@ namespace ConnectionCUPIFunctions
         {
             WebCallResult res = new WebCallResult();
             byte[] buffer;
-            string strURL;
-            string strResponse;
-            BinaryReader binReader;
             FileStream streamTemp = null;
 
             res.Success = false;
@@ -1227,7 +1096,7 @@ namespace ConnectionCUPIFunctions
             try
             {
                 streamTemp = File.Open(pLocalWavFilePath, FileMode.Open);
-                binReader = new BinaryReader(streamTemp);
+                BinaryReader binReader = new BinaryReader(streamTemp);
                 buffer = new byte[Convert.ToInt32(binReader.BaseStream.Length) + 1];
                 binReader.Read(buffer, 0, buffer.Length);
             }
@@ -1247,12 +1116,12 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            strURL = pFullResourcePath;
+            string strUrl = pFullResourcePath;
 
             //large try block here - many of these web calls can fail - wrapping them all individually is a bit much.
             try
             {
-                HttpWebRequest webReq = (HttpWebRequest)WebRequest.Create(strURL);
+                HttpWebRequest webReq = (HttpWebRequest)WebRequest.Create(strUrl);
 
                 webReq.Method = "PUT";
                 webReq.ContentLength = buffer.Length;
@@ -1278,8 +1147,8 @@ namespace ConnectionCUPIFunctions
                 HttpWebResponse webResp = (HttpWebResponse)webReq.GetResponse();
 
                 //Now, read the response (the string), and output it.
-                Stream answer;
-                answer = webResp.GetResponseStream();
+                Stream answer = webResp.GetResponseStream();
+                string strResponse;
                 if (answer != null)
                 {
                     StreamReader myReader = new StreamReader(answer);
@@ -1312,12 +1181,12 @@ namespace ConnectionCUPIFunctions
             {
                 //CUPI will return additional information about the error reason in teh ResponseText tucked into the exception's Resonse object
                 //here - this only applies if the WebException thrown is a protocol error which in most cases it will be.
-                if (ex.Status == WebExceptionStatus.ProtocolError)
+                if (ex.Status == WebExceptionStatus.ProtocolError && ex.Response !=null)
                 {
                     //fill out the return structure with as much detail as we call for the calling client to use to figure out what went wrong.
                     res.ErrorText = ((HttpWebResponse) ex.Response).StatusDescription;
                     res.ResponseText = GetResponseText(ex.Response as HttpWebResponse);
-                    res.XMLElement = GetXElementFromString(res.ResponseText);
+                    res.XmlElement = GetXElementFromString(res.ResponseText);
                     res.StatusDescription = ((HttpWebResponse) ex.Response).StatusDescription;
                     res.StatusCode = (int) ((HttpWebResponse) ex.Response).StatusCode;
                     AddToOutputConsole("**** Error encountered ****", Color.Red);
@@ -1384,7 +1253,7 @@ namespace ConnectionCUPIFunctions
 
             string uri = "https://" + pServerName + "/vmrest/mailbox/broadcastmessages";
 
-            res.URL = uri;
+            res.Url = uri;
             res.Method = "POST";
 
             if (string.IsNullOrEmpty(pServerName) | string.IsNullOrEmpty(pLogin)| string.IsNullOrEmpty(pPassword) | string.IsNullOrEmpty(pWavFilePath))
@@ -1418,14 +1287,14 @@ namespace ConnectionCUPIFunctions
             string strStartDate = string.Format("{0} {1}", pStartDate.ToString("yyyy-MM-dd"),pStartTime.ToString("HH:mm:ss.000"));
             string strEndDate = string.Format("{0} {1}", pEndDate.ToString("yyyy-MM-dd"), pEndTime.ToString("HH:mm:ss.000"));
 
-            string partXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            string partXml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
                     + "<BroadcastMessage>"
                         + "<StartDate>" + strStartDate + "</StartDate>" //2011-07-09 14:23:10.000
                         + "<EndDate>" + strEndDate + "</EndDate>" //2011-08-07 14:22:42.000
                         + "<StreamFile>" + Path.GetFileName(pWavFilePath) + "</StreamFile>"  //44.wav
                     + "</BroadcastMessage>";
 
-            res.RequestBody = partXML;
+            res.RequestBody = partXml;
 
             res.Misc += "Start date=" + pStartDate + Environment.NewLine;
             res.Misc += "End date=" + pEndDate + Environment.NewLine;
@@ -1440,7 +1309,7 @@ namespace ConnectionCUPIFunctions
             sb.Append("application/xml");
             sb.Append("\r\n");
             sb.Append("\r\n");
-            sb.Append(partXML);
+            sb.Append(partXml);
             sb.Append("\r\n");
             sb.Append("\r\n");
             sb.Append("--" + boundary);
@@ -1458,21 +1327,18 @@ namespace ConnectionCUPIFunctions
             // Build the trailing boundary string as a byte array
             // ensuring the boundary appears on a line by itself
             byte[] boundaryBytes = Encoding.ASCII.GetBytes("\r\n--" + boundary + "--\r\n");
-            Stream memStream=null;
-            FileStream fileStream=null;
-            Stream requestStream = null;
-            
+
             try
             {
-                fileStream = new FileStream(pWavFilePath,FileMode.Open, FileAccess.Read);
+                FileStream fileStream=new FileStream(pWavFilePath,FileMode.Open, FileAccess.Read);
 
-                memStream = new System.IO.MemoryStream();
+                Stream memStream=new MemoryStream();
 
                 memStream.Write(postHeaderBytes, 0, postHeaderBytes.Length);
 
                 //add the wav file onto the HTTP 1KB at a time.
                 byte[] buffer = new byte[1024];
-                int bytesRead = 0;
+                int bytesRead;
                 while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) != 0)
                 {
                     memStream.Write(buffer, 0, bytesRead);
@@ -1483,7 +1349,7 @@ namespace ConnectionCUPIFunctions
                 fileStream.Close();
 
                 webrequest.ContentLength = memStream.Length;
-                requestStream = webrequest.GetRequestStream();
+                Stream requestStream = webrequest.GetRequestStream();
 
                 memStream.Position = 0;
                 byte[] tempBuffer = new byte[memStream.Length];
@@ -1495,18 +1361,17 @@ namespace ConnectionCUPIFunctions
             }
             catch (Exception ex)
             {
-                res.ErrorText = "Failed processing wav file in UploadBroadcastMessage on HTTPFunctions.cs: " + ex.ToString();
+                res.ErrorText = "Failed processing wav file in UploadBroadcastMessage on HTTPFunctions.cs: " + ex;
                 return res;
             }
-
-            HttpWebResponse response = null;
 
             //this can fail or many reasons but the details sent back from the server are not very helpful unfortunately.
             try
             {
+                HttpWebResponse response;
                 using (response = webrequest.GetResponse() as HttpWebResponse)
                 {
-                    if (webrequest.HaveResponse == true && response != null)
+                    if (webrequest.HaveResponse && response != null)
                     {
                         var reader = new StreamReader(response.GetResponseStream());
                         res.StatusCode = (int) response.StatusCode;
@@ -1519,12 +1384,12 @@ namespace ConnectionCUPIFunctions
             {
                 //CUMI will return additional information about the error reason in teh ResponseText tucked into the exception's Resonse object
                 //here - this only applies if the WebException thrown is a protocol error which in most cases it will be.
-                if (ex.Status == WebExceptionStatus.ProtocolError)
+                if (ex.Status == WebExceptionStatus.ProtocolError && ex.Response !=null)
                 {
                     //fill out the return structure with as much detail as we call for the calling client to use to figure out what went wrong.
                     res.ErrorText = ((HttpWebResponse)ex.Response).StatusDescription;
                     res.ResponseText = GetResponseText(ex.Response as HttpWebResponse);
-                    res.XMLElement = GetXElementFromString(res.ResponseText);
+                    res.XmlElement = GetXElementFromString(res.ResponseText);
                     res.StatusDescription = ((HttpWebResponse)ex.Response).StatusDescription;
                     res.StatusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
                     
@@ -1539,7 +1404,7 @@ namespace ConnectionCUPIFunctions
             }
             catch(Exception ex)
             {
-                res.ErrorText = string.Format("Failed sending broadcast message to {0}, error={1}", pServerName,ex.ToString());
+                res.ErrorText = string.Format("Failed sending broadcast message to {0}, error={1}", pServerName,ex);
             }
             return res;
         }
@@ -1573,11 +1438,16 @@ namespace ConnectionCUPIFunctions
         /// <param name="pRecipientJsonString">
         /// Json format string for the list of recipients to address the message to - any number of TO, CC or BCC address types can be included.
         /// </param>
+        /// <param name="pUriConstruction">
+        /// Defaults to blank - if passed it is used for the URI instead of assuming a construction for new message upload.  Used for 
+        /// forwards and replies.
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResult class with details about the call and results recieved back from the server.
         /// </returns>
         public static WebCallResult UploadVoiceMessageWav(string pServerName, string pLogin, string pPassword, string pPathToLocalWav,
-            string pMessageDetailsJsonString, string pSenderUserObjectId,string pSessionCookie, string pRecipientJsonString)
+            string pMessageDetailsJsonString, string pSenderUserObjectId,string pSessionCookie, string pRecipientJsonString, 
+            string pUriConstruction="")
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -1597,9 +1467,18 @@ namespace ConnectionCUPIFunctions
             //Disable Expect 100-Continue in header
             ServicePointManager.Expect100Continue = false;
 
-            string uri = "https://" + pServerName + "/vmrest/messages?userobjectid=" + pSenderUserObjectId;
+            //if a fully qualified uri is passed in, use it - otherwise assume new message upload uri construction
+            string uri;
+            if (string.IsNullOrEmpty(pUriConstruction))
+            {
+                uri= "https://" + pServerName + "/vmrest/messages?userobjectid=" + pSenderUserObjectId;
+            }
+            else
+            {
+                uri = pUriConstruction;
+            }
 
-            res.URL = uri;
+            res.Url = uri;
             res.Method = "POST";
 
             res.Misc = "WAV file to upload=" + pPathToLocalWav + Environment.NewLine;
@@ -1653,12 +1532,12 @@ namespace ConnectionCUPIFunctions
             try
             {
                 FileStream fileStream = new FileStream(pPathToLocalWav, FileMode.Open, FileAccess.Read);
-                Stream memStream = new System.IO.MemoryStream();
+                Stream memStream = new MemoryStream();
                 memStream.Write(postHeaderBytes, 0, postHeaderBytes.Length);
 
                 //add the wav file onto the HTTP 1KB at a time.
                 byte[] buffer = new byte[1024];
-                int bytesRead = 0;
+                int bytesRead;
                 while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) != 0)
                 {
                     memStream.Write(buffer, 0, bytesRead);
@@ -1681,17 +1560,17 @@ namespace ConnectionCUPIFunctions
             }
             catch (Exception ex)
             {
-                res.ErrorText = "Failed processing wav file in UploadVoiceMessageWav on HTTPFunctions.cs: " + ex.ToString();
+                res.ErrorText = "Failed processing wav file in UploadVoiceMessageWav on HTTPFunctions.cs: " + ex;
                 return res;
             }
 
             //this can fail or many reasons but the details sent back from the server are not very helpful unfortunately.
             try
             {
-                HttpWebResponse response = null;
+                HttpWebResponse response;
                 using (response = webrequest.GetResponse() as HttpWebResponse)
                 {
-                    if (webrequest.HaveResponse == true && response != null)
+                    if (webrequest.HaveResponse && response != null)
                     {
                         var reader = new StreamReader(response.GetResponseStream());
                         res.StatusCode = (int)response.StatusCode;
@@ -1704,12 +1583,12 @@ namespace ConnectionCUPIFunctions
             {
                 //CUMI will return additional information about the error reason in the ResponseText tucked into the exception's Resonse object
                 //here - this only applies if the WebException thrown is a protocol error which in most cases it will be.
-                if (ex.Status == WebExceptionStatus.ProtocolError)
+                if (ex.Status == WebExceptionStatus.ProtocolError && ex.Response !=null)
                 {
                     //fill out the return structure with as much detail as we call for the calling client to use to figure out what went wrong.
                     res.ErrorText = ((HttpWebResponse)ex.Response).StatusDescription;
                     res.ResponseText = GetResponseText(ex.Response as HttpWebResponse);
-                    res.XMLElement = GetXElementFromString(res.ResponseText);
+                    res.XmlElement = GetXElementFromString(res.ResponseText);
                     res.StatusDescription = ((HttpWebResponse)ex.Response).StatusDescription;
                     res.StatusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
 
@@ -1724,7 +1603,7 @@ namespace ConnectionCUPIFunctions
             }
             catch (Exception ex)
             {
-                res.ErrorText = string.Format("Failed sending message to {0}, error={1}", pServerName, ex.ToString());
+                res.ErrorText = string.Format("Failed sending message to {0}, error={1}", pServerName, ex);
             }
             return res;
         }
@@ -1776,7 +1655,7 @@ namespace ConnectionCUPIFunctions
 
             string uri = "https://" + pServerName + "/vmrest/messages?userobjectid=" + pSenderUserObjectId;
 
-            res.URL = uri;
+            res.Url = uri;
             res.Method = "POST";
 
             res.Misc = "Resource ID to assign as message=" + pResourceId + Environment.NewLine;
@@ -1838,7 +1717,7 @@ namespace ConnectionCUPIFunctions
 
             try
             {
-                Stream memStream = new System.IO.MemoryStream();
+                Stream memStream = new MemoryStream();
                 memStream.Write(postHeaderBytes, 0, postHeaderBytes.Length);
 
                 webrequest.ContentLength = memStream.Length;
@@ -1854,17 +1733,17 @@ namespace ConnectionCUPIFunctions
             }
             catch (Exception ex)
             {
-                res.ErrorText = "Failed processing wav file in UploadVoiceMessageResourceId on HTTPFunctions.cs: " + ex.ToString();
+                res.ErrorText = "Failed processing wav file in UploadVoiceMessageResourceId on HTTPFunctions.cs: " + ex;
                 return res;
             }
 
             //this can fail or many reasons but the details sent back from the server are not very helpful unfortunately.
             try
             {
-                HttpWebResponse response = null;
+                HttpWebResponse response;
                 using (response = webrequest.GetResponse() as HttpWebResponse)
                 {
-                    if (webrequest.HaveResponse == true && response != null)
+                    if (webrequest.HaveResponse && response != null)
                     {
                         var reader = new StreamReader(response.GetResponseStream());
                         res.StatusCode = (int)response.StatusCode;
@@ -1877,12 +1756,12 @@ namespace ConnectionCUPIFunctions
             {
                 //CUMI will return additional information about the error reason in the ResponseText tucked into the exception's Resonse object
                 //here - this only applies if the WebException thrown is a protocol error which in most cases it will be.
-                if (ex.Status == WebExceptionStatus.ProtocolError)
+                if (ex.Status == WebExceptionStatus.ProtocolError && ex.Response !=null)
                 {
                     //fill out the return structure with as much detail as we call for the calling client to use to figure out what went wrong.
                     res.ErrorText = ((HttpWebResponse)ex.Response).StatusDescription;
                     res.ResponseText = GetResponseText(ex.Response as HttpWebResponse);
-                    res.XMLElement = GetXElementFromString(res.ResponseText);
+                    res.XmlElement = GetXElementFromString(res.ResponseText);
                     res.StatusDescription = ((HttpWebResponse)ex.Response).StatusDescription;
                     res.StatusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
 
@@ -1897,7 +1776,7 @@ namespace ConnectionCUPIFunctions
             }
             catch (Exception ex)
             {
-                res.ErrorText = string.Format("Failed sending message to {0}, error={1}", pServerName, ex.ToString());
+                res.ErrorText = string.Format("Failed sending message to {0}, error={1}", pServerName, ex);
             }
             return res;
         }
@@ -1931,10 +1810,8 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public static WebCallResult UploadWavFileToStreamLibrary(string pServerName, string pLogin, string pPassword, string pLocalWavFilePath, out string pConnectionStreamFileName)
         {
-            WebCallResult res;
-
             //first, get a temporary stream file name from Connection to use
-            res = GetTemporaryStreamFileName(pServerName,pLogin,pPassword,out pConnectionStreamFileName);
+            WebCallResult res = GetTemporaryStreamFileName(pServerName,pLogin,pPassword,out pConnectionStreamFileName);
             
             if (res.Success==false)
             {
@@ -1973,12 +1850,11 @@ namespace ConnectionCUPIFunctions
         /// <returns></returns>
         private static WebCallResult GetTemporaryStreamFileName(string pServerName, string pLogin, string pPassword,out string pTempFileName)
         {
-            WebCallResult res;
             pTempFileName = "";
 
             string strUrl = string.Format("https://{0}:8443/vmrest/voicefiles", pServerName);
             
-            res=GetCUPIResponse(strUrl, MethodType.POST, pLogin, pPassword, "");
+            WebCallResult res = GetCupiResponse(strUrl, MethodType.Post, pLogin, pPassword, "");
 
             if (res.Success==false)
             {

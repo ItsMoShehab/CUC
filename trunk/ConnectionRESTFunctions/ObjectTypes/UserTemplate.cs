@@ -1842,7 +1842,7 @@ namespace ConnectionCUPIFunctions
         {
             if (_pin == null)
             {
-                _pin = new Credential(this._homeServer, this.ObjectId, CredentialType.PIN);
+                _pin = new Credential(this._homeServer, this.ObjectId, CredentialType.Pin);
             }
 
             return _pin;
@@ -1985,7 +1985,7 @@ namespace ConnectionCUPIFunctions
             strUrl = string.Format("{0}usertemplates/{1}", _homeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
@@ -1993,15 +1993,15 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
-            foreach (XElement oElement in res.XMLElement.Elements())
+            foreach (XElement oElement in res.XmlElement.Elements())
             {
-                _homeServer.SafeXMLFetch(this, oElement);
+                _homeServer.SafeXmlFetch(this, oElement);
             }
 
             //the above fetch will set the proeprties as "changed", need to clear them out here
@@ -2022,14 +2022,14 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}usertemplates?query=(Alias is {1})", _homeServer.BaseUrl, pAlias);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
 
             if (res.Success == false)
             {
                 return "";
             }
 
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return "";
@@ -2037,7 +2037,7 @@ namespace ConnectionCUPIFunctions
 
             //fish out just the ObjectId value here
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            foreach (XElement oElement in res.XMLElement.Elements().Elements())
+            foreach (XElement oElement in res.XmlElement.Elements().Elements())
             {
                 if (oElement.Name == "ObjectId")
                 {
@@ -2366,7 +2366,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = pConnectionServer.BaseUrl + "usertemplates";
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -2374,13 +2374,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
-            pUserTemplates = GetUserTemplatesFromXElements(pConnectionServer, res.XMLElement);
+            pUserTemplates = GetUserTemplatesFromXElements(pConnectionServer, res.XmlElement);
             return res;
         }
 
@@ -2410,7 +2410,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlUserTemplate.Elements())
                 {
                     //adds the XML property to the object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oUserTemplate, oElement);
+                    pConnectionServer.SafeXmlFetch(oUserTemplate, oElement);
                 }
 
                 oUserTemplate.ClearPendingChanges();
@@ -2488,7 +2488,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</UserTemplate>";
 
-            res = HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "usertemplates?templateAlias=" + pTemplateAlias, MethodType.POST, pConnectionServer, strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "usertemplates?templateAlias=" + pTemplateAlias, MethodType.Post, pConnectionServer, strBody);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -2579,7 +2579,7 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "usertemplates/" + pObjectId, MethodType.DELETE, pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "usertemplates/" + pObjectId, MethodType.Delete, pConnectionServer, "");
         }
 
         /// <summary>
@@ -2630,7 +2630,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</UserTemplate>";
 
-            return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "usertemplates/" + pObjectId, MethodType.PUT, pConnectionServer, strBody);
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "usertemplates/" + pObjectId, MethodType.Put, pConnectionServer, strBody);
         }
 
         /// <summary>
@@ -2686,7 +2686,7 @@ namespace ConnectionCUPIFunctions
             return ResetUserTemplateCredential(pConnectionServer,
                                         pObjectId,
                                         pNewPin,
-                                        CredentialType.PIN,
+                                        CredentialType.Pin,
                                         pLocked,
                                         pMustChange,
                                         pCantChange,
@@ -2800,7 +2800,7 @@ namespace ConnectionCUPIFunctions
             //the only difference between setting a PIN vs. Password is the URL path used.  The body/property names are identical
             //otherwise.
             string strUrl;
-            if (pCredentialType == CredentialType.PIN)
+            if (pCredentialType == CredentialType.Pin)
             {
                 strUrl = pConnectionServer.BaseUrl + "usertemplates/" + pObjectId + "/credential/pin";
             }
@@ -2809,7 +2809,7 @@ namespace ConnectionCUPIFunctions
                 strUrl = pConnectionServer.BaseUrl + "usertemplates/" + pObjectId + "/credential/password";
             }
 
-            return HTTPFunctions.GetCUPIResponse(strUrl, MethodType.PUT, pConnectionServer, strBody);
+            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.Put, pConnectionServer, strBody);
         }
 
 

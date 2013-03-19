@@ -158,19 +158,19 @@ namespace ConnectionCUPIFunctionsTest
 
             //failure paths for delete device calls
             res = NotificationDevice.DeleteNotificationDevice(null, _user.ObjectId, "aaa",
-                                                  NotificationDeviceTypes.SMS);
+                                                  NotificationDeviceTypes.Sms);
             Assert.IsFalse(res.Success, "Null Connection Server object should fail");
 
             res = NotificationDevice.DeleteNotificationDevice(_connectionServer, "", "aaa",
-                                                  NotificationDeviceTypes.SMS);
+                                                  NotificationDeviceTypes.Sms);
             Assert.IsFalse(res.Success, "Empty UserobjectID should fail");
 
             res = NotificationDevice.DeleteNotificationDevice(_connectionServer, _user.ObjectId, "aaa",
-                                                  NotificationDeviceTypes.SMS);
+                                                  NotificationDeviceTypes.Sms);
             Assert.IsFalse(res.Success, "Invalid device objectID should fail");
 
             res = NotificationDevice.DeleteNotificationDevice(_connectionServer, _user.ObjectId, "",
-                                                  NotificationDeviceTypes.SMS);
+                                                  NotificationDeviceTypes.Sms);
             Assert.IsFalse(res.Success, "Empty device objectID should fail");
 
         }

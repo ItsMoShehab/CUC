@@ -313,7 +313,7 @@ namespace ConnectionCUPIFunctions
                 }
 
                 //issue the command to the CUPI interface
-                res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
                 if (res.Success == false)
                 {
@@ -321,13 +321,13 @@ namespace ConnectionCUPIFunctions
                 }
 
                 //if the call was successful the XML elements can be empty, that's legal
-                if (res.XMLElement == null || res.XMLElement.HasElements == false)
+                if (res.XmlElement == null || res.XmlElement.HasElements == false)
                 {
                     pInterviewHandlers = new List<InterviewHandler>();
                     return res;
                 }
 
-                pInterviewHandlers = GetInterviewHandlersFromXElements(pConnectionServer, res.XMLElement);
+                pInterviewHandlers = GetInterviewHandlersFromXElements(pConnectionServer, res.XmlElement);
                 return res;
 
             }
@@ -424,7 +424,7 @@ namespace ConnectionCUPIFunctions
                     foreach (XElement oElement in oXmlHandler.Elements())
                     {
                         //adds the XML property to the InterviewHandler object if the proeprty name is found as a property on the object.
-                        pConnectionServer.SafeXMLFetch(oHandler, oElement);
+                        pConnectionServer.SafeXmlFetch(oHandler, oElement);
                     }
 
                     //add the fully populated InterviewHandler object to the list that will be returned to the calling routine.
@@ -534,7 +534,7 @@ namespace ConnectionCUPIFunctions
 
                 strBody += "</InterviewHandler>";
 
-                res = HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "handlers/interviewhandlers",MethodType.POST,pConnectionServer,strBody);
+                res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/interviewhandlers",MethodType.Post,pConnectionServer,strBody);
 
                 //fetch the objectId of the newly created object off the return
                 if (res.Success)
@@ -597,8 +597,8 @@ namespace ConnectionCUPIFunctions
 
                 strBody += "</InterviewHandler>";
 
-                return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "handlers/interviewhandlers/" + pObjectId,
-                                                MethodType.PUT,pConnectionServer,strBody);
+                return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/interviewhandlers/" + pObjectId,
+                                                MethodType.Put,pConnectionServer,strBody);
             }
 
 
@@ -623,8 +623,8 @@ namespace ConnectionCUPIFunctions
                     return res;
                 }
 
-                return HTTPFunctions.GetCUPIResponse(pConnectionServer.BaseUrl + "handlers/interviewhandlers/" + pObjectId,
-                                                MethodType.DELETE,pConnectionServer, "");
+                return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/interviewhandlers/" + pObjectId,
+                                                MethodType.Delete,pConnectionServer, "");
             }
 
 
@@ -717,7 +717,7 @@ namespace ConnectionCUPIFunctions
                 }
 
                 //issue the command to the CUPI interface
-                res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, HomeServer, "");
+                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, HomeServer, "");
 
                 if (res.Success == false)
                 {
@@ -725,16 +725,16 @@ namespace ConnectionCUPIFunctions
                 }
 
                 //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-                if (res.XMLElement == null || res.XMLElement.HasElements == false)
+                if (res.XmlElement == null || res.XmlElement.HasElements == false)
                 {
                     res.Success = false;
                     return res;
                 }
 
                 //populate this call handler instance with data from the XML fetch
-                foreach (XElement oElement in res.XMLElement.Elements().Elements())
+                foreach (XElement oElement in res.XmlElement.Elements().Elements())
                 {
-                    HomeServer.SafeXMLFetch(this, oElement);
+                    HomeServer.SafeXmlFetch(this, oElement);
                 }
 
                 return res;

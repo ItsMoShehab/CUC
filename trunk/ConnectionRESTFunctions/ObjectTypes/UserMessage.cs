@@ -11,6 +11,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -26,6 +27,12 @@ namespace ConnectionCUPIFunctions
     /// Messages can be sorted by one of: newest, oldest or urgent first.  there is no compound sorting supported in CUMI
     /// </summary>
     public enum MessageSortOrder { NEWEST_FIRST, OLDEST_FIRST, URGENT_FIRST }
+
+    /// <summary>
+    /// Each mailbox has 3 folders that can be accessed, this enum is provided to allow easy selection of which folder 
+    /// messages are being pulled from
+    /// </summary>
+    public enum MailboxFolder {Inbox, DeletedItems, SentItems}
 
     /// <summary>
     /// All the message filter flags supported by CUMI - you can "stack" read, dispatch, type and priority flags.  If you mis
@@ -49,6 +56,16 @@ namespace ConnectionCUPIFunctions
     }
 
     /// <summary>
+    /// Sensitivity settings for a message
+    /// </summary>
+    public enum SensitivityType { Normal, Personal, Private, Confidential }
+    
+    /// <summary>
+    /// message priority (only normal and urgent supported here)
+    /// </summary>
+    public enum PriorityType { Normal, Urgent }
+
+    /// <summary>
     /// Messages can be addressed with multiple targets - each target can be listed as a TO, BCC or CC recipient
     /// </summary>
     public enum MessageAddressType {TO, CC, BCC}
@@ -59,8 +76,8 @@ namespace ConnectionCUPIFunctions
     /// </summary>
     public class MessageAddress
     {
-        public MessageAddressType AddressType;
-        public string SmtpAddress;
+        public MessageAddressType AddressType { get; set; }
+        public string SmtpAddress { get; set; }
     }
 
     /// <summary>
@@ -68,9 +85,39 @@ namespace ConnectionCUPIFunctions
     /// </summary>
     public class CallerId
     {
-        public string CallerNumber;
-        public string CallerName;
-        public string CallerImage;
+        public string CallerNumber { get; set; }
+        public string CallerName { get; set; }
+        public string CallerImage { get; set; }
+    }
+
+    /// <summary>
+    /// Address data is used for both the "From" and the list of recipients for a message
+    /// </summary>
+    public class AddressData
+    {
+        public string DisplayName { get; set; }
+        public string SmtpAddress { get; set; }
+        public string DtmfAccessId { get; set; }
+    }
+
+    /// <summary>
+    /// There must be at least one but can be many recipients - it can be a TO, CC or a BCC recipient type.
+    /// </summary>
+    public class Recipient
+    {
+        public string Type { get; set; }
+        public AddressData Address { get; set; }
+    }
+
+    /// <summary>
+    /// Messages can contain no attachments or many - a typical voice mail contains at least one WAV attachment.
+    /// </summary>
+    public class Attachment
+    {
+        public string URI { get; set; }
+        public string contentType { get; set; }
+        public string contentTransferEncoding { get; set; }
+        public string contentDisposition { get; set; }
     }
 
     #endregion
@@ -86,13 +133,37 @@ namespace ConnectionCUPIFunctions
     {
         #region Properties and Fields
 
-        public enum SensitivityType {Normal, Personal, Private, Confidential}
-        public enum PriorityType { Normal, Urgent }
-
+        //owner of the mailbox that the message is pulled from
         public string UserObjectId { get; private set; }
 
         //properties returned from the server for each message found in the user's inbox.
-        public string Subject { get; set; }
+        
+        //subject and read are the only two items that can be updated on a message
+        private string _subject;
+        public string Subject
+        {
+            get { return _subject; }
+            set
+            {
+                _changedPropList.Add("Subject", value);
+                _subject = value;
+            }
+        }
+
+        //you can update the read status on any inbox message - for deleted or sent items this change
+        //will fail
+        private bool _read;
+        public bool Read
+        {
+            get { return _read; }
+            set
+            {
+                _changedPropList.Add("Read", value);
+                _read = value;
+            }
+        }
+
+        //read only properties at the top level
         public string MsgId { get; set; }
         public bool Dispatch { get; set; }
         public bool Secure { get; set; }
@@ -111,21 +182,23 @@ namespace ConnectionCUPIFunctions
         public bool IsDeleted { get; set; }
         public bool IsSent { get; set; }
         public bool IsFuture { get; set; }
-        public bool Read { get; set; }
+
+        //public string CallerId_CallerNumber { get; set; }
+        //public string CallerId_CallerName { get; set; }
 
         //complex types
-        //FROM
-        public string From_DisplayName { get; set; }
-        public string From_SmtpAddress { get; set; }
+        public AddressData From { get; set; }
+        public List<Recipient> Recipients { get; set; }
 
-        //CallerId
-        public string CallerId_CallerNumber { get; set; }
-        public string CallerId_CallerName { get; set; }
+        public CallerId CallerId { get; set; }
 
-
+        public List<Attachment> Attachments { get; set; }
 
         //reference to the ConnectionServer object used to create this user instance.
         internal ConnectionServer HomeServer;
+
+        //used to keep track of whic properties have been updated
+        private readonly ConnectionPropertyList _changedPropList;
 
         #endregion
 
@@ -159,6 +232,25 @@ namespace ConnectionCUPIFunctions
             UserObjectId = pUserObjectId;
             HomeServer = pConnectionServer;
             MsgId = pMessageObjectId;
+
+            //make an instanced of the changed prop list to keep track of updated properties on this object
+            _changedPropList = new ConnectionPropertyList();
+
+            //create instances for the complex data types
+            From = new AddressData();
+            Recipients = new List<Recipient>();
+            Attachments = new List<Attachment>();
+            CallerId = new CallerId();
+
+            if (!string.IsNullOrEmpty(pMessageObjectId))
+            {
+                //fill in full message details
+                WebCallResult res = GetMessage(pMessageObjectId, pUserObjectId);
+                if (res.Success==false)
+                {
+                    throw new Exception("Failed to find message using messageObjectId:"+res);
+                }
+            }
         }
 
         #endregion
@@ -166,11 +258,14 @@ namespace ConnectionCUPIFunctions
 
         #region Static Methods
 
+
         /// <summary>
         /// CUPI stores time as milliseconds from 1970/1/1 - convert it using the span here.
         /// Time is stored in GMT - convert it to local time as necessary
         /// </summary>
-        /// <param name="pMilliseconds">millisecond offset from 1970 for a date</param>
+        /// <param name="pMilliseconds">
+        /// millisecond offset from 1970 for a date
+        /// </param>
         /// <param name="pConvertToLocal">
         /// convert to local time of the PC we're running on.  Defaults to true otherwise
         /// the value is return as UTC
@@ -216,7 +311,6 @@ namespace ConnectionCUPIFunctions
             }
 
             return (long)Math.Floor(diff.TotalMilliseconds);
-
         }
 
 
@@ -305,7 +399,7 @@ namespace ConnectionCUPIFunctions
             //if the user wants to try and rip the WAV file into PCM 16/8/1 first before uploading the file, do that conversion here
             if (pConvertToPcmFirst)
             {
-                string strConvertedWavFilePath = pConnectionServer.ConvertWAVFileToPCM(pPathToLocalWavFile);
+                string strConvertedWavFilePath = pConnectionServer.ConvertWavFileToPcm(pPathToLocalWavFile);
 
                 if (string.IsNullOrEmpty(strConvertedWavFilePath))
                 {
@@ -329,7 +423,7 @@ namespace ConnectionCUPIFunctions
             string strRecipientJsonString = ConstructRecipientJsonStringFromRecipients(pRecipients);
             string strMessageJsonString = ConstructMessageDetailsJsonString(pSubject, pUrgent, pSecure, pPrivate,
                                                                             pDispatch, pReadReceipt, pDeliveryReceipt,
-                                                                            true, false, pCallerId);
+                                                                            false, pCallerId);
 
             //upload message
             return HTTPFunctions.UploadVoiceMessageWav(pConnectionServer.ServerName, pConnectionServer.LoginName,
@@ -403,7 +497,7 @@ namespace ConnectionCUPIFunctions
             string strRecipientJsonString = ConstructRecipientJsonStringFromRecipients(pRecipients);
             string strMessageJsonString = ConstructMessageDetailsJsonString(pSubject, pUrgent, pSecure, pPrivate,
                                                                             pDispatch, pReadReceipt, pDeliveryReceipt,
-                                                                            true, false, pCallerId);
+                                                                            false, pCallerId);
 
             //upload message
             return HTTPFunctions.UploadVoiceMessageResourceId(pConnectionServer.ServerName, pConnectionServer.LoginName,
@@ -485,8 +579,10 @@ namespace ConnectionCUPIFunctions
         /// <param name="pDeliveryReceipt">
         /// True flas the message for delivery receipt.
         /// </param>
-        /// <param name="pFromSub"></param>
-        /// <param name="pFromVmIntSub"></param>
+        /// <param name="pFromSub">
+        /// Pass as true to indicate it should be left as a sub to sub message, false to be an outside caller message.
+        /// NOTE: as of 9.1 this does not work - all messages left via CUMI are left as sub to sub messages.
+        /// </param>
         /// <param name="pCallerId">
         /// Instance of the caller ID class that can set the ANI (phone number), caller name and/or the URI to a graphic file
         /// on a web server (used for HTTP notification device scenarios).
@@ -497,7 +593,7 @@ namespace ConnectionCUPIFunctions
         private static string ConstructMessageDetailsJsonString(string pSubject, 
                                                                bool pUrgent,bool pSecure, bool pPrivate, bool pDispatch,
                                                                bool pReadReceipt, bool pDeliveryReceipt,
-                                                               bool pFromSub, bool pFromVmIntSub, CallerId pCallerId)
+                                                               bool pFromSub, CallerId pCallerId)
         {
             //subject is required
             StringBuilder sb = new StringBuilder("{\"Subject\":\""+pSubject+"\"");
@@ -512,15 +608,6 @@ namespace ConnectionCUPIFunctions
             else
             {
                 sb.Append(",\"FromSub\":\"false\"");
-            }
-
-            if (pFromVmIntSub)
-            {
-                sb.Append(",\"FromVmIntSub\":\"true\"");
-            }
-            else
-            {
-                sb.Append(",\"FromVmIntSub\":\"false\"");
             }
 
             //tack on properties if they deviate from the default
@@ -579,7 +666,63 @@ namespace ConnectionCUPIFunctions
             return sb.ToString();
         }
 
-        
+
+        /// <summary>
+        /// Gets the total attachment count for the message passed into it.  Typically the count is 1 for most voice mail messages, 
+        /// however if it's a multiply forwarded message it can be higher.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// The connection server that houses the message being examined
+        /// </param>
+        /// <param name="pMessageObjectId">
+        /// The GUID identifier for the message that contains the attachments to be counted.
+        /// </param>
+        /// <param name="pUserObjectId">
+        /// The GUID identifier for the user that owns the message that is being examined.
+        /// </param>
+        /// <param name="pAttachmentCount">
+        /// Returns the total attachment count for the message
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult GetMessageAttachmentCount(ConnectionServer pConnectionServer, string pMessageObjectId, string pUserObjectId,
+                                                              out int pAttachmentCount)
+        {
+            WebCallResult res = new WebCallResult();
+            res.Success = false;
+            pAttachmentCount = 0;
+
+            if (pConnectionServer == null)
+            {
+                res.ErrorText = "Null ConnectionServer referenced passed to GetMessageAttachmentCount";
+                return res;
+            }
+
+            //we need to get the message details which includes an attachment collection
+            string strUrl = string.Format(@"{0}messages/{1}?userobjectid={2}", pConnectionServer.BaseUrl, pMessageObjectId, pUserObjectId);
+
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+
+            if (res.Success == false)
+            {
+                return res;
+            }
+
+            //count up all the elements that have a local name of "Attachments"- usually there's only one but there can potentially be 
+            //many if it's a multiply forwarded message with lots of intros or the like.
+            foreach (XElement oElement in res.XmlElement.Elements())
+            {
+                if (oElement.Name.LocalName == "Attachments")
+                {
+                    pAttachmentCount = oElement.Elements().Count();
+                    return res;
+                }
+            }
+
+            return res;
+        }
+
         /// <summary>
         /// Gets the list of all messages for a particular user and passes them back as a generic list of UserMessage class objects.
         /// </summary>
@@ -604,12 +747,16 @@ namespace ConnectionCUPIFunctions
         ///  </param>
         /// <param name="pFilter"> 
         /// Can be filtered by message type, read status priority and dispatch flag.  Multiple filters can be combined.
-        /// </param>        /// <returns>
+        /// </param>
+        /// <param name="pFolder">
+        /// Defaults to the inbox folder but messages can be fetched from the deleted or sent items folders as well.
+        /// </param>
+        /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
         public static WebCallResult GetMessages(ConnectionServer pConnectionServer, string pUserObjectId, out List<UserMessage> pMessage,
             int pPageNumber = 1, int pMessagesPerPage = 10, MessageSortOrder pSortOrder = MessageSortOrder.NEWEST_FIRST, 
-            MessageFilter pFilter = MessageFilter.None)
+            MessageFilter pFilter = MessageFilter.None, MailboxFolder pFolder = MailboxFolder.Inbox)
         {
             WebCallResult res;
             pMessage = new List<UserMessage>();
@@ -690,7 +837,20 @@ namespace ConnectionCUPIFunctions
             }
 
             StringBuilder strUrl = new StringBuilder(pConnectionServer.BaseUrl);
-            strUrl.Append("mailbox/folders/inbox/messages?userobjectid=");
+
+            if (pFolder == MailboxFolder.DeletedItems)
+            {
+                strUrl.Append("mailbox/folders/deleted/messages?userobjectid=");
+            }
+            else if (pFolder == MailboxFolder.Inbox)
+            {
+                strUrl.Append("mailbox/folders/inbox/messages?userobjectid=");
+            }
+            else
+            {
+                strUrl.Append("mailbox/folders/sent/messages?userobjectid=");
+            }
+
             strUrl.Append(pUserObjectId);
 
             //tack on all the params that apply here
@@ -703,7 +863,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl.ToString(), MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl.ToString(), MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -712,14 +872,14 @@ namespace ConnectionCUPIFunctions
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
             //don't return failure here - there may be no messages and that's ok.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = true;
                 return res;
             }
 
             //convert the XML into properties on the class instance.
-            pMessage = GetMessagesFromXElements(pConnectionServer,pUserObjectId, res.XMLElement);
+            pMessage = GetMessagesFromXElements(pConnectionServer,pUserObjectId, res.XmlElement);
             return res;
         }
 
@@ -759,13 +919,22 @@ namespace ConnectionCUPIFunctions
             //typed objects.
             foreach (var oXmlMessage in messages)
             {
-                UserMessage oMessage = new UserMessage(pConnetionServer, pUserObjectId);
+                UserMessage oMessage = null;// = new UserMessage(pConnetionServer, pUserObjectId);
                 foreach (XElement oElement in oXmlMessage.Elements())
                 {
-                    //adds the XML property to the InterviewHandler object if the proeprty name is found as a property on the object.
-                    pConnetionServer.SafeXMLFetch(oMessage, oElement);
+                    if (oElement.Name == "MsgId")
+                    {
+                        //create a new full instance using the messageID and move on to the next one
+                        oMessage = new UserMessage(pConnetionServer, pUserObjectId,oElement.Value);
+                        break;
+                    }
                 }
 
+                if (oMessage == null)
+                {
+                    if (Debugger.IsAttached) Debugger.Break();
+                    continue;
+                }
                 //add the fully populated message object to the list that will be returned to the calling routine.
                 oMessageList.Add(oMessage);
             }
@@ -829,82 +998,119 @@ namespace ConnectionCUPIFunctions
 
 
         /// <summary>
-        /// Gets the total attachment count for the message passed into it.  Typically the count is 1 for most voice mail messages, 
-        /// however if it's a multiply forwarded message it can be higher.
+        /// Delete a message from a user's mailstore (any folder).  
         /// </summary>
         /// <param name="pConnectionServer">
-        /// The connection server that houses the message being examined
+        /// Connection server that houses the message to be deleted.
         /// </param>
         /// <param name="pMessageObjectId">
-        /// The GUID identifier for the message that contains the attachments to be counted.
+        /// The unique identifier of the message to be removed.
         /// </param>
         /// <param name="pUserObjectId">
-        /// The GUID identifier for the user that owns the message that is being examined.
+        /// The unique ID of the user that owns the message to be deleted.
         /// </param>
-        /// <param name="pAttachmentCount">
-        /// Returns the total attachment count for the message
+        /// <param name="pHardDelete">
+        /// If passed as true the message is hard deleted which means it is not copied to the deleted items folder even if the
+        /// users COS is configured to do that.  By default this is passed as false.
         /// </param>
         /// <returns>
-        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// Instance of teh WebCallResult class with details of the call and the results.
         /// </returns>
-        public static WebCallResult GetMessageAttachmentCount(ConnectionServer pConnectionServer, string pMessageObjectId,string pUserObjectId, 
-                                                              out int pAttachmentCount)
+        public static WebCallResult DeleteMessage(ConnectionServer pConnectionServer, string pMessageObjectId,
+                                                  string pUserObjectId, bool pHardDelete=false)
         {
-            WebCallResult res = new WebCallResult();
-            res.Success = false;
-            pAttachmentCount = 0;
-
-            if (pConnectionServer == null)
+            string strHardDelete;
+            if (pHardDelete)
             {
-                res.ErrorText = "Null ConnectionServer referenced passed to GetMessageAttachmentCount";
-                return res;
+                strHardDelete = "harddelete=true";
+            }
+            else
+            {
+                strHardDelete = "harddelete=false";
             }
 
-            //we need to get the message details which includes an attachment collection
-            string strUrl = string.Format(@"{0}messages/{1}?userobjectid={2}", pConnectionServer.BaseUrl,pMessageObjectId, pUserObjectId);
+            string strUrl = string.Format("{0}messages/{1}?userobjectid={2}&{3}",pConnectionServer.BaseUrl,pMessageObjectId,
+                pUserObjectId,strHardDelete);
 
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
-
-            if (res.Success==false)
-            {
-                return res;
-            }
-
-            //count up all the elements that have a local name of "Attachments"- usually there's only one but there can potentially be 
-            //many if it's a multiply forwarded message with lots of intros or the like.
-            foreach (XElement oElement in res.XMLElement.Elements())
-            {
-                if (oElement.Name.LocalName == "Attachments")
-                {
-                    pAttachmentCount = oElement.Elements().Count();
-                    return res;
-                }
-            }
-
-            return res;
+            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.Delete, pConnectionServer,"");
         }
 
 
-        //public WebCallResult SendMessageStreamId(ConnectionServer pConnectionServer, string pStreamId,string pSenderUserObjectId,
-        //                                         bool pIsUrgent, bool pIsSecure, bool pIsPrivate,params string[] pToAddresses)
-        //{
-        //    WebCallResult res = new WebCallResult();
-        //    //TODO
 
-        //    return res;
-        //}
+        /// <summary>
+        /// Allows one or more properties on a message to be udpated.  Only the read and subject values can currently be updated on 
+        /// a message.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Reference to the ConnectionServer object that points to the home server where the handler is homed.
+        /// </param>
+        /// <param name="pMessageObjectId">
+        /// Unique identifier to message to be updated
+        /// </param>
+        /// <param name="pUserObjectId">
+        /// Unique identifier for user that owns the message
+        /// </param>
+        /// <param name="pPropList">
+        /// List ConnectionProperty pairs that identify a message property name and a new value for that property to apply
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUMI interface.
+        /// </returns>
+        public static WebCallResult UpdateUserMessage(ConnectionServer pConnectionServer, string pMessageObjectId, 
+            string pUserObjectId,ConnectionPropertyList pPropList)
+        {
+            WebCallResult res = new WebCallResult();
+            res.Success = false;
+
+            if (pConnectionServer == null)
+            {
+                res.ErrorText = "Null ConnectionServer referenced passed to UpdateUserMessage";
+                return res;
+            }
+
+            //the update command takes a body in the request, construct it based on the name/value pair of properties passed in.  
+            //at lest one such pair needs to be present
+            if (pPropList.Count < 1)
+            {
+                res.ErrorText = "empty property list passed to UpdateUserMessage";
+                return res;
+            }
+
+            string strBody = "<Message>";
+
+            foreach (var oPair in pPropList)
+            {
+                //tack on the property value pair with appropriate tags
+                strBody += string.Format("<{0}>{1}</{0}>", oPair.PropertyName, oPair.PropertyValue);
+            }
+
+            strBody += "</Message>";
+
+            string strUrl = string.Format("{0}messages/{1}?userobjectid={2}", pConnectionServer.BaseUrl,pMessageObjectId, pUserObjectId);
+
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Put, pConnectionServer, strBody);
+        }
 
 
-        //public WebCallResult SendMessageLocalWavFile(ConnectionServer pConnectionServer, string pStreamId, string pSenderUserObjectId,
-        //                                 bool pIsUrgent, bool pIsSecure, bool pIsPrivate, params string[] pToAddresses)
-        //{
-        //    WebCallResult res = new WebCallResult();
+        /// <summary>
+        /// Clear the entire contents of the deleted items folder (i.e. perform a hard delete on all soft deleted items).
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Connection server housing the user's mailbox to clear deleted items for.
+        /// </param>
+        /// <param name="pUserObjectId">
+        /// Unique identifier for the user that owns the mailbox.
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUMI interface.
+        /// </returns>
+        public static WebCallResult ClearDeletedItemsFolder(ConnectionServer pConnectionServer, string pUserObjectId)
+        {
+            string strUrl = string.Format("{0}mailbox/folders/deleted/messages?method=empty&userobjectid={1}",
+                                          pConnectionServer.BaseUrl, pUserObjectId);
 
-
-        //    return res;
-        //}
-
-
+            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.Post, pConnectionServer, "");
+        }
 
         #endregion
 
@@ -917,7 +1123,7 @@ namespace ConnectionCUPIFunctions
         /// <returns></returns>
         public override string ToString()
         {
-            return string.Format("From: {1}, At:{2} Subject:{0}", Subject, From_SmtpAddress, ConvertFromMillisecondsToTimeDate(ArrivalTime));
+            return string.Format("From: {1}, At:{2} Subject:{0}", Subject, From.SmtpAddress, ConvertFromMillisecondsToTimeDate(ArrivalTime));
         }
 
 
@@ -946,22 +1152,85 @@ namespace ConnectionCUPIFunctions
             return strBuilder.ToString();
         }
 
-        /// <summary>
-        /// Gets the total attachment count for the message passed into it.  Typically the count is 1 for most voice mail messages, 
-        /// however if it's a multiply forwarded message it can be higher.
-        /// </summary>
-        /// <param name="pAttachmentCount">
-        /// Returns the total attachment count for the message
-        /// </param>
-        /// <returns>
-        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
-        /// </returns>
-        public WebCallResult GetMessageAttachmentCount(out int pAttachmentCount)
+
+        //Fills the current instance of Message in with properties fetched from the server.
+        private WebCallResult GetMessage(string pMessageObjectId, string pUserObjectId)
         {
-            return GetMessageAttachmentCount(this.HomeServer, this.MsgId, this.UserObjectId, out pAttachmentCount);
+            string strUrl = string.Format("{0}messages/{1}/?userobjectid={2}", HomeServer.BaseUrl, pMessageObjectId, pUserObjectId);
+
+            //issue the command to the CUMI interface
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, HomeServer, "");
+
+            if (res.Success == false)
+            {
+                return res;
+            }
+
+            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            {
+                res.Success = false;
+                return res;
+            }
+
+            //populate this Message instance with data from the XML fetch
+            foreach (XElement oElement in res.XmlElement.Elements())
+            {
+                //deal with the complex types seperately - these are objects that require a "new" operation 
+                //for collection management for each item in a list
+
+                //recipients
+                if (oElement.Name == "Recipients")
+                {
+                    foreach (XElement oRecipientElement in oElement.Elements())
+                    {
+                        Recipient oRecipient = new Recipient();
+                        oRecipient.Address = new AddressData();
+
+                        foreach (XElement oSubElement in oRecipientElement.Elements())
+                        {
+
+                            if (oSubElement.Name == "Address")
+                            {
+                                foreach (XElement oSubSubElement in oSubElement.Elements())
+                                {
+                                    HomeServer.SafeXmlFetch(oRecipient.Address, oSubSubElement);
+                                }
+                                continue;
+                            }
+                            HomeServer.SafeXmlFetch(oRecipient, oSubElement);
+                        }
+
+                        this.Recipients.Add(oRecipient);
+                    }
+                    
+                    continue;
+                }
+
+                //attachments 
+                if (oElement.Name == "Attachments")
+                {
+                    foreach (XElement oSubElement in oElement.Elements())
+                    {
+                        Attachment oAttachment = new Attachment();
+                        foreach (XElement oSubSubElement in oSubElement.Elements())
+                        {
+                            HomeServer.SafeXmlFetch(oAttachment, oSubSubElement);
+                        }
+
+                        this.Attachments.Add(oAttachment);
+                    }
+                    continue;
+                }
+
+                //toplevel
+                HomeServer.SafeXmlFetch(this, oElement);
+            }
+
+            return res;
         }
 
-
+        
         /// <summary>
         /// Gets the media associated with a message attachment - typically this is a WAV file for a voice mail message and there is only
         /// one attachment.
@@ -979,6 +1248,286 @@ namespace ConnectionCUPIFunctions
         {
             return GetMessageAttachment(this.HomeServer, pTargetLocalFilePath, this.MsgId, this.UserObjectId, pAttachmentNumber);
         }
+
+
+        /// <summary>
+        /// Delete a message from a user's mailstore (any folder).  
+        /// </summary>
+        /// <param name="pHardDelete">
+        /// If passed as true the message is hard deleted which means it is not copied to the deleted items folder even if the
+        /// users COS is configured to do that.  By default this is passed as false.
+        /// </param>
+        /// <returns>
+        /// Instance of teh WebCallResult class with details of the call and the results.
+        /// </returns>
+        public WebCallResult Delete(bool pHardDelete=false)
+        {
+            return DeleteMessage(HomeServer, this.MsgId, UserObjectId, pHardDelete);
+        }
+
+
+        /// <summary>
+        /// Allows one or more properties on a message to be udpated.  Currently only the subject and read status can be updated on
+        /// a standing message.
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public WebCallResult Update()
+        {
+            WebCallResult res;
+
+            //check if the message intance has any pending changes, if not return false with an appropriate error message
+            if (!_changedPropList.Any())
+            {
+                res = new WebCallResult();
+                res.Success = false;
+                res.ErrorText = string.Format("Update called but there are no pending changes for user message {0}", this);
+                return res;
+            }
+
+            //just call the static method with the info from the instance 
+            res = UpdateUserMessage(HomeServer, MsgId,UserObjectId,  _changedPropList);
+
+            //if the update went through then clear the changed properties list.
+            if (res.Success)
+            {
+                _changedPropList.Clear();
+            }
+
+            return res;
+        }
+
+        /// <summary>
+        /// Forward an existing message to one or more recipients - optionally include a wav file reference as an introduction.
+        /// </summary>
+        /// <param name="pSubject">
+        /// Subject text for the message
+        /// </param>
+        /// <param name="pPathToWavFile">
+        /// full path to the WAV file on the local hard drive to include as the voice mail attachment.
+        /// </param>
+        /// <param name="pUrgent">
+        /// Pass as true to send message with urgent flag.
+        /// </param>
+        /// <param name="pPrivate">
+        /// Pass as true to send message with personal flag (cannot be forwarded)
+        /// </param>
+        /// <param name="pSecure">
+        /// Pass as true to set the message as secure (cannot be downloaded from server).
+        /// </param>
+        /// <param name="pReadReceipt">
+        /// Pass as true to flag for read receipt.
+        /// </param>
+        /// <param name="pDeliveryReceipt">
+        /// PAss as true to flag for delivery receipt.
+        /// </param>
+        /// <param name="pConvertToPcmFirst">
+        /// If passed as TRUE the routine will attempt to convert the target WAV file into raw PCM first before uploading it to the 
+        /// Connection server.  A failure to convert will be considered a failed upload attempt and false is returned.  
+        /// </param>
+        /// <param name="pRecipients">
+        /// One or more instances of the MessageAddress class defining the type and address of a message recipient.  As many recipients as you
+        /// like can be included but at least one must be provided or the call fails.
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResult class with the details of the call and results from the server.
+        /// </returns>
+        public WebCallResult ForwardMessageLocalWav(string pSubject, bool pUrgent, bool pPrivate, bool pSecure, bool pReadReceipt,
+            bool pDeliveryReceipt,string pPathToWavFile, bool pConvertToPcmFirst, params MessageAddress[] pRecipients)
+        {
+            WebCallResult res = new WebCallResult();
+            res.Success = false;
+
+            if (!pRecipients.Any())
+            {
+                res.ErrorText = "No recipients included in ForwardMessageLocalWav call";
+                return res;
+            }
+
+            //if a wav file is passed make sure it's valid
+            if (!string.IsNullOrEmpty(pPathToWavFile) && !File.Exists(pPathToWavFile))
+            {
+                res.ErrorText = "Invalid wav file path provided to ForwardMEssageLocalWav:" + pPathToWavFile;
+                return res;
+            }
+
+            //if the user wants to try and rip the WAV file into PCM 16/8/1 first before uploading the file, do that conversion here
+            if (pConvertToPcmFirst)
+            {
+                string strConvertedWavFilePath = HomeServer.ConvertWavFileToPcm(pPathToWavFile);
+
+                if (string.IsNullOrEmpty(strConvertedWavFilePath))
+                {
+                    res.ErrorText = "Failed converting WAV file into PCM format in CreateMessageLocalWav.";
+                    return res;
+                }
+
+                if (File.Exists(strConvertedWavFilePath) == false)
+                {
+                    res.ErrorText = "Converted PCM WAV file path not found in CreateMessageLocalWav: " + strConvertedWavFilePath;
+                    return res;
+                }
+
+                //point the wav file we'll be uploading to the newly converted G711 WAV format file.
+                pPathToWavFile = strConvertedWavFilePath;
+            }
+
+
+            //construct the JSON strings needed in the message details and the message addressing sections of the upload message 
+            //API call for Connection
+            string strRecipientJsonString = ConstructRecipientJsonStringFromRecipients(pRecipients);
+            string strMessageJsonString = ConstructMessageDetailsJsonString(pSubject, pUrgent, pSecure, pPrivate,
+                                                                            false, pReadReceipt, pDeliveryReceipt,
+                                                                            true, CallerId);
+
+            string strUri = string.Format("{0}messages/{1}?userobjectid={2}",HomeServer.BaseUrl,
+                MsgId, UserObjectId);
+            
+            //forward message
+            return HTTPFunctions.UploadVoiceMessageWav(HomeServer.ServerName, HomeServer.LoginName,
+                                                    HomeServer.LoginPw, pPathToWavFile, strMessageJsonString,
+                                                    UserObjectId, HomeServer.LastSessionCookie,strRecipientJsonString,
+                                                    strUri);
+        }
+
+
+
+        /// <summary>
+        /// Reply to a message using a voice message constructed from a WAV file on the local hard drive.  This is just
+        /// leaving a new message addressed to the sender of the original voice message - if the pReplyToAll flag is 
+        /// passed as true the message is sent to every SMTP address that was listed as a recipient of the original
+        /// message.
+        /// </summary>
+        /// <param name="pSubject">
+        /// Subject to include.
+        /// </param>
+        /// <param name="pPathToLocalWavFile">
+        /// full path to the WAV file on the local hard drive to include as the voice mail attachment.
+        /// </param>
+        /// <param name="pUrgent">
+        /// Pass as true to send message with urgent flag.
+        /// </param>
+        /// <param name="pPrivate">
+        /// Pass as true to send message with personal flag (cannot be forwarded)
+        /// </param>
+        /// <param name="pSecure">
+        /// Pass as true to set the message as secure (cannot be downloaded from server).
+        /// </param>
+        /// <param name="pReadReceipt">
+        /// Pass as true to flag for read receipt.
+        /// </param>
+        /// <param name="pDeliveryReceipt">
+        /// PAss as true to flag for delivery receipt.
+        /// </param>
+        /// <param name="pConvertToPcmFirst">
+        /// Convert the WAV to raw PCM before uploading.
+        /// </param>
+        /// <param name="pReplyToAll">
+        /// If passed as true all the recipients of the original message are added to the "TO" addressing line for 
+        /// the new message.
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResult class with details of the call and result from the CUMI call.
+        /// </returns>
+         public WebCallResult ReplyWithLocalWav(string pSubject, bool pUrgent, bool pPrivate, bool pSecure,bool pReadReceipt,
+                                                     bool pDeliveryReceipt, string pPathToLocalWavFile,
+                                                     bool pConvertToPcmFirst, bool pReplyToAll=false)
+         {
+             List<MessageAddress> oRecipients = new List<MessageAddress>();
+             MessageAddress oAddress;
+
+             if (pReplyToAll)
+             {
+                 //add all recipients of the message to the list of TO addresses.
+                foreach (var oRecipient in Recipients)
+                {
+                    oAddress = new MessageAddress();
+                    oAddress.AddressType = MessageAddressType.TO;
+                    oAddress.SmtpAddress = oRecipient.Address.SmtpAddress;
+                    oRecipients.Add(oAddress);
+                }
+             }
+             else
+             {
+                 //just add the sender of the message as the recipient
+                 oAddress = new MessageAddress();
+                 oAddress.AddressType = MessageAddressType.TO;
+                 oAddress.SmtpAddress = this.From.SmtpAddress;
+                 oRecipients.Add(oAddress);
+             }
+
+             //send the new message
+             return CreateMessageLocalWav(HomeServer, UserObjectId, pSubject, pPathToLocalWavFile, pUrgent, pPrivate, pSecure,
+                                          false, pReadReceipt,pDeliveryReceipt, CallerId, pConvertToPcmFirst, oRecipients.ToArray());
+         }
+
+
+         /// <summary>
+         /// Reply to a message using a voice message constructed from a WAV file on the local hard drive.  This is just
+         /// leaving a new message addressed to the sender of the original voice message - if the pReplyToAll flag is 
+         /// passed as true the message is sent to every SMTP address that was listed as a recipient of the original
+         /// message.
+         /// </summary>
+         /// <param name="pSubject">
+         /// Subject to include.
+         /// </param>
+         /// <param name="pResourceId">
+         /// Resource Id of the system recording (CUTI interface) to use as the voice message.
+         /// </param>
+         /// <param name="pUrgent">
+         /// Pass as true to send message with urgent flag.
+         /// </param>
+         /// <param name="pPrivate">
+         /// Pass as true to send message with personal flag (cannot be forwarded)
+         /// </param>
+         /// <param name="pSecure">
+         /// Pass as true to set the message as secure (cannot be downloaded from server).
+         /// </param>
+         /// <param name="pReadReceipt">
+         /// Pass as true to flag for read receipt.
+         /// </param>
+         /// <param name="pDeliveryReceipt">
+         /// PAss as true to flag for delivery receipt.
+         /// </param>
+         /// <param name="pReplyToAll">
+         /// If passed as true all the recipients of the original message are added to the "TO" addressing line for 
+         /// the new message.
+         /// </param>
+         /// <returns>
+         /// Instance of the WebCallResult class with details of the call and result from the CUMI call.
+         /// </returns>
+         public WebCallResult ReplayWithResourceId(string pSubject, string pResourceId, bool pUrgent, bool pPrivate,bool pSecure, 
+                                                   bool pReadReceipt, bool pDeliveryReceipt,bool pReplyToAll = false)
+         {
+             List<MessageAddress> oRecipients = new List<MessageAddress>();
+             MessageAddress oAddress;
+
+             if (pReplyToAll)
+             {
+                 //add all recipients of the message to the list of TO addresses.
+                 foreach (var oRecipient in Recipients)
+                 {
+                     oAddress = new MessageAddress();
+                     oAddress.AddressType = MessageAddressType.TO;
+                     oAddress.SmtpAddress = oRecipient.Address.SmtpAddress;
+                     oRecipients.Add(oAddress);
+                 }
+             }
+             else
+             {
+                 //just add the sender of the message as the recipient
+                 oAddress = new MessageAddress();
+                 oAddress.AddressType = MessageAddressType.TO;
+                 oAddress.SmtpAddress = this.From.SmtpAddress;
+                 oRecipients.Add(oAddress);
+             }
+
+             //send the new message
+             return CreateMessageResourceId(HomeServer, UserObjectId, pSubject, pResourceId, pUrgent, pPrivate, pSecure,
+                                          false, pReadReceipt, pDeliveryReceipt, CallerId, oRecipients.ToArray());
+         }
+        
 
         #endregion
     }

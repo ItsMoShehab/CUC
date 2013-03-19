@@ -147,7 +147,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = pConnectionServer.BaseUrl + "cluster";
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCUPIResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
 
             if (res.Success == false)
             {
@@ -155,13 +155,13 @@ namespace ConnectionCUPIFunctions
             }
 
             //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XMLElement == null || res.XMLElement.HasElements == false)
+            if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
                 res.Success = false;
                 return res;
             }
 
-            Servers = GetServersFromXElements(pConnectionServer, res.XMLElement);
+            Servers = GetServersFromXElements(pConnectionServer, res.XmlElement);
             return res;
         }
 
@@ -187,7 +187,7 @@ namespace ConnectionCUPIFunctions
                 foreach (XElement oElement in oXmlServer.Elements())
                 {
                     //adds the XML property to the object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXMLFetch(oServer, oElement);
+                    pConnectionServer.SafeXmlFetch(oServer, oElement);
                 }
 
                 //add the fully populated object to the list that will be returned to the calling routine.
