@@ -1112,6 +1112,61 @@ namespace ConnectionCUPIFunctions
             return HTTPFunctions.GetCupiResponse(strUrl, MethodType.Post, pConnectionServer, "");
         }
 
+
+
+        /// <summary>
+        /// This call allows you to recall a sent message - if you pass the MessageObjectId of a message from the sent items 
+        /// folder, this will recall any unread instance of that message sitting in a recipient's mailbox still.  If the message
+        /// has already been seen/read then it's not removed.  
+        /// This is only available if the sent items retention is set longer than the default of 0 so the sent items folder can
+        /// be accessed.
+        /// NOTE: This is not available without an ES installed to support it - 9.1 will have an ES and it will be availalbe in
+        /// the 10.0 release as well.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Connection server where the user's mailbox asking for a recall is homed.
+        /// </param>
+        /// <param name="pUserObjectId"></param>
+        /// Unique identifier for user asking for a recall
+        /// <param name="pMessageObjectId"></param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUMI interface.
+        /// </returns>
+        public static WebCallResult RecallMessage(ConnectionServer pConnectionServer, string pUserObjectId,
+                                                  string pMessageObjectId)
+        {
+            string strUrl = string.Format("{0}messages/{1}/recall?userobjectid={2}",
+                                          pConnectionServer.BaseUrl, pMessageObjectId, pUserObjectId);
+
+            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.Post, pConnectionServer, "");
+        }
+
+
+        /// <summary>
+        /// A deleted message can be restored to the inbox using this method.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Connection server where the mailbox that houses the message to be restored resides
+        /// </param>
+        /// <param name="pUserObjectId">
+        /// User that owns the mailbox with the deleted message that will be restored to the inbox
+        /// </param>
+        /// <param name="pMessageObjectId">
+        /// Unique identifier for the message to be restored.
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUMI interface.
+        /// </returns>
+        public static WebCallResult RestoreDeletedMessage(ConnectionServer pConnectionServer, string pUserObjectId,
+                                                          string pMessageObjectId)
+        {
+            string strUrl = string.Format("{0}messages/{1}?method=undelete&userobjectid={2}",
+                                          pConnectionServer.BaseUrl, pMessageObjectId, pUserObjectId);
+
+            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.Post, pConnectionServer, "");
+        }
+
+
         #endregion
 
 
@@ -1393,6 +1448,74 @@ namespace ConnectionCUPIFunctions
         }
 
 
+        /// <summary>
+        /// Forward an existing message to one or more recipients - optionally include a wav file reference as an introduction.  The introduction
+        /// can be recorded using CUTI on the server and referenced via a ResourceId provided by the PhoneRecording class.
+        /// </summary>
+        /// <param name="pSubject">
+        /// Subject text for the message
+        /// </param>
+        /// <param name="pResourceId">
+        /// Resource Id of the system recording (CUTI interface) to use as the voice message.
+        /// </param>
+        /// <param name="pUrgent">
+        /// Pass as true to send message with urgent flag.
+        /// </param>
+        /// <param name="pPrivate">
+        /// Pass as true to send message with personal flag (cannot be forwarded)
+        /// </param>
+        /// <param name="pSecure">
+        /// Pass as true to set the message as secure (cannot be downloaded from server).
+        /// </param>
+        /// <param name="pReadReceipt">
+        /// Pass as true to flag for read receipt.
+        /// </param>
+        /// <param name="pDeliveryReceipt">
+        /// PAss as true to flag for delivery receipt.
+        /// </param>
+        /// <param name="pRecipients">
+        /// One or more instances of the MessageAddress class defining the type and address of a message recipient.  As many recipients as you
+        /// like can be included but at least one must be provided or the call fails.
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResult class with the details of the call and results from the server.
+        /// </returns>
+        public WebCallResult ForwardMessageResourceId(string pSubject, bool pUrgent, bool pPrivate, bool pSecure, bool pReadReceipt,
+           bool pDeliveryReceipt, string pResourceId, params MessageAddress[] pRecipients)
+        {
+            WebCallResult res = new WebCallResult();
+            res.Success = false;
+
+            if (!pRecipients.Any())
+            {
+                res.ErrorText = "No recipients included in ForwardMessageLocalWav call";
+                return res;
+            }
+
+            //if a wav file is passed make sure it's valid
+            if (!string.IsNullOrEmpty(pResourceId))
+            {
+                res.ErrorText = "Invalid wav file path provided to ForwardMessageResourceId:" + pResourceId;
+                return res;
+            }
+
+            //construct the JSON strings needed in the message details and the message addressing sections of the upload message 
+            //API call for Connection
+            string strRecipientJsonString = ConstructRecipientJsonStringFromRecipients(pRecipients);
+            string strMessageJsonString = ConstructMessageDetailsJsonString(pSubject, pUrgent, pSecure, pPrivate,
+                                                                            false, pReadReceipt, pDeliveryReceipt,
+                                                                            true, CallerId);
+
+            //use the URI that indicates to forward the message with all other attachments
+            string strUri = string.Format("{0}messages?messageid={1}&userobjectid={2}", HomeServer.BaseUrl,
+                MsgId, UserObjectId);
+
+            //forward message
+            return HTTPFunctions.UploadVoiceMessageResourceId(HomeServer.ServerName, HomeServer.LoginName,
+                                                    HomeServer.LoginPw, pResourceId, strMessageJsonString,
+                                                    UserObjectId, HomeServer.LastSessionCookie, strRecipientJsonString,
+                                                    strUri);
+        }
 
         /// <summary>
         /// Reply to a message using a voice message constructed from a WAV file on the local hard drive.  This is just
@@ -1465,9 +1588,8 @@ namespace ConnectionCUPIFunctions
 
 
          /// <summary>
-         /// Reply to a message using a voice message constructed from a WAV file on the local hard drive.  This is just
-         /// leaving a new message addressed to the sender of the original voice message - if the pReplyToAll flag is 
-         /// passed as true the message is sent to every SMTP address that was listed as a recipient of the original
+         /// Reply to a message using a voice message constructed on the server using the CUTI interface and referencing the resourceId
+         /// generated by that call.  This functionality can be accessed through the PhoneRecording class in the library.
          /// message.
          /// </summary>
          /// <param name="pSubject">
@@ -1498,7 +1620,7 @@ namespace ConnectionCUPIFunctions
          /// <returns>
          /// Instance of the WebCallResult class with details of the call and result from the CUMI call.
          /// </returns>
-         public WebCallResult ReplayWithResourceId(string pSubject, string pResourceId, bool pUrgent, bool pPrivate,bool pSecure, 
+         public WebCallResult ReplyWithResourceId(string pSubject, string pResourceId, bool pUrgent, bool pPrivate,bool pSecure, 
                                                    bool pReadReceipt, bool pDeliveryReceipt,bool pReplyToAll = false)
          {
              List<MessageAddress> oRecipients = new List<MessageAddress>();
@@ -1528,7 +1650,36 @@ namespace ConnectionCUPIFunctions
              return CreateMessageResourceId(HomeServer, UserObjectId, pSubject, pResourceId, pUrgent, pPrivate, pSecure,
                                           false, pReadReceipt, pDeliveryReceipt, CallerId, oRecipients.ToArray());
          }
-        
+
+
+         /// <summary>
+         /// This call allows you to recall a sent message - if you pass the MessageObjectId of a message from the sent items 
+         /// folder, this will recall any unread instance of that message sitting in a recipient's mailbox still.  If the message
+         /// has already been seen/read then it's not removed.  
+         /// This is only available if the sent items retention is set longer than the default of 0 so the sent items folder can
+         /// be accessed.
+         /// NOTE: This is not available without an ES installed to support it - 9.1 will have an ES and it will be availalbe in
+         /// the 10.0 release as well.
+         /// </summary>
+         /// <returns>
+         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUMI interface.
+         /// </returns>
+        public WebCallResult Recall()
+        {
+            return RecallMessage(HomeServer, UserObjectId, MsgId);
+        }
+
+
+        /// <summary>
+        /// A deleted message can be restored to the inbox using this method.
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUMI interface.
+        /// </returns>
+        public WebCallResult Restore()
+        {
+            return RestoreDeletedMessage(HomeServer, UserObjectId, MsgId);
+        }
 
         #endregion
     }
