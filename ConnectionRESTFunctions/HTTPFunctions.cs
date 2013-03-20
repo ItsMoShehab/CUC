@@ -1637,11 +1637,16 @@ namespace ConnectionCUPIFunctions
         /// <param name="pRecipientJsonString">
         /// Json format string for the list of recipients to address the message to - any number of TO, CC or BCC address types can be included.
         /// </param>
+        /// <param name="pUriConstruction">
+        /// Defaults to blank - if passed it is used for the URI instead of assuming a construction for new message upload.  Used for 
+        /// forwards and replies.
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResult class with details about the call and results recieved back from the server.
         /// </returns>
         public static WebCallResult UploadVoiceMessageResourceId(string pServerName, string pLogin, string pPassword, string pResourceId,
-            string pMessageDetailsJsonString, string pSenderUserObjectId, string pSessionCookie, string pRecipientJsonString)
+            string pMessageDetailsJsonString, string pSenderUserObjectId, string pSessionCookie, string pRecipientJsonString,
+             string pUriConstruction = "")
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -1652,7 +1657,16 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string uri = "https://" + pServerName + "/vmrest/messages?userobjectid=" + pSenderUserObjectId;
+            //if a fully qualified uri is passed in, use it - otherwise assume new message upload uri construction
+            string uri;
+            if (string.IsNullOrEmpty(pUriConstruction))
+            {
+                uri = "https://" + pServerName + "/vmrest/messages?userobjectid=" + pSenderUserObjectId;
+            }
+            else
+            {
+                uri = pUriConstruction;
+            }
 
             res.Url = uri;
             res.Method = "POST";

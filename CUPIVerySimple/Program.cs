@@ -62,19 +62,6 @@ namespace CUPIVerySimple
                 return;
             }
 
-            //Fetch the messages for a user - the default for this method is to fetch 
-            //the first page of results 10 at a time if you pass no additional parameters. 
-            List<UserMessage> oMyMessages; 
-            res=UserMessage.GetMessages(connectionServer,oUserTestDude.ObjectId, out oMyMessages); 
-            
-            if (res.Success == false)
-                {
-                    Console.WriteLine("Failed fetching messages:" + res);
-                    Console.ReadLine();
-                    return;
-                } 
-
-
             ////****
             ////play voice messages using the phone as a media device - aka TRAP 
             ////****
