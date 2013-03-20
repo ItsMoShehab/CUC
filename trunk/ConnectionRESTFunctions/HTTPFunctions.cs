@@ -177,7 +177,6 @@ namespace ConnectionCUPIFunctions
 
             //force the output to scroll to the bottom
             RichTextControlToOutputTo.ScrollToCaret();
-
         }
 
 

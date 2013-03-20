@@ -1381,7 +1381,8 @@ namespace ConnectionCUPIFunctions
                                                                             false, pReadReceipt, pDeliveryReceipt,
                                                                             true, CallerId);
 
-            string strUri = string.Format("{0}messages/{1}?userobjectid={2}",HomeServer.BaseUrl,
+            //use the URI that indicates to forward the message with all other attachments
+            string strUri = string.Format("{0}messages?messageid={1}&userobjectid={2}",HomeServer.BaseUrl,
                 MsgId, UserObjectId);
             
             //forward message
