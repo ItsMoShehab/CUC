@@ -233,6 +233,17 @@ namespace ConnectionCUPIFunctions
             }
         }
 
+        private string _city;
+        public string City
+        {
+            get { return _city; }
+            set
+            {
+                ChangedPropList.Add("City", value);
+                _city = value;
+            }
+        }
+
         private string _cosObjectId;
         public string CosObjectId
         {
@@ -246,6 +257,17 @@ namespace ConnectionCUPIFunctions
 
         //can't edit creation time.
         public DateTime CreationTime { get; set; }
+
+        private string _department;
+        public string Department
+        {
+            get { return _department; }
+            set
+            {
+                ChangedPropList.Add("Department", value);
+                _department = value;
+            }
+        }
 
         private string _displayName;
         public string DisplayName
@@ -269,6 +291,17 @@ namespace ConnectionCUPIFunctions
             {
                 _dtmfAccessId = value;
                 ChangedPropList.Add("DtmfAccessId", value);
+            }
+        }
+
+        private string _employeeId;
+        public string EmployeeId
+        {
+            get { return _employeeId; }
+            set
+            {
+                ChangedPropList.Add("EmployeeId", value);
+                _employeeId = value;
             }
         }
 
@@ -2295,16 +2328,7 @@ namespace ConnectionCUPIFunctions
         /// </summary>
         public int CcmIdType { get; private set; }
 
-        private string _city;
-        public string City
-        {
-            get { return _city; }
-            set
-            {
-                ChangedPropList.Add("City", value);
-                _city = value;
-            }
-        }
+  
 
         private string _clientMatterCode;
         /// <summary>
@@ -2506,16 +2530,7 @@ namespace ConnectionCUPIFunctions
             }
         }
 
-        private string _department;
-        public string Department
-        {
-            get { return _department; }
-            set
-            {
-                ChangedPropList.Add("Department", value);
-                _department = value;
-            }
-        }
+    
 
         /// <summary>
         /// The digits corresponding to the numeric keypad mapping on a standard touchtone phone representing the first name followed by the last name of the user. 
@@ -2545,16 +2560,7 @@ namespace ConnectionCUPIFunctions
             }
         }
 
-        private string _employeeId;
-        public string EmployeeId
-        {
-            get { return _employeeId; }
-            set
-            {
-                ChangedPropList.Add("EmployeeId", value);
-                _employeeId = value;
-            }
-        }
+     
 
         private bool _enablePersonalRules;
         /// <summary>
