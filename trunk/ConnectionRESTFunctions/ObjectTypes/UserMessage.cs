@@ -1493,9 +1493,9 @@ namespace ConnectionCUPIFunctions
             }
 
             //if a wav file is passed make sure it's valid
-            if (!string.IsNullOrEmpty(pResourceId))
+            if (string.IsNullOrEmpty(pResourceId))
             {
-                res.ErrorText = "Invalid wav file path provided to ForwardMessageResourceId:" + pResourceId;
+                res.ErrorText = "Invalid resource ID provided to ForwardMessageResourceId:" + pResourceId;
                 return res;
             }
 
