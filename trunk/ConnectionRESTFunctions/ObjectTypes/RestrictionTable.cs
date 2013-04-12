@@ -11,13 +11,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The restriction table class is used only to provide an interface for user to select restriction tables for assignment to COS 
@@ -28,7 +26,7 @@ namespace ConnectionCUPIFunctions
        
         #region Fields and Properties
 
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         public DateTime CreationTime { get; set; }
         public bool DefaultBlocked { get; set; }
@@ -61,7 +59,7 @@ namespace ConnectionCUPIFunctions
 
             if (_restrictionPatterns == null)
             {
-                RestrictionPattern.GetRestrictionPatterns(this._homeServer, this.ObjectId, out _restrictionPatterns);
+                RestrictionPattern.GetRestrictionPatterns(this.HomeServer, this.ObjectId, out _restrictionPatterns);
             }
 
             return _restrictionPatterns;
@@ -92,7 +90,7 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Null ConnectionServer passed to RestrictionTable constructor.");
             }
             
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             //if the user passed in a specific ObjectId or display name then go load that handler up, otherwise just return an empty instance.
             if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pDisplayName))) return;
@@ -110,6 +108,13 @@ namespace ConnectionCUPIFunctions
             
         }
 
+        /// <summary>
+        /// General constructor for Json parsing library
+        /// </summary>
+        public RestrictionTable()
+        {
+            
+        }
 
         #endregion
 
@@ -176,29 +181,25 @@ namespace ConnectionCUPIFunctions
                 }
             }
 
-            string strUrl = string.Format("{0}restrictiontables/{1}", _homeServer.BaseUrl, strObjectId);
+            string strUrl = string.Format("{0}restrictiontables/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
+                JsonConvert.PopulateObject(res.ResponseText, this);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                 res.Success = false;
-                return res;
             }
-
-            //populate this call handler instance with data from the XML fetch
-            foreach (XElement oElement in res.XmlElement.Elements())
-            {
-                _homeServer.SafeXmlFetch(this, oElement);
-            }
-
             return res;
         }
 
@@ -213,27 +214,23 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         private string GetObjectIdFromName(string pName)
         {
-            string strUrl = string.Format("{0}restrictiontables/?query=(DisplayName is {1})", _homeServer.BaseUrl, pName);
+            string strUrl = string.Format("{0}restrictiontables/?query=(DisplayName is {1})", HomeServer.BaseUrl, pName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
-            if (res.Success == false)
+            if (res.Success == false || res.TotalObjectCount ==0)
             {
                 return "";
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
-            {
-                return "";
-            }
+            List<RestrictionTable> oTables = HTTPFunctions.GetObjectsFromJson<RestrictionTable>(res.ResponseText);
 
-            foreach (var oElement in res.XmlElement.Elements().Elements())
+            foreach (var oTable in oTables)
             {
-                if (oElement.Name.ToString().Equals("ObjectId"))
+                if (oTable.DisplayName.Equals(pName, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return oElement.Value;
+                    return oTable.ObjectId;
                 }
             }
 
@@ -255,10 +252,17 @@ namespace ConnectionCUPIFunctions
         /// <param name="pRestrictionTables">
         /// Out parameter that is used to return the list of RestrictionTable objects defined on Connection - there must be at least one.
         /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>        
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetRestrictionTables(ConnectionServer pConnectionServer, out List<RestrictionTable> pRestrictionTables)
+        public static WebCallResult GetRestrictionTables(ConnectionServer pConnectionServer, out List<RestrictionTable> pRestrictionTables, 
+            int pPageNumber = 1, int pRowsPerPage = 20)
         {
             WebCallResult res;
             pRestrictionTables = null;
@@ -270,59 +274,43 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + "restrictiontables";
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "restrictiontables", "pageNumber=" + pPageNumber, 
+                "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements can be empty, that's legal
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that means an error in this case - should always be at least one template
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            {
+                pRestrictionTables = new List<RestrictionTable>();
+                res.Success = false;
+                return res;
+            }
+
+            pRestrictionTables = HTTPFunctions.GetObjectsFromJson<RestrictionTable>(res.ResponseText);
+
+            if (pRestrictionTables == null)
             {
                 pRestrictionTables = new List<RestrictionTable>();
                 return res;
             }
 
-            pRestrictionTables = GetRestrictionTablesFromXElements(pConnectionServer, res.XmlElement);
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pRestrictionTables)
+            {
+                oObject.HomeServer = pConnectionServer;
+            }
+
             return res;
         }
-
-
-        //Helper function to take an XML blob returned from the REST interface for user RT returned and convert it into an generic
-        //list of RestrictionTable class objects.  
-        private static List<RestrictionTable> GetRestrictionTablesFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-
-            List<RestrictionTable> oRtList = new List<RestrictionTable>();
-
-            //Use LINQ to XML to create a list of RT objects in a single statement.
-            var restrictionTable = from e in pXElement.Elements()
-                                where e.Name.LocalName == "RestrictionTable"
-                                select e;
-
-            //for each object returned in the list from the XML, construct a class object using the elements associated with that 
-            //object.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlRt in restrictionTable)
-            {
-                RestrictionTable oRt = new RestrictionTable(pConnectionServer);
-                foreach (XElement oElement in oXmlRt.Elements())
-                {
-                    //adds the XML property to the object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oRt, oElement);
-                }
-
-                //add the fully populated object to the list that will be returned to the calling routine.
-                oRtList.Add(oRt);
-            }
-            
-            return oRtList;
-        }
-
 
         #endregion
 

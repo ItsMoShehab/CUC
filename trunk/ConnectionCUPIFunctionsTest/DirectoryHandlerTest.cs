@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 
 namespace ConnectionCUPIFunctionsTest
@@ -58,7 +58,7 @@ namespace ConnectionCUPIFunctionsTest
 
 
         /// <summary>
-        /// Get first handler in directory using static method call, iterate over it and use the ToString and DumpAllProps
+        /// GET first handler in directory using static method call, iterate over it and use the ToString and DumpAllProps
         /// methods on it.
         /// For Directory handlers there should always be one in a valid Connection installation
         /// </summary>
@@ -123,6 +123,32 @@ namespace ConnectionCUPIFunctionsTest
 
             res = DirectoryHandler.GetDirectoryHandler(out oHandler, _connectionServer, "", "");
             Assert.IsFalse(res.Success, "GetDirectoryHandler should fail if the ObjectId and display name are both blank");
+        }
+
+        [TestMethod]
+        public void AddEditDeleteDirectoryHandler()
+        {
+            //create new list with GUID in the name to ensure uniqueness
+            String strName = "TempHandler_" + Guid.NewGuid().ToString().Replace("-", "");
+
+            DirectoryHandler tempHandler;
+            //use a bogus extension number that's legal but non dialable to avoid conflicts
+            WebCallResult res = DirectoryHandler.AddDirectoryHandler(_connectionServer, strName,false,null, out tempHandler);
+            Assert.IsTrue(res.Success, "Failed creating temporary handler :" + res.ToString());
+
+            //updating without any pending changes should fail
+            res = tempHandler.Update();
+            Assert.IsFalse(res.Success,"Calling update on newly created handler did not fail");
+
+            tempHandler.DisplayName = "New" + Guid.NewGuid().ToString();
+            res = tempHandler.Update();
+            Assert.IsTrue(res.Success,"Updating directory handler failed:"+res);
+
+            res = tempHandler.RefetchDirectoryHandlerData();
+            Assert.IsTrue(res.Success, "Refetching directory handler data failed:" + res);
+
+            res = tempHandler.Delete();
+            Assert.IsTrue(res.Success,"Deleting temp directory handler failed");
         }
     }
 }

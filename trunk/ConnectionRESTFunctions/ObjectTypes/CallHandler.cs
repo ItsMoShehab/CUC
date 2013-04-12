@@ -13,11 +13,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Xml.Linq;
 using System.Reflection;
 using System.IO;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The CallHandler class contains all the properties associated with a Call Handler in Unity Connection that can be fetched via the 
@@ -28,6 +28,15 @@ namespace ConnectionCUPIFunctions
     {
   
         #region Constructors
+
+        /// <summary>
+        /// paramaterless constructor for JSON deseralizing path
+        /// </summary>
+        public CallHandler()
+        {
+            //make an instanced of the changed prop list to keep track of updated properties on this object
+            _changedPropList = new ConnectionPropertyList();
+        }
 
         /// <summary>
         /// Creates a new instance of the CallHandler class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
@@ -49,17 +58,14 @@ namespace ConnectionCUPIFunctions
         /// <param name="pIsUserTemplateHandler">
         /// Primary call handlers for user templates are accessed via a seperate URI
         /// </param>
-        public CallHandler(ConnectionServer pConnectionServer, string pObjectId="",string pDisplayName="", bool pIsUserTemplateHandler=false)
+        public CallHandler(ConnectionServer pConnectionServer, string pObjectId="",string pDisplayName="", bool pIsUserTemplateHandler=false):this()
         {
             if (pConnectionServer == null)
             {
                 throw new ArgumentException("Null ConnectionServer passed to CallHandler constructor.");
             }
 
-            //make an instanced of the changed prop list to keep track of updated properties on this object
-            _changedPropList=new ConnectionPropertyList();
-            
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             //if the user passed in a specific ObjectId or display name then go load that handler up, otherwise just return an empty instance.
             if ((pObjectId.Length == 0) & (pDisplayName.Length==0)) return;
@@ -80,10 +86,10 @@ namespace ConnectionCUPIFunctions
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this call handler instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         //used to keep track of whic properties have been updated
-        private ConnectionPropertyList _changedPropList;
+        private readonly ConnectionPropertyList _changedPropList;
 
 
         private int _afterMessageAction;
@@ -214,6 +220,7 @@ namespace ConnectionCUPIFunctions
         }
 
         //you cannot change the IsPrimary flag for a handler 
+        [JsonProperty]
         public bool IsPrimary { get; private set; }
 
         //you cannot change the is template setting via CUPI
@@ -259,6 +266,7 @@ namespace ConnectionCUPIFunctions
         }
 
         //you cannot edit the ObjectId value
+        [JsonProperty]
         public string ObjectId { get; private set; }
 
         private int _oneKeyDelay;
@@ -433,6 +441,7 @@ namespace ConnectionCUPIFunctions
         }
         
         //voice name needs to be edited via a special interface
+        [JsonProperty]
         public string VoiceName { get;  private set; }
 
         //items that are NULL by default but get fetched on the fly when referenced
@@ -480,7 +489,7 @@ namespace ConnectionCUPIFunctions
         {
             if (_scheduleSet == null)
             {
-                _scheduleSet = new ScheduleSet(_homeServer,ScheduleSetObjectId);
+                _scheduleSet = new ScheduleSet(HomeServer,ScheduleSetObjectId);
             }
             return _scheduleSet;
         }
@@ -490,6 +499,40 @@ namespace ConnectionCUPIFunctions
 
         #region Static Methods
 
+        /// <summary>
+        /// This function allows for a GET of handlers from Connection via HTTP using a simple paging scheme.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Reference to the ConnectionServer object that points to the home server where the handlers are being fetched from.
+        /// </param>
+        /// <param name="pCallHandlers">
+        /// The list of handlers returned from the CUPI call (if any) is returned as a generic list of CallHAndler class instances via this out param.  
+        /// If no handlers are  found NULL is returned for this parameter.
+        /// </param>
+        /// <param name="pPageNumber">
+        /// page number to fetch (0 means just get count, first page is 1)
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// How many handlers to fetch at one time - defaults to 10
+        /// </param>
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
+        /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(FirstName startswith a)" in
+        /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult GetCallHandlers(ConnectionServer pConnectionServer,out List<CallHandler> pCallHandlers,
+            int pPageNumber = 1, int pRowsPerPage = 10, params string[] pClauses)
+        {
+            //tack on the paging items to the parameters list
+            var temp = pClauses.ToList();
+            temp.Add("pageNumber=" + pPageNumber);
+            temp.Add("rowsPerPage=" + pRowsPerPage);
+
+            return GetCallHandlers(pConnectionServer, out pCallHandlers,temp.ToArray());
+        }
 
         /// <summary>
         /// This function allows for a GET of handlers from Connection via HTTP - it allows for passing any number of additional clauses  
@@ -528,52 +571,42 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + "handlers/callhandlers";
-
-            //the spaces get "escaped out" in the HTTPFunctions class call at a lower level, don't worry about it here.
-            //Tack on all the search/query/page clauses here if any are passed in.  If an empty string is passed in account
-            //for it here.
-            for (int iCounter = 0; iCounter < pClauses.Length; iCounter++)
-            {
-                if (pClauses[iCounter].Length == 0)
-                {
-                    continue;
-                }
-
-                //if it's the first param seperate the clause from the URL with a ?, otherwise append compound clauses 
-                //seperated by &
-                if (iCounter == 0)
-                {
-                    strUrl += "?";
-                }
-                else
-                {
-                    strUrl += "&";
-                }
-                strUrl += pClauses[iCounter];
-            }
+            string strUrl= HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "handlers/callhandlers", pClauses);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
             //if this is empty that does not mean an error - return true here along with an empty list.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
                 pCallHandlers = new List<CallHandler>();
                 return res;
             }
 
-            pCallHandlers = GetCallHandlersFromXElements(pConnectionServer, res.XmlElement);
+            pCallHandlers = HTTPFunctions.GetObjectsFromJson<CallHandler>(res.ResponseText);
+
+            if (pCallHandlers == null)
+            {
+                pCallHandlers = new List<CallHandler>();
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oHandler in pCallHandlers)
+            {
+                oHandler.HomeServer = pConnectionServer;
+                oHandler.ClearPendingChanges();
+            }
+
             return res;
-
         }
-
 
         /// <summary>
         /// returns a single CallHandler object from an ObjectId string passed in.
@@ -701,8 +734,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Callhandler>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/callhandlers?templateObjectId=" + pTemplateObjectId, MethodType.Post,
-                                            pConnectionServer,strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/callhandlers?templateObjectId=" + pTemplateObjectId, MethodType.POST,
+                                            pConnectionServer,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -775,7 +808,7 @@ namespace ConnectionCUPIFunctions
 
 
         /// <summary>
-        /// Delete a handler from the Connection directory.
+        /// DELETE a handler from the Connection directory.
         /// </summary>
         /// <param name="pConnectionServer">
         /// Reference to the ConnectionServer object that points to the home server where the handler is homed.
@@ -796,7 +829,7 @@ namespace ConnectionCUPIFunctions
             }
 
             return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/callhandlers/" + pObjectId,
-                                            MethodType.Delete,pConnectionServer, "");
+                                            MethodType.DELETE,pConnectionServer, "");
         }
 
 
@@ -849,46 +882,8 @@ namespace ConnectionCUPIFunctions
             strBody += "</CallHandler>";
 
             return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/callhandlers/" + pObjectId,
-                                            MethodType.Put,pConnectionServer,strBody);
+                                            MethodType.PUT,pConnectionServer,strBody,false);
 
-        }
-
-
-        //Helper function to take an XML blob returned from the REST interface for a handler (or handlers) return and convert it into an generic
-        //list of CallHandler class objects. 
-        private static List<CallHandler> GetCallHandlersFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-            List<CallHandler> oHandlerList = new List<CallHandler>();
-
-            if (pConnectionServer == null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced passed to GetCallHandlersFromXElements");
-            }
-
-            //pull out a set of XMLElements for each CallHandler object returned using the power of LINQ
-            var handlers = from e in pXElement.Elements()
-                        where e.Name.LocalName == "Callhandler"
-                        select e;
-
-            //for each handler returned in the list of handlers from the XML, construct a CallHandler object using the elements associated with that 
-            //handler.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlHandler in handlers)
-            {
-                CallHandler oHandler = new CallHandler(pConnectionServer);
-                foreach (XElement oElement in oXmlHandler.Elements())
-                {
-                    //adds the XML property to the CallHandler object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oHandler, oElement);
-                }
-
-                oHandler.ClearPendingChanges();
-
-                //add the fully populated CallHandler object to the list that will be returned to the calling routine.
-                oHandlerList.Add(oHandler);
-            }
-
-            return oHandlerList;
         }
 
 
@@ -1117,7 +1112,7 @@ namespace ConnectionCUPIFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.Put, pConnectionServer.LoginName,
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.PUT, pConnectionServer.LoginName,
                                                  pConnectionServer.LoginPw, oParams, out oOutput);
 
             return res;
@@ -1189,17 +1184,17 @@ namespace ConnectionCUPIFunctions
                 //have to special case it here.
                 if (pIsUserTemplateHandler)
                 {
-                    strUrl = string.Format("{0}callhandlerprimarytemplates/?query=(ObjectId is {1})", _homeServer.BaseUrl, pObjectId);
+                    strUrl = string.Format("{0}callhandlerprimarytemplates/?query=(ObjectId is {1})", HomeServer.BaseUrl, pObjectId);
                 }
                 else
                 {
-                    strUrl = string.Format("{0}handlers/callhandlers/?query=(ObjectId is {1})", _homeServer.BaseUrl, pObjectId);    
+                    strUrl = string.Format("{0}handlers/callhandlers/?query=(ObjectId is {1})", HomeServer.BaseUrl, pObjectId);    
                 }
                 
             }
             else if (pDisplayName.Length > 0)
             {
-                strUrl = string.Format("{0}handlers/callhandlers/?query=(DisplayName is {1})", _homeServer.BaseUrl, pDisplayName);
+                strUrl = string.Format("{0}handlers/callhandlers/?query=(DisplayName is {1})", HomeServer.BaseUrl, pDisplayName);
             }
             else
             {
@@ -1210,29 +1205,29 @@ namespace ConnectionCUPIFunctions
             }
             
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //chop of the "wrapper" in the JSON response for easy parsing.
+            string strJson = res.ResponseText.TrimToEndOfToken(",\"CallHandler\":").TrimTokenFromEnd("}");
+            
+            try
             {
+                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "Callhandler"), this);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                 res.Success = false;
                 return res;
             }
 
-            //populate this call handler instance with data from the XML fetch
-            foreach (XElement oElement in res.XmlElement.Elements().Elements())
-            {
-                _homeServer.SafeXmlFetch(this, oElement);
-            }
-
             //all the updates above will flip pending changes into the queue - clear that here.
             this.ClearPendingChanges();
-
             return res;
         }
 
@@ -1268,7 +1263,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //just call the static method with the info from the instance 
-            res=UpdateCallHandler(_homeServer, ObjectId, _changedPropList);
+            res=UpdateCallHandler(HomeServer, ObjectId, _changedPropList);
 
             //if the update went through then clear the changed properties list.
             if (res.Success)
@@ -1280,7 +1275,7 @@ namespace ConnectionCUPIFunctions
         }
 
         /// <summary>
-        /// Delete a call handler from the Connection directory.
+        /// DELETE a call handler from the Connection directory.
         /// </summary>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -1288,7 +1283,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult Delete()
         {
             //just call the static method with the info on the instance
-            return DeleteCallHandler(_homeServer, ObjectId);
+            return DeleteCallHandler(HomeServer, ObjectId);
         }
 
 
@@ -1309,7 +1304,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult SetVoiceName(string pSourceLocalFilePath, bool pConvertToPcmFirst = false)
         {
             //just call the static method with the information from the instance
-            return SetCallHandlerVoiceName(_homeServer, pSourceLocalFilePath, ObjectId, pConvertToPcmFirst);
+            return SetCallHandlerVoiceName(HomeServer, pSourceLocalFilePath, ObjectId, pConvertToPcmFirst);
         }
 
         
@@ -1326,7 +1321,7 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public WebCallResult SetVoiceNameToStreamFile(string pStreamFileResourceName)
         {
-            return SetCallHandlerVoiceNameToStreamFile(_homeServer, ObjectId, pStreamFileResourceName);
+            return SetCallHandlerVoiceNameToStreamFile(HomeServer, ObjectId, pStreamFileResourceName);
         }
 
         /// <summary>
@@ -1344,7 +1339,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult GetVoiceName(string pTargetLocalFilePath)
         {
             //just call the static method with the info from the instance of this object
-            return GetCallHandlerVoiceName(_homeServer, pTargetLocalFilePath, ObjectId, VoiceName);
+            return GetCallHandlerVoiceName(HomeServer, pTargetLocalFilePath, ObjectId, VoiceName);
         }
 
 
@@ -1352,7 +1347,7 @@ namespace ConnectionCUPIFunctions
         //properties section and keeps the list of transfer options around once they've been fetched.
         private WebCallResult GetTransferOptions(out List<TransferOption> pTransferOptions)
         {
-            return TransferOption.GetTransferOptions(_homeServer, ObjectId, out pTransferOptions);
+            return TransferOption.GetTransferOptions(HomeServer, ObjectId, out pTransferOptions);
         }
 
         /// <summary>
@@ -1414,7 +1409,7 @@ namespace ConnectionCUPIFunctions
         //helper function used when a call is made to get at the list of menu options for the handler instance
         private WebCallResult GetMenuEntries(out List<MenuEntry> pMenuEntries)
         {
-            return MenuEntry.GetMenuEntries(_homeServer, ObjectId, out pMenuEntries);
+            return MenuEntry.GetMenuEntries(HomeServer, ObjectId, out pMenuEntries);
 
         }
 
@@ -1477,7 +1472,7 @@ namespace ConnectionCUPIFunctions
         //helper function used when a call is made to get at the list of menu options for the handler instance
         private WebCallResult GetGreetings(out List<Greeting> pGreetings)
         {
-            return Greeting.GetGreetings(_homeServer, ObjectId, out pGreetings);
+            return Greeting.GetGreetings(HomeServer, ObjectId, out pGreetings);
         }
 
         /// <summary>

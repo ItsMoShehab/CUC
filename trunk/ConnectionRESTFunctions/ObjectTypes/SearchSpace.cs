@@ -11,12 +11,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     public class SearchSpace
     {
@@ -24,7 +23,7 @@ namespace ConnectionCUPIFunctions
         #region Fields and Properties 
 
         //reference to the ConnectionServer object used to create this instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         public string Description { get; set; }
         public string Name { get; set; }
@@ -72,7 +71,7 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Null ConnectionServer referenced pasted to SearchSpace construtor");
             }
 
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pName))
             {
@@ -85,6 +84,13 @@ namespace ConnectionCUPIFunctions
             {
                 throw new Exception(string.Format("Unable to find search space by objectId={0}, name={1}. Error={2}", pObjectId, pName, res));
             }
+        }
+
+        /// <summary>
+        /// General constructor for Json parsing library
+        /// </summary>
+        public SearchSpace()
+        {
         }
 
         #endregion
@@ -167,30 +173,25 @@ namespace ConnectionCUPIFunctions
                 }
             }
 
-            string strUrl = _homeServer.BaseUrl + "searchspaces/" + strObjectId;
+            string strUrl = HomeServer.BaseUrl + "searchspaces/" + strObjectId;
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
+                JsonConvert.PopulateObject(res.ResponseText, this);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                 res.Success = false;
-                res.ErrorText = "No XML elements returned from search space fetch";
-                return res;
             }
-
-            foreach (var oElement in res.XmlElement.Elements())
-            {
-                _homeServer.SafeXmlFetch(this, oElement);
-            }
-
-            res.Success = true;
             return res;
         }
 
@@ -206,27 +207,23 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         private string GetObjectIdFromName(string pName)
         {
-            string strUrl = _homeServer.BaseUrl + string.Format("searchspaces/?query=(Name is {0})", pName);
+            string strUrl = HomeServer.BaseUrl + string.Format("searchspaces/?query=(Name is {0})", pName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
-            if (res.Success == false)
+            if (res.Success == false || res.TotalObjectCount == 0)
             {
                 return "";
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
-            {
-                return "";
-            }
+            List<SearchSpace> oSearchSpaces = HTTPFunctions.GetObjectsFromJson<SearchSpace>(res.ResponseText);
 
-            foreach (var oElement in res.XmlElement.Elements().Elements())
+            foreach (var oSpace in oSearchSpaces)
             {
-                if (oElement.Name.ToString().Equals("ObjectId"))
+                if (oSpace.Name.Equals(pName, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return oElement.Value;
+                    return oSpace.ObjectId;
                 }
             }
 
@@ -241,7 +238,7 @@ namespace ConnectionCUPIFunctions
         /// <returns></returns>
         private WebCallResult GetPartitions(out List<Partition> pPartitions)
         {
-            return GetPartitions(_homeServer, this.ObjectId, out pPartitions);
+            return GetPartitions(HomeServer, this.ObjectId, out pPartitions);
         }
 
 
@@ -253,7 +250,7 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public WebCallResult Delete()
         {
-            return DeleteSearchSpace(_homeServer, this.ObjectId);
+            return DeleteSearchSpace(HomeServer, this.ObjectId);
         }
 
 
@@ -273,7 +270,7 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public WebCallResult Update(string pName = "", string pDescription = "")
         {
-            return UpdateSearchSpace(_homeServer, this.ObjectId, pName, pDescription);
+            return UpdateSearchSpace(HomeServer, this.ObjectId, pName, pDescription);
         }
 
         /// <summary>
@@ -291,7 +288,7 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public WebCallResult AddSearchSpaceMember(string pPartitionObjectId, int pSortOrder)
         {
-            return AddSearchSpaceMember(this._homeServer, this.ObjectId, pPartitionObjectId,pSortOrder);
+            return AddSearchSpaceMember(this.HomeServer, this.ObjectId, pPartitionObjectId,pSortOrder);
         }
 
         /// <summary>
@@ -305,7 +302,7 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public WebCallResult DeleteSearchSpaceMember(string pPartitionObjectId)
         {
-            return DeleteSearchSpaceMember(this._homeServer, this.ObjectId, pPartitionObjectId);
+            return DeleteSearchSpaceMember(this.HomeServer, this.ObjectId, pPartitionObjectId);
         }
 
         #endregion
@@ -323,10 +320,17 @@ namespace ConnectionCUPIFunctions
         /// <param name="pSearchSpaces">
         /// Out parameter that is used to return the list of SearchSpace objects defined on Connection - there must be at least one.
         /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetSearchSpaces(ConnectionServer pConnectionServer, out List<SearchSpace> pSearchSpaces)
+        public static WebCallResult GetSearchSpaces(ConnectionServer pConnectionServer, out List<SearchSpace> pSearchSpaces, int pPageNumber = 1, 
+            int pRowsPerPage = 20)
         {
             WebCallResult res;
             pSearchSpaces = null;
@@ -338,57 +342,42 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + "searchspaces";
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "searchspaces", "pageNumber=" + pPageNumber, 
+                "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements can be empty
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that means an error in this case - should always be at least one search space
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            {
+                pSearchSpaces = new List<SearchSpace>();
+                res.Success = false;
+                return res;
+            }
+
+            pSearchSpaces = HTTPFunctions.GetObjectsFromJson<SearchSpace>(res.ResponseText);
+
+            if (pSearchSpaces == null)
             {
                 pSearchSpaces = new List<SearchSpace>();
                 return res;
             }
 
-            pSearchSpaces = GetSearchSpacesFromXElements(pConnectionServer, res.XmlElement);
-            return res;
-        }
-
-
-        //Helper function to take an XML blob returned from the REST interface for search spaces returned and convert it into an generic
-        //list of SearchSpace class objects.  
-        private static List<SearchSpace> GetSearchSpacesFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-
-            List<SearchSpace> oSearchSpaceList = new List<SearchSpace>();
-
-            //Use LINQ to XML to create a list of search space objects in a single statement.
-            var searchSpaces = from e in pXElement.Elements()
-                                where e.Name.LocalName == "SearchSpace"
-                                select e;
-
-            //for each object returned in the list from the XML, construct a class object using the elements associated with that 
-            //object.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlSearchSpace in searchSpaces)
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pSearchSpaces)
             {
-                SearchSpace oSearchSpace = new SearchSpace(pConnectionServer);
-                foreach (XElement oElement in oXmlSearchSpace.Elements())
-                {
-                    //adds the XML property to the object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oSearchSpace, oElement);
-                }
-
-                //add the fully populated object to the list that will be returned to the calling routine.
-                oSearchSpaceList.Add(oSearchSpace);
+                oObject.HomeServer = pConnectionServer;
             }
 
-            return oSearchSpaceList;
+            return res;
         }
 
 
@@ -409,52 +398,70 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         private static WebCallResult GetPartitions(ConnectionServer pConnectionServer, string pSearchSpaceObjectId, out List<Partition> pPartitions )
         {
-            WebCallResult res;
             pPartitions= new List<Partition>();
 
             string strUrl = pConnectionServer.BaseUrl + string.Format("searchspaces/{0}/searchspacemembers",pSearchSpaceObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements can be empty
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that means an error in this case - should always be at least one template
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
-                pPartitions= new List<Partition>();
+                pPartitions = new List<Partition>();
                 return res;
             }
 
-            //create partition objects for each partition found in the members and add it to a generic list
+            pPartitions = HTTPFunctions.GetObjectsFromJson<Partition>(res.ResponseText);
 
-            foreach (var oElement in res.XmlElement.Elements())
+            if (pPartitions == null)
             {
-                foreach (var oSubElement in oElement.Elements())
-                {
-                    if (oSubElement.Name.ToString().Equals("PartitionObjectId"))
-                    {
-                        try
-                        {
-                            Partition oNewPartition = new Partition(pConnectionServer, oSubElement.Value);
-                            pPartitions.Add(oNewPartition);
-                            break;
-                        }
-                        catch (Exception ex)
-                        {
-                            res.Success = false;
-                            res.ErrorText = ex.ToString();
-                            return res;
-                        }
-                    }
-                }
+                pPartitions = new List<Partition>();
+                return res;
             }
 
-            res.Success = true;
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pPartitions)
+            {
+                oObject.HomeServer = pConnectionServer;
+            }
+
             return res;
+
+            //create partition objects for each partition found in the members and add it to a generic list
+
+            //foreach (var oElement in res.XmlElement.Elements())
+            //{
+            //    foreach (var oSubElement in oElement.Elements())
+            //    {
+            //        if (oSubElement.Name.ToString().Equals("PartitionObjectId"))
+            //        {
+            //            try
+            //            {
+            //                Partition oNewPartition = new Partition(pConnectionServer, oSubElement.Value);
+            //                pPartitions.Add(oNewPartition);
+            //                break;
+            //            }
+            //            catch (Exception ex)
+            //            {
+            //                res.Success = false;
+            //                res.ErrorText = ex.ToString();
+            //                return res;
+            //            }
+            //        }
+            //    }
+            //}
+
+            //res.Success = true;
+            //return res;
         }
 
 
@@ -562,7 +569,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</SearchSpace>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "searchspaces", MethodType.Post,pConnectionServer,strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "searchspaces", MethodType.POST,pConnectionServer,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -608,7 +615,7 @@ namespace ConnectionCUPIFunctions
             }
 
             return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "searchspaces/" + pSearchSpaceObjectId,
-                                            MethodType.Delete,pConnectionServer, "");
+                                            MethodType.DELETE,pConnectionServer, "");
         }
 
 
@@ -667,7 +674,7 @@ namespace ConnectionCUPIFunctions
             strBody += "</SearchSpace>";
 
             return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "searchspaces/" + pObjectId,
-                                            MethodType.Put,pConnectionServer,strBody);
+                                            MethodType.PUT,pConnectionServer,strBody,false);
 
         }
 
@@ -718,7 +725,7 @@ namespace ConnectionCUPIFunctions
             strBody += "</SearchSpaceMember>";
 
             res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("searchspaces/{0}/searchspacemembers",pSearchSpaceObjectId), 
-                                            MethodType.Post,pConnectionServer,strBody);
+                                            MethodType.POST,pConnectionServer,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -779,7 +786,7 @@ namespace ConnectionCUPIFunctions
 
             return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl +
                                             string.Format("searchspaces/{0}/searchspacemembers/{1}", pSearchSpaceObjectId, strObjectId),
-                                            MethodType.Delete,pConnectionServer,"");
+                                            MethodType.DELETE,pConnectionServer,"");
         }
 
 
@@ -807,28 +814,35 @@ namespace ConnectionCUPIFunctions
                 pConnectionServer.BaseUrl, pSearchSpaceObjectId, pPartitionObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
-            if (res.Success == false)
+            if (res.Success == false || res.TotalObjectCount ==0)
             {
                 return "";
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
-            {
-                return "";
-            }
+            List<SearchSpaceMember> oMembers = HTTPFunctions.GetObjectsFromJson<SearchSpaceMember>(res.ResponseText);
 
-            foreach (var oElement in res.XmlElement.Elements().Elements())
+            foreach (var oMap in oMembers)
             {
-                if (oElement.Name.ToString().Equals("ObjectId"))
+                if (oMap.PartitionObjectId.Equals(pPartitionObjectId, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return oElement.Value;
+                    return oMap.ObjectId;
                 }
             }
 
             return "";
+        }
+
+        /// <summary>
+        /// Mapping class used to fetch partitions associated with a search space (if any)
+        /// </summary>
+        public class SearchSpaceMember
+        {
+            public string ObjectId { get; set; }
+            public string PartitionObjectId { get; set; }
+            public string SearchSpaceObjectId { get; set; }
+            public int SortOrder { get; set; }
         }
 
         #endregion

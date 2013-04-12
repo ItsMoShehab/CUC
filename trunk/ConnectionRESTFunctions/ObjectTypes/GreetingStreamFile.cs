@@ -12,12 +12,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The GreetingStreamFile class contains all the properties related to individual greeting streams associated with greetings in
@@ -29,6 +28,14 @@ namespace ConnectionCUPIFunctions
     {
 
         #region Constructor
+
+        /// <summary>
+        /// default constructor used for JSON parsing
+        /// </summary>
+        public GreetingStreamFile()
+        {
+            
+        }
 
         /// <summary>
         /// Creates a new instance of the GreetingStreamFile class.  Requires you pass a handle to a ConnectionServer object which will be used for 
@@ -62,7 +69,7 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Invalid CallHandlerObjectID passed to GreetingStreamFile constructor.");
             }
 
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             //remember the objectID of the owner of the menu entry as the CUPI interface requires this in the URL construction
             //for operations editing them.
@@ -92,18 +99,20 @@ namespace ConnectionCUPIFunctions
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this Greeting instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         /// <summary>
         /// Reference to the call handler that owns this greeting.
         /// You cannot set or change this value after creation.
         /// </summary>
+        [JsonProperty]
         public string CallHandlerObjectId { get; private set; }
 
         /// <summary>
         /// The type of greeting (e.g., alternate) to which the stream file belongs.
         /// Alternate, Busy, Standard, Error, Internal, Holiday, Off Hours
         /// </summary>
+        [JsonProperty]
         public string GreetingType { get; private set; }
 
         /// <summary>
@@ -258,17 +267,20 @@ namespace ConnectionCUPIFunctions
         ///33801=ENX
         ///16393=EnglishIndian
         /// </summary>
+        [JsonProperty]
         public int LanguageCode { get; private set; }
 
         /// <summary>
         /// Unique identifier for this greeting.
         /// You cannot change the objectID of a standing object.
         /// </summary>
+        [JsonProperty]
         public string ObjectId { get; private set; }
 
         /// <summary>
         /// The name of the WAV file containing the recorded audio (voice name, greeting, etc.) for the parent object
         /// </summary>
+        [JsonProperty]
         public string StreamFile { get; private set; }
 
         #endregion
@@ -377,64 +389,38 @@ namespace ConnectionCUPIFunctions
                                           pConnectionServer.BaseUrl, pCallHandlerObjectId, pGreetingType);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements can be empty, that's legal
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that does not mean an error - return true here along with an empty list.
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
-                pGreetingStreamFiles= new List<GreetingStreamFile>();
+                pGreetingStreamFiles = new List<GreetingStreamFile>();
                 return res;
             }
 
-            pGreetingStreamFiles = GetGreetingStreamFilesFomXElements(pConnectionServer, pCallHandlerObjectId,
-                                                                      pGreetingType, res.XmlElement);
+            pGreetingStreamFiles = HTTPFunctions.GetObjectsFromJson<GreetingStreamFile>(res.ResponseText);
+
+            if (pGreetingStreamFiles == null)
+            {
+                pGreetingStreamFiles = new List<GreetingStreamFile>();
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pGreetingStreamFiles)
+            {
+                oObject.HomeServer = pConnectionServer;
+                oObject.CallHandlerObjectId = pCallHandlerObjectId;
+            }
+
             return res;
-
-        }
-
-
-        //Helper function to take an XML blob returned from the REST interface forgreetings and convert it into n generic
-        //list of Greeting class objects. 
-        private static List<GreetingStreamFile> GetGreetingStreamFilesFomXElements(ConnectionServer pConnectionServer,
-                                                                                   string pCallHandlerObjectId,
-                                                                                   string pGreetingType,
-                                                                                   XElement pXElement)
-        {
-            List<GreetingStreamFile> oGreetingsStreamFiles = new List<GreetingStreamFile>();
-
-            if (pConnectionServer == null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced passed to GetGreetingStreamFilesFomXElements");
-            }
-
-            //pull out a set of XMLElements for each TransferOption object returned using the power of LINQ
-            var greetingStreamFiles = from e in pXElement.Elements()
-                                      where e.Name.LocalName == "GreetingStreamFile"
-                                      select e;
-
-            //for each transfer option returned in the list from the XML, construct an TransferOption object using the elements associated with that 
-            //option.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlGreetingStreamFile in greetingStreamFiles)
-            {
-                GreetingStreamFile oGreetingStreamFile = new GreetingStreamFile(pConnectionServer, pCallHandlerObjectId,
-                                                                                pGreetingType);
-                foreach (XElement oElement in oXmlGreetingStreamFile.Elements())
-                {
-                    //adds the XML property to the TransferOption object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oGreetingStreamFile, oElement);
-                }
-
-                //add the fully populated TransferOption object to the list that will be returned to the calling routine.
-                oGreetingsStreamFiles.Add(oGreetingStreamFile);
-            }
-
-            return oGreetingsStreamFiles;
         }
 
 
@@ -665,27 +651,24 @@ namespace ConnectionCUPIFunctions
         public WebCallResult GetGreetingStreamFile(string pCallHandlerObjectId, string pGreetingType, int pLanguageCode)
         {
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/greetings/{2}/greetingstreamfiles/{3}", 
-                                         _homeServer.BaseUrl, pCallHandlerObjectId, pGreetingType,pLanguageCode);
+                                         HomeServer.BaseUrl, pCallHandlerObjectId, pGreetingType,pLanguageCode);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
-            
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
-            {
-                res.Success = false;
-                return res;
-            }
 
-            //load all of the elements returned into the class object properties
-            foreach (XElement oElement in res.XmlElement.Elements())
+            try
             {
-                _homeServer.SafeXmlFetch(this, oElement);
+                JsonConvert.PopulateObject(res.ResponseText, this);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                res.Success = false;
             }
 
             return res;
@@ -704,7 +687,7 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public WebCallResult GetGreetingWavFile(string pTargetLocalFilePath)
         {
-            return GetGreetingWavFile(_homeServer, pTargetLocalFilePath, CallHandlerObjectId,GreetingType, LanguageCode);
+            return GetGreetingWavFile(HomeServer, pTargetLocalFilePath, CallHandlerObjectId,GreetingType, LanguageCode);
         }
 
 
@@ -730,7 +713,7 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public WebCallResult SetGreetingWavFile(string pSourceLocalFilePath, bool pConvertToPcmFirst=false)
         {
-            return SetGreetingWavFile(_homeServer, CallHandlerObjectId, GreetingType, LanguageCode, pSourceLocalFilePath,pConvertToPcmFirst);
+            return SetGreetingWavFile(HomeServer, CallHandlerObjectId, GreetingType, LanguageCode, pSourceLocalFilePath,pConvertToPcmFirst);
         }
         
 

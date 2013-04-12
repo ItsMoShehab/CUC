@@ -14,9 +14,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The Mwi class contains all the properties associated with a MWI Devices in Unity Connection that can be fetched 
@@ -29,10 +29,10 @@ namespace ConnectionCUPIFunctions
         #region Properties
         
         //reference to the ConnectionServer object used to create this notificationd evice instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         //used to keep track of whic properties have been updated
-        private ConnectionPropertyList _changedPropList;
+        private readonly ConnectionPropertyList _changedPropList;
 
 
         private bool _active;
@@ -151,9 +151,11 @@ namespace ConnectionCUPIFunctions
         /// of the media switch to be used when displaying entries in the administrative console, e.g. Cisco Unity Connection Administration.
         /// This is a read only field for display purposes.
         /// </summary>
+        [JsonProperty]
         public string MediaSwitchDisplayName { get; private set; }
 
         //you can't change the ObjectId of a standing object
+        [JsonProperty]
         public string ObjectId { get; private set; }
 
         private string _mwiExtension;
@@ -168,6 +170,7 @@ namespace ConnectionCUPIFunctions
         }
 
         //you can't change the Subscriber owner of a notification device.
+        [JsonProperty]
         public string SubscriberObjectId { get; private set; }
         
         //not retrieved from Connection and cannot be changed once created
@@ -177,6 +180,15 @@ namespace ConnectionCUPIFunctions
 
 
         #region Constructors
+
+        /// <summary>
+        /// Generic constructor for JSON parser
+        /// </summary>
+        public Mwi()
+        {
+            //make an instanced of the changed prop list to keep track of updated properties on this object
+            _changedPropList = new ConnectionPropertyList();
+        }
 
         /// <summary>
         /// Creates a new instance of the Mwi class.  You must provide the ConnectionServer reference that the device lives on and an ObjectId
@@ -192,7 +204,7 @@ namespace ConnectionCUPIFunctions
         /// <param name="pObjectId">
         /// Optionally the ObjectId of the device itself - if passed in this will load the NotificationDevice object with data for that device from Connection.
         /// </param>
-        public Mwi(ConnectionServer pConnectionServer, string pUserObjectId, string pObjectId="")
+        public Mwi(ConnectionServer pConnectionServer, string pUserObjectId, string pObjectId=""):this()
         {
           	if (pConnectionServer==null)
             {
@@ -204,10 +216,7 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Emtpy UserObjectID passed to Mwi constructor");
             }
 
-            //make an instanced of the changed prop list to keep track of updated properties on this object
-            _changedPropList = new ConnectionPropertyList();
-
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             UserObjectId = pUserObjectId;
 
@@ -316,78 +325,43 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}users/{1}/mwis", pConnectionServer.BaseUrl, pUserObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty in this case that does mean an error - all users should have at least one MWI device.
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount==0)
             {
+                pMwiDevices = new List<Mwi>();
                 res.Success = false;
                 return res;
             }
 
-            //
-            pMwiDevices = GetMwiDevicesFomXElements(pConnectionServer,pUserObjectId, res.XmlElement);
-            return res;
+            pMwiDevices = HTTPFunctions.GetObjectsFromJson<Mwi>(res.ResponseText);
 
+            if (pMwiDevices == null)
+            {
+                pMwiDevices = new List<Mwi>();
+                res.Success = false;
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pMwiDevices)
+            {
+                oObject.HomeServer = pConnectionServer;
+                oObject.UserObjectId = pUserObjectId;
+                oObject.ClearPendingChanges();
+            }
+
+            return res;
         }
         
-        /// <summary>
-        /// Pass in an XML blob returned from the server containing a list of notification devices and this routine will parse that XML
-        /// out and return a list of NotificationDevice objects filled out with the data returned from the server.
-        /// </summary>
-        /// <param name="pConnectionServer">
-        /// Connection server these devices came from.
-        /// </param>
-        /// <param name="pUserObjectId">
-        /// GUID identifying the user that owns these devices.
-        /// </param>
-        /// <param name="pXElement">
-        /// XML structure returned from the Connection server's CUPI interface
-        /// </param>
-        /// <returns>
-        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
-        /// </returns>
-        private static List<Mwi> GetMwiDevicesFomXElements(ConnectionServer pConnectionServer,string pUserObjectId,XElement pXElement)
-        {
-            List<Mwi> pMwiDevices = new List<Mwi>();
-
-            if (pConnectionServer == null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced passed to GetMwiDevicesFomXElements");
-            }
-
-            //pull out a set of XMLElements for each Mwi device object returned using the power of LINQ
-            var mwiDevice = from e in pXElement.Elements()
-                                      where e.Name.LocalName == "Mwi"
-                                      select e;
-
-            //for each device returned in the list of extensions from the XML, construct an Mwi object using the elements associated with that 
-            //extension.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlMwiDevice in mwiDevice)
-            {
-                Mwi oMwiDevice = new Mwi(pConnectionServer, pUserObjectId);
-                foreach (XElement oElement in oXmlMwiDevice.Elements())
-                {
-                    //adds the XML property to the Mwi object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oMwiDevice, oElement);
-                }
-
-                oMwiDevice.ClearPendingChanges();
-
-                //add the fully populated AlternateExtension object to the list that will be returned to the calling routine.
-                pMwiDevices.Add(oMwiDevice);
-            }
-
-            return pMwiDevices;
-        }
-
-
 
         /// <summary>
         /// Add a new MWI device for a user
@@ -441,8 +415,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Mwi>";
 
-            res = HTTPFunctions.GetCupiResponse(
-                    string.Format("{0}users/{1}/mwis", pConnectionServer.BaseUrl, pUserObjectId),MethodType.Post,pConnectionServer,strBody);
+            res = HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/mwis", pConnectionServer.BaseUrl, pUserObjectId),
+                MethodType.POST,pConnectionServer,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -459,7 +433,7 @@ namespace ConnectionCUPIFunctions
 
 
         /// <summary>
-        /// Delete an MWI associated with a user.
+        /// DELETE an MWI associated with a user.
         /// </summary>
         /// <param name="pConnectionServer">
         /// The Connection server that houses the user that owns the MWI to be removed.
@@ -496,7 +470,7 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Delete,pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.DELETE,pConnectionServer, "");
         }
 
 
@@ -558,7 +532,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Mwi>";
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Put,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.PUT,pConnectionServer,strBody,false);
         }
 
 
@@ -624,7 +598,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //just call the static method with the info from the instance 
-            res = UpdateMwi(_homeServer, UserObjectId, ObjectId, _changedPropList);
+            res = UpdateMwi(HomeServer, UserObjectId, ObjectId, _changedPropList);
 
             //if the update went through then clear the changed properties list.
             if (res.Success)
@@ -637,7 +611,7 @@ namespace ConnectionCUPIFunctions
 
 
         /// <summary>
-        /// Delete an MWI device from the Connection directory.
+        /// DELETE an MWI device from the Connection directory.
         /// </summary>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -645,7 +619,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult Delete()
         {
             //just call the static method with the info on the instance
-            return DeleteMwiDevice(_homeServer, UserObjectId, ObjectId);
+            return DeleteMwiDevice(HomeServer, UserObjectId, ObjectId);
         }
 
 
@@ -661,27 +635,24 @@ namespace ConnectionCUPIFunctions
         /// <returns></returns>
         private WebCallResult GetMwi(string pUserObjectId, string pObjectId)
         {
-            string strUrl = string.Format("{0}users/{1}/mwis/{2}", _homeServer.BaseUrl,pUserObjectId, pObjectId);
+            string strUrl = string.Format("{0}users/{1}/mwis/{2}", HomeServer.BaseUrl,pUserObjectId, pObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
-                res.Success = false;
-                return res;
+                JsonConvert.PopulateObject(res.ResponseText, this);
             }
-
-            //load all of the elements returned into the class object properties
-            foreach (XElement oElement in res.XmlElement.Elements())
+            catch (Exception ex)
             {
-                _homeServer.SafeXmlFetch(this, oElement);
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                res.Success = false;
             }
 
             //all the updates above will flip pending changes into the queue - clear that here.

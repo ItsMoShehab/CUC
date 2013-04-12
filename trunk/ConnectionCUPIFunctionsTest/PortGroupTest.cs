@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -53,6 +53,9 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
+
+        #region Class Construction Failures
+
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
@@ -84,21 +87,39 @@ namespace ConnectionCUPIFunctionsTest
             PortGroup oPorts = new PortGroup(_connectionServer, "blah");
         }
 
+        #endregion
+
+        [TestMethod]
+        public void StaticMethodFailures()
+        {
+            List<PortGroup> oPortGroups;
+            WebCallResult res;
+
+            res = PortGroup.GetPortGroups(null, out oPortGroups);
+            Assert.IsFalse(res.Success, "Fetching port groups with null Connection server should fail.");
+
+            res = PortGroup.GetPortGroups(new ConnectionServer(), out oPortGroups);
+            Assert.IsFalse(res.Success, "Fetching port groups with invalid Connection server should fail.");
+        }
+
 
         [TestMethod]
         public void TestMethod1()
         {
             List<PortGroup> oPortGroups;
-
             WebCallResult res = PortGroup.GetPortGroups(_connectionServer, out oPortGroups);
-            Assert.IsTrue(res.Success,"Fetching port groups failed:"+res);
+            Assert.IsTrue(res.Success, "Fetching port groups failed:" + res);
+
 
             string strPortGroupObjectId="";
+            string strPortGroupDisplayName = "";
+
             foreach (var oPortGroup in oPortGroups)
             {
                 Console.WriteLine(oPortGroup.ToString());
                 Console.WriteLine(oPortGroup.DumpAllProps());
                 strPortGroupObjectId = oPortGroup.ObjectId;
+                strPortGroupDisplayName = oPortGroup.DisplayName;
             }
 
             try
@@ -107,18 +128,24 @@ namespace ConnectionCUPIFunctionsTest
             }
             catch (Exception ex)
             {
-                Assert.IsTrue(false,"PortGroup creation with valid ObjectId of PortGroup failed:"+ex);
+                Assert.Fail("PortGroup creation with valid ObjectId of PortGroup failed:"+ex);
             }
 
+            try
+            {
+                PortGroup oNewGroup = new PortGroup(_connectionServer, "",strPortGroupDisplayName);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("PortGroup creation with valid display name of PortGroup failed:" + ex);
+            }
 
-
-            res = PortGroup.GetPortGroups(null, out oPortGroups);
-            Assert.IsFalse(res.Success,"Fetching port groups with null Connection server should fail.");
-
-            res = PortGroup.GetPortGroups(new ConnectionServer(), out oPortGroups);
-            Assert.IsFalse(res.Success, "Fetching port groups with invalid Connection server should fail.");
-
-
+            try
+            {
+                PortGroup oNewGroup = new PortGroup(_connectionServer, "","bogus");
+                Assert.Fail("PortGroup creation with invalid display name of PortGroup did not fail");
+            }
+            catch {}
 
         }
     }

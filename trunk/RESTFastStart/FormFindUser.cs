@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 using SimpleLogger;
 
 namespace CUPIFastStart
@@ -71,7 +71,7 @@ namespace CUPIFastStart
             string strQuery = "";
             WebCallResult res;
 
-            //get the user data from the remote Connection server as a list of UserBase objects - remember these are "light" users 
+            //get the user data from the remote Connection server as a list of User objects - remember these are "light" users 
             //that contain a smaller set of data than a "UserFull" - this is designed for list presentation and the like, although
             //in this sample application we're just showing everything, typically you'd hide all the ObjectId values.
             List<UserBase> oUsers;

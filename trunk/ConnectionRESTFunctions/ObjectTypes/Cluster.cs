@@ -11,12 +11,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// struct for values in a server instance that's returned as a member of a cluster
@@ -77,7 +75,7 @@ namespace ConnectionCUPIFunctions
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this user instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         public List<Server> Servers;
 
@@ -99,10 +97,10 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Null ConnectionServer referenced passed to Cluster construtor");
             }
 
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             //fetch the servers in the cluster (always 1 but can be 2)
-            WebCallResult res = GetServers(_homeServer);
+            WebCallResult res = GetServers(HomeServer);
 
             if (res.Success == false)
             {
@@ -147,57 +145,34 @@ namespace ConnectionCUPIFunctions
             string strUrl = pConnectionServer.BaseUrl + "cluster";
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that means an error in this case - should always be at least one template
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
+                Servers = new List<Server>();
                 res.Success = false;
                 return res;
             }
 
-            Servers = GetServersFromXElements(pConnectionServer, res.XmlElement);
+            Servers = HTTPFunctions.GetObjectsFromJson<Server>(res.ResponseText);
+
+            if (Servers == null)
+            {
+                Servers = new List<Server>();
+                return res;
+            }
+
             return res;
         }
 
-
-        //Helper function to take an XML blob returned from the REST interface for Servers returned and convert it into an generic
-        //list of Server class objects.  
-        private List<Server> GetServersFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-
-            List<Server> oServerList = new List<Server>();
-
-            //Use LINQ to XML to create a list of Server objects in a single statement. 
-            var server = from e in pXElement.Elements()
-                                        where e.Name.LocalName == "Server"
-                                        select e;
-
-            //for each object returned in the list from the XML, construct a class object using the elements associated with that 
-            //object.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlServer in server)
-            {
-                Server oServer = new Server();
-                foreach (XElement oElement in oXmlServer.Elements())
-                {
-                    //adds the XML property to the object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oServer, oElement);
-                }
-
-                //add the fully populated object to the list that will be returned to the calling routine.
-                oServerList.Add(oServer);
-            }
-
-            return oServerList;
-        }
-
-    
         #endregion
 
     }

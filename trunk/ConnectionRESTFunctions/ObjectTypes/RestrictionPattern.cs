@@ -11,12 +11,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// Read only class that lets you fetch restriction table patternss
@@ -26,7 +25,7 @@ namespace ConnectionCUPIFunctions
 
         #region Fields and Properties
 
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         public bool Blocked { get; set; }
         public string NumberPattern { get; set; }
@@ -64,7 +63,7 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Empty restriction table ObjectId passed to RestrictionPattern constructor.");
             }
 
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
             RestrictionTableObjectId = pRestrictionTableObjectId;
 
             //if the user passed in a specific ObjectId then go load that pattern up, otherwise just return an empty instance.
@@ -84,6 +83,13 @@ namespace ConnectionCUPIFunctions
                                  , pObjectId, res.ErrorText));
             }
             
+        }
+
+        /// <summary>
+        /// General constructor for Json parsing library
+        /// </summary>
+        public RestrictionPattern()
+        {
         }
 
 
@@ -134,31 +140,25 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         private WebCallResult GetRestrictionTablePattern(string pObjectId)
         {
-            string strUrl;
-            WebCallResult res;
-
             //when fetching a RT use the query construct in both cases so the XML parsing is identical
-            strUrl = string.Format("{0}restrictiontables/{1}/restrictionpatterns/{2}", _homeServer.BaseUrl,RestrictionTableObjectId, pObjectId);
+            string strUrl = string.Format("{0}restrictiontables/{1}/restrictionpatterns/{2}", HomeServer.BaseUrl,RestrictionTableObjectId, pObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
-                res.Success = false;
-                return res;
+                JsonConvert.PopulateObject(res.ResponseText, this);
             }
-
-            //populate this call handler instance with data from the XML fetch
-            foreach (XElement oElement in res.XmlElement.Elements())
+            catch (Exception ex)
             {
-                _homeServer.SafeXmlFetch(this, oElement);
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                res.Success = false;
             }
 
             return res;
@@ -181,11 +181,17 @@ namespace ConnectionCUPIFunctions
         /// <param name="pRestrictionPatterns">
         /// Out parameter that is used to return the list of RestrictionTable objects defined on Connection - there must be at least one.
         /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetRestrictionPatterns(ConnectionServer pConnectionServer, string pRestrictionTableObjectId, 
-            out List<RestrictionPattern> pRestrictionPatterns)
+        public static WebCallResult GetRestrictionPatterns(ConnectionServer pConnectionServer, string pRestrictionTableObjectId,
+            out List<RestrictionPattern> pRestrictionPatterns, int pPageNumber = 1, int pRowsPerPage = 20)
         {
             WebCallResult res;
             pRestrictionPatterns = null;
@@ -204,61 +210,44 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + string.Format("restrictiontables/{0}/restrictionpatterns",pRestrictionTableObjectId);
+            string strUrl = HTTPFunctions.AddClausesToUri(string.Format("{0}restrictiontables/{1}/restrictionpatterns", pConnectionServer.BaseUrl, 
+                pRestrictionTableObjectId), "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements can be empty, that's legal
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that means an error in this case - should always be at least one template
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            {
+                pRestrictionPatterns = new List<RestrictionPattern>();
+                res.Success = false;
+                return res;
+            }
+
+            pRestrictionPatterns = HTTPFunctions.GetObjectsFromJson<RestrictionPattern>(res.ResponseText);
+
+            if (pRestrictionPatterns == null)
             {
                 pRestrictionPatterns = new List<RestrictionPattern>();
                 return res;
             }
 
-            pRestrictionPatterns = GetRestrictionPatternsFromXElements(pConnectionServer, pRestrictionTableObjectId, res.XmlElement);
-            return res;
-        }
-
-
-        //Helper function to take an XML blob returned from the REST interface for user RT patterns returned and convert it into an generic
-        //list of RestrictionPattern class objects.  
-        private static List<RestrictionPattern> GetRestrictionPatternsFromXElements(ConnectionServer pConnectionServer, string pRestrictionTableObjectId,
-            XElement pXElement)
-        {
-
-            List<RestrictionPattern> oRestrictionPatternList = new List<RestrictionPattern>();
-
-
-            //Use LINQ to XML to create a list of RT pattern objects in a single statement.
-            var restrictionPattern = from e in pXElement.Elements()
-                                    where e.Name.LocalName == "RestrictionPattern"
-                                    select e;
-
-            //for each object returned in the list from the XML, construct a class object using the elements associated with that 
-            //object.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlRestrictionPattern in restrictionPattern)
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pRestrictionPatterns)
             {
-                RestrictionPattern oRestrictionPattern = new RestrictionPattern(pConnectionServer,pRestrictionTableObjectId);
-                foreach (XElement oElement in oXmlRestrictionPattern.Elements())
-                {
-                    //adds the XML property to the object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oRestrictionPattern, oElement);
-                }
-
-                //add the fully populated object to the list that will be returned to the calling routine.
-                oRestrictionPatternList.Add(oRestrictionPattern);
+                oObject.HomeServer = pConnectionServer;
+                oObject.RestrictionTableObjectId = pRestrictionTableObjectId;
             }
 
-            return oRestrictionPatternList;
+            return res;
         }
-
 
         #endregion
 

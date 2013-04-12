@@ -14,9 +14,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// Class that allows for fetching all or some or specific system configuration values.  This is a read only class currently.
@@ -78,6 +78,13 @@ namespace ConnectionCUPIFunctions
                 }
             }
 
+            /// <summary>
+            /// Generic constructor for JSON library parsing
+            /// </summary>
+            public ConfigurationValue()
+            {
+            }
+
             #endregion
 
 
@@ -120,53 +127,83 @@ namespace ConnectionCUPIFunctions
                     return res;
                 }
 
-                string strUrl = pConnectionServer.BaseUrl + "configurationvalues";
-
-                //the spaces get "escaped out" in the HTTPFunctions class call at a lower level, don't worry about it here.
-                //Tack on all the search/query/page clauses here if any are passed in.  If an empty string is passed in account
-                //for it here.
-                for (int iCounter = 0; iCounter < pClauses.Length; iCounter++)
-                {
-                    if (pClauses[iCounter].Length == 0)
-                    {
-                        continue;
-                    }
-
-                    //if it's the first param seperate the clause from the URL with a ?, otherwise append compound clauses 
-                    //seperated by &
-                    if (iCounter == 0)
-                    {
-                        strUrl += "?";
-                    }
-                    else
-                    {
-                        strUrl += "&";
-                    }
-                    strUrl += pClauses[iCounter];
-                }
+                string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "configurationvalues", pClauses);
 
                 //issue the command to the CUPI interface
-                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
                 if (res.Success == false)
                 {
                     return res;
                 }
 
-                //if the call was successful the XML elements can be empty, that's legal
-                if (res.XmlElement == null || res.XmlElement.HasElements == false)
+                //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+                //if this is empty that is not an error, just return the empty list
+                if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
                 {
                     pConfigurationValues = new List<ConfigurationValue>();
                     return res;
                 }
 
-                pConfigurationValues = GetConfigurationValuesFromXElements(pConnectionServer, res.XmlElement);
-                return res;
+                pConfigurationValues = HTTPFunctions.GetObjectsFromJson<ConfigurationValue>(res.ResponseText);
+
+                if (pConfigurationValues == null)
+                {
+                    pConfigurationValues = new List<ConfigurationValue>();
+                    return res;
+                }
+
+                foreach (var oObject in pConfigurationValues)
+                {
+                    oObject.HomeServer = pConnectionServer;
+                }
+
+            return res;
 
             }
 
 
             /// <summary>
+            /// This method allows for a GET of configuration valies from Connection via HTTP - it allows for passing any number of additional clauses  
+            /// for filtering (query directives), sorting and paging of results.  The format of the clauses should look like:
+            /// filter: "query=(FullName startswith System)"
+            /// sort: "sort=(fullname asc)"
+            /// Escaping of spaces is done automatically, no need to account for that.
+            /// </summary>
+            /// <param name="pConnectionServer">
+            /// Reference to the ConnectionServer object that points to the home server where the handlers are being fetched from.
+            /// </param>
+            /// <param name="pConfigurationValues">
+            /// The values found will be returned in this generic list of ConfigurationValues
+            /// </param>
+            /// <param name="pClauses">
+            /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
+            /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(FirstName startswith a)" in
+            /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+            /// </param>
+            /// <param name="pPageNumber">
+            /// Results page to fetch - defaults to 1
+            /// </param>
+            /// <param name="pRowsPerPage">
+            /// Results to return per page, defaults to 20
+            /// </param>
+            /// <returns>
+            /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+            /// </returns>
+
+            public static WebCallResult GetConfigurationValues(ConnectionServer pConnectionServer,out List<ConfigurationValue> pConfigurationValues,
+                int pPageNumber=1, int pRowsPerPage=20,params string[] pClauses)
+            {
+                //tack on the paging items to the parameters list
+                var temp = pClauses.ToList();
+                temp.Add("pageNumber=" + pPageNumber);
+                temp.Add("rowsPerPage=" + pRowsPerPage);
+
+                return GetConfigurationValues(pConnectionServer, out pConfigurationValues, temp.ToArray());
+            }
+
+
+             /// <summary>
             /// returns a single DirectoryHandler object from an ObjectId or displayName string passed in.
             /// </summary>
             /// <param name="pConnectionServer">
@@ -215,47 +252,6 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-
-            /// <summary>
-            /// Helper function to take an XML blob returned from the REST interface for a handler (or handlers) return and convert it into an generic
-            /// list of DirectoryHandler class objects. 
-            /// </summary>
-            /// <param name="pConnectionServer">
-            /// Connection server the handler is homed on.
-            /// </param>
-            /// <param name="pXElement">
-            /// The list of XML elements fetched from the Connection server via a CUPI call
-            /// </param>
-            /// <returns>
-            /// List of DirectoryHandlers constructed from the XML elements.
-            /// </returns>
-            private static List<ConfigurationValue> GetConfigurationValuesFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-            {
-                List<ConfigurationValue> oConfigurationValueList = new List<ConfigurationValue>();
-
-                //pull out a set of XMLElements for each CallHandler object returned using the power of LINQ
-                var configurationValues = from e in pXElement.Elements()
-                               where e.Name.LocalName == "ConfigurationValue"
-                               select e;
-
-                //for each handler returned in the list of handlers from the XML, construct an DirectoryHandler object using the elements associated with that 
-                //handler.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-                //typed objects.
-                foreach (var oXmlConfigurationValue in configurationValues)
-                {
-                    ConfigurationValue oConfiguration = new ConfigurationValue(pConnectionServer);
-                    foreach (XElement oElement in oXmlConfigurationValue.Elements())
-                    {
-                        //adds the XML property to the ConfigurationValue object if the proeprty name is found as a property on the object.
-                        pConnectionServer.SafeXmlFetch(oConfiguration, oElement);
-                    }
-
-                    //add the fully populated ConfigurationValue object to the list that will be returned to the calling routine.
-                    oConfigurationValueList.Add(oConfiguration);
-                }
-
-                return oConfigurationValueList;
-            }
 
             #endregion
 
@@ -307,31 +303,25 @@ namespace ConnectionCUPIFunctions
             /// </returns>
             private WebCallResult GetConfigurationValue(string pFullName)
             {
-                WebCallResult res;
-
                 string strUrl = string.Format("{0}configurationvalues/{1}", HomeServer.BaseUrl, pFullName);
 
                 //issue the command to the CUPI interface
-                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, HomeServer, "");
+                WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
                 if (res.Success == false)
                 {
                     return res;
                 }
 
-                //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-                if (res.XmlElement == null || res.XmlElement.HasElements == false)
+                try
                 {
+                    JsonConvert.PopulateObject(res.ResponseText, this);
+                }
+                catch (Exception ex)
+                {
+                    res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                     res.Success = false;
-                    return res;
                 }
-
-                //populate this configuration value instance with data from the XML fetch
-                foreach (XElement oElement in res.XmlElement.Elements())
-                {
-                    HomeServer.SafeXmlFetch(this, oElement);
-                }
-
                 return res;
             }
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Web.UI.WebControls;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 
 namespace PWResetASP
 {
@@ -93,10 +93,10 @@ namespace PWResetASP
 
             labelStatus.Text = "";
 
-            //get the user data from the remote Connection server as a list of UserBase objects - remember these are "light" users 
+            //get the user data from the remote Connection server as a list of User objects - remember these are "light" users 
             //that contain a smaller set of data than a "UserFull" - this is designed for list presentation and the like, although
             //in this sample application we're just showing everything, typically you'd hide all the ObjectId values.
-            List<ConnectionCUPIFunctions.UserBase> oUsers;
+            List<Cisco.UnityConnection.RestFunctions.UserBase> oUsers;
 
             //fetch the number of users to return in a query - you'll want to keep this reasonable in most cases as a very large 
             //result set can timeout on you if the server is busy.
@@ -152,7 +152,7 @@ namespace PWResetASP
                 strSort = "sort=(alias asc)";
             }
 
-            res = UserBase.GetUsers(_connectionServer, out oUsers, strQuery,strSort);
+            res = Cisco.UnityConnection.RestFunctions.UserBase.GetUsers(_connectionServer, out oUsers, strQuery, strSort);
 
             if (res.Success == false)
             {
@@ -281,7 +281,7 @@ namespace PWResetASP
             //on it later.
             UserBase oUser;
 
-            WebCallResult res = UserBase.GetUser(out oUser, _connectionServer, row.Cells[(int)GridColumnNames.ObjectId].Text);
+            WebCallResult res = Cisco.UnityConnection.RestFunctions.UserBase.GetUser(out oUser, _connectionServer, row.Cells[(int)GridColumnNames.ObjectId].Text);
             
             if (res.Success == false)
             {

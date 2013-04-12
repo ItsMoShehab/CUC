@@ -12,9 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Xml.Linq;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// Class to hold all the data for Connection timezone definitions
@@ -94,41 +93,35 @@ namespace ConnectionCUPIFunctions
             string strUrl = pConnectionServer.BaseUrl + "timezones";
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that means an error in this case - should always be at least one template
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
                 res.Success = false;
                 return res;
             }
 
-            //populate a list of ConnectionTimeZone structs with data for each timezone found in the system and add it to the private timezone dictionary.
-            foreach (XElement oElement in res.XmlElement.Elements())
-            {
-                ConnectionTimeZone oConnectionTimeZone = new ConnectionTimeZone();
-                foreach (XElement oSubElement in oElement.Elements())
-                {
-                    pConnectionServer.SafeXmlFetch(oConnectionTimeZone, oSubElement);
-                }
+            List<ConnectionTimeZone> oTimeZones = HTTPFunctions.GetObjectsFromJson<ConnectionTimeZone>(res.ResponseText,"TimeZone");
 
-                try
-                {
-                    _timeZones.Add(oConnectionTimeZone.TimeZoneId, oConnectionTimeZone);
-                }
-                catch (Exception ex)
-                {
-                    res.Success = false;
-                    res.ErrorText = ex.ToString();
-                    return res;
-                }
+            if (oTimeZones == null || oTimeZones.Count == 0)
+            {
+                res.Success = false;
+                res.ErrorText = "Failed to fetch time zones from Connection server";
+                return res;
             }
-            res.Success = true;
+
+            foreach (ConnectionTimeZone oZone in oTimeZones)
+            {
+                _timeZones.Add(oZone.TimeZoneId,oZone);
+            }
+
             return res;
         }
 

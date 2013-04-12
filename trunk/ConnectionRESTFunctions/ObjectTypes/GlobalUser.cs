@@ -14,9 +14,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The GlobalUser class holds data about a global user - these are users that are limited to data replicated around the network (i.e. very limited).
@@ -28,7 +28,7 @@ namespace ConnectionCUPIFunctions
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this user instance.
-        internal ConnectionServer HomeServer;
+        internal ConnectionServer HomeServer { get; private set; }
 
         #endregion
 
@@ -74,6 +74,13 @@ namespace ConnectionCUPIFunctions
             }
         }
 
+        /// <summary>
+        /// Generic constructor for Json parsing libaries
+        /// </summary>
+        public GlobalUser()
+        {
+            
+        }
        
         #endregion
 
@@ -83,48 +90,48 @@ namespace ConnectionCUPIFunctions
         //The names of the properties must match exactly the tags in XML for them including case - the routine that deserializes data from XML into the 
         //objects requires this to match them up.
 
-        public string Alias { get; private set; }
+        public string Alias { get; set; }
 
-        public string DisplayName { get; private set; }
+        public string DisplayName { get; set; }
 
-        public string AltFirstName { get; private set; }
+        public string AltFirstName { get; set; }
 
-        public string AltLastName { get; private set; }
+        public string AltLastName { get; set; }
 
-        public string City { get; private set; }
+        public string City { get; set; }
 
-        public string Department { get; private set; }
+        public string Department { get; set; }
 
         /// <summary>
         /// Primary extension of the user.
         /// </summary>
-        public string DtmfAccessId { get; private set; }
+        public string DtmfAccessId { get; set; }
 
-        public string FirstName { get; private set; }
+        public string FirstName { get; set; }
 
-        public string LastName { get; private set; }
+        public string LastName { get; set; }
 
         /// <summary>
         /// A flag indicating whether Cisco Unity Connection should list the subscriber in the phone directory for outside callers.
         /// This does not affect the ability of other users from finding them when addressing messages.
         /// </summary>
-        public bool ListInDirectory { get; private set; }
+        public bool ListInDirectory { get; set; }
 
-        public string LocationObjectId { get; private set; }
+        public string LocationObjectId { get; set; }
 
-        public bool IsTemplate { get; private set; }
+        public bool IsTemplate { get; set; }
 
         /// <summary>
         /// Unique identifier for the user 
         /// </summary>
-        public string ObjectId { get; private set; }
+        public string ObjectId { get; set; }
 
         /// <summary>
         /// The unique identifier of the Partition to which the DtmfAccessId is assigned
         /// </summary>
-        public string PartitionObjectId { get; private set; }
+        public string PartitionObjectId { get; set; }
 
-        public string XferString { get; private set; }
+        public string XferString { get; set; }
 
         #endregion
 
@@ -174,51 +181,87 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + "globalusers";
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "globalusers", pClauses);
 
-            //the spaces get "escaped out" in the HTTPFunctions class call at a lower level, don't worry about it here.
-            //Tack on all the search/query/page clauses here if any are passed in.  If an empty string is passed in account
-            //for it here.
-            if (pClauses != null)
-            {
-                for (int iCounter = 0; iCounter < pClauses.Length; iCounter++)
-                {
-                    if (string.IsNullOrEmpty(pClauses[iCounter]))
-                    {
-                        continue;
-                    }
-
-                    //if it's the first param seperate the clause from the URL with a ?, otherwise append compound clauses 
-                    //seperated by &
-                    if (iCounter == 0)
-                    {
-                        strUrl += "?";
-                    }
-                    else
-                    {
-                        strUrl += "&";
-                    }
-                    strUrl += pClauses[iCounter];
-                }
-            }
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements can be empty, that's legal
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that's not an error, return an empty list.
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
-                pUsers= new List<GlobalUser>();
+                pUsers = new List<GlobalUser>();
                 return res;
             }
 
-            pUsers = GetUsersFromXElements(pConnectionServer, res.XmlElement);
-            return res;
+            pUsers = HTTPFunctions.GetObjectsFromJson<GlobalUser>(res.ResponseText);
 
+            if (pUsers == null)
+            {
+                pUsers = new List<GlobalUser>();
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pUsers)
+            {
+                oObject.HomeServer = pConnectionServer;
+            }
+
+            return res;
+        }
+
+
+        /// <summary>
+        /// This function allows for a GET of globalusers from Connection via HTTP - it allows for passing any number of additional clauses  
+        /// for filtering (query directives), sorting and paging of results.  The format of the clauses should look like:
+        /// filter: "query=(alias startswith ab)"
+        /// sort: "sort=(alias asc)"
+        /// Escaping of spaces is done automatically, no need to account for that.
+        /// </summary>
+        /// <remarks>
+        /// While this method name does have the plural in it, you can use it for fetching single users as well.  If searching by
+        /// ObjectId just construct a query in the form "query=(ObjectId is {ObjectId})".  This is just as fast as using the URI format of 
+        /// "{server name}\vmrest\users\{ObjectId}" but returns consistently formatted XML code as multiple users does so the parsing of 
+        /// the data to deserialize it into User objects is consistent.
+        /// </remarks>
+        /// <param name="pConnectionServer">
+        /// Reference to the ConnectionServer object that points to the home server where the users are being fetched from.
+        /// </param>
+        /// <param name="pUsers">
+        /// The list of users returned from the CUPI call (if any) is returned as a generic list of GlobalUser class instances via this out param.  
+        /// If no users are  found NULL is returned for this parameter.
+        /// </param>
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
+        /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(FirstName startswith a)" in
+        /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+        /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+
+        public static WebCallResult GetUsers(ConnectionServer pConnectionServer, out List<GlobalUser> pUsers,int pPageNumber=1, 
+            int pRowsPerPage=20,params string[] pClauses)
+        {
+            //tack on the paging items to the parameters list
+            var temp = pClauses.ToList();
+            temp.Add("pageNumber=" + pPageNumber);
+            temp.Add("rowsPerPage=" + pRowsPerPage);
+
+            return GetUsers(pConnectionServer, out pUsers, temp.ToArray());
         }
 
 
@@ -277,39 +320,6 @@ namespace ConnectionCUPIFunctions
             return res;
         }
 
-
-    
-        //Helper function to take an XML blob returned from the REST interface for a user (or users) return and convert it into an generic
-        //list of GlobalUser class objects. 
-        private static List<GlobalUser> GetUsersFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-            List<GlobalUser> oUserList = new List<GlobalUser>();
-
-            //pulls all the users returned in the XML as set of elements using the power of LINQ
-            var users = from e in pXElement.Elements()
-                        where e.Name.LocalName == "GlobalUser"
-                        select e;
-
-            //for each user returned in the list of users from the XML, construct a GlobalUser object using the elements associated with that 
-            //user.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlUser in users)
-            {
-                GlobalUser oUser = new GlobalUser(pConnectionServer);
-                foreach (XElement oElement in oXmlUser.Elements())
-                {
-                    //adds the XML property to the GlobalUser object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oUser, oElement);
-                }
-
-                //add the fully populated GlobalUser object to the list that will be returned to the calling routine.
-                oUserList.Add(oUser);
-            }
-
-            return oUserList;
-        }
-
-
         #endregion
 
 
@@ -362,27 +372,21 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}globalusers/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, HomeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
-                res.Success = false;
-                return res;
+                JsonConvert.PopulateObject(res.ResponseText, this);
             }
-
-            //in the case of a single base user fetch construct, the list of elements is the full list of properties for the user, but it's nexted in 
-            //a "uers" sub element, not at the top level as a full user fetch is - so we have to go another level deep here.
-            //Call the same SafeXMLFetch routine for each to let the full user class instance "drive" the fetching of data
-            //from the XML elements.
-            foreach (XElement oElement in res.XmlElement.Elements())
+            catch (Exception ex)
             {
-                HomeServer.SafeXmlFetch(this, oElement);
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                res.Success = false;
             }
 
             return res;
@@ -402,24 +406,20 @@ namespace ConnectionCUPIFunctions
            string strUrl = string.Format("{0}globalusers?query=(Alias is {1})", HomeServer.BaseUrl, pAlias);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, HomeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
-            if (res.Success == false)
+            if (res.Success == false || res.TotalObjectCount == 0)
             {
                 return "";
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
-            {
-                return "";
-            }
+            List<GlobalUser> oTemplates = HTTPFunctions.GetObjectsFromJson<GlobalUser>(res.ResponseText);
 
-            foreach (var oElement in res.XmlElement.Elements().Elements())
+            foreach (var oTemplate in oTemplates)
             {
-                if (oElement.Name.ToString().Equals("ObjectId"))
+                if (oTemplate.Alias.Equals(pAlias, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return oElement.Value;
+                    return oTemplate.ObjectId;
                 }
             }
 

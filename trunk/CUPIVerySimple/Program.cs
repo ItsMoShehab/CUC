@@ -1,7 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 
 namespace CUPIVerySimple
 {
@@ -15,6 +15,7 @@ namespace CUPIVerySimple
     /// </summary>
     class Program
     {
+
 
         //To keep things simple we'll just do this all in a long Main method here.
         static void Main(string[] args)
@@ -47,20 +48,31 @@ namespace CUPIVerySimple
                 Console.WriteLine("WARNING! The ConnectionCUPIFunctions library was written and tested against Connection 8.5 and later."
                                     +"  The version you are attached to is less than that.");
             }
-            
+
             //the WebCallResult is the structure returned on most calls into the CUPIFunctions library.
             WebCallResult res;
+
 
             //fetch user with alias of "jlindborg" - we will be sending the message from his 
             //mailbox.
             UserFull oUserTestDude;
-            res = UserBase.GetUser(out oUserTestDude, connectionServer, "", "jlindborg");
+
+
+            res =UserBase.GetUser(out oUserTestDude, connectionServer, "", "jlindborg");
+            if (res.Success == false)
+            {
+                Console.WriteLine(res);
+            }
+
+            List<UserMessage> oUserMessages;
+            res = UserMessage.GetMessages(connectionServer, oUserTestDude.ObjectId, out oUserMessages);
 
             if (res.Success == false)
             {
-                Console.WriteLine("Could not find user in database by alias=jlindborg");
+                Console.WriteLine(res);
                 return;
             }
+
 
             ////****
             ////play voice messages using the phone as a media device - aka TRAP 
@@ -369,7 +381,7 @@ namespace CUPIVerySimple
                 Console.WriteLine("Error alternate greeting enabled property: " + res.ToString());
             }
 
-            //Get the user's mailbox store stats (quotas, size etc...)
+            //GET the user's mailbox store stats (quotas, size etc...)
             MailboxInfo oMailboxInfo= new MailboxInfo(connectionServer,oUser.ObjectId);
             Console.WriteLine(oMailboxInfo.DumpAllProps());
             

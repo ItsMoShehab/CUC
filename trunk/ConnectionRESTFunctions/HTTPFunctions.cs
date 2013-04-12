@@ -11,18 +11,21 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Web.Script.Serialization;
 using System.Xml.Linq;
 using System.Windows.Forms;
 using System.Drawing;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
+    #region Related Classes and Enums
+
     /// <summary>
     /// Structure used as a return code for all calls fetching or setting data via the REST interface.  The ResponseText is is what's 
     /// returned from the HTTP call and the ErrorText is if there's an execution error (for instance the server name does not resolve). 
@@ -76,7 +79,7 @@ namespace ConnectionCUPIFunctions
     /// <summary>
     /// list of possible methods supported by CUPI for getting/setting properties. 
     /// </summary>
-    public enum MethodType {Put, Post, Get, Delete}
+    public enum MethodType {PUT, POST, GET, DELETE}
 
     /// <summary>
     /// List of common HTTP status codes used in providing diagnoostic/log output and such.
@@ -99,7 +102,8 @@ namespace ConnectionCUPIFunctions
         Server_Error = 500
     }
 
-    
+    #endregion
+
     /// <summary>
     /// Internal class used by the ConnectionServer class for communicating via HTTP to target Connection servers.  This single static class
     /// can be used to talk to multiple Connection servers via multiple instances of the ConnectionServer class, however this demonostration
@@ -113,17 +117,17 @@ namespace ConnectionCUPIFunctions
 
         //used for basic thread locking when communicating via HTTP.  If you wanted to do proper multi threading support via HTTP you'd want 
         //do implement a much more sophisticated approach that is well beyond the scope of this example solution.
-        private static Object _thisLock = new Object();
+        private static readonly Object ThisLock = new Object();
 
         //if set to an instance of a rich text control this can be used to show a "rolling output" of commands sent and received if the calling 
         //client wishes to show it (can be handy to learn the CUPI details).
         public static RichTextBox RichTextControlToOutputTo { get; set; }
 
         //the total number of characters to allow in the rich text edit box we're optionally dumping inbound and outbound traffic to.
-        private const int _maxCharsInRte = 50000;
+        private const int MaxCharsInRte = 50000;
 
         //how many characters to "chop off" the rich text output control when it reaches its max.
-        private const int _charsToRemoveWhenMaxReached = 10000;
+        private const int CharsToRemoveWhenMaxReached = 10000;
 
         // Default construtor - attach the VAlidateRemoteCertificate to the validation check so we don't get errors on self signed certificates 
         //when attaching to Connection servers.
@@ -135,9 +139,9 @@ namespace ConnectionCUPIFunctions
         }
 
         #endregion
-        
 
-        #region Methods
+
+        #region Helper Methods
 
         /// <summary>
         /// If the calling client has passed in a handle to a Rich Text Edit box we can optionally drop inbound and outbound traffic to the 
@@ -161,10 +165,10 @@ namespace ConnectionCUPIFunctions
             }
 
             //make sure the RTF control doesn't chew up too much space - it's just a progress indicator here...
-            if (RichTextControlToOutputTo.Text.Length > _maxCharsInRte)
+            if (RichTextControlToOutputTo.Text.Length > MaxCharsInRte)
             {
                 //chop off the first X characters without losing any formatting/colors that may be there.
-                RichTextControlToOutputTo.Select(1, _charsToRemoveWhenMaxReached);
+                RichTextControlToOutputTo.Select(1, CharsToRemoveWhenMaxReached);
                 RichTextControlToOutputTo.SelectedText = "";
             }
 
@@ -216,6 +220,188 @@ namespace ConnectionCUPIFunctions
 
         }
 
+        /// <summary>
+        /// strips out the preamble when a search is done that can return more than one item - the items count and class
+        /// name leading up to the actual result is stripped off along with the accompanying trailing curly brace - if the 
+        /// preamble is not there then it does not strip either off.
+        /// </summary>
+        /// <param name="pJson"></param>
+        /// <param name="pClassName"></param>
+        /// <param name="pAddBrackets"></param>
+        /// <returns></returns>
+        public static string StripJsonOfObjectWrapper(string pJson, string pClassName, bool pAddBrackets = false)
+        {
+            string pTokenName = string.Format("\"{0}\":", pClassName);
+            string strCleanJson;
+            if (pJson.ToLower().Contains(pTokenName.ToLower()))
+            {
+                strCleanJson = pJson.TrimToEndOfToken(pTokenName).TrimTokenFromEnd("}");
+            }
+            else
+            {
+                strCleanJson = pJson;
+            }
+
+            if (pAddBrackets)
+            {
+                //only add the brackets if they're not there already
+                if (!strCleanJson.StartsWith("["))
+                {
+                    strCleanJson = "[" + strCleanJson + "]";
+                }
+            }
+
+            return strCleanJson;
+        }
+
+
+        /// <summary>
+        /// Generic method for fetching a list of objects from an Json - works for all class types
+        /// </summary>
+        /// <typeparam name="T">
+        /// Type of object to return a list of
+        /// </typeparam>
+        /// <param name="pJson">
+        /// Raw Json returned from the HTTP request
+        /// </param>
+        /// <param name="pTypeNameOverride">
+        /// If you need to use a differnt type name for the JSON parsing, pass it in as a string here - defaults to 
+        /// using the name of the type off the class.
+        /// Used for classes like User and UserFull that need to be parsed using just "User"
+        /// </param>
+        /// <param name="pSerializerSettings">
+        /// Custom serialization settings that can be optionally passed in - can be used for handling ill formed Json scenarios such as 
+        /// arrays presented as single objects for instance.
+        /// </param>
+        /// <returns>
+        /// List of instances of the object type passed in.
+        /// </returns>
+        public static List<T> GetObjectsFromJson<T>(string pJson, string pTypeNameOverride = "", JsonSerializerSettings pSerializerSettings = null)
+        {
+            //chop out the "wrapper" JSON for easier parsing
+
+            string strCleanJson;
+
+            if (string.IsNullOrEmpty(pTypeNameOverride))
+            {
+                strCleanJson = StripJsonOfObjectWrapper(pJson, typeof(T).Name, true);
+            }
+            else
+            {
+                strCleanJson = StripJsonOfObjectWrapper(pJson, pTypeNameOverride, true);
+            }
+
+            try
+            {
+                if (pSerializerSettings == null)
+                {
+                    return JsonConvert.DeserializeObject<List<T>>(strCleanJson);
+                }
+                return JsonConvert.DeserializeObject<List<T>>(strCleanJson, pSerializerSettings);
+            }
+            catch (Exception ex)
+            {
+                if (Debugger.IsAttached) Debugger.Break();
+                Console.WriteLine("Failed in GetObjectsFromJson:" + ex);
+                return new List<T>();
+            }
+        }
+
+        /// <summary>
+        /// Generic method for fetching a list of objects from an Json - works for all class types
+        /// </summary>
+        /// <typeparam name="T">
+        /// Type of class to fill in.
+        /// </typeparam>
+        /// <param name="pJson">
+        /// Json text to parse
+        /// </param>
+        /// <param name="pTypeNameOverride">
+        /// If what's returned via the JSON text does not match the class name itself, you can override it 
+        /// with this string.  Needed when parsing UserBase, UserFull and other classes that don't match.
+        /// </param>
+        /// <param name="pSerializerSettings">
+        /// Custom serialization settings that can be optionally passed in - can be used for handling ill formed Json scenarios such as 
+        /// arrays presented as single objects for instance.
+        /// </param>
+        /// <returns>
+        /// Instance of the class passed in filled out (hopefully) with the data from the JSON text.
+        /// </returns>
+        public static T GetObjectFromJson<T>(string pJson, string pTypeNameOverride = "", JsonSerializerSettings pSerializerSettings = null) where T : new()
+        {
+            //chop out the "wrapper" JSON for easier parsing
+            string strCleanJson;
+            if (string.IsNullOrEmpty(pTypeNameOverride))
+            {
+                strCleanJson = StripJsonOfObjectWrapper(pJson, typeof(T).Name);
+            }
+            else
+            {
+                strCleanJson = StripJsonOfObjectWrapper(pJson, pTypeNameOverride);
+            }
+
+            try
+            {
+                if (pSerializerSettings == null)
+                {
+                    return JsonConvert.DeserializeObject<T>(strCleanJson);
+                }
+                return JsonConvert.DeserializeObject<T>(strCleanJson, pSerializerSettings);
+            }
+            catch (Exception ex)
+            {
+                if (Debugger.IsAttached) Debugger.Break();
+                Console.WriteLine("Failed in GetObjectFromJson:" + ex);
+                return new T();
+            }
+        }
+
+        /// <summary>
+        /// Helper method that tacks on zero, one or many clauses onto the end of a URI before sending it to Connection.
+        /// </summary>
+        /// <param name="pUri">
+        /// Uri to build on.  Gets returned unchanged if there are no clauses to add
+        /// </param>
+        /// <param name="pClauses">
+        /// Array of strings representing seperate clauses such as "rowsPerPage=10" for instance.
+        /// </param>
+        /// <returns>
+        /// Update URI with clauses tacked on with ? and & seperators as appropriate - the same URI is returned that is passed in
+        /// if there are no clauses in the params list.
+        /// </returns>
+        public static string AddClausesToUri(string pUri, params string[] pClauses)
+        {
+            string retUri = pUri;
+
+            //Tack on all the search/query/page clauses here if any are passed in.  If an empty string is passed in account
+            //for it here.
+            for (int iCounter = 0; iCounter < pClauses.Length; iCounter++)
+            {
+                if (pClauses[iCounter].Length == 0)
+                {
+                    continue;
+                }
+
+                //if it's the first param seperate the clause from the URL with a ?, otherwise append compound clauses 
+                //seperated by &
+                if (iCounter == 0)
+                {
+                    retUri += "?";
+                }
+                else
+                {
+                    retUri += "&";
+                }
+                retUri += pClauses[iCounter];
+            }
+
+            return retUri;
+        }
+
+        #endregion
+
+
+        #region HTTP Request and Response Methods
 
         /// <summary>
         /// Primary method for sending/fetching data to and from the Connection server via CUPI.  
@@ -260,7 +446,7 @@ namespace ConnectionCUPIFunctions
             res.Success = false;
 
             //ensure that only one thread at a time is in the web request/response section at a time
-            lock (_thisLock)
+            lock (ThisLock)
             {
                 try
                 {
@@ -272,16 +458,31 @@ namespace ConnectionCUPIFunctions
                         return res;
                     }
 
+                    //test if a proxy is present - leave this alone for now.
+                    //IWebProxy proxy = request.Proxy;
+                    //if (request.Proxy != null)
+                    //{
+                    //    Console.WriteLine("Removing proxy: {0}", proxy.GetProxy(request.RequestUri));
+                    //    request.Proxy = null;
+                    //}
+
                     AddToOutputConsole("**** Sending to server ****",Color.Blue);
                     AddToOutputConsole("    URI:" + request.RequestUri, Color.Blue);
                     AddToOutputConsole("    Method:" + pMethod, Color.Blue);
                     AddToOutputConsole("    Body:" + pRequestBody, Color.Blue);
-
+                    
                     request.Method = pMethod.ToString();
                     request.Credentials = new NetworkCredential(pLoginName, pLoginPw);
-                    request.KeepAlive = false;
+                    request.KeepAlive = true;
                     request.Timeout = 15 * 1000;
-                    request.PreAuthenticate = true;
+                    //request.PreAuthenticate = true;
+                    request.Headers.Add("Cache-Control", "no-cache");
+
+                    //always stick the authorization item in the header - the .NET library only does this on a challange
+                    //which wastes a trip
+                    string authInfo = pLoginName + ":" + pLoginPw;
+                    authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
+                    request.Headers["Authorization"] = "Basic " + authInfo;
 
                     //if a session ID is passed in, include it in the header
                     if (!string.IsNullOrEmpty(pJsessionId))
@@ -297,8 +498,8 @@ namespace ConnectionCUPIFunctions
                     else
                     {
                         request.ContentType = @"application/xml";
+                        request.Accept = @"application/xml";
                     }
-                    
 
                     //not all requests have a body - add it only if it's passed in as non empty
                     if (!String.IsNullOrEmpty(pRequestBody))
@@ -434,16 +635,20 @@ namespace ConnectionCUPIFunctions
         /// <param name="pSessionCookie">
         /// Optional session cookie string to include in the request header
         /// </param>
+        /// <param name="pJsonResponse">
+        /// Defaults to getting JSON body as a response, if passed as false XML will be requested instead.
+        /// </param>
         /// <returns>
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
         /// with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        private static WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, string pLoginName, string pLoginPw, string pRequestBody, 
-            string pSessionCookie="")
+        private static WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, string pLoginName, string pLoginPw, string pRequestBody,
+            string pSessionCookie = "", bool pJsonResponse = true)
         {
 
-            WebCallResult res = GetHttpResponse(pUrl, pMethod, pLoginName, pLoginPw, pRequestBody, false, pSessionCookie);
-
+            WebCallResult res = GetHttpResponse(pUrl, pMethod, pLoginName, pLoginPw, pRequestBody, pJsonResponse, pSessionCookie);
+            
+            res.TotalObjectCount = 0;
             //if we get a result text blob back, try and parse it out and check for a "total" item in there.  This gets used for 
             //paging scenarios and such.
             if (res.Success == false || string.IsNullOrEmpty(res.ResponseText))
@@ -451,20 +656,62 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            //return the results as an XML set if there's anything provided.
-            res.XmlElement = GetXElementFromString(res.ResponseText);
-
-            //if we're doing a GET query there will be a "total" attribute on the returned XML indicating how many objects matched on the server
-            //side which may be more than the result set being returned if we're paging results (which we must on large systems).  Fetch this 
-            //value off and include it in the result set if its there.
-            res.TotalObjectCount = 0;
-
-            if ((res.XmlElement != null) && res.XmlElement.Attribute("total") != null)
+            //parse out the response body into a dictionary or an XMLElement structure depending on what the format of the response
+            //body is.
+            if (pJsonResponse)
             {
-                var xAttribute = res.XmlElement.Attribute("total");
-                if (xAttribute != null)
+                //if the query was a list the total number of telements will be given at the front of the response text like this:
+                //{"@total":"2",
+                //just manually parse it for a total attribute rather than spending the cycles putting the entire response into a 
+                //dictionary first
+                if (!string.IsNullOrEmpty(res.ResponseText))
                 {
-                    res.TotalObjectCount = int.Parse(xAttribute.Value);
+                    int iPos = res.ResponseText.IndexOf("{\"@total\":\"");
+                    if (iPos < 0 | iPos > 10)
+                    {
+                        //not a valid position or missing
+                        return res;
+                    }
+
+                    //account for length of "total" token
+                    iPos += 11;
+
+                    int iPos2 = res.ResponseText.IndexOf(",", iPos, StringComparison.InvariantCulture);
+                    if (iPos2 <= iPos | iPos2 > 20)
+                    {
+                        //invalid
+                        return res;
+                    }
+
+                    string strCount = res.ResponseText.Substring(iPos, iPos2-iPos).TrimEnd('\"').TrimStart('\"');
+                    int iTemp;
+                    if (int.TryParse(strCount, out iTemp))
+                    {
+                        res.TotalObjectCount = iTemp;
+                    }
+                    else
+                    {
+                        if (Debugger.IsAttached) Debugger.Break();
+                    }
+                    return res;
+                }
+            }
+            else
+            {
+                //return the results as an XML set if there's anything provided.
+                res.XmlElement = GetXElementFromString(res.ResponseText);
+                //if we're doing a GET query there will be a "total" attribute on the returned XML indicating how many objects matched on the server
+                //side which may be more than the result set being returned if we're paging results (which we must on large systems).  Fetch this 
+                //value off and include it in the result set if its there.
+                res.TotalObjectCount = 0;
+
+                if ((res.XmlElement != null) && res.XmlElement.Attribute("total") != null)
+                {
+                    var xAttribute = res.XmlElement.Attribute("total");
+                    if (xAttribute != null)
+                    {
+                        res.TotalObjectCount = int.Parse(xAttribute.Value);
+                    }
                 }
             }
 
@@ -489,11 +736,13 @@ namespace ConnectionCUPIFunctions
         /// If the command (for instance a POST) include the need for a post body for additional data, include it here.  Not all commands
         /// require this (GET calls for instance).
         /// </param>
+        /// <param name="pJson"></param>
         /// <returns>
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
         /// with the call so the calling party can easily log details in the event of a failure.
         /// </returns>        
-        public static WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServer pConnectionServer,string pRequestBody)
+        public static WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServer pConnectionServer,string pRequestBody,
+            bool pJson = true)
         {
             //invalidate the cookie if it's been more than a minute - more aggressive than necessary but safe.
             if ((DateTime.Now - pConnectionServer.LastSessionActivity).TotalSeconds > 60)
@@ -501,8 +750,8 @@ namespace ConnectionCUPIFunctions
                 pConnectionServer.LastSessionCookie = "";
             }
 
-            WebCallResult res = GetCupiResponse(pUrl, pMethod, pConnectionServer.LoginName, pConnectionServer.LoginPw,pRequestBody, 
-                pConnectionServer.LastSessionCookie);
+            WebCallResult res = GetCupiResponse(pUrl, pMethod, pConnectionServer.LoginName, pConnectionServer.LoginPw,pRequestBody,
+                pConnectionServer.LastSessionCookie, pJson);
 
             //update the details of the session cookie and last connect time.
             if (res.Success && !string.IsNullOrEmpty(res.SessionCookie))
@@ -513,6 +762,7 @@ namespace ConnectionCUPIFunctions
             return res;
         }
 
+        
 
         /// <summary>
         /// 
@@ -620,8 +870,9 @@ namespace ConnectionCUPIFunctions
             //use the JavaScriptSerializer to dump what's in the returned text into the string/object dictionary.  
             try
             {
-                var jss = new JavaScriptSerializer();
-                pResults = jss.Deserialize<Dictionary<string, object>>(res.ResponseText);
+                //var jss = new JavaScriptSerializer();
+                //pResults = jss.Deserialize<Dictionary<string, object>>(res.ResponseText);
+                pResults = JsonConvert.DeserializeObject<Dictionary<string, object>>(res.ResponseText);
             }
             catch (Exception ex)
             {
@@ -714,8 +965,7 @@ namespace ConnectionCUPIFunctions
             //use the JavaScriptSerializer to dump what's in the returned text into the string/object dictionary.  
             try
             {
-                var jss = new JavaScriptSerializer();
-                oTopLevel = jss.Deserialize<Dictionary<string, object>>(res.ResponseText);
+                oTopLevel = JsonConvert.DeserializeObject<Dictionary<string, object>>(res.ResponseText);
             }
             catch (Exception ex)
             {
@@ -776,7 +1026,12 @@ namespace ConnectionCUPIFunctions
             
             try
             {
-                reader = new StreamReader(pResponse.GetResponseStream());
+                var oStream = pResponse.GetResponseStream();
+                if (oStream == null)
+                {
+                    return "Failure getting response stream";
+                }
+                reader = new StreamReader(oStream);
             }
             catch (Exception ex)
             {
@@ -816,6 +1071,10 @@ namespace ConnectionCUPIFunctions
             }
         }
 
+        #endregion
+
+
+        #region Recorded Media Handling Methods
 
         /// <summary>
         ///     This routine is used for download a WAV file from a remote Connection server for a voice name or greeting.  Note that this cannot be used for 
@@ -943,7 +1202,7 @@ namespace ConnectionCUPIFunctions
 
 
             //ensure that only one thread at a time is in the web request/response section at a time
-            lock (_thisLock)
+            lock (ThisLock)
             {
                 //if the target file is already occupied, delete it here.
                 if (File.Exists(pLocalWavFilePath))
@@ -961,6 +1220,13 @@ namespace ConnectionCUPIFunctions
 
                     webReq.Credentials = new NetworkCredential(pLogin, pPassword);
                     webReq.KeepAlive = false;
+                    
+                    //always stick the authorization item in the header - the .NET library only does this on a challange
+                    //which wastes a trip
+                    string authInfo = pLogin + ":" + pPassword;
+                    authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
+                    webReq.Headers["Authorization"] = "Basic " + authInfo;
+
                     HttpWebResponse response = (HttpWebResponse)webReq.GetResponse();
                     Stream sourceStream = response.GetResponseStream();
 
@@ -988,7 +1254,7 @@ namespace ConnectionCUPIFunctions
                         } while (blockSize > 0);
                     }
 
-                    //Get the response handle
+                    //GET the response handle
                     HttpWebResponse webResp = (HttpWebResponse)webReq.GetResponse();
 
                     //Now, read the response (the string), and output it.
@@ -1137,12 +1403,19 @@ namespace ConnectionCUPIFunctions
                 webReq.AllowWriteStreamBuffering = false;
                 webReq.PreAuthenticate = true;
 
+                //always stick the authorization item in the header - the .NET library only does this on a challange
+                //which wastes a trip
+                string authInfo = pLogin + ":" + pPassword;
+                authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
+                webReq.Headers["Authorization"] = "Basic " + authInfo;
+
+
                 //open a stream for writing the postvars
                 Stream postData = webReq.GetRequestStream();
                 postData.Write(buffer, 0, buffer.Length);
                 postData.Close();
 
-                //Get the response handle
+                //GET the response handle
                 HttpWebResponse webResp = (HttpWebResponse)webReq.GetResponse();
 
                 //Now, read the response (the string), and output it.
@@ -1282,6 +1555,13 @@ namespace ConnectionCUPIFunctions
             webrequest.ContentType = "multipart/form-data;boundary=" + boundary;
             webrequest.Method = "POST";
             webrequest.Credentials = new NetworkCredential(pLogin, pPassword);
+
+            //always stick the authorization item in the header - the .NET library only does this on a challange
+            //which wastes a trip
+            string authInfo = pLogin + ":" + pPassword;
+            authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
+            webrequest.Headers["Authorization"] = "Basic " + authInfo;
+
             //format the date/time so CUMI likes it.
             string strStartDate = string.Format("{0} {1}", pStartDate.ToString("yyyy-MM-dd"),pStartTime.ToString("HH:mm:ss.000"));
             string strEndDate = string.Format("{0} {1}", pEndDate.ToString("yyyy-MM-dd"), pEndTime.ToString("HH:mm:ss.000"));
@@ -1372,10 +1652,17 @@ namespace ConnectionCUPIFunctions
                 {
                     if (webrequest.HaveResponse && response != null)
                     {
-                        var reader = new StreamReader(response.GetResponseStream());
+                        var oStream = response.GetResponseStream();
+                        if (oStream == null)
+                        {
+                            res.ErrorText = "Unable to get response stream.";
+                            return res;
+                        }
+                        var reader = new StreamReader(oStream);
                         res.StatusCode = (int) response.StatusCode;
                         res.ResponseText=GetResponseText(response);
                         res.Success = true;
+                        reader.Dispose();
                     }
                 }
             }
@@ -1495,6 +1782,12 @@ namespace ConnectionCUPIFunctions
             webrequest.Method = "POST";
             webrequest.Credentials = new NetworkCredential(pLogin, pPassword);
 
+            //always stick the authorization item in the header - the .NET library only does this on a challange
+            //which wastes a trip
+            string authInfo = pLogin + ":" + pPassword;
+            authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
+            webrequest.Headers["Authorization"] = "Basic " + authInfo;
+
             //if a session ID is passed in, include it in the header
             if (!string.IsNullOrEmpty(pSessionCookie))
             {
@@ -1571,10 +1864,17 @@ namespace ConnectionCUPIFunctions
                 {
                     if (webrequest.HaveResponse && response != null)
                     {
-                        var reader = new StreamReader(response.GetResponseStream());
+                        var oStream = response.GetResponseStream();
+                        if (oStream == null)
+                        {
+                            res.ErrorText = "Unable to get response stream";
+                            return res;
+                        }
+                        var reader = new StreamReader(oStream);
                         res.StatusCode = (int)response.StatusCode;
                         res.ResponseText = GetResponseText(response);
                         res.Success = true;
+                        reader.Dispose();
                     }
                 }
             }
@@ -1684,6 +1984,13 @@ namespace ConnectionCUPIFunctions
             webrequest.Timeout = 15 * 1000;
             webrequest.ContentType = "multipart/form-data;boundary=" + boundary;
             webrequest.Method = "POST";
+
+            //always stick the authorization item in the header - the .NET library only does this on a challange
+            //which wastes a trip
+            string authInfo = pLogin + ":" + pPassword;
+            authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
+            webrequest.Headers["Authorization"] = "Basic " + authInfo;
+
             webrequest.Credentials = new NetworkCredential(pLogin, pPassword);
 
             //if a session ID is passed in, include it in the header
@@ -1758,10 +2065,17 @@ namespace ConnectionCUPIFunctions
                 {
                     if (webrequest.HaveResponse && response != null)
                     {
-                        var reader = new StreamReader(response.GetResponseStream());
+                        var oStream = response.GetResponseStream();
+                        if (oStream == null)
+                        {
+                            res.ErrorText = "Unable to get response stream";
+                            return res;
+                        }
+                        var reader = new StreamReader(oStream);
                         res.StatusCode = (int)response.StatusCode;
                         res.ResponseText = GetResponseText(response);
                         res.Success = true;
+                        reader.Dispose();
                     }
                 }
             }
@@ -1867,7 +2181,7 @@ namespace ConnectionCUPIFunctions
 
             string strUrl = string.Format("https://{0}:8443/vmrest/voicefiles", pServerName);
             
-            WebCallResult res = GetCupiResponse(strUrl, MethodType.Post, pLogin, pPassword, "");
+            WebCallResult res = GetCupiResponse(strUrl, MethodType.POST, pLogin, pPassword, "");
 
             if (res.Success==false)
             {

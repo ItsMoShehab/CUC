@@ -14,10 +14,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Web.Script.Serialization;
 using System.Xml.Linq;
 using System.Diagnostics;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     // Class to hold the Connection version information - this is gathered when the server is attached to along with a few other
     // commonly needed items such as the primary location object ID.
@@ -116,16 +117,53 @@ namespace ConnectionCUPIFunctions
 
         //lazy fetch implementation for fetching the primary location objectId for the Connection server this instance is 
         //pointing to.
-        private string _primaryLocationObjectId = "";
+        private Location _primaryLocation;
         public string PrimaryLocationObjectId { 
             get
             {
-                if (string.IsNullOrEmpty(_primaryLocationObjectId))
+                if (_primaryLocation == null)
                 {
-                    _primaryLocationObjectId = GetPrimaryLocationObjectId();
+                    _primaryLocation = GetPrimaryLocation();
                 }
-                return _primaryLocationObjectId;
+                
+                if (_primaryLocation == null)
+                {
+                    return "";
+                }
+
+                return _primaryLocation.ObjectId;
             }  
+        }
+
+        //Lazy fetch for getting the VMSserver ObjectID
+        private VmsServer _vmsServer;
+        public string VmsServerObjectId
+        {
+            get
+            {
+                if (_vmsServer == null)
+                {
+                    _vmsServer = GetVmsServer();
+                }
+
+                if (_vmsServer == null) return "";
+                return _vmsServer.VmsServerObjectId;
+            }
+        }
+
+        //Laxy fetch for getting VMSServer name.
+        public string VmsServerName
+        {
+            get
+            {
+                if (_vmsServer == null)
+                {
+                    _vmsServer = GetVmsServer();
+                }
+                if (_vmsServer == null) return "";
+
+                return _vmsServer.ServerName;
+            }
         }
 
         #endregion 
@@ -221,25 +259,49 @@ namespace ConnectionCUPIFunctions
             this.LoginName = pLoginName;
             this.LoginPw = pLoginPw;
 
-            WebCallResult ret = HTTPFunctions.GetCupiResponse(BaseUrl + "version", MethodType.Get, this,"");
+            WebCallResult ret = HTTPFunctions.GetCupiResponse(BaseUrl + "version", MethodType.GET, this,"");
 
             if (ret.Success==false)
             {
                 return ret;
             }
 
-            if (ret.XmlElement == null || (ret.XmlElement.HasElements == false) || ret.XmlElement.Element("version") == null)
+            string strVersion;
+            Dictionary<string, string> oResponse;
+            if (string.IsNullOrEmpty(ret.ResponseText))
+            //if (ret.JsonResponse == null || !ret.JsonResponse.Any() || !ret.JsonResponse.TryGetValue("version", out strVersion))
             {
-                //invalid XML returned
-                ret.ErrorText=string.Format("Invalid version XML returned logging into Connection server: {0}, return text={1}", pServerName, ret.ResponseText);
+                //invalid JSON returned
+                ret.ErrorText = string.Format("Invalid version XML returned logging into Connection server: {0}, return text={1}", pServerName, ret.ResponseText);
                 ret.Success = false;
                 return ret;
             }
 
-            if (ParseVersionString(ret.XmlElement.Element("version").Value) == false)
+            try
+            {
+                oResponse = new JavaScriptSerializer().Deserialize<Dictionary<string, string>>(ret.ResponseText);
+            }
+            catch (Exception ex)
+            {
+                ret.ErrorText = string.Format("Invalid version XML returned logging into Connection server: {0}, return text={1}, error={2}", 
+                    pServerName, ret.ResponseText,ex);
+                ret.Success = false;
+                return ret;
+            }
+
+            //if (ret.XmlElement == null || (ret.XmlElement.HasElements == false) || ret.XmlElement.Element("version") == null)
+            //{
+            //    //invalid XML returned
+            //    ret.ErrorText=string.Format("Invalid version XML returned logging into Connection server: {0}, return text={1}", pServerName, ret.ResponseText);
+            //    ret.Success = false;
+            //    return ret;
+            //}
+            oResponse.TryGetValue("version", out strVersion);
+
+            if (ParseVersionString(strVersion) == false)
             {
               	//Invalid version string encountered (or no version string returned).
-               ret.ErrorText= String.Format("No version version returned in XML logging into Connection server: {0}, return text={1}", pServerName, ret.ResponseText);
+               ret.ErrorText= String.Format("No version version returned logging into Connection server: {0}, return text={1}", pServerName, ret.ResponseText);
                 ret.Success = false;
                 return ret;
             }
@@ -683,7 +745,7 @@ namespace ConnectionCUPIFunctions
         /// Password (GUI password - not the PIN for the phone password) for the user to verify.
         /// </param>
         /// <param name="pUser">
-        /// If a match is found and the password is valid an instance of UserBase is created and filled in with the target user's 
+        /// If a match is found and the password is valid an instance of User is created and filled in with the target user's 
         /// details and passed back on this out parameter
         /// </param>
         /// <returns>
@@ -709,7 +771,7 @@ namespace ConnectionCUPIFunctions
         }
 
         /// <summary>
-        /// Version of the validate user method that does not return an instance of UserBase - this eliminates the need for a 2nd
+        /// Version of the validate user method that does not return an instance of User - this eliminates the need for a 2nd
         /// fetch request and is quicker as a result - if you only need to verify that a user's password is valid but don't need 
         /// to do anything with that user, this is the version to use.
         /// </summary>
@@ -742,7 +804,7 @@ namespace ConnectionCUPIFunctions
         /// <returns>
         /// Primary location objectId for the Connection server.
         /// </returns>
-        private string GetPrimaryLocationObjectId()
+        private Location GetPrimaryLocation()
         {
             List<Location> oList;
 
@@ -751,17 +813,52 @@ namespace ConnectionCUPIFunctions
 
             if (res.Success == false)
             {
-                return "";
+                return null;
             }
 
             if (oList.Count != 1)
             {
-                return "";
+                return null;
             }
 
-            return oList[0].ObjectId;
+            return oList[0];
         }
 
+        /// <summary>
+        /// Simple method to fetch the VMSServer ObjectId for the Connection server attached to this instance of the ConnectionServer class.
+        /// If this is a cluster the ObjectId of the VMSServer that corresponds to the IP address of the Connection server this instance is 
+        /// attached to is returned.  
+        /// </summary>
+        /// <returns>
+        /// ObjectId of the VMSServer currently attached.
+        /// </returns>
+        private VmsServer GetVmsServer()
+        {
+            List<VmsServer> oList;
+            //there should only ever be one location defined that has the "isprimary" set to true.
+            WebCallResult res = VmsServer.GetVmsServers(this, out oList);
+
+            if (res.Success == false)
+            {
+                return null;
+            }
+
+            if (oList.Count == 0)
+            {
+                return null;
+            }
+
+            //select the one that matches the Connection server's IP address we're connected to
+            foreach (var oServer in oList)
+            {
+                if (oServer.HomeServer.ServerName == this.ServerName )
+                {
+                    return oServer;
+                }
+            }
+
+            return null;
+        }
 
 
         /// <summary>

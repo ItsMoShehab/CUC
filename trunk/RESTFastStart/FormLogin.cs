@@ -11,7 +11,7 @@
 
 using System;
 using System.Windows.Forms;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 
 namespace CUPIFastStart
 {

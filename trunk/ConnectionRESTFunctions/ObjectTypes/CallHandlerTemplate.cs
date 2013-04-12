@@ -11,12 +11,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The call handler template class is used only to provide an interface for user to select which template to use when creating new call 
@@ -26,7 +25,7 @@ namespace ConnectionCUPIFunctions
     {
         #region Fields and Properties
 
-        private ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         public string DisplayName { get; set; }
         public string ObjectId { get; set; }
@@ -36,6 +35,20 @@ namespace ConnectionCUPIFunctions
 
         #region Constructors
 
+
+        /// <summary>
+        /// default constructor used by JSON parser
+        /// </summary>
+        public CallHandlerTemplate()
+        {
+        }
+
+        /// <summary>
+        /// constructor with server and optional display name items
+        /// </summary>
+        /// <param name="pConnectionServer"></param>
+        /// <param name="pObjectId"></param>
+        /// <param name="pDisplayName"></param>
         public CallHandlerTemplate(ConnectionServer pConnectionServer, string pObjectId, string pDisplayName="")
         {
             if (pConnectionServer==null)
@@ -43,14 +56,18 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Null ConnectionServer referenced passed to CallHandlerTemplate construtor");
             }
 
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pDisplayName))
             {
                 return;
             }
 
-            GetCallHandlerTemplate(pObjectId, pDisplayName);
+            WebCallResult res = GetCallHandlerTemplate(pObjectId, pDisplayName);
+            if (res.Success == false)
+            {
+                throw new Exception("Failed to fetch handler template by alias or objectId:"+res);
+            }
 
         }
 
@@ -69,13 +86,20 @@ namespace ConnectionCUPIFunctions
         /// <param name="pCallHandlerTemplates">
         /// Out parameter that is used to return the list of CallHandlerTemplate objects defined on Connection - there must be at least one.
         /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetCallHandlerTemplates(ConnectionServer pConnectionServer, out List<CallHandlerTemplate> pCallHandlerTemplates)
+        public static WebCallResult GetCallHandlerTemplates(ConnectionServer pConnectionServer, out List<CallHandlerTemplate> pCallHandlerTemplates
+            , int pPageNumber = 1, int pRowsPerPage = 20)
         {
             WebCallResult res;
-            pCallHandlerTemplates = null;
+            pCallHandlerTemplates = new List<CallHandlerTemplate>();
 
             if (pConnectionServer == null)
             {
@@ -84,41 +108,40 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + "callhandlertemplates";
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "callhandlertemplates", "pageNumber=" + pPageNumber, 
+                "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements may be empty, that's legal
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that means an error in this case - should always be at least one template
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount==0)
             {
-                pCallHandlerTemplates = new List<CallHandlerTemplate>();
+                res.Success = false;
                 return res;
             }
 
-            pCallHandlerTemplates = GetCallHandlerTemplatesFromXElements(pConnectionServer, res.XmlElement);
+            pCallHandlerTemplates = HTTPFunctions.GetObjectsFromJson<CallHandlerTemplate>(res.ResponseText);
+
+            if (pCallHandlerTemplates == null)
+            {
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pCallHandlerTemplates)
+            {
+                oObject.HomeServer = pConnectionServer;
+            }
+
             return res;
-        }
-
-
-        //Helper function to take an XML blob returned from the REST interface for handler templates returned and convert it into an generic
-        //list of CallHandlerTemplate class objects.  
-        private static List<CallHandlerTemplate> GetCallHandlerTemplatesFromXElements(ConnectionServer pConnetionServer, XElement pXElement)
-        {
-            //Use LINQ to XML to create a list of handler template objects in a single statement.
-            IEnumerable<CallHandlerTemplate> callHandlerTemplates = from e in pXElement.Elements()
-                                                      where e.Name.LocalName == "CallhandlerTemplate"
-                                                      select new CallHandlerTemplate(pConnetionServer, e.Element("ObjectId").Value)
-                                                                 {
-                                                                     DisplayName = (e.Element("DisplayName") == null) ? "" : e.Element("DisplayName").Value,
-                                                                 };
-
-            return callHandlerTemplates.ToList();
         }
 
 
@@ -215,15 +238,15 @@ namespace ConnectionCUPIFunctions
         /// Fills the current instance with details of a call handler template fetched using the ObjectID or the name.
         /// </summary>
         /// <param name="pObjectId">
-        /// ObjectId to search for - can be empty if name provided.
+        ///     ObjectId to search for - can be empty if name provided.
         /// </param>
         /// <param name="pDisplayName">
-        /// display name to search for.
+        ///     display name to search for.
         /// </param>
         /// <returns>
         /// Instance of the webCallSearchResult class.
         /// </returns>
-        private WebCallResult GetCallHandlerTemplate(string pObjectId,string pDisplayName)
+        private WebCallResult GetCallHandlerTemplate(string pObjectId, string pDisplayName)
 
         {
             string strObjectId = pObjectId;
@@ -234,36 +257,32 @@ namespace ConnectionCUPIFunctions
                 if (string.IsNullOrEmpty(strObjectId))
                 {
                     return new WebCallResult
-                    {
-                        Success = false,
-                        ErrorText = "No template found by name=" + pDisplayName
-                    };
+                        {
+                            Success = false,
+                            ErrorText = "Empty ObjectId passed to GetHandlerTemplate"
+                        };
                 }
             }
 
-            string strUrl = string.Format("{0}callhandlertemplates/{1}", _homeServer.BaseUrl, strObjectId);
+            string strUrl = string.Format("{0}callhandlertemplates/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
+                JsonConvert.PopulateObject(res.ResponseText, this);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                 res.Success = false;
-                return res;
             }
-
-            //populate this call handler instance with data from the XML fetch
-            foreach (XElement oElement in res.XmlElement.Elements())
-            {
-                _homeServer.SafeXmlFetch(this, oElement);
-            }
-
             return res;
         }
 
@@ -278,27 +297,23 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         private string GetObjectIdFromName(string pName)
         {
-            string strUrl = string.Format("{0}callhandlertemplates/?query=(DisplayName is {1})", _homeServer.BaseUrl, pName);
+            string strUrl = string.Format("{0}callhandlertemplates/?query=(DisplayName is {1})", HomeServer.BaseUrl, pName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
-            if (res.Success == false)
+            if (res.Success == false || res.TotalObjectCount ==0)
             {
                 return "";
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
-            {
-                return "";
-            }
+            List<CallHandlerTemplate> oTemplates = HTTPFunctions.GetObjectsFromJson<CallHandlerTemplate>(res.ResponseText);
 
-            foreach (var oElement in res.XmlElement.Elements().Elements())
+            foreach (var oTemplate in oTemplates)
             {
-                if (oElement.Name.ToString().Equals("ObjectId"))
+                if (oTemplate.DisplayName.Equals(pName, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return oElement.Value;
+                    return oTemplate.ObjectId;
                 }
             }
 

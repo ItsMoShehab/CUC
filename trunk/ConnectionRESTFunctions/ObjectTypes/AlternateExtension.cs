@@ -14,9 +14,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The AlternateExtension class contains all the properties associated with an Alternate Extension in Unity Connection that can be fetched 
@@ -27,6 +27,15 @@ namespace ConnectionCUPIFunctions
     {
 
         #region Constructors
+
+        /// <summary>
+        /// General constructor used in the JSON parsing routines.
+        /// </summary>
+        public AlternateExtension()
+        {
+            //make an instanced of the changed prop list to keep track of updated properties on this object
+            _changedPropList = new ConnectionPropertyList();
+        }
 
         /// <summary>
         /// Creates a new instance of the AlternateExtension class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
@@ -44,7 +53,7 @@ namespace ConnectionCUPIFunctions
         /// Optional parameter for the unique ID of the extension on the home server provided.  If no ObjectId is passed then an empty instance of the 
         /// AlternateExtension class is returned instead.
         /// </param>
-        public AlternateExtension(ConnectionServer pConnectionServer, string pUserObjectId, string pObjectId = "")
+        public AlternateExtension(ConnectionServer pConnectionServer, string pUserObjectId, string pObjectId = ""):this()
         {
             if (pConnectionServer == null)
             {
@@ -56,10 +65,7 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Invalid UserObjectID passed to AlternateExtension constructor.");
             }
 
-            //make an instanced of the changed prop list to keep track of updated properties on this object
-            _changedPropList = new ConnectionPropertyList();
-
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             //remember the objectID of the owner of the alternate extension as the CUPI interface requires this in the URL construction
             //for operations editing/deleting them.
@@ -85,10 +91,10 @@ namespace ConnectionCUPIFunctions
 
 
         //reference to the ConnectionServer object used to create this Alternate Extension instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         //used to keep track of whic properties have been updated
-        private ConnectionPropertyList _changedPropList;
+        private readonly ConnectionPropertyList _changedPropList;
 
         private int _idIndex;
 
@@ -127,7 +133,10 @@ namespace ConnectionCUPIFunctions
         }
 
         //can't change the ObjectId value of a  standing object
+        [JsonProperty]
         public string ObjectId { get; private set; }
+
+        //owner of the alternate extension - set only in constructor
         public string UserObjectId { get; private set; }
 
         private string _partitionObjectId;
@@ -206,7 +215,7 @@ namespace ConnectionCUPIFunctions
         /// <param name="pUserObjectId">
         /// GUID identifying the user that owns the alternate extensions to be fetched.
         /// </param>
-        /// <param name="pAlternateExtension">
+        /// <param name="pAlternateExtensions">
         /// The list of alternate extension objects are returned using this out parameter.
         /// </param>
         /// <returns>
@@ -214,12 +223,12 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public static WebCallResult GetAlternateExtensions(ConnectionServer pConnectionServer, 
                                                             string pUserObjectId,
-                                                           out List<AlternateExtension> pAlternateExtension)
+                                                           out List<AlternateExtension> pAlternateExtensions)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
 
-            pAlternateExtension = null;
+            pAlternateExtensions = null;
 
             if (pConnectionServer == null)
             {
@@ -230,60 +239,39 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}users/{1}/alternateextensions", pConnectionServer.BaseUrl, pUserObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements may be empty, that's legal
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that does not mean an error - return true here along with an empty list.
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
-                pAlternateExtension= new List<AlternateExtension>();
+                pAlternateExtensions = new List<AlternateExtension>();
                 return res;
             }
 
-            pAlternateExtension = GetAlternateExtensionsFomXElements(pConnectionServer,pUserObjectId, res.XmlElement);
-            return res;
+            pAlternateExtensions = HTTPFunctions.GetObjectsFromJson<AlternateExtension>(res.ResponseText);
 
-        }
-
-
-
-
-        //Helper function to take an XML blob returned from the REST interface for an exension (or exensions) return and convert it into an generic
-        //list of AlternateExtension class objects. 
-        private static List<AlternateExtension> GetAlternateExtensionsFomXElements(ConnectionServer pConnectionServer,
-                                                                                    string pUserObjectId,
-                                                                                   XElement pXElement)
-        {
-            List<AlternateExtension> oAltExtensions = new List<AlternateExtension>();
-
-            //pull out a set of XMLElements for each AlternateExtension object returned using the power of LINQ
-            var alternateExtensions = from e in pXElement.Elements()
-                                      where e.Name.LocalName == "AlternateExtension"
-                                      select e;
-
-            //for each extension returned in the list of extensions from the XML, construct an AlternteExtension object using the elements associated with that 
-            //extension.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlAltExtension in alternateExtensions)
+            if (pAlternateExtensions == null)
             {
-                AlternateExtension oAlternateExtension = new AlternateExtension(pConnectionServer,pUserObjectId);
-                foreach (XElement oElement in oXmlAltExtension.Elements())
-                {
-                    //adds the XML property to the AlternateExtension object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oAlternateExtension, oElement);
-                }
-
-                oAlternateExtension.ClearPendingChanges();
-
-                //add the fully populated AlternateExtension object to the list that will be returned to the calling routine.
-                oAltExtensions.Add(oAlternateExtension);
+                pAlternateExtensions = new List<AlternateExtension>();
+                return res;
             }
 
-            return oAltExtensions;
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pAlternateExtensions)
+            {
+                oObject.ClearPendingChanges();
+                oObject.HomeServer = pConnectionServer;
+                oObject.UserObjectId = pUserObjectId;
+            }
+
+            return res;
         }
 
 
@@ -348,7 +336,7 @@ namespace ConnectionCUPIFunctions
             res =
                 HTTPFunctions.GetCupiResponse(
                     string.Format("{0}users/{1}/alternateextensions", pConnectionServer.BaseUrl, pUserObjectId),
-                    MethodType.Post,pConnectionServer,strBody);
+                    MethodType.POST,pConnectionServer,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -408,7 +396,7 @@ namespace ConnectionCUPIFunctions
 
 
         /// <summary>
-        /// Delete an alternate extension associated with a user.
+        /// DELETE an alternate extension associated with a user.
         /// </summary>
         /// <param name="pConnectionServer">
         /// The Connection server that houses the user that owns the alternate extension to be removed.
@@ -432,7 +420,7 @@ namespace ConnectionCUPIFunctions
             }
 
             return HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/alternateextensions/{2}",pConnectionServer.BaseUrl,pUserObjectId, pObjectId),
-                                            MethodType.Delete,pConnectionServer, "");
+                                            MethodType.DELETE,pConnectionServer, "");
         }
 
         /// <summary>
@@ -487,7 +475,7 @@ namespace ConnectionCUPIFunctions
             strBody += "</AlternateExtension>";
 
             return HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/alternateextensions/{2}", pConnectionServer.BaseUrl, pUserObjectId, pObjectId),
-                                            MethodType.Put,pConnectionServer,strBody);
+                                            MethodType.PUT,pConnectionServer,strBody,false);
 
         }
 
@@ -558,7 +546,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //just call the static method with the info from the instance 
-            res = UpdateAlternateExtension(_homeServer,UserObjectId, ObjectId, _changedPropList);
+            res = UpdateAlternateExtension(HomeServer,UserObjectId, ObjectId, _changedPropList);
 
             //if the update went through then clear the changed properties list.
             if (res.Success)
@@ -570,7 +558,7 @@ namespace ConnectionCUPIFunctions
         }
 
         /// <summary>
-        /// Delete an alternate extension from the Connection directory.
+        /// DELETE an alternate extension from the Connection directory.
         /// </summary>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -578,7 +566,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult Delete()
         {
             //just call the static method with the info on the instance
-            return DeleteAlternateExtension(_homeServer,UserObjectId, ObjectId);
+            return DeleteAlternateExtension(HomeServer,UserObjectId, ObjectId);
         }
 
 
@@ -608,29 +596,24 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         private WebCallResult GetAlternateExtension(string pObjectId)
         {
-            WebCallResult res;
-
-            string strUrl = string.Format("{0}users/{1}/alternateextensions/{2}", _homeServer.BaseUrl,UserObjectId, pObjectId);
+            string strUrl = string.Format("{0}users/{1}/alternateextensions/{2}", HomeServer.BaseUrl,UserObjectId, pObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
-                res.Success = false;
-                return res;
+                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "AlternateExtension"), this);
             }
-
-            //load all of the elements returned into the class object properties
-            foreach (XElement oElement in res.XmlElement.Elements())
+            catch (Exception ex)
             {
-                _homeServer.SafeXmlFetch(this, oElement);
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                res.Success = false;
             }
 
             //all the updates above will flip pending changes into the queue - clear that here.

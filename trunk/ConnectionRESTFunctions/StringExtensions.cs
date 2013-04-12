@@ -1,9 +1,20 @@
-﻿using System;
+﻿#region Legal Disclaimer
+
+//This code and samples are provided “as-is”, responsibility for testing and supporting it lies with you.  In lawyer-ese:
+
+//THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR 
+//OTHER PARTIES PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+//WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. 
+//SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
+
+#endregion
+
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// Extensions to the string class for commonly used items - encodings are a bit of a pain here - UTF8 and UTF16 need to be handled properly
@@ -38,6 +49,61 @@ namespace ConnectionCUPIFunctions
  
             return strTemp;
         }
+
+        /// <summary>
+        /// Trim off everything from the start of a string up to the end of the token passed in.
+        /// </summary>
+        /// <param name="pString"></param>
+        /// <param name="pToken"></param>
+        /// <returns></returns>
+        public static string TrimToEndOfToken(this string pString, string pToken)
+        {
+            if (string.IsNullOrEmpty(pString))
+            {
+                return "";
+            }
+
+            if (string.IsNullOrEmpty(pToken))
+            {
+                return pString;
+            }
+
+            int iPos = pString.IndexOf(pToken, StringComparison.InvariantCultureIgnoreCase);
+            if (iPos < 1)
+            {
+                return pString;
+            }
+
+            return pString.Substring(iPos + pToken.Length);
+
+        }
+
+        /// <summary>
+        /// Pulls a single instance of a token (which can be a character) from the end of a stirng if it's 
+        /// present.  Unlike trimEnd it does NOT remove more than a single instance of it.
+        /// </summary>
+        /// <param name="pString"></param>
+        /// <param name="pToken"></param>
+        /// <returns></returns>
+        public static string TrimTokenFromEnd(this string pString, string pToken)
+        {
+            if (string.IsNullOrEmpty(pString))
+            {
+                return "";
+            }
+
+            if (string.IsNullOrEmpty(pToken))
+            {
+                return pString;
+            }
+
+            if (pString.EndsWith(pToken))
+            {
+                return pString.Substring(0, pString.Length - pToken.Length);
+            }
+            return pString;
+        }
+
 
         /// <summary>
         /// Convert a string into a date format if possible - if the string cannot be converted into a date the original string is 

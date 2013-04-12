@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using System.Xml.Linq;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -114,25 +114,23 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void SaveXMLFetchTest()
         {
-            UserBase oUserBase = new UserBase(_connectionServer);
-            UserFull oUser = new UserFull(_connectionServer);
-
-            XElement oElement;
+            UserBase oUser = new UserBase(_connectionServer);
+            UserFull oUserFull = new UserFull(_connectionServer);
 
             //integer
-            oElement = XElement.Parse("<Language>1234</Language>");
+            XElement oElement = XElement.Parse("<Language>1234</Language>");
             _connectionServer.SafeXmlFetch(oUser,oElement);
             Assert.AreEqual(oUser.Language, 1234, "Language integer did not insert properly.");
 
             //string
             oElement = XElement.Parse("<ConversationTui>SubMenu</ConversationTui>");
-            _connectionServer.SafeXmlFetch(oUser, oElement);
-            Assert.AreEqual(oUser.ConversationTui, "SubMenu", "SubMenu string did not insert properly");
+            _connectionServer.SafeXmlFetch(oUserFull, oElement);
+            Assert.AreEqual(oUserFull.ConversationTui, "SubMenu", "SubMenu string did not insert properly");
 
             //boolean
             oElement = XElement.Parse("<IsTemplate>false</IsTemplate>");
-            _connectionServer.SafeXmlFetch(oUser, oElement);
-            Assert.IsFalse(oUser.IsTemplate,"IsTemplate boolean did not insert properly");
+            _connectionServer.SafeXmlFetch(oUserFull, oElement);
+            Assert.IsFalse(oUserFull.IsTemplate, "IsTemplate boolean did not insert properly");
 
             //DateTime
             oElement = XElement.Parse("<CreationTime>2011-08-27T05:00:21Z</CreationTime>");
@@ -143,7 +141,6 @@ namespace ConnectionCUPIFunctionsTest
             //Unknown property name
             oElement = XElement.Parse("<Bogus>false</Bogus>");
             _connectionServer.SafeXmlFetch(oUser, oElement);
-
         }
 
         /// <summary>
@@ -224,7 +221,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Test various paths down the action string construction path
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void ActionStringConstructions()
         {
             //terminal action types

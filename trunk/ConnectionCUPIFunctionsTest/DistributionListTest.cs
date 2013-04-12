@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Threading;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -361,7 +361,7 @@ namespace ConnectionCUPIFunctionsTest
             //Add a list to it
             DistributionList oNewList;
             res = DistributionList.GetDistributionList(out oNewList, _connectionServer, "", "allvoicemailusers");
-            Assert.IsTrue(res.Success, "Get AllVoiceMail users list failed: "+res.ToString());
+            Assert.IsTrue(res.Success, "GET AllVoiceMail users list failed: "+res.ToString());
 
             res = oList.AddMemberList(oNewList.ObjectId);
             Assert.IsTrue(res.Success, "Adding AllUsersDistribution list as a member to the new list failed: "+res.ToString());

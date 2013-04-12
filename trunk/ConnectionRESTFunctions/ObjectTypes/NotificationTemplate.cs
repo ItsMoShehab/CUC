@@ -1,11 +1,22 @@
-﻿using System;
+﻿#region Legal Disclaimer
+
+//This code and samples are provided “as-is”, responsibility for testing and supporting it lies with you.  In lawyer-ese:
+
+//THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR 
+//OTHER PARTIES PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+//WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. 
+//SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
+
+#endregion
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// Read only class for fetching and listing notification templates - these are used when creating HTML notification devices
@@ -15,10 +26,10 @@ namespace ConnectionCUPIFunctions
     {
         #region Fields and Properties
 
-        public string NotificationTemplateID { get; set; }
+        public string NotificationTemplateId { get; set; }
         public string NotificationTemplateName { get; set; }
 
-        private ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         #endregion
 
@@ -32,7 +43,7 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Null ConnectionServer referenced pasted to NotificationTemplate construtor");
             }
 
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             //if no objectId is passed in just create an empty version of the class - used for constructing lists from XML fetches.
             if (string.IsNullOrEmpty(pObjectId))
@@ -50,6 +61,13 @@ namespace ConnectionCUPIFunctions
             }
         }
 
+        /// <summary>
+        /// Generic constructor for Json parsing libraries
+        /// </summary>
+        public NotificationTemplate()
+        {
+        }
+
         #endregion
 
 
@@ -61,7 +79,7 @@ namespace ConnectionCUPIFunctions
         /// <returns></returns>
         public override string ToString()
         {
-            return string.Format("{0} [{1}]", NotificationTemplateName, NotificationTemplateID);
+            return string.Format("{0} [{1}]", NotificationTemplateName, NotificationTemplateId);
         }
 
         /// <summary>
@@ -101,29 +119,25 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         private WebCallResult GetNotificationTemplate(string pObjectId)
         {
-            string strUrl = string.Format("{0}notificationtemplates/{1}", _homeServer.BaseUrl, pObjectId);
+            string strUrl = string.Format("{0}notificationtemplates/{1}", HomeServer.BaseUrl, pObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+             try
             {
+                JsonConvert.PopulateObject(res.ResponseText, this);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                 res.Success = false;
-                return res;
             }
-
-            //load all of the elements returned into the class object properties
-            foreach (XElement oElement in res.XmlElement.Elements())
-            {
-                _homeServer.SafeXmlFetch(this, oElement);
-            }
-
             return res;
         }
 
@@ -143,13 +157,20 @@ namespace ConnectionCUPIFunctions
         /// Out parameter that is used to return the list of NotificationTemplate objects defined on Connection - 
         /// there must be at least one.
         /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetNotificationTemplates(ConnectionServer pConnectionServer, out List<NotificationTemplate> pTemplates)
+        public static WebCallResult GetNotificationTemplates(ConnectionServer pConnectionServer, out List<NotificationTemplate> pTemplates,
+            int pPageNumber=1, int pRowsPerPage=20)
         {
             WebCallResult res;
-            pTemplates = null;
+            pTemplates = new List<NotificationTemplate>();
 
             if (pConnectionServer == null)
             {
@@ -158,61 +179,39 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + "notificationtemplates";
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "notificationtemplates",
+                "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that isn't an error - having zero is ok - just return an empty list
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount==0)
             {
-                res.Success = false;
                 return res;
             }
 
-            pTemplates = GetNotificationTemplatesFromXElements(pConnectionServer, res.XmlElement);
+            pTemplates = HTTPFunctions.GetObjectsFromJson<NotificationTemplate>(res.ResponseText);
+
+            if (pTemplates == null)
+            {
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pTemplates)
+            {
+                oObject.HomeServer = pConnectionServer;
+            }
+
             return res;
-        }
-
-
-        //Helper function to take an XML blob returned from the REST interface for NotificationTemplate returned and convert it into an generic
-        //list of NotificationTemplate class objects.  
-        private static List<NotificationTemplate> GetNotificationTemplatesFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-            if (pConnectionServer == null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced passed to GetNotificationTemplatesFromXElements");
-            }
-
-            List<NotificationTemplate> oTemplates = new List<NotificationTemplate>();
-
-            //Use LINQ to XML to create a list of NotificationTemplate objects in a single statement. 
-            var notificationTemplates = from e in pXElement.Elements()
-                               where e.Name.LocalName == "NotificationTemplate"
-                               select e;
-
-            //for each object returned in the list from the XML, construct a class object using the elements associated with that 
-            //object.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlTemplates in notificationTemplates)
-            {
-                NotificationTemplate oTemplate= new NotificationTemplate(pConnectionServer);
-                foreach (XElement oElement in oXmlTemplates.Elements())
-                {
-                    //adds the XML property to the UserBase object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oTemplate, oElement);
-                }
-
-                //add the fully populated UserBase object to the list that will be returned to the calling routine.
-                oTemplates.Add(oTemplate);
-            }
-
-            return oTemplates;
         }
 
 

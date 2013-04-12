@@ -71,7 +71,7 @@
             this.buttonFetchAttachments.Name = "buttonFetchAttachments";
             this.buttonFetchAttachments.Size = new System.Drawing.Size(91, 36);
             this.buttonFetchAttachments.TabIndex = 29;
-            this.buttonFetchAttachments.Text = "Get Media";
+            this.buttonFetchAttachments.Text = "GET Media";
             this.buttonFetchAttachments.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.buttonFetchAttachments.UseVisualStyleBackColor = true;
             this.buttonFetchAttachments.Click += new System.EventHandler(this.buttonFetchAttachments_Click);

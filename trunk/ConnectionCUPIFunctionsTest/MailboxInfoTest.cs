@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -96,7 +96,7 @@ namespace ConnectionCUPIFunctionsTest
         public void TestMethod1()
         {
             List<UserBase> oUsers;
-            WebCallResult res= UserBase.GetUsers(_connectionServer, out oUsers);
+            WebCallResult res = UserBase.GetUsers(_connectionServer, out oUsers);
             Assert.IsTrue(res.Success,"Unable to fetch users from server:"+res);
 
             Assert.IsTrue(oUsers.Count>0,"No users fetched");

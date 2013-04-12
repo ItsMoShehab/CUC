@@ -10,17 +10,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUPIFastStart", "RESTFastStart\CUPIFastStart.csproj", "{099D0886-5671-470A-8C2A-C216AEF515C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectionCUPIFunctions", "ConnectionRESTFunctions\ConnectionCUPIFunctions.csproj", "{10F25421-4FFC-419A-A32D-E48BE12B31A8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectionRestFunctions", "ConnectionRESTFunctions\ConnectionRestFunctions.csproj", "{10F25421-4FFC-419A-A32D-E48BE12B31A8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleLogger", "SimpleLogger\SimpleLogger.csproj", "{A86C19FC-9F81-4EDA-9B51-44A5A1399089}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUPIVerySimple", "CUPIVerySimple\CUPIVerySimple.csproj", "{71A2F381-055E-4466-BB62-08AE6749AC15}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectionCUPIFunctionsTest", "ConnectionCUPIFunctionsTest\ConnectionCUPIFunctionsTest.csproj", "{BF7A9888-9592-4548-ABF6-95A479FA827E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectionRestFunctionsTest", "ConnectionCUPIFunctionsTest\ConnectionRestFunctionsTest.csproj", "{BF7A9888-9592-4548-ABF6-95A479FA827E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelpDeskPWReset", "PWReset\HelpDeskPWReset.csproj", "{0E3DC06F-F53F-429E-827E-18D349766AAC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelpDeskPWResetASP", "PWResetASP\PWResetASP\HelpDeskPWResetASP.csproj", "{707FD2AD-D43A-466B-9188-0E3FBBECB9F6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{5C1D9B49-3FAD-4CAE-905F-974237391574}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution

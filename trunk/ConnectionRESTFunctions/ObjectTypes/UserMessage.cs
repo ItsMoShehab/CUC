@@ -18,7 +18,7 @@ using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
 
     #region Message Related Classes and Enums
@@ -492,6 +492,24 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
+            if (pRecipients == null || !pRecipients.Any())
+            {
+                res.ErrorText = "No recipients passed to CreateMessageLocalWav";
+                return res;
+            }
+
+            if (string.IsNullOrEmpty(pSubject))
+            {
+                res.ErrorText = "No subject passed to CreateNewMessageLocalWav";
+                return res;
+            }
+
+            if (string.IsNullOrEmpty(pResourceId))
+            {
+                res.ErrorText = "No subject passed to CreateNewMessageLocalWav";
+                return res;
+            }
+
             //construct the JSON strings needed in the message details and the message addressing sections of the upload message 
             //API call for Connection
             string strRecipientJsonString = ConstructRecipientJsonStringFromRecipients(pRecipients);
@@ -702,7 +720,7 @@ namespace ConnectionCUPIFunctions
             //we need to get the message details which includes an attachment collection
             string strUrl = string.Format(@"{0}messages/{1}?userobjectid={2}", pConnectionServer.BaseUrl, pMessageObjectId, pUserObjectId);
 
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "",false);
 
             if (res.Success == false)
             {
@@ -739,7 +757,7 @@ namespace ConnectionCUPIFunctions
         /// page number for multiple page searches - starts with 1.  If you go beyond the end an empty 
         /// list is returned in pMessages so you know you're at the end
         /// </param>
-        /// <param name="pMessagesPerPage"> 
+        /// <param name="pRowsPerPage"> 
         /// Number of messages to include in the fetch - best to keep it under 100.  Defaults to 10
         /// </param>
         /// <param name="pSortOrder">
@@ -755,7 +773,7 @@ namespace ConnectionCUPIFunctions
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
         public static WebCallResult GetMessages(ConnectionServer pConnectionServer, string pUserObjectId, out List<UserMessage> pMessage,
-            int pPageNumber = 1, int pMessagesPerPage = 10, MessageSortOrder pSortOrder = MessageSortOrder.NEWEST_FIRST, 
+            int pPageNumber = 1, int pRowsPerPage = 20, MessageSortOrder pSortOrder = MessageSortOrder.NEWEST_FIRST, 
             MessageFilter pFilter = MessageFilter.None, MailboxFolder pFolder = MailboxFolder.Inbox)
         {
             WebCallResult res;
@@ -771,8 +789,8 @@ namespace ConnectionCUPIFunctions
 
             //add row limits
 
-            oParams.Add(new KeyValuePair<string, string>("pagenumber", pPageNumber.ToString()));
-            oParams.Add(new KeyValuePair<string, string>("rowsperpage", pMessagesPerPage.ToString()));
+            oParams.Add(new KeyValuePair<string, string>("pageNumber", pPageNumber.ToString()));
+            oParams.Add(new KeyValuePair<string, string>("rowsPerPage", pRowsPerPage.ToString()));
 
             //add sort order
             switch (pSortOrder)
@@ -863,7 +881,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl.ToString(), MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl.ToString(), MethodType.GET, pConnectionServer, "",false);
 
             if (res.Success == false)
             {
@@ -904,11 +922,6 @@ namespace ConnectionCUPIFunctions
         {
             List<UserMessage> oMessageList = new List<UserMessage>();
 
-            if (pConnetionServer == null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced passed to GetMessagesFromXElements");
-            }
-
             //pull out a set of XMLElements for each Message object returned using the power of LINQ
             var messages = from e in pXElement.Elements()
                            where e.Name.LocalName == "Message"
@@ -935,6 +948,9 @@ namespace ConnectionCUPIFunctions
                     if (Debugger.IsAttached) Debugger.Break();
                     continue;
                 }
+                
+                oMessage.ClearPendingChanges();
+
                 //add the fully populated message object to the list that will be returned to the calling routine.
                 oMessageList.Add(oMessage);
             }
@@ -998,7 +1014,7 @@ namespace ConnectionCUPIFunctions
 
 
         /// <summary>
-        /// Delete a message from a user's mailstore (any folder).  
+        /// DELETE a message from a user's mailstore (any folder).  
         /// </summary>
         /// <param name="pConnectionServer">
         /// Connection server that houses the message to be deleted.
@@ -1032,7 +1048,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}messages/{1}?userobjectid={2}&{3}",pConnectionServer.BaseUrl,pMessageObjectId,
                 pUserObjectId,strHardDelete);
 
-            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.Delete, pConnectionServer,"");
+            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.DELETE, pConnectionServer,"",false);
         }
 
 
@@ -1088,7 +1104,7 @@ namespace ConnectionCUPIFunctions
 
             string strUrl = string.Format("{0}messages/{1}?userobjectid={2}", pConnectionServer.BaseUrl,pMessageObjectId, pUserObjectId);
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Put, pConnectionServer, strBody);
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.PUT, pConnectionServer, strBody,false);
         }
 
 
@@ -1106,10 +1122,15 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public static WebCallResult ClearDeletedItemsFolder(ConnectionServer pConnectionServer, string pUserObjectId)
         {
+            if (pConnectionServer == null)
+            {
+                return new WebCallResult {Success = false, ErrorText = "Null ConnectionServer passed"};
+            }
+
             string strUrl = string.Format("{0}mailbox/folders/deleted/messages?method=empty&userobjectid={1}",
                                           pConnectionServer.BaseUrl, pUserObjectId);
 
-            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.Post, pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, pConnectionServer, "",false);
         }
 
 
@@ -1135,10 +1156,15 @@ namespace ConnectionCUPIFunctions
         public static WebCallResult RecallMessage(ConnectionServer pConnectionServer, string pUserObjectId,
                                                   string pMessageObjectId)
         {
+            if (pConnectionServer == null)
+            {
+                return new WebCallResult { Success = false, ErrorText = "Null ConnectionServer passed" };
+            }
+
             string strUrl = string.Format("{0}messages/{1}/recall?userobjectid={2}",
                                           pConnectionServer.BaseUrl, pMessageObjectId, pUserObjectId);
 
-            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.Post, pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, pConnectionServer, "",false);
         }
 
 
@@ -1160,10 +1186,15 @@ namespace ConnectionCUPIFunctions
         public static WebCallResult RestoreDeletedMessage(ConnectionServer pConnectionServer, string pUserObjectId,
                                                           string pMessageObjectId)
         {
+            if (pConnectionServer == null)
+            {
+                return new WebCallResult { Success = false, ErrorText = "Null ConnectionServer passed" };
+            }
+
             string strUrl = string.Format("{0}messages/{1}?method=undelete&userobjectid={2}",
                                           pConnectionServer.BaseUrl, pMessageObjectId, pUserObjectId);
 
-            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.Post, pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, pConnectionServer, "",false);
         }
 
 
@@ -1214,7 +1245,7 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}messages/{1}/?userobjectid={2}", HomeServer.BaseUrl, pMessageObjectId, pUserObjectId);
 
             //issue the command to the CUMI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, HomeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "",false);
 
             if (res.Success == false)
             {
@@ -1282,6 +1313,8 @@ namespace ConnectionCUPIFunctions
                 HomeServer.SafeXmlFetch(this, oElement);
             }
 
+            ClearPendingChanges();
+
             return res;
         }
 
@@ -1306,7 +1339,7 @@ namespace ConnectionCUPIFunctions
 
 
         /// <summary>
-        /// Delete a message from a user's mailstore (any folder).  
+        /// DELETE a message from a user's mailstore (any folder).  
         /// </summary>
         /// <param name="pHardDelete">
         /// If passed as true the message is hard deleted which means it is not copied to the deleted items folder even if the
@@ -1342,7 +1375,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //just call the static method with the info from the instance 
-            res = UpdateUserMessage(HomeServer, MsgId,UserObjectId,  _changedPropList);
+            res = UpdateUserMessage(HomeServer, MsgId, UserObjectId,  _changedPropList);
 
             //if the update went through then clear the changed properties list.
             if (res.Success)
@@ -1679,6 +1712,14 @@ namespace ConnectionCUPIFunctions
         public WebCallResult Restore()
         {
             return RestoreDeletedMessage(HomeServer, UserObjectId, MsgId);
+        }
+
+        /// <summary>
+        /// If the call handler object has andy pending updates that have not yet be comitted, this will clear them out.
+        /// </summary>
+        public void ClearPendingChanges()
+        {
+            _changedPropList.Clear();
         }
 
         #endregion

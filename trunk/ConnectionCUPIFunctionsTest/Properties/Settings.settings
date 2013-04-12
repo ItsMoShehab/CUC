@@ -6,10 +6,10 @@
       <Value Profile="(Default)">192.168.0.194</Value>
     </Setting>
     <Setting Name="ConnectionLogin" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">jlindborg</Value>
+      <Value Profile="(Default)">CCMAdministrator</Value>
     </Setting>
     <Setting Name="ConnectionPW" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Ecsbulab!</Value>
+      <Value Profile="(Default)">ecsbulab</Value>
     </Setting>
     <Setting Name="ExtensionToDial" Type="System.String" Scope="User">
       <Value Profile="(Default)">1001</Value>
