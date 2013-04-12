@@ -11,10 +11,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The SMPP Provider class is used only to provide an interface for user to select which provider to use when creating new SMS notification 
@@ -53,6 +52,13 @@ namespace ConnectionCUPIFunctions
             }
         }
 
+        /// <summary>
+        /// General constructor for Json parsing libary
+        /// </summary>
+        public SmppProvider()
+        {
+        }
+
         #endregion
 
 
@@ -81,33 +87,25 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         private WebCallResult GetSmppProvider(ConnectionServer pConnectionServer, string pObjectId)
         {
-            WebCallResult res = new WebCallResult();
-            res.Success = false;
-
             string strUrl = pConnectionServer.BaseUrl + "smppproviders/" + pObjectId;
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
-            if (res.Success == false)
+            if (res.Success == false )
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
+                JsonConvert.PopulateObject(res.ResponseText, this);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                 res.Success = false;
-                res.ErrorText = "No XML elements returned from search space fetch";
-                return res;
             }
-
-            foreach (var oElement in res.XmlElement.Elements())
-            {
-                pConnectionServer.SafeXmlFetch(this, oElement);
-            }
-
-            res.Success = true;
             return res;
         }
 
@@ -121,10 +119,17 @@ namespace ConnectionCUPIFunctions
         /// <param name="pSMppProviders">
         /// Out parameter that is used to return the list of SmppProvider objects defined on Connection - the list may be empty
         /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>        
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetSmppProviders(ConnectionServer pConnectionServer, out List<SmppProvider> pSMppProviders)
+        public static WebCallResult GetSmppProviders(ConnectionServer pConnectionServer, out List<SmppProvider> pSMppProviders, 
+            int pPageNumber = 1, int pRowsPerPage = 20)
         {
             WebCallResult res;
             pSMppProviders = null;
@@ -136,47 +141,38 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + "smppproviders";
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "smppproviders", "pageNumber=" + pPageNumber, 
+                "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
-
-            //if the call was successful the XML elements can be empty
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that's not an error, just return an empty list
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
-                pSMppProviders=new List<SmppProvider>();
+                pSMppProviders = new List<SmppProvider>();
                 return res;
             }
 
-            pSMppProviders = GetSmppProvidersFromXElements(pConnectionServer, res.XmlElement);
+            pSMppProviders = HTTPFunctions.GetObjectsFromJson<SmppProvider>(res.ResponseText);
+
+            if (pSMppProviders == null)
+            {
+                pSMppProviders = new List<SmppProvider>();
+                return res;
+            }
+
             return res;
         }
 
 
-        //Helper function to take an XML blob returned from the REST interface for SmppProviders returned and convert it into an generic
-        //list of SmppProvider class objects.  
-        private static List<SmppProvider> GetSmppProvidersFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-            //Use LINQ to XML to create a list of Smpp provider objects in a single statement.  We're only interested in 2 properties for providers
-            //here - they should always be present but protect from missing properties anyway.
-            IEnumerable<SmppProvider> smppProviders = from e in pXElement.Elements()
-                                                      where e.Name.LocalName == "SmppProvider"
-                                                      select new SmppProvider(pConnectionServer)
-                                                                 {
-                                                                     ObjectId = (e.Element("ObjectId") == null) ? "" : e.Element("ObjectId").Value,
-                                                                     TextName = (e.Element("TextName") == null) ? "" : e.Element("TextName").Value,
-                                                                 };
-            return smppProviders.ToList();
-        }
-
-    
         #endregion
-
 
     }
 }

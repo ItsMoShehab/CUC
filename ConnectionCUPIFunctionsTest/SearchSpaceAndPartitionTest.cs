@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -341,7 +341,7 @@ namespace ConnectionCUPIFunctionsTest
             res = oPartition.Update();
             Assert.IsTrue(res.Success, "Update of partition description failed:" + res);
 
-            res = Partition.UpdatePartition(_connectionServer, oPartition.ObjectId, "NewName", "NewDescription");
+            res = Partition.UpdatePartition(_connectionServer, oPartition.ObjectId, "NewName"+Guid.NewGuid().ToString(), "NewDescription");
             Assert.IsTrue(res.Success, "Update of partition via static method failed:" + res);
 
             res = oPartition.Delete();

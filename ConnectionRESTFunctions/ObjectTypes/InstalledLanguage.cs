@@ -11,10 +11,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Xml.Linq;
 
-namespace ConnectionCUPIFunctions
+
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// Definitions of the langauge type enum value from the data dictionary
@@ -35,7 +34,7 @@ namespace ConnectionCUPIFunctions
         public bool Loaded { get; set; }
         public bool IsLicensed { get; set; }
 
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         public List<InstalledLanguage> InstalledLanguages { get; private set; }
 
@@ -74,9 +73,21 @@ namespace ConnectionCUPIFunctions
                 return;
             }
 
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
-            GetInstalledLanguages();
+            var res= GetInstalledLanguages();
+            if (res.Success == false)
+            {
+                throw new Exception("Failed to load installed languages:"+res);
+            }
+        }
+
+
+        /// <summary>
+        /// generic constructor for Json parsing libraries
+        /// </summary>
+        public InstalledLanguage()
+        {
         }
 
         #endregion
@@ -97,35 +108,44 @@ namespace ConnectionCUPIFunctions
         /// <summary>
         /// Gets the list of all installed languages and resturns them as a generic list of InstalledLangauge objects.  
         /// </summary>
-        /// <param name="pConnectionServer">
-        /// The Connection server object that the langauges should be pulled from
-        /// </param>
-        /// <param name="pInstalledLanguages">
-        /// Out parameter that is used to return the list of languages installed on Connection - there must be at least one.
-        /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
         private WebCallResult GetInstalledLanguages()
         {
-            string strUrl = _homeServer.BaseUrl + "installedlanguages";
+            string strUrl = HomeServer.BaseUrl + "installedlanguages";
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that means an error in this case - should always be at least one template
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
+                InstalledLanguages = new List<InstalledLanguage>();
                 res.Success = false;
                 return res;
             }
 
-            InstalledLanguages = GetInstalledLanguagesFromXElements(_homeServer, res.XmlElement);
+            InstalledLanguages = HTTPFunctions.GetObjectsFromJson<InstalledLanguage>(res.ResponseText);
+
+            if (InstalledLanguages == null || InstalledLanguages.Count==0)
+            {
+                res.Success = false;
+                res.ErrorText = "Failed to fetch installed languages on server";
+                return res;
+            }
+
+            foreach (var oLanguage in InstalledLanguages)
+            {
+                oLanguage.HomeServer = HomeServer;
+            }
+
             return res;
         }
 
@@ -161,39 +181,7 @@ namespace ConnectionCUPIFunctions
             return false;
         }
 
-        //Helper function to take an XML blob returned from the REST interface for languages returned and convert it into an generic
-        //list of InstalledLanguage class objects.  
-        private static List<InstalledLanguage> GetInstalledLanguagesFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-
-            List<InstalledLanguage> oLanguages = new List<InstalledLanguage>();
-
-            //Use LINQ to XML to create a list of InstalledLanguage objects in a single statement.  
-            var languages = from e in pXElement.Elements()
-                            where e.Name.LocalName == "InstalledLanguage"
-                            select e;
-
-            //for each object returned in the list from the XML, construct a class object using the elements associated with that 
-            //object.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlLanguage in languages)
-            {
-                InstalledLanguage oLanguage = new InstalledLanguage();
-                foreach (XElement oElement in oXmlLanguage.Elements())
-                {
-                    //adds the XML property to the object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oLanguage, oElement);
-                }
-
-                //add the fully populated object to the list that will be returned to the calling routine.
-                oLanguages.Add(oLanguage);
-            }
-
-            return oLanguages;
-        }
-
-
+       
         #endregion
-
     }
 }

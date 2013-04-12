@@ -56,9 +56,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ConnectionRESTFunctions\ConnectionCUPIFunctions.csproj">
+    <ProjectReference Include="..\ConnectionRESTFunctions\ConnectionRestFunctions.csproj">
       <Project>{10F25421-4FFC-419A-A32D-E48BE12B31A8}</Project>
-      <Name>ConnectionCUPIFunctions</Name>
+      <Name>ConnectionRestFunctions</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

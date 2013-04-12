@@ -11,12 +11,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// For human readable output of distribution list member types
@@ -37,31 +35,32 @@ namespace ConnectionCUPIFunctions
 
         #region Properties
 
-        public string Alias { get; private set; }
-
-        public bool AllowForeignMessages { get; private set; }
         
-        public string DisplayName { get; private set; }
-        public string DistributionListObjectId { get; private set; }
+        public string Alias { get; set; }
 
-        public bool IsUserTemplate { get; private set; }
+        public bool AllowForeignMessages { get; set; }
+        
+        public string DisplayName { get; set; }
+        public string DistributionListObjectId { get; set; }
 
-        public string LocationObjectId { get; private set; }
+        public bool IsUserTemplate { get; set; }
 
-        public string MemberContactObjectId { get; private set; }
-        public string MemberDistributionListObjectId { get; private set; }
-        public string MemberGlobalObjectId { get; private set; }
-        public string MemberGlobalDignetObjectId { get; private set; }
-        public string MemberUserObjectId { get; private set; }
+        public string LocationObjectId { get; set; }
 
-        public string MemberLocationObjectId { get; private set; }
+        public string MemberContactObjectId { get; set; }
+        public string MemberDistributionListObjectId { get; set; }
+        public string MemberGlobalObjectId { get; set; }
+        public string MemberGlobalDignetObjectId { get; set; }
+        public string MemberUserObjectId { get;  set; }
+
+        public string MemberLocationObjectId { get; set; }
 
         /// <summary>
         /// Not in CUPI's data, this is derived locally in the class for ease of filtering/presentation.
         /// </summary>
-        public DistributionListMemberType MemberType { get; private set; }
+        public DistributionListMemberType MemberType { get; set; }
 
-        public string ObjectId { get; private set; }
+        public string ObjectId { get;  set; }
 
         
         #endregion
@@ -70,7 +69,7 @@ namespace ConnectionCUPIFunctions
         #region Static Methods
 
         /// <summary>
-        /// Get all the members of a public distribution list returned as a generic list of DistributionListMember objects.
+        /// GET all the members of a public distribution list returned as a generic list of DistributionListMember objects.
         /// </summary>
         /// <param name="pDistributionListObjectId">
         /// Distribution list to fetch membership for
@@ -81,11 +80,17 @@ namespace ConnectionCUPIFunctions
         /// <param name="pConnectionServer">
         /// Connection server to query against
         /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>
         /// <returns>
         /// WebCallResult instance
         /// </returns>
         public static WebCallResult GetDistributionListMembers(ConnectionServer pConnectionServer, string pDistributionListObjectId, 
-            out List<DistributionListMember> pMemberList)
+            out List<DistributionListMember> pMemberList,int pPageNumber=1, int pRowsPerPage=20)
         {
             WebCallResult res = new WebCallResult();
             pMemberList=new List<DistributionListMember>();
@@ -97,82 +102,60 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = string.Format("{0}distributionlists/{1}/distributionlistmembers", pConnectionServer.BaseUrl,pDistributionListObjectId);
+            string strUrl = HTTPFunctions.AddClausesToUri(string.Format("{0}distributionlists/{1}/distributionlistmembers", pConnectionServer.BaseUrl, 
+                pDistributionListObjectId), "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements may be empty - that's legal - return an empty list here
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that's not an error, just return an empty list
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
                 pMemberList = new List<DistributionListMember>();
                 return res;
             }
 
-            pMemberList = GetDistributionListMembersFromXElements(pConnectionServer, res.XmlElement);
-            return res;
-        }
+            pMemberList = HTTPFunctions.GetObjectsFromJson<DistributionListMember>(res.ResponseText);
 
-
-        /// <summary>
-        ///Helper function to take an XML blob returned from the REST interface for a list (or listss) return and convert it into an generic
-        ///list of DistributionList class objects. 
-        /// </summary>
-        private static List<DistributionListMember> GetDistributionListMembersFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-            List<DistributionListMember> oDListMember = new List<DistributionListMember>();
-
-            if (pConnectionServer == null)
+            if (pMemberList == null)
             {
-                throw new ArgumentException("Null ConnectionServer referenced passed to GetDistributionListMembersFromXElements");
+                pMemberList = new List<DistributionListMember>();
+                return res;
             }
 
-            //pull out a set of XMLElements for each CallHandler object returned using the power of LINQ
-            var listMembers = from e in pXElement.Elements()
-                           where e.Name.LocalName == "DistributionListMember"
-                           select e;
-
-            //for each handler returned in the list of handlers from the XML, construct a CallHandler object using the elements associated with that 
-            //handler.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlListMembers in listMembers)
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pMemberList)
             {
-                DistributionListMember oDistributionListMember = new DistributionListMember();
-                foreach (XElement oElement in oXmlListMembers.Elements())
-                {
-                    //adds the XML property to the CallHandler object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oDistributionListMember, oElement);
-                }
-
                 //manually determine the member type here - this is a little hacky but it make life a bit easier by being able to filter
                 //member types out in a way that is not provided by CUPI natively.
-                if (!string.IsNullOrEmpty(oDistributionListMember.MemberContactObjectId))
+                if (!string.IsNullOrEmpty(oObject.MemberContactObjectId))
                 {
-                    oDistributionListMember.MemberType = DistributionListMemberType.Contact;
+                    oObject.MemberType = DistributionListMemberType.Contact;
                 }
-                else if (!string.IsNullOrEmpty(oDistributionListMember.MemberDistributionListObjectId))
+                else if (!string.IsNullOrEmpty(oObject.MemberDistributionListObjectId))
                 {
-                    oDistributionListMember.MemberType = DistributionListMemberType.DistributionList;
+                    oObject.MemberType = DistributionListMemberType.DistributionList;
                 }
-                else if (!string.IsNullOrEmpty(oDistributionListMember.MemberUserObjectId))
+                else if (!string.IsNullOrEmpty(oObject.MemberUserObjectId))
                 {
-                    oDistributionListMember.MemberType = DistributionListMemberType.LocalUser;
+                    oObject.MemberType = DistributionListMemberType.LocalUser;
                 }
                 else
                 {
-                    oDistributionListMember.MemberType = DistributionListMemberType.GlobalUser;
+                    oObject.MemberType = DistributionListMemberType.GlobalUser;
                 }
 
-                //add the fully populated CallHandler object to the list that will be returned to the calling routine.
-                oDListMember.Add(oDistributionListMember);
             }
 
-            return oDListMember;
+            return res;
         }
 
 

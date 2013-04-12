@@ -16,9 +16,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The PrivateList class contains all the properties associated with a private distribution list in Unity Connection that can be fetched via
@@ -30,10 +30,10 @@ namespace ConnectionCUPIFunctions
         #region Fields and Properties 
 
         //reference to the ConnectionServer object used to create this distribution list instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
-        private ConnectionPropertyList _changedPropList;
+        private readonly ConnectionPropertyList _changedPropList;
 
         //owner of the private list
         private readonly string _userOwnerObjectId;
@@ -64,7 +64,7 @@ namespace ConnectionCUPIFunctions
         /// as blank and this value is greater than 0 then the constructor will attempt to fill in its properties with the data for that list number 
         /// if it can be found.  An exception will be thrown if it cannot be found.
         /// </param>
-        public PrivateList(ConnectionServer pConnectionServer, string pUserOwnerObjectId, string pObjectId="", int pNumericId = 0)
+        public PrivateList(ConnectionServer pConnectionServer, string pUserOwnerObjectId, string pObjectId="", int pNumericId = 0):this()
         {
             if (pConnectionServer == null)
             {
@@ -76,10 +76,7 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Empty UserOwnerObjectId passed to PrivateList constructor");
             }
 
-            //make an instanced of the changed prop list to keep track of updated properties on this object
-            _changedPropList = new ConnectionPropertyList();
-
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
             _userOwnerObjectId = pUserOwnerObjectId;
 
             //if the user passed in a specific ObjectId or display name then go load that list up, otherwise just return an empty instance.
@@ -96,11 +93,22 @@ namespace ConnectionCUPIFunctions
         }
 
 
+        /// <summary>
+        /// General constructor for Json parsing libraries
+        /// </summary>
+        public PrivateList()
+        {
+            //make an instanced of the changed prop list to keep track of updated properties on this object
+            _changedPropList = new ConnectionPropertyList();
+        }
+
+
         #endregion
 
 
         #region Private List Properties
 
+        [JsonProperty]
         public string VoiceName { get; private set; }
 
         /// <summary>
@@ -117,22 +125,29 @@ namespace ConnectionCUPIFunctions
             }
         }
 
+        [JsonProperty]
         public string DtmfName { get; private set; }
+
+        [JsonProperty]
         public string Alias { get; private set; }
 
         /// <summary>
         /// 1 based ID (up to 99) the private list is assigned to.  This is always filled in and cannot be changed once created.  You can delete
         /// and create a new list but you cannot change the ID on a standing list.
         /// </summary>
+        [JsonProperty]
         public int NumericId { get; private set; }
 
         /// <summary>
         /// Unique GUID for this distribution list.
         /// </summary>
+        [JsonProperty]
         public String ObjectId { get; private set; }
 
+        [JsonProperty]
         public string UserObjectId { get; private set; }
 
+        [JsonProperty]
         public bool IsAddressable { get; private set; }
 
         /// <summary>
@@ -149,7 +164,7 @@ namespace ConnectionCUPIFunctions
 
             if (_privateListMembers == null)
             {
-                WebCallResult res= PrivateListMember.GetPrivateListMembers(_homeServer, this.ObjectId, _userOwnerObjectId,
+                WebCallResult res= PrivateListMember.GetPrivateListMembers(HomeServer, this.ObjectId, _userOwnerObjectId,
                                                         out _privateListMembers);
                 if (res.Success == false)
                 {
@@ -179,10 +194,17 @@ namespace ConnectionCUPIFunctions
         /// The list of private lists returned from the CUPI call (if any) is returned as a generic list of PrivateList class 
         /// instances via this out param.  If no lists are found NULL is returned for this parameter.
         /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPrivateLists(ConnectionServer pConnectionServer, string pOwnerUserObjectId, out List<PrivateList> pPrivateLists)
+        public static WebCallResult GetPrivateLists(ConnectionServer pConnectionServer, string pOwnerUserObjectId, out List<PrivateList> pPrivateLists, 
+            int pPageNumber = 1, int pRowsPerPage = 20)
         {
             WebCallResult res = new WebCallResult {Success = false};
 
@@ -194,28 +216,43 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + string.Format("users/{0}/privatelists",pOwnerUserObjectId);
+            string strUrl = HTTPFunctions.AddClausesToUri(string.Format("{0}users/{1}/privatelists", pConnectionServer.BaseUrl, pOwnerUserObjectId),
+                "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            //If the list is empty still return true - the user may not have any private lists and that's ok - the list count will be 
-            //zero, don't raise an error here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that's not an error, just return an empty list
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
                 pPrivateLists = new List<PrivateList>();
                 return res;
             }
 
-            pPrivateLists = GetPrivateListsFromXElements(pConnectionServer, pOwnerUserObjectId, res.XmlElement);
-            return res;
+            pPrivateLists = HTTPFunctions.GetObjectsFromJson<PrivateList>(res.ResponseText);
 
+            if (pPrivateLists == null)
+            {
+                pPrivateLists = new List<PrivateList>();
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pPrivateLists)
+            {
+                oObject.HomeServer = pConnectionServer;
+                oObject.UserObjectId = pOwnerUserObjectId;
+                oObject.ClearPendingChanges();
+            }
+
+            return res;
         }
 
 
@@ -281,8 +318,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</PrivateList>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("users/{0}/privatelists",pUserOwnerObjectId), MethodType.Post,
-                                            pConnectionServer,strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("users/{0}/privatelists",pUserOwnerObjectId), MethodType.POST,
+                                            pConnectionServer,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -467,13 +504,13 @@ namespace ConnectionCUPIFunctions
             strBody += "</PrivateList>";
 
             return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("users/{0}/privatelists/{1}", pUserOwnerObjectId, pObjectId),
-                                            MethodType.Put,pConnectionServer,strBody);
+                                            MethodType.PUT,pConnectionServer,strBody,false);
 
         }
 
 
         /// <summary>
-        /// Delete a list from the Connection directory.
+        /// DELETE a list from the Connection directory.
         /// </summary>
         /// <param name="pConnectionServer">
         /// Reference to the ConnectionServer object that points to the home server where the list is homed.
@@ -497,42 +534,7 @@ namespace ConnectionCUPIFunctions
             }
 
             return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("users/{0}/privatelists/{1}",pUserOwnerObjectId, pObjectId),
-                                            MethodType.Delete,pConnectionServer, "");
-        }
-
-
-        /// <summary>
-        ///Helper function to take an XML blob returned from the REST interface for a list (or listss) return and convert it into an generic
-        ///list of PrivateList class objects. 
-        /// </summary>
-        private static List<PrivateList> GetPrivateListsFromXElements(ConnectionServer pConnectionServer, string pOwnerUserObjectId, XElement pXElement)
-        {
-            List<PrivateList> oDlList = new List<PrivateList>();
-
-            //pull out a set of XMLElements for each CallHandler object returned using the power of LINQ
-            var lists = from e in pXElement.Elements()
-                        where e.Name.LocalName == "PrivateList"
-                        select e;
-
-            //for each handler returned in the list of handlers from the XML, construct a CallHandler object using the elements associated with that 
-            //handler.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlList in lists)
-            {
-                PrivateList oDistributionList = new PrivateList(pConnectionServer, pOwnerUserObjectId);
-                foreach (XElement oElement in oXmlList.Elements())
-                {
-                    //adds the XML property to the CallHandler object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oDistributionList, oElement);
-                }
-
-                oDistributionList.ClearPendingChanges();
-
-                //add the fully populated CallHandler object to the list that will be returned to the calling routine.
-                oDlList.Add(oDistributionList);
-            }
-
-            return oDlList;
+                                            MethodType.DELETE,pConnectionServer, "");
         }
 
 
@@ -747,7 +749,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</PrivateListMember>\n\r";
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Post,pConnectionServer, strBody);
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.POST,pConnectionServer, strBody,false);
         }
 
 
@@ -798,7 +800,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</PrivateListMember>\n\r";
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Post,pConnectionServer, strBody);
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.POST,pConnectionServer, strBody,false);
         }
 
 
@@ -829,7 +831,7 @@ namespace ConnectionCUPIFunctions
                         pPrivateListObjectId,
                         pMemberObjectId);
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Delete,pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.DELETE,pConnectionServer, "");
         }
 
 
@@ -908,7 +910,7 @@ namespace ConnectionCUPIFunctions
                 //get the list by ID - you can't do this via URL construction so just fetch the entire list of private lists and find the one
                 //with the ID you want and copy it into the current instance
                 List<PrivateList> oLists;
-                res = GetPrivateLists(_homeServer,_userOwnerObjectId, out oLists);
+                res = GetPrivateLists(HomeServer,_userOwnerObjectId, out oLists);
                 if (res.Success==false)
                 {
                     return res;
@@ -929,30 +931,27 @@ namespace ConnectionCUPIFunctions
             else
             {
                 //go fetch the private list by ObjectId
-                string strUrl = string.Format("{0}users/{1}/privatelists/{2}", _homeServer.BaseUrl,_userOwnerObjectId, pObjectId);
+                string strUrl = string.Format("{0}users/{1}/privatelists/{2}", HomeServer.BaseUrl,_userOwnerObjectId, pObjectId);
 
                 //issue the command to the CUPI interface
-                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer,"");
+                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer,"");
 
                 if (res.Success == false)
                 {
                     return res;
                 }
 
-                //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-                if (res.XmlElement == null || res.XmlElement.HasElements == false)
+                try
                 {
+                    JsonConvert.PopulateObject(res.ResponseText, this);
+                }
+                catch (Exception ex)
+                {
+                    res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                     res.Success = false;
-                    return res;
                 }
-
-                //populate this distribution list instance with data from the XML fetch
-                foreach (XElement oElement in res.XmlElement.Elements())
-                {
-                    _homeServer.SafeXmlFetch(this, oElement);
-                }
-
             }
+            
             //all the updates above will flip pending changes into the queue - clear that here.
             this.ClearPendingChanges();
 
@@ -971,8 +970,6 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public WebCallResult Update()
         {
-            WebCallResult res;
-
             //check if the list intance has any pending changes, if not return false with an appropriate error message
             if (!_changedPropList.Any())
             {
@@ -985,7 +982,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //just call the static method with the info from the instance 
-            res = UpdatePrivateList(_homeServer, ObjectId, _changedPropList,_userOwnerObjectId);
+            WebCallResult res = UpdatePrivateList(HomeServer, ObjectId, _changedPropList,_userOwnerObjectId);
 
             //if the update went through then clear the changed properties list.
             if (res.Success)
@@ -997,7 +994,7 @@ namespace ConnectionCUPIFunctions
         }
 
         /// <summary>
-        /// Delete a call handler from the Connection directory.
+        /// DELETE a call handler from the Connection directory.
         /// </summary>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -1005,7 +1002,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult Delete()
         {
             //just call the static method with the info on the instance
-            return DeletePrivateList(_homeServer, ObjectId,_userOwnerObjectId);
+            return DeletePrivateList(HomeServer, ObjectId,_userOwnerObjectId);
         }
 
 
@@ -1024,7 +1021,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult SetVoiceName(string pSourceLocalFilePath, bool pConvertToPcmFirst = false)
         {
             //just call the static method with the information from the instance
-            return SetPrivateListVoiceName(_homeServer, pSourceLocalFilePath, ObjectId,_userOwnerObjectId,pConvertToPcmFirst);
+            return SetPrivateListVoiceName(HomeServer, pSourceLocalFilePath, ObjectId,_userOwnerObjectId,pConvertToPcmFirst);
         }
 
 
@@ -1043,7 +1040,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult GetVoiceName(string pTargetLocalFilePath)
         {
             //just call the static method with the info from the instance of this object
-            return GetPrivateListVoiceName(_homeServer, _userOwnerObjectId, pTargetLocalFilePath, ObjectId,this.VoiceName);
+            return GetPrivateListVoiceName(HomeServer, _userOwnerObjectId, pTargetLocalFilePath, ObjectId,this.VoiceName);
         }
 
 
@@ -1058,7 +1055,7 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public WebCallResult GetMembersList(out List<PrivateListMember> pMemberList)
         {
-            return GetMembersList(_homeServer, ObjectId,_userOwnerObjectId, out pMemberList);
+            return GetMembersList(HomeServer, ObjectId,_userOwnerObjectId, out pMemberList);
         }
 
 
@@ -1070,7 +1067,7 @@ namespace ConnectionCUPIFunctions
         /// <returns></returns>
         public WebCallResult AddMemberUser(string pUserObjectId)
         {
-            return AddMemberUser(_homeServer, ObjectId, pUserObjectId,_userOwnerObjectId);
+            return AddMemberUser(HomeServer, ObjectId, pUserObjectId,_userOwnerObjectId);
         }
 
 
@@ -1081,7 +1078,7 @@ namespace ConnectionCUPIFunctions
         /// <returns></returns>
         public WebCallResult AddMemberPublicList(string pListObjectId)
         {
-            return AddMemberPublicList(_homeServer, ObjectId, pListObjectId,_userOwnerObjectId);
+            return AddMemberPublicList(HomeServer, ObjectId, pListObjectId,_userOwnerObjectId);
         }
 
 
@@ -1092,7 +1089,7 @@ namespace ConnectionCUPIFunctions
         /// <returns></returns>
         public WebCallResult RemoveMember(string pMemberUserObjectId)
         {
-            return RemoveMember(_homeServer, ObjectId, pMemberUserObjectId, _userOwnerObjectId);
+            return RemoveMember(HomeServer, ObjectId, pMemberUserObjectId, _userOwnerObjectId);
         }
 
 

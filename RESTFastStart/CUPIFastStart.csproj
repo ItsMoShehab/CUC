@@ -199,9 +199,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ConnectionRESTFunctions\ConnectionCUPIFunctions.csproj">
+    <ProjectReference Include="..\ConnectionRESTFunctions\ConnectionRestFunctions.csproj">
       <Project>{10F25421-4FFC-419A-A32D-E48BE12B31A8}</Project>
-      <Name>ConnectionCUPIFunctions</Name>
+      <Name>ConnectionRestFunctions</Name>
     </ProjectReference>
     <ProjectReference Include="..\SimpleLogger\SimpleLogger.csproj">
       <Project>{A86C19FC-9F81-4EDA-9B51-44A5A1399089}</Project>

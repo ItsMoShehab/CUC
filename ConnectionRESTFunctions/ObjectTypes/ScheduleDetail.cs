@@ -11,12 +11,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     public class ScheduleDetail
     {
@@ -24,22 +23,22 @@ namespace ConnectionCUPIFunctions
         #region Fields and Properties 
         
         //reference to the ConnectionServer object used to create this Alternate Extension instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
-        public string ObjectId { get; private set; }
-        public string ScheduleObjectId { get; private set; }
-        public bool IsActiveMonday { get; private set; }
-        public bool IsActiveTuesday { get; private set; }
-        public bool IsActiveWednesday { get; private set; }
-        public bool IsActiveThursday { get; private set; }
-        public bool IsActiveFriday { get; private set; }
-        public bool IsActiveSaturday { get; private set; }
-        public bool IsActiveSunday { get; private set; }
-        public int StartTime { get; private set; }
-        public int EndTime { get; private set; }
-        public string StartDate { get; private set; }
-        public string EndDate { get; private set; }
-        public string Subject { get; private set; }
+        public string ObjectId { get; set; }
+        public string ScheduleObjectId { get; set; }
+        public bool IsActiveMonday { get; set; }
+        public bool IsActiveTuesday { get; set; }
+        public bool IsActiveWednesday { get; set; }
+        public bool IsActiveThursday { get; set; }
+        public bool IsActiveFriday { get; set; }
+        public bool IsActiveSaturday { get; set; }
+        public bool IsActiveSunday { get; set; }
+        public int StartTime { get; set; }
+        public int EndTime { get; set; }
+        public string StartDate { get; set; }
+        public string EndDate { get; set; }
+        public string Subject { get; set; }
 
         #endregion
 
@@ -74,7 +73,7 @@ namespace ConnectionCUPIFunctions
 
             ObjectId = pScheduleDetailObjectId;
             ScheduleObjectId = pScheduleObjectId;
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             //if the ObjectId or display name are passed in then fetch the data on the fly and fill out this instance
             WebCallResult res = GetScheduleDetail(pScheduleObjectId,pScheduleDetailObjectId);
@@ -84,6 +83,13 @@ namespace ConnectionCUPIFunctions
                 throw new Exception(string.Format("Schedule detail not found in ScheduleDetail constructor using ScheduleObjectId={0} and " +
                                   "ScheduleDetailObjectId={1}\n\r{2}", pScheduleObjectId, pScheduleDetailObjectId, res.ErrorText));
             }
+        }
+
+        /// <summary>
+        /// General constructor for Json libraries
+        /// </summary>
+        public ScheduleDetail()
+        {
         }
 
         #endregion
@@ -216,14 +222,14 @@ namespace ConnectionCUPIFunctions
         }
 
         /// <summary>
-        /// Delete the schedule detail from the schedule that owns it.
+        /// DELETE the schedule detail from the schedule that owns it.
         /// </summary>
         /// <returns>
         /// Instance of the WebCallResult class
         /// </returns>
         public WebCallResult Delete()
         {
-            return DeleteScheduleDetail(this._homeServer, this.ScheduleObjectId, this.ObjectId);
+            return DeleteScheduleDetail(this.HomeServer, this.ScheduleObjectId, this.ObjectId);
         }
 
 
@@ -236,31 +242,25 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         private WebCallResult GetScheduleDetail(string pScheduleObjectId, string pScheduleDetailObjectId)
         {
-            WebCallResult res;
-
-            string strUrl = string.Format("{0}schedules/{1}/scheduledetails/{2}", _homeServer.BaseUrl, pScheduleObjectId,pScheduleDetailObjectId);
+            string strUrl = string.Format("{0}schedules/{1}/scheduledetails/{2}", HomeServer.BaseUrl, pScheduleObjectId,pScheduleDetailObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
+                JsonConvert.PopulateObject(res.ResponseText, this);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                 res.Success = false;
-                return res;
             }
-
-            //populate this call handler instance with data from the XML fetch
-            foreach (XElement oElement in res.XmlElement.Elements())
-            {
-                _homeServer.SafeXmlFetch(this, oElement);
-            }
-
             return res;
         }
 
@@ -283,10 +283,17 @@ namespace ConnectionCUPIFunctions
         /// Out parameter that is used to return the list of ScheduleDetails objects defined on Connection - there may be zero in which 
         /// case an empty list is returned.
         /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetScheduleDetails(ConnectionServer pConnectionServer, string pScheduleObjectId, out List<ScheduleDetail> pScheduleDetails)
+        public static WebCallResult GetScheduleDetails(ConnectionServer pConnectionServer, string pScheduleObjectId, out List<ScheduleDetail> pScheduleDetails, 
+            int pPageNumber = 1, int pRowsPerPage = 20)
         {
             WebCallResult res;
             pScheduleDetails = new List<ScheduleDetail>();
@@ -298,24 +305,42 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = string.Format("{0}schedules/{1}/scheduledetails", pConnectionServer.BaseUrl,pScheduleObjectId);
+            string strUrl = HTTPFunctions.AddClausesToUri(string.Format("{0}schedules/{1}/scheduledetails", pConnectionServer.BaseUrl, pScheduleObjectId),
+                "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements can be empty.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that means an error in this case - should always be at least one template
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
-                pScheduleDetails= new List<ScheduleDetail>();
+                pScheduleDetails = new List<ScheduleDetail>();
+                res.Success = false;
                 return res;
             }
 
-            pScheduleDetails = GetScheduleDetailsFromXElements(pConnectionServer, res.XmlElement);
+            pScheduleDetails = HTTPFunctions.GetObjectsFromJson<ScheduleDetail>(res.ResponseText);
+
+            if (pScheduleDetails == null)
+            {
+                pScheduleDetails = new List<ScheduleDetail>();
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pScheduleDetails)
+            {
+                oObject.HomeServer = pConnectionServer;
+                oObject.ScheduleObjectId = pScheduleObjectId;
+            }
+
             return res;
         }
 
@@ -354,41 +379,9 @@ namespace ConnectionCUPIFunctions
             }
 
             return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("schedules/{0}/scheduledetails/{1}",
-                pScheduleObjectId, pScheduleDetailObjectId),MethodType.Delete, pConnectionServer, "");
+                pScheduleObjectId, pScheduleDetailObjectId),MethodType.DELETE, pConnectionServer, "");
         }
 
-
-        //Helper function to take an XML blob returned from the REST interface for schedule details returned and convert it into an generic
-        //list of ScheduleDetail class objects.  
-        private static List<ScheduleDetail> GetScheduleDetailsFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-
-            List<ScheduleDetail> oScheduleDetailList = new List<ScheduleDetail>();
-            
-            //Use LINQ to XML to create a list of user template objects in a single statement.  All these properties 
-            // should always be present but protect from missing properties anyway.
-            var scheduleDetails = from e in pXElement.Elements()
-                                where e.Name.LocalName == "ScheduleDetail"
-                                select e;
-
-            //for each object returned in the list from the XML, construct a class object using the elements associated with that 
-            //object.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlScheduleDetail in scheduleDetails)
-            {
-                ScheduleDetail oScheduleDetail = new ScheduleDetail(pConnectionServer);
-                foreach (XElement oElement in oXmlScheduleDetail.Elements())
-                {
-                    //adds the XML property to the object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oScheduleDetail, oElement);
-                }
-
-                //add the fully populated object to the list that will be returned to the calling routine.
-                oScheduleDetailList.Add(oScheduleDetail);
-            }
-
-            return oScheduleDetailList;
-        }
 
         /// <summary>
         /// Return a list of ScheduleDetail items for a particular schedule - there may be zero detail items for a schedule, that's

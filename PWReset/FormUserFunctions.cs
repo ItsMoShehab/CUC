@@ -12,7 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 using SimpleLogger;
 
 namespace PWReset
@@ -53,10 +53,10 @@ namespace PWReset
             WebCallResult res;
             int iRowsPerPage = 0;
 
-            //get the user data from the remote Connection server as a list of UserBase objects - remember these are "light" users 
+            //get the user data from the remote Connection server as a list of User objects - remember these are "light" users 
             //that contain a smaller set of data than a "UserFull" - this is designed for list presentation and the like, although
             //in this sample application we're just showing everything, typically you'd hide all the ObjectId values.
-            List<ConnectionCUPIFunctions.UserBase> oUsers;
+            List<Cisco.UnityConnection.RestFunctions.UserBase> oUsers;
 
             //fetch the number of users to return in a query - you'll want to keep this reasonable in most cases as a very large 
             //result set can timeout on you if the server is busy.
@@ -114,7 +114,7 @@ namespace PWReset
             //background thread approach to fetching data is beyond the scope of this framework.
             DisableFormControls();
 
-            res = UserBase.GetUsers(GlobalItems.CurrentConnectionServer,out oUsers, strQuery);
+            res = UserBase.GetUsers(GlobalItems.CurrentConnectionServer, out oUsers, strQuery);
 
             EnableFormControls();
 

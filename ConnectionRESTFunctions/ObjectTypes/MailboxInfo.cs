@@ -12,9 +12,9 @@
 using System;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// Mailbox details for the user passed into the constructor.
@@ -23,7 +23,6 @@ namespace ConnectionCUPIFunctions
     /// </summary>
     public class MailboxInfo
     {
-       
 
         #region Constructors
 
@@ -51,7 +50,7 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Empty ObjectId passed to MailboxInfo constructor.");
             }
 
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
             WebCallResult res = GetMailboxInfo(pUserObjectId);
@@ -62,30 +61,29 @@ namespace ConnectionCUPIFunctions
             }
         }
 
-
         #endregion
 
 
         #region Fields and Properties
 
         //reference to the ConnectionServer object 
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         //all the properties returned from Connection for the mailbox info
 
-        public string DisplayName { get; private set; }
-        public long CurrentSizeInBytes { get; private set; }
-        public bool IsPrimary { get; private set; }
-        public bool IsStoreOverFlowed { get;private set; }
-        public bool IsStoreMounted { get; private set; }
-        public bool IsMailboxMounted { get; private set; }
-        public bool IsWarningQuotaExceeded { get; private set; }
-        public bool IsReceiveQuotaExceeded { get; private set; }
-        public bool IsSendQuotaExceeded { get; private set; }
-        public long ReceiveQuota { get; private set; }
-        public long WarningQuota { get; private set; }
-        public long SendQuota { get; private set; }
-        public bool IsDeletedFolderEnabled { get; private set; }
+        public string DisplayName { get; set; }
+        public long CurrentSizeInBytes { get; set; }
+        public bool IsPrimary { get; set; }
+        public bool IsStoreOverFlowed { get;set; }
+        public bool IsStoreMounted { get; set; }
+        public bool IsMailboxMounted { get;  set; }
+        public bool IsWarningQuotaExceeded { get; set; }
+        public bool IsReceiveQuotaExceeded { get; set; }
+        public bool IsSendQuotaExceeded { get; set; }
+        public long ReceiveQuota { get; set; }
+        public long WarningQuota { get; set; }
+        public long SendQuota { get; set; }
+        public bool IsDeletedFolderEnabled { get; set; }
 
         #endregion
 
@@ -134,29 +132,25 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         private WebCallResult GetMailboxInfo(string pUserObjectId)
         {
-            string strUrl = string.Format("{0}mailbox?userobjectid={1}", _homeServer.BaseUrl,pUserObjectId);
+            string strUrl = string.Format("{0}mailbox?userobjectid={1}", HomeServer.BaseUrl,pUserObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
+                JsonConvert.PopulateObject(res.ResponseText, this);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                 res.Success = false;
-                return res;
             }
-
-            //fill in the properties for this class from the data returned via XML from the server.
-            foreach (XElement oElement in res.XmlElement.Elements())
-            {
-                _homeServer.SafeXmlFetch(this, oElement);
-            }
-
             return res;
         }
 

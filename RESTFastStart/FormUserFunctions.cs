@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 using SimpleLogger;
 
 namespace CUPIFastStart
@@ -58,10 +58,10 @@ namespace CUPIFastStart
             WebCallResult res;
             int iRowsPerPage = 0;
 
-            //get the user data from the remote Connection server as a list of UserBase objects - remember these are "light" users 
+            //get the user data from the remote Connection server as a list of User objects - remember these are "light" users 
             //that contain a smaller set of data than a "UserFull" - this is designed for list presentation and the like, although
             //in this sample application we're just showing everything, typically you'd hide all the ObjectId values.
-            List<ConnectionCUPIFunctions.UserBase> oUsers;
+            List<Cisco.UnityConnection.RestFunctions.UserBase> oUsers;
 
             //fetch the number of users to return in a query - you'll want to keep this reasonable in most cases as a very large 
             //result set can timeout on you if the server is busy.
@@ -119,7 +119,7 @@ namespace CUPIFastStart
             //background thread approach to fetching data is beyond the scope of this framework.
             DisableFormControls();
 
-            res = UserBase.GetUsers(GlobalItems.CurrentConnectionServer,out oUsers, strQuery);
+            res = UserBase.GetUsers(GlobalItems.CurrentConnectionServer, out oUsers, strQuery);
 
             EnableFormControls();
 
@@ -334,7 +334,7 @@ namespace CUPIFastStart
             string strAlias = gridUsers.SelectedRows[0].Cells["Alias"].Value.ToString();
 
             //verify with the user before deleting
-            if (MessageBox.Show("Are you sure you want to delete the user:"+strAlias+"?","Delete Confirmation",
+            if (MessageBox.Show("Are you sure you want to delete the user:"+strAlias+"?","DELETE Confirmation",
                 MessageBoxButtons.YesNo,MessageBoxIcon.Question)==DialogResult.No)
             {
                 //the user changed their minds, bail out
@@ -344,7 +344,7 @@ namespace CUPIFastStart
             DisableFormControls();
 
             //remove the user
-            WebCallResult res = UserBase.DeleteUser(GlobalItems.CurrentConnectionServer,strObjectID);
+            WebCallResult res = UserBase.DeleteUser(GlobalItems.CurrentConnectionServer, strObjectID);
             
             EnableFormControls();
 
@@ -384,7 +384,7 @@ namespace CUPIFastStart
             oPropList.Add("DtmfAccessId", textUserExtension.Text);
 
             //do the call to update the items via CUPI
-            WebCallResult res = UserBase.UpdateUser(GlobalItems.CurrentConnectionServer,strObjectID, oPropList);
+            WebCallResult res = UserBase.UpdateUser(GlobalItems.CurrentConnectionServer, strObjectID, oPropList);
 
             EnableFormControls();
 
@@ -451,7 +451,7 @@ namespace CUPIFastStart
                 if (oForm.LastName.Length > 0) oProps.Add("LastName", oForm.LastName);
                 if (oForm.DisplayName.Length > 0) oProps.Add("DisplayName", oForm.DisplayName);
 
-                WebCallResult res = UserBase.AddUser(GlobalItems.CurrentConnectionServer,oForm.TemplateAlias, oForm.Alias, oForm.Extension, oProps);
+                WebCallResult res = UserBase.AddUser(GlobalItems.CurrentConnectionServer, oForm.TemplateAlias, oForm.Alias, oForm.Extension, oProps);
 
                 EnableFormControls();
 
@@ -563,7 +563,7 @@ namespace CUPIFastStart
             DisableFormControls();
 
             //fetch the voice name off the Connection server and store it at the path provided.
-            res = UserBase.GetUserVoiceName(GlobalItems.CurrentConnectionServer,saveFileDialog.FileName, strObjectID);
+            res = UserBase.GetUserVoiceName(GlobalItems.CurrentConnectionServer, saveFileDialog.FileName, strObjectID);
 
             EnableFormControls();
 
@@ -608,7 +608,7 @@ namespace CUPIFastStart
             DisableFormControls();
 
             //upload the voice name to the Connection server.
-            res = UserBase.SetUserVoiceName(GlobalItems.CurrentConnectionServer,openFileDialog.FileName, strObjectID,false);
+            res = UserBase.SetUserVoiceName(GlobalItems.CurrentConnectionServer, openFileDialog.FileName, strObjectID, false);
 
             EnableFormControls();
 

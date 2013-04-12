@@ -15,9 +15,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The NotificaitonDevice class contains all the properties associated with a Notification Device in Unity Connection that can be fetched 
@@ -29,10 +29,10 @@ namespace ConnectionCUPIFunctions
         #region Properties
         
         //reference to the ConnectionServer object used to create this notificationd evice instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         //used to keep track of whic properties have been updated
-        private ConnectionPropertyList _changedPropList;
+        private readonly ConnectionPropertyList _changedPropList;
 
         private bool _active;
         /// <summary>
@@ -231,9 +231,11 @@ namespace ConnectionCUPIFunctions
         /// of the media switch to be used when displaying entries in the administrative console, e.g. Cisco Unity Connection Administration.
         /// This is a read only field for display purposes.
         /// </summary>
+        [JsonProperty]
         public string MediaSwitchDisplayName { get; private set; }
 
         //you can't change the ObjectId of a standing object
+        [JsonProperty]
         public string ObjectId { get; private set; }
         
         private string _phoneNumber;
@@ -452,6 +454,7 @@ namespace ConnectionCUPIFunctions
         }
 
         //you can't change the Subscriber owner of a notification device.
+        [JsonProperty]
         public string SubscriberObjectId { get; private set; }
         
         private bool _transmitForcedAuthorizationCode;
@@ -473,6 +476,7 @@ namespace ConnectionCUPIFunctions
         /// The device type (Dial, Numeric Pager, SMTP, Fax).  This cannot be changed after creation.
         /// //3=Fax, 7=MP3, 2=Pager, 1=Phone, 5=SMS, 4=SMTP - 
         /// </summary>
+        [JsonProperty]
         public int Type { get; private set; }
 
         private bool _undeletable;
@@ -509,6 +513,15 @@ namespace ConnectionCUPIFunctions
         #region Constructors
 
         /// <summary>
+        /// Generic constructor for JSON parser
+        /// </summary>
+        public NotificationDevice()
+        {
+            //make an instanced of the changed prop list to keep track of updated properties on this object
+            _changedPropList = new ConnectionPropertyList();   
+        }
+
+        /// <summary>
         /// Creates a new instance of the NotificationDevice class.  You must provide the ConnectionServer reference that the device lives on and an ObjectId
         /// of the user that owns it.  You can optionally pass in the ObjectId of the device itself and it will load the data for that device, otherwise an
         /// empty instance is returned.
@@ -526,7 +539,7 @@ namespace ConnectionCUPIFunctions
         /// Optional display name of the device - names must be unique across all devices so this can be used for fetching a specific notificaiton device
         /// of any type.
         /// </param>
-        public NotificationDevice(ConnectionServer pConnectionServer, string pUserObjectId, string pObjectId="",string pDisplayName="")
+        public NotificationDevice(ConnectionServer pConnectionServer, string pUserObjectId, string pObjectId="",string pDisplayName=""):this()
         {
           	if (pConnectionServer==null)
             {
@@ -539,11 +552,7 @@ namespace ConnectionCUPIFunctions
                 //throw new ArgumentException("Empty user objectId passed to NotificationDevice constructor");
             }
 
-            _homeServer = pConnectionServer;
-
-            //make an instanced of the changed prop list to keep track of updated properties on this object
-            _changedPropList = new ConnectionPropertyList();
-
+            HomeServer = pConnectionServer;
             UserObjectId = pUserObjectId;
 
             if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pDisplayName))
@@ -664,77 +673,42 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}users/{1}/notificationdevices", pConnectionServer.BaseUrl, pUserObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that does not mean an error - return true here along with an empty list.
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount==0)
             {
-                res.Success = false;
+                pNotificationDevices = new List<NotificationDevice>();
                 return res;
             }
 
-            //
-            pNotificationDevices = GetNotificationDevicesFomXElements(pConnectionServer, res.XmlElement,pUserObjectId);
+            pNotificationDevices = HTTPFunctions.GetObjectsFromJson<NotificationDevice>(res.ResponseText);
+
+            if (pNotificationDevices == null)
+            {
+                pNotificationDevices = new List<NotificationDevice>();
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pNotificationDevices)
+            {
+                oObject.HomeServer = pConnectionServer;
+                oObject.UserObjectId = pUserObjectId;
+                oObject.ClearPendingChanges();
+            }
+
             return res;
         }
 
         
-        /// <summary>
-        /// Pass in an XML blob returned from the server containing a list of notification devices and this routine will parse that XML
-        /// out and return a list of NotificationDevice objects filled out with the data returned from the server.
-        /// </summary>
-        /// <param name="pConnectionServer">
-        /// Connection server these devices came from.
-        /// </param>
-        /// <param name="pXElement">
-        /// XML structure returned from the Connection server's CUPI interface
-        /// </param>
-        /// <returns>
-        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
-        /// </returns>
-        private static List<NotificationDevice> GetNotificationDevicesFomXElements(ConnectionServer pConnectionServer,
-                                                                                   XElement pXElement, string pUserObjectId)
-        {
-            List<NotificationDevice> oNotificationDevices = new List<NotificationDevice>();
-
-            if (pConnectionServer == null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced passed to GetNotificationDevicesFomXElements");
-            }
-
-            //pull out a set of XMLElements for each NotificationDevice object returned using the power of LINQ
-            var notificationDevices = from e in pXElement.Elements()
-                                      where e.Name.LocalName == "NotificationDevice"
-                                      select e;
-
-            //for each device returned in the list of extensions from the XML, construct an AlternteExtension object using the elements associated with that 
-            //extension.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlNotificationDevice in notificationDevices)
-            {
-                NotificationDevice oNotificationDevice = new NotificationDevice(pConnectionServer,pUserObjectId,"");
-                foreach (XElement oElement in oXmlNotificationDevice.Elements())
-                {
-                    //adds the XML property to the Notificiaton device object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oNotificationDevice, oElement);
-                }
-
-                oNotificationDevice.ClearPendingChanges();
-
-                //add the fully populated Notification device object to the list that will be returned to the calling routine.
-                oNotificationDevices.Add(oNotificationDevice);
-            }
-
-            return oNotificationDevices;
-        }
-
-
-
         /// <summary>
         /// Adds a new custom SMTP notification device for a user identified via ObjectId.  The device display name must be unique for devices
         /// assigned to that useror the add will fail.
@@ -805,7 +779,7 @@ namespace ConnectionCUPIFunctions
 
             res =
                 HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/notificationdevices/smtpdevices", pConnectionServer.BaseUrl, pUserObjectId),
-                    MethodType.Post,pConnectionServer,strBody);
+                    MethodType.POST,pConnectionServer,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -895,7 +869,7 @@ namespace ConnectionCUPIFunctions
 
             res =
                 HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/notificationdevices/htmldevices", pConnectionServer.BaseUrl, pUserObjectId),
-                    MethodType.Post, pConnectionServer, strBody);
+                    MethodType.POST, pConnectionServer, strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -995,7 +969,7 @@ namespace ConnectionCUPIFunctions
             strBody += "</SmsDevice>";
 
             res =HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/notificationdevices/smsdevices", pConnectionServer.BaseUrl, pUserObjectId),
-                    MethodType.Post,pConnectionServer,strBody);
+                    MethodType.POST,pConnectionServer,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -1084,7 +1058,7 @@ namespace ConnectionCUPIFunctions
             strBody += "</PhoneDevice>";
 
             res = HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/notificationdevices/phonedevices", pConnectionServer.BaseUrl, pUserObjectId),
-                    MethodType.Post,pConnectionServer,strBody);
+                    MethodType.POST,pConnectionServer,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -1173,7 +1147,7 @@ namespace ConnectionCUPIFunctions
             strBody += "</PagerDevice>";
 
             res = HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/notificationdevices/pagerdevices", pConnectionServer.BaseUrl, pUserObjectId),
-                    MethodType.Post,pConnectionServer,strBody);
+                    MethodType.POST,pConnectionServer,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -1191,7 +1165,7 @@ namespace ConnectionCUPIFunctions
 
 
         /// <summary>
-        /// Delete a notification device associated with a user.
+        /// DELETE a notification device associated with a user.
         /// </summary>
         /// <param name="pConnectionServer">
         /// The Connection server that houses the user that owns the device to be removed.
@@ -1232,7 +1206,7 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Delete,pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.DELETE,pConnectionServer, "");
         }
 
 
@@ -1304,7 +1278,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += string.Format("</{0}>", pDeviceType.ToString());
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Put,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.PUT,pConnectionServer,strBody,false);
         }
 
 
@@ -1403,7 +1377,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //just call the static method with the info from the instance 
-            res = UpdateNotificationDevice(_homeServer, UserObjectId, ObjectId,(NotificationDeviceTypes)Type, _changedPropList);
+            res = UpdateNotificationDevice(HomeServer, UserObjectId, ObjectId,(NotificationDeviceTypes)Type, _changedPropList);
 
             //if the update went through then clear the changed properties list.
             if (res.Success)
@@ -1416,7 +1390,7 @@ namespace ConnectionCUPIFunctions
 
 
         /// <summary>
-        /// Delete a notification device from the Connection directory.
+        /// DELETE a notification device from the Connection directory.
         /// </summary>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -1424,7 +1398,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult Delete()
         {
             //just call the static method with the info on the instance
-            return DeleteNotificationDevice(_homeServer, UserObjectId, ObjectId,(NotificationDeviceTypes)Type);
+            return DeleteNotificationDevice(HomeServer, UserObjectId, ObjectId,(NotificationDeviceTypes)Type);
         }
 
 
@@ -1443,10 +1417,9 @@ namespace ConnectionCUPIFunctions
         /// <returns></returns>
         private WebCallResult GetNotificationDevice(string pUserObjectId, string pObjectId, string pDisplayName)
         {
-            string strObjectId = pObjectId;
             if (string.IsNullOrEmpty(pObjectId))
             {
-                strObjectId = GetObjectIdFromName(pUserObjectId, pDisplayName);
+                string strObjectId = GetObjectIdFromName(pUserObjectId, pDisplayName);
                 if (string.IsNullOrEmpty(strObjectId))
                 {
                     return new WebCallResult
@@ -1457,27 +1430,24 @@ namespace ConnectionCUPIFunctions
                 }
             }
 
-            string strUrl = string.Format("{0}users/{1}/notificationdevices/{2}", _homeServer.BaseUrl,pUserObjectId, pObjectId);
+            string strUrl = string.Format("{0}users/{1}/notificationdevices/{2}", HomeServer.BaseUrl,pUserObjectId, pObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
-                res.Success = false;
-                return res;
+                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "NotificationDevice"), this);
             }
-
-            //load all of the elements returned into the class object properties
-            foreach (XElement oElement in res.XmlElement.Elements().Elements())
+            catch (Exception ex)
             {
-                _homeServer.SafeXmlFetch(this, oElement);
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                res.Success = false;
             }
 
             //all the updates above will flip pending changes into the queue - clear that here.
@@ -1507,7 +1477,7 @@ namespace ConnectionCUPIFunctions
             //has a matching name - not pretty or efficent - this will get replaced with a proper query construct once the API has 
             //support for it.
             List<NotificationDevice> oList;
-            WebCallResult res = NotificationDevice.GetNotificationDevices(_homeServer, pUserObjectId, out oList);
+            WebCallResult res = GetNotificationDevices(HomeServer, pUserObjectId, out oList);
             if (res.Success == false)
             {
                 return "";

@@ -279,7 +279,7 @@
             this.buttonSetVoiceName.Name = "buttonSetVoiceName";
             this.buttonSetVoiceName.Size = new System.Drawing.Size(91, 36);
             this.buttonSetVoiceName.TabIndex = 57;
-            this.buttonSetVoiceName.Text = "Put Name";
+            this.buttonSetVoiceName.Text = "PUT Name";
             this.buttonSetVoiceName.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.buttonSetVoiceName.UseVisualStyleBackColor = true;
             this.buttonSetVoiceName.Click += new System.EventHandler(this.buttonSetVoiceName_Click);
@@ -293,7 +293,7 @@
             this.buttonFetchVoiceName.Name = "buttonFetchVoiceName";
             this.buttonFetchVoiceName.Size = new System.Drawing.Size(91, 36);
             this.buttonFetchVoiceName.TabIndex = 56;
-            this.buttonFetchVoiceName.Text = "Get Name";
+            this.buttonFetchVoiceName.Text = "GET Name";
             this.buttonFetchVoiceName.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.buttonFetchVoiceName.UseVisualStyleBackColor = true;
             this.buttonFetchVoiceName.Click += new System.EventHandler(this.buttonFetchVoiceName_Click);

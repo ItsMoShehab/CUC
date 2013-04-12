@@ -14,9 +14,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The TransferOption class contains all the properties associated with a transfer rule in Unity Connection that can be fetched 
@@ -27,6 +27,19 @@ namespace ConnectionCUPIFunctions
     {
 
         #region Constructor
+
+        /// <summary>
+        /// Generic constructor for Json parsing
+        /// </summary>
+        public TransferOption()
+        {
+            //make an instanced of the changed prop list to keep track of updated properties on this object
+            _changedPropList = new ConnectionPropertyList();
+            
+            //little bit of a hack - CUPI does not return TimeExpires values for null TimeExpires fields so we can only assume that it's abscence
+            //means the greeting is active
+            TimeExpires = DateTime.Parse("2200/1/1");
+        }
 
     /// <summary>
     /// Creates a new instance of the TransferOption class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
@@ -43,7 +56,7 @@ namespace ConnectionCUPIFunctions
     /// <param name="pTransferOptionType">
     /// The transfer rule to fetch (Standard, Alternate, OffHours)
     /// </param>
-    public TransferOption(ConnectionServer pConnectionServer, string pCallHandlerObjectId, string pTransferOptionType = "")
+    public TransferOption(ConnectionServer pConnectionServer, string pCallHandlerObjectId, string pTransferOptionType = ""):this()
         {
             if (pConnectionServer == null)
             {
@@ -56,20 +69,13 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Invalid CallHandlerObjectID passed to TransferOption constructor.");
             }
 
-            //make an instanced of the changed prop list to keep track of updated properties on this object
-            _changedPropList = new ConnectionPropertyList();
-
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             //remember the objectID of the owner of the menu entry as the CUPI interface requires this in the URL construction
             //for operations editing them.
             CallHandlerObjectId = pCallHandlerObjectId;
 
-            //little bit of a hack - CUPI does not return TimeExpires values for null TimeExpires fields so we can only assume that it's abscence
-            //means the greeting is active
-            TimeExpires = DateTime.Parse("2200/1/1");
-
-            //if the user passed in a specific ObjectId then go load that transfer option up, otherwise just return an empty instance.
+           //if the user passed in a specific ObjectId then go load that transfer option up, otherwise just return an empty instance.
             if (pTransferOptionType.Length == 0) return;
 
             //if the TransferRule is passed in then fetch the data on the fly and fill out this instance
@@ -89,10 +95,10 @@ namespace ConnectionCUPIFunctions
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this TransferOption instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         //used to keep track of whic properties have been updated
-        private ConnectionPropertyList _changedPropList;
+        private readonly ConnectionPropertyList _changedPropList;
 
         private int _action;
         /// <summary>
@@ -114,12 +120,14 @@ namespace ConnectionCUPIFunctions
         /// Call handler owner of this transfer option.
         /// This cannot be set or changed after creation.
         /// </summary>
+        [JsonProperty]
         public string CallHandlerObjectId { get; private set; }
 
         /// <summary>
         /// Indicates if the transfer rule is enabled (active) or not.  This is read only for reporting purposes - set the TimeExpires date 
         /// to a time in the past to disable it or a time in the future to enable it.
         /// </summary>
+        [JsonProperty]
         public bool Enabled { get; private set; }
 
         private string _extension;
@@ -151,6 +159,7 @@ namespace ConnectionCUPIFunctions
         /// Unique identifier for this transfer option.
         /// You cannot change the objectID of a standing object.
         /// </summary>
+        [JsonProperty]
         public string ObjectId { get; private set; }
 
         private bool _personalCallTransfer;
@@ -340,6 +349,7 @@ namespace ConnectionCUPIFunctions
         /// <summary>
         /// OffHours, Standard, Alternate - cannot be changed.
         /// </summary>
+        [JsonProperty]
         public string TransferOptionType { get; private set; }
 
         private bool _usePrimaryExtension;
@@ -454,63 +464,41 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/transferoptions", pConnectionServer.BaseUrl, pCallHandlerObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty thats an error - there should always be transfer options.
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
+                pTransferOptions = new List<TransferOption>();
                 res.Success = false;
                 return res;
             }
 
-            pTransferOptions = GetTransferOptionsFomXElements(pConnectionServer, pCallHandlerObjectId, res.XmlElement);
+            pTransferOptions = HTTPFunctions.GetObjectsFromJson<TransferOption>(res.ResponseText);
+
+            if (pTransferOptions == null)
+            {
+                pTransferOptions = new List<TransferOption>();
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pTransferOptions)
+            {
+                oObject.HomeServer = pConnectionServer;
+                oObject.CallHandlerObjectId = pCallHandlerObjectId;
+                oObject.ClearPendingChanges();
+            }
+
             return res;
 
-        }
-
-
-        //Helper function to take an XML blob returned from the REST interface for transfer options return and convert it into an generic
-        //list of TransferOption class objects. 
-        private static List<TransferOption> GetTransferOptionsFomXElements(ConnectionServer pConnectionServer,
-                                                                                   string pCallHandlerObjectId,
-                                                                                   XElement pXElement)
-        {
-            List<TransferOption> oTransferOptions = new List<TransferOption>();
-
-            if (pConnectionServer == null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced passed to GetTransferOptionsFomXElements");
-            }
-
-            //pull out a set of XMLElements for each TransferOption object returned using the power of LINQ
-            var transferOptions = from e in pXElement.Elements()
-                              where e.Name.LocalName == "TransferOption"
-                              select e;
-
-            //for each transfer option returned in the list from the XML, construct an TransferOption object using the elements associated with that 
-            //option.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlTransferOption in transferOptions)
-            {
-                TransferOption oTransferOption = new TransferOption(pConnectionServer, pCallHandlerObjectId);
-                foreach (XElement oElement in oXmlTransferOption.Elements())
-                {
-                    //adds the XML property to the TransferOption object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oTransferOption, oElement);
-                }
-
-                oTransferOption.ClearPendingChanges();
-                
-                //add the fully populated TransferOption object to the list that will be returned to the calling routine.
-                oTransferOptions.Add(oTransferOption);
-            }
-
-            return oTransferOptions;
         }
 
 
@@ -569,7 +557,7 @@ namespace ConnectionCUPIFunctions
             strBody += "</TransferOption>";
 
             return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, 
-                pTransferOptionType),MethodType.Put,pConnectionServer,strBody);
+                pTransferOptionType),MethodType.PUT,pConnectionServer,strBody,false);
 
         }
 
@@ -684,7 +672,7 @@ namespace ConnectionCUPIFunctions
             strBody += "</TransferOption>";
 
             return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, 
-                pTransferOptionType),MethodType.Put,pConnectionServer,strBody);
+                pTransferOptionType),MethodType.PUT,pConnectionServer,strBody,false);
         }
 
 
@@ -752,27 +740,24 @@ namespace ConnectionCUPIFunctions
 
             }
             
-            string strUrl = string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", _homeServer.BaseUrl, CallHandlerObjectId, pTransferOptionType);
+            string strUrl = string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", HomeServer.BaseUrl, CallHandlerObjectId, pTransferOptionType);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
-                res.Success = false;
-                return res;
+                JsonConvert.PopulateObject(res.ResponseText, this);
             }
-
-            //load all of the elements returned into the class object properties
-            foreach (XElement oElement in res.XmlElement.Elements())
+            catch (Exception ex)
             {
-                _homeServer.SafeXmlFetch(this, oElement);
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                res.Success = false;
             }
 
             //all the updates above will flip pending changes into the queue - clear that here.
@@ -810,7 +795,7 @@ namespace ConnectionCUPIFunctions
         {
             //the attempt clear the change queue
             ClearPendingChanges();
-            return UpdateTransferOptionEnabledStatus(_homeServer, CallHandlerObjectId, TransferOptionType, pEnabled, pTillDate);
+            return UpdateTransferOptionEnabledStatus(HomeServer, CallHandlerObjectId, TransferOptionType, pEnabled, pTillDate);
         }
 
 
@@ -846,7 +831,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //just call the static method with the info from the instance 
-            res = UpdateTransferOption(_homeServer, CallHandlerObjectId, TransferOptionType, _changedPropList);
+            res = UpdateTransferOption(HomeServer, CallHandlerObjectId, TransferOptionType, _changedPropList);
 
             //if the update went through then clear the changed properties list.
             if (res.Success)

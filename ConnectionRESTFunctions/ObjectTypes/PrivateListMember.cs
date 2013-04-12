@@ -1,11 +1,20 @@
-﻿using System;
+﻿#region Legal Disclaimer
+
+//This code and samples are provided “as-is”, responsibility for testing and supporting it lies with you.  In lawyer-ese:
+
+//THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR 
+//OTHER PARTIES PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+//WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. 
+//SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
+
+#endregion
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// Make the private list member type enum more human readable in output.
@@ -23,22 +32,22 @@ namespace ConnectionCUPIFunctions
 
         #region Properties
 
-        public string Alias { get; private set; }
-        public string DisplayName { get; private set; }
-        public string PersonalVoiceMailListObjectId { get; private set; }
-        public string Extension { get; private set; }
+        public string Alias { get; set; }
+        public string DisplayName { get; set; }
+        public string PersonalVoiceMailListObjectId { get; set; }
+        public string Extension { get; set; }
 
-        public string MemberContactObjectId { get; private set; }
-        public string MemberDistributionListObjectId { get; private set; }
-        public string MemberSubscriberObjectId { get; private set; }
-        public string MemberPersonalVoiceMailListObjectId { get; private set; }
+        public string MemberContactObjectId { get; set; }
+        public string MemberDistributionListObjectId { get; set; }
+        public string MemberSubscriberObjectId { get; set; }
+        public string MemberPersonalVoiceMailListObjectId { get; set; }
+
+        public string ObjectId { get; set; }
 
         /// <summary>
         /// Not in CUPI's data, this is derived locally in the class for ease of filtering/presentation.
         /// </summary>
         public PrivateListMemberType MemberType { get; private set; }
-
-        public string ObjectId { get; private set; }
 
         
         #endregion
@@ -47,7 +56,7 @@ namespace ConnectionCUPIFunctions
         #region Static Methods
 
         /// <summary>
-        /// Get the list of members of a private distribution list
+        /// GET the list of members of a private distribution list
         /// </summary>
         /// <param name="pConnectionServer">
         /// Connection server the private list is homed on.
@@ -61,11 +70,17 @@ namespace ConnectionCUPIFunctions
         /// <param name="pMemberList">
         /// The list of members is returned as a generic list of PrivateListMember classes on this out param
         /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>        
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
         public static WebCallResult GetPrivateListMembers(ConnectionServer pConnectionServer, string pPrivateListObjectId, string pOwnerUserObjectId,
-            out List<PrivateListMember> pMemberList)
+            out List<PrivateListMember> pMemberList,int pPageNumber=1, int pRowsPerPage=20)
         {
             WebCallResult res = new WebCallResult();
             pMemberList = null;
@@ -77,77 +92,59 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = string.Format("{0}users/{1}/privatelists/{2}/privatelistmembers", pConnectionServer.BaseUrl,pOwnerUserObjectId, pPrivateListObjectId);
+            string strUrl = HTTPFunctions.AddClausesToUri(string.Format("{0}users/{1}/privatelists/{2}/privatelistmembers", pConnectionServer.BaseUrl, pOwnerUserObjectId, 
+                pPrivateListObjectId), "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements can be empty, that's legal
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that means an error in this case - should always be at least one template
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            {
+                pMemberList = new List<PrivateListMember>();
+                res.Success = false;
+                return res;
+            }
+
+            pMemberList = HTTPFunctions.GetObjectsFromJson<PrivateListMember>(res.ResponseText);
+
+            if (pMemberList == null)
             {
                 pMemberList = new List<PrivateListMember>();
                 return res;
             }
 
-            pMemberList = GetPrivateListMembersFromXElements(pConnectionServer, res.XmlElement);
-            return res;
-        }
-
-
-        /// <summary>
-        ///Helper function to take an XML blob returned from the REST interface for a list (or listss) return and convert it into an generic
-        ///list of DistributionList class objects. 
-        /// </summary>
-        private static List<PrivateListMember> GetPrivateListMembersFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-            List<PrivateListMember> oDListMember = new List<PrivateListMember>();
-
-            //pull out a set of XMLElements for each CallHandler object returned using the power of LINQ
-            var listMembers = from e in pXElement.Elements()
-                           where e.Name.LocalName == "PrivateListMember"
-                           select e;
-
-            //for each handler returned in the list of handlers from the XML, construct a CallHandler object using the elements associated with that 
-            //handler.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlListMembers in listMembers)
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pMemberList)
             {
-                PrivateListMember oPrivateListMember = new PrivateListMember();
-                foreach (XElement oElement in oXmlListMembers.Elements())
-                {
-                    //adds the XML property to the CallHandler object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oPrivateListMember, oElement);
-                }
-
                 //manually determine the member type here - this is a little hacky but it make life a bit easier by being able to filter
                 //member types out in a way that is not provided by CUPI natively.
-                if (!string.IsNullOrEmpty(oPrivateListMember.MemberContactObjectId))
+                if (!string.IsNullOrEmpty(oObject.MemberContactObjectId))
                 {
-                    oPrivateListMember.MemberType = PrivateListMemberType.RemoteContact;
+                    oObject.MemberType = PrivateListMemberType.RemoteContact;
                 }
-                else if (!string.IsNullOrEmpty(oPrivateListMember.MemberDistributionListObjectId))
+                else if (!string.IsNullOrEmpty(oObject.MemberDistributionListObjectId))
                 {
-                    oPrivateListMember.MemberType = PrivateListMemberType.DistributionList;
+                    oObject.MemberType = PrivateListMemberType.DistributionList;
                 }
-                else if (!string.IsNullOrEmpty(oPrivateListMember.MemberPersonalVoiceMailListObjectId))
+                else if (!string.IsNullOrEmpty(oObject.MemberPersonalVoiceMailListObjectId))
                 {
-                    oPrivateListMember.MemberType = PrivateListMemberType.PrivateList;
+                    oObject.MemberType = PrivateListMemberType.PrivateList;
                 }
-                else 
+                else
                 {
-                    oPrivateListMember.MemberType = PrivateListMemberType.LocalUser;
+                    oObject.MemberType = PrivateListMemberType.LocalUser;
                 }
-
-                //add the fully populated CallHandler object to the list that will be returned to the calling routine.
-                oDListMember.Add(oPrivateListMember);
             }
 
-            return oDListMember;
+            return res;
         }
 
 

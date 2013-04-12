@@ -11,13 +11,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The user template class provides the ability to enumerate, create, edit an delete user templates in the Connection directory.
@@ -1765,7 +1764,7 @@ namespace ConnectionCUPIFunctions
             {
                 try
                 {
-                    _phoneSystem = new PhoneSystem(this._homeServer, this.MediaSwitchObjectId);
+                    _phoneSystem = new PhoneSystem(this.HomeServer, this.MediaSwitchObjectId);
                 }
                 catch {}
             }
@@ -1819,7 +1818,7 @@ namespace ConnectionCUPIFunctions
 
             if (_cos == null)
             {
-                _cos = new ClassOfService(this._homeServer, this.CosObjectId);
+                _cos = new ClassOfService(this.HomeServer, this.CosObjectId);
             }
 
             return _cos;
@@ -1832,7 +1831,7 @@ namespace ConnectionCUPIFunctions
         /// <summary>
         /// Returns details of the PIN (phone password) settings - including if it's locked, time last changed, if it's set to must-change 
         /// etc... this object does NOT allow for editing of credentials - use the ResetUserPassword method off the User object for that.
-        /// This is done as a method since if it's done as a property it'll attempt to fill it in from XML data pulled from Connection during
+        /// This is done as a method since if it's done as a property it'll attempt to fill it in from data pulled from Connection during
         /// populate of a user's data.
         /// </summary>
         /// <returns>
@@ -1842,7 +1841,7 @@ namespace ConnectionCUPIFunctions
         {
             if (_pin == null)
             {
-                _pin = new Credential(this._homeServer, this.ObjectId, CredentialType.Pin);
+                _pin = new Credential(this.HomeServer, this.ObjectId, CredentialType.Pin);
             }
 
             return _pin;
@@ -1853,7 +1852,7 @@ namespace ConnectionCUPIFunctions
         /// <summary>
         /// Returns details of the Password (GUI password) settings - including if it's locked, time last changed, if it's set to must-change 
         /// etc... this object does NOT allow for editing of credentials - use the ResetUserPassword method off the User object for that.
-        /// This is done as a method since if it's done as a property it'll attempt to fill it in from XML data pulled from Connection during
+        /// This is done as a method since if it's done as a property it'll attempt to fill it in from data pulled from Connection during
         /// populate of a user's data.
         /// </summary>
         /// <returns>
@@ -1863,13 +1862,13 @@ namespace ConnectionCUPIFunctions
         {
             if (_password == null)
             {
-                _password = new Credential(this._homeServer, this.ObjectId, CredentialType.Password);
+                _password = new Credential(this.HomeServer, this.ObjectId, CredentialType.Password);
             }
 
             return _password;
         }        
         //reference to the ConnectionServer object used to create this user instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -1879,16 +1878,29 @@ namespace ConnectionCUPIFunctions
 
         #region Constructors
 
-        //constructor
-        public UserTemplate(ConnectionServer pConnectionServer, string pObjectId="", string pAlias = "")
+        /// <summary>
+        /// generic constructor used by JSON parser
+        /// </summary>
+        public UserTemplate()
+        {
+            _changedPropList = new ConnectionPropertyList();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pConnectionServer"></param>
+        /// <param name="pObjectId"></param>
+        /// <param name="pAlias"></param>
+        public UserTemplate(ConnectionServer pConnectionServer, string pObjectId="", string pAlias = ""):this()
         {
             if (pConnectionServer==null)
             {
                 throw new ArgumentException("Null ConnectionServer referenced pasted to UserTemplate construtor");
             }
 
-            _homeServer = pConnectionServer;
-            _changedPropList = new ConnectionPropertyList();
+            HomeServer = pConnectionServer;
             
              if (pObjectId.Length == 0 & pAlias.Length == 0)
             {
@@ -1982,26 +1994,24 @@ namespace ConnectionCUPIFunctions
                 }
             }
 
-            strUrl = string.Format("{0}usertemplates/{1}", _homeServer.BaseUrl, strObjectId);
+            strUrl = string.Format("{0}usertemplates/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
-                res.Success = false;
-                return res;
+                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "UserTemplate"), this);
             }
-
-            foreach (XElement oElement in res.XmlElement.Elements())
+            catch (Exception ex)
             {
-                _homeServer.SafeXmlFetch(this, oElement);
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                res.Success = false;
             }
 
             //the above fetch will set the proeprties as "changed", need to clear them out here
@@ -2019,33 +2029,24 @@ namespace ConnectionCUPIFunctions
         /// <returns></returns>
         private string GetObjectIdAlias(string pAlias)
         {
-            string strUrl = string.Format("{0}usertemplates?query=(Alias is {1})", _homeServer.BaseUrl, pAlias);
+            string strUrl = string.Format("{0}usertemplates?query=(Alias is {1})", HomeServer.BaseUrl, pAlias);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return "";
             }
 
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            List<UserTemplate> oTemplates = HTTPFunctions.GetObjectsFromJson<UserTemplate>(res.ResponseText);
+
+            if (oTemplates.Count != 1)
             {
-                res.Success = false;
                 return "";
             }
 
-            //fish out just the ObjectId value here
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            foreach (XElement oElement in res.XmlElement.Elements().Elements())
-            {
-                if (oElement.Name == "ObjectId")
-                {
-                    return oElement.Value;
-                }
-            }
-
-            return "";
+            return oTemplates.First().ObjectId;
         }
 
         /// <summary>
@@ -2068,7 +2069,7 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
             //just call the static method with the info from the instance 
-            res = UpdateUserTemplate(this._homeServer, this.ObjectId, _changedPropList);
+            res = UpdateUserTemplate(this.HomeServer, this.ObjectId, _changedPropList);
 
             //if the update goes through clear the queue of changed items
             if (res.Success)
@@ -2082,7 +2083,7 @@ namespace ConnectionCUPIFunctions
 
 
         /// <summary>
-        /// Delete a usertemplate from the Connection directory.
+        /// DELETE a usertemplate from the Connection directory.
         /// </summary>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -2090,7 +2091,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult Delete()
         {
             //just call the static method with the info on the instance
-            return DeleteUserTemplate(this._homeServer, this.ObjectId);
+            return DeleteUserTemplate(this.HomeServer, this.ObjectId);
         }
 
         /// <summary>
@@ -2132,7 +2133,7 @@ namespace ConnectionCUPIFunctions
                                       bool? pClearHackedCount = null
             )
         {
-            return ResetUserTemplatePin(_homeServer, ObjectId, pNewPin, pLocked, pMustChange, pCantChange, pDoesntExpire, pClearHackedCount);
+            return ResetUserTemplatePin(HomeServer, ObjectId, pNewPin, pLocked, pMustChange, pCantChange, pDoesntExpire, pClearHackedCount);
         }
 
 
@@ -2171,7 +2172,7 @@ namespace ConnectionCUPIFunctions
                                         bool? pCantChange = null,
                                         bool? pDoesntExpire = null)
         {
-            return ResetUserTemplatePassword(_homeServer, ObjectId, pNewPassword, pLocked, pMustChange, pCantChange, pDoesntExpire);
+            return ResetUserTemplatePassword(HomeServer, ObjectId, pNewPassword, pLocked, pMustChange, pCantChange, pDoesntExpire);
         }
 
         
@@ -2182,14 +2183,15 @@ namespace ConnectionCUPIFunctions
 
             try
             {
-                pPrimaryCallHandler = new CallHandler(_homeServer, this.CallHandlerObjectId,"",true);
+                pPrimaryCallHandler = new CallHandler(HomeServer, this.CallHandlerObjectId,"",true);
                 res.Success = true;
             }
             catch(Exception ex)
             {
                 pPrimaryCallHandler = null;
                 res.Success = false;
-                res.ErrorText = "Error fetching primary call handler for a user template using ObjectId=" + this.CallHandlerObjectId+", "+res.ToString();
+                res.ErrorText =string.Format("Error fetching primary call handler for a user template using ObjectId={0}, error={1}, request details={2}",
+                                  this.CallHandlerObjectId , ex, res);
             }
 
             return res;
@@ -2199,7 +2201,7 @@ namespace ConnectionCUPIFunctions
         //helper function used when a call is made to get a list of notification devices from the property list.
         private WebCallResult GetNotificationDevices(out List<NotificationDevice> pNotificationDevices)
         {
-            return NotificationDevice.GetNotificationDevices(_homeServer, ObjectId, out pNotificationDevices);
+            return NotificationDevice.GetNotificationDevices(HomeServer, ObjectId, out pNotificationDevices);
         }
    
         /// <summary>
@@ -2348,10 +2350,17 @@ namespace ConnectionCUPIFunctions
         /// <param name="pUserTemplates">
         /// Out parameter that is used to return the list of UserTemplate objects defined on Connection - there must be at least one.
         /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetUserTemplates(ConnectionServer pConnectionServer, out List<UserTemplate> pUserTemplates)
+        public static WebCallResult GetUserTemplates(ConnectionServer pConnectionServer, out List<UserTemplate> pUserTemplates, int pPageNumber = 1, 
+            int pRowsPerPage = 20)
         {
             WebCallResult res;
             pUserTemplates = null;
@@ -2363,63 +2372,43 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + "usertemplates";
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "usertemplates", "pageNumber=" + pPageNumber, 
+                "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that does not mean an error - return true here along with an empty list.
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
-                res.Success = false;
+                pUserTemplates = new List<UserTemplate>();
                 return res;
             }
 
-            pUserTemplates = GetUserTemplatesFromXElements(pConnectionServer, res.XmlElement);
+            pUserTemplates = HTTPFunctions.GetObjectsFromJson<UserTemplate>(res.ResponseText);
+
+            if (pUserTemplates == null)
+            {
+                pUserTemplates = new List<UserTemplate>();
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pUserTemplates)
+            {
+                oObject.HomeServer = pConnectionServer;
+                oObject.ClearPendingChanges();
+            }
+
             return res;
-        }
-
-
-        //Helper function to take an XML blob returned from the REST interface for user templates returned and convert it into an generic
-        //list of usertemplate class objects.  
-        private static List<UserTemplate> GetUserTemplatesFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-            if (pConnectionServer == null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced passed to GetUserTemplatesFromXElements");
-            }
-
-            List<UserTemplate> oUserTemplateList = new List<UserTemplate>();
-
-            //pulls all the templates returned in the XML as set of elements using the power of LINQ
-            var userTemplates = from e in pXElement.Elements()
-                        where e.Name.LocalName == "UserTemplate"
-                        select e;
-
-            //for each object returned in the list from the XML, construct a class object using the elements associated with that 
-            //object.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlUserTemplate in userTemplates)
-            {
-                UserTemplate oUserTemplate = new UserTemplate(pConnectionServer);
-                foreach (XElement oElement in oXmlUserTemplate.Elements())
-                {
-                    //adds the XML property to the object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oUserTemplate, oElement);
-                }
-
-                oUserTemplate.ClearPendingChanges();
-
-                //add the fully populated object to the list that will be returned to the calling routine.
-                oUserTemplateList.Add(oUserTemplate);
-            }
-
-            return oUserTemplateList;
         }
 
 
@@ -2488,7 +2477,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</UserTemplate>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "usertemplates?templateAlias=" + pTemplateAlias, MethodType.Post, pConnectionServer, strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "usertemplates?templateAlias=" + pTemplateAlias, MethodType.POST, pConnectionServer, 
+                strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -2559,7 +2549,7 @@ namespace ConnectionCUPIFunctions
         }
 
         /// <summary>
-        /// Delete a user from the Connection directory.
+        /// DELETE a user from the Connection directory.
         /// </summary>
         /// <param name="pConnectionServer">
         /// Reference to the ConnectionServer object that points to the home server where the user is homed.
@@ -2579,7 +2569,7 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "usertemplates/" + pObjectId, MethodType.Delete, pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "usertemplates/" + pObjectId, MethodType.DELETE, pConnectionServer, "");
         }
 
         /// <summary>
@@ -2630,7 +2620,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</UserTemplate>";
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "usertemplates/" + pObjectId, MethodType.Put, pConnectionServer, strBody);
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "usertemplates/" + pObjectId, MethodType.PUT, pConnectionServer, 
+                strBody,false);
         }
 
         /// <summary>
@@ -2809,7 +2800,7 @@ namespace ConnectionCUPIFunctions
                 strUrl = pConnectionServer.BaseUrl + "usertemplates/" + pObjectId + "/credential/password";
             }
 
-            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.Put, pConnectionServer, strBody);
+            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.PUT, pConnectionServer, strBody,false);
         }
 
 

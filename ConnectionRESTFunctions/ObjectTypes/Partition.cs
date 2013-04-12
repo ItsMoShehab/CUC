@@ -11,12 +11,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The partition class is used only to provide an interface for user to select a partition from those configured on the Connection server.  You
@@ -33,7 +33,7 @@ namespace ConnectionCUPIFunctions
         public string LocationObjectId { get; set; }
 
         //reference to the ConnectionServer object used to create this instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; set; }
 
         #endregion
 
@@ -48,7 +48,7 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Null ConnectionServer referenced pasted to Partition construtor");
             }
 
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pName))
             {
@@ -61,6 +61,13 @@ namespace ConnectionCUPIFunctions
             {
                 throw new Exception(string.Format("Unable to find partition by objectId={0}, name={1}. Error={2}",pObjectId,pName, res));
             }
+        }
+
+        /// <summary>
+        /// General constructor for Json parsing library
+        /// </summary>
+        public Partition()
+        {
         }
 
         #endregion
@@ -145,30 +152,27 @@ namespace ConnectionCUPIFunctions
                 }
             }
 
-            string strUrl = _homeServer.BaseUrl + "partitions/" + strObjectId;
+            string strUrl = HomeServer.BaseUrl + "partitions/" + strObjectId;
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
+                JsonConvert.PopulateObject(res.ResponseText, this);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                 res.Success = false;
-                res.ErrorText = "No XML elements returned from search space fetch";
-                return res;
             }
 
-            foreach (var oElement in res.XmlElement.Elements())
-            {
-                _homeServer.SafeXmlFetch(this, oElement);
-            }
-
-            res.Success = true;
+            
             return res;
         }
 
@@ -184,27 +188,23 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         private string GetObjectIdFromName(string pName)
         {
-            string strUrl = _homeServer.BaseUrl + string.Format("partitions/?query=(Name is {0})", pName);
+            string strUrl = HomeServer.BaseUrl + string.Format("partitions/?query=(Name is {0})", pName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
-            if (res.Success == false)
+            if (res.Success == false || res.TotalObjectCount==0)
             {
                 return "";
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
-            {
-                return "";
-            }
+            List<Partition> oTemplates = HTTPFunctions.GetObjectsFromJson<Partition>(res.ResponseText);
 
-            foreach (var oElement in res.XmlElement.Elements().Elements())
+            foreach (var oTemplate in oTemplates)
             {
-                if (oElement.Name.ToString().Equals("ObjectId"))
+                if (oTemplate.Name.Equals(pName, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return oElement.Value;
+                    return oTemplate.ObjectId;
                 }
             }
 
@@ -219,7 +219,7 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public WebCallResult Delete()
         {
-            return DeletePartition(_homeServer, this.ObjectId);
+            return DeletePartition(HomeServer, this.ObjectId);
         }
 
 
@@ -238,7 +238,7 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public WebCallResult Update(string pName = "", string pDescription ="")
         {
-            return UpdatePartition(_homeServer, this.ObjectId, pName, pDescription);
+            return UpdatePartition(HomeServer, this.ObjectId, pName, pDescription);
         }
 
 
@@ -257,10 +257,17 @@ namespace ConnectionCUPIFunctions
         /// <param name="pPartitions">
         /// Out parameter that is used to return the list of Partition objects defined on Connection - there must be at least one.
         /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPartitions(ConnectionServer pConnectionServer, out List<Partition> pPartitions)
+        public static WebCallResult GetPartitions(ConnectionServer pConnectionServer, out List<Partition> pPartitions, 
+            int pPageNumber = 1, int pRowsPerPage = 20)
         {
             WebCallResult res;
             pPartitions = null;
@@ -272,59 +279,42 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + "partitions";
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "partitions", "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements can be empty
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that means an error in this case - should always be at least one partition
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            {
+                pPartitions = new List<Partition>();
+                res.Success = false;
+                return res;
+            }
+
+            pPartitions = HTTPFunctions.GetObjectsFromJson<Partition>(res.ResponseText);
+
+            if (pPartitions == null)
             {
                 pPartitions = new List<Partition>();
                 return res;
             }
 
-            pPartitions = GetPartitionsFromXElements(pConnectionServer, res.XmlElement);
-            return res;
-        }
-
-
-        //Helper function to take an XML blob returned from the REST interface for Partitions returned and convert it into an generic
-        //list of Partition class objects.  
-        private static List<Partition> GetPartitionsFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-
-            List<Partition> oPartitionList = new List<Partition>();
-
-            //Use LINQ to XML to create a list of Partition objects in a single statement. 
-            var partitions = from e in pXElement.Elements()
-                             where e.Name.LocalName == "Partition"
-                             select e;
-
-            //for each object returned in the list from the XML, construct a class object using the elements associated with that 
-            //object.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlPartition in partitions)
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pPartitions)
             {
-                Partition oPartition = new Partition(pConnectionServer);
-                foreach (XElement oElement in oXmlPartition.Elements())
-                {
-                    //adds the XML property to the UserBase object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oPartition, oElement);
-                }
-
-                //add the fully populated UserBase object to the list that will be returned to the calling routine.
-                oPartitionList.Add(oPartition);
+                oObject.HomeServer = pConnectionServer;
             }
 
-            return oPartitionList;
+            return res;
         }
-
 
 
         /// <summary>
@@ -433,7 +423,7 @@ namespace ConnectionCUPIFunctions
 
              strBody += "</Partition>";
 
-             res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "partitions", MethodType.Post,pConnectionServer,strBody);
+             res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "partitions", MethodType.POST,pConnectionServer,strBody,false);
 
              //if the call went through then the ObjectId will be returned in the URI form.
              if (res.Success)
@@ -480,7 +470,7 @@ namespace ConnectionCUPIFunctions
             }
 
             return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "partitions/" + pPartitionObjectId,
-                                            MethodType.Delete,pConnectionServer, "");
+                                            MethodType.DELETE,pConnectionServer, "");
         }
 
 
@@ -537,7 +527,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Partition>";
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "partitions/" + pObjectId,MethodType.Put,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "partitions/" + pObjectId,MethodType.PUT,pConnectionServer,strBody,false);
         }
 
         #endregion

@@ -17,9 +17,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
 
     /// <summary>
@@ -27,17 +27,22 @@ namespace ConnectionCUPIFunctions
     /// </summary>
     public class UserComparer : IComparer<UserBase>
     {
-        readonly string memberName = string.Empty; // specifies the member name to be sorted
-        readonly SortOrder sortOrder = SortOrder.None; // Specifies the SortOrder.
+        readonly string _memberName = string.Empty; // specifies the member name to be sorted
+        readonly SortOrder _sortOrder = SortOrder.None; // Specifies the SortOrder.  Not used here.
 
         /// <summary>
         /// constructor to set the sort column and sort order.
         /// </summary>
-        /// <param name="pMemberName"></param>
-        public UserComparer(string pMemberName)
+        /// <param name="pMemberName">
+        /// Property name to compare by (i.e. Alias)
+        /// </param>
+        /// <param name="pSortOrder">
+        /// Sort order to use - defaults to Ascending
+        /// </param>
+        public UserComparer(string pMemberName, SortOrder pSortOrder = SortOrder.Ascending)
         {
-            memberName = pMemberName;
-            sortOrder = SortOrder.Ascending;
+            _memberName = pMemberName;
+            _sortOrder = pSortOrder;
         }
 
         /// <summary>
@@ -54,7 +59,7 @@ namespace ConnectionCUPIFunctions
         public int Compare(UserBase pUser1, UserBase pUser2)
         {
             int returnValue;
-            switch (memberName.ToLower())
+            switch (_memberName.ToLower())
             {
                 case "dtmfaccessid":
                     returnValue = pUser1.DtmfAccessId.CompareTo(pUser2.DtmfAccessId);
@@ -138,7 +143,7 @@ namespace ConnectionCUPIFunctions
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this user instance.
-        internal ConnectionServer HomeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         //used to keep track of whic properties have been updated
         internal ConnectionPropertyList ChangedPropList;
@@ -751,60 +756,90 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + "users";
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "users", pClauses);
 
-            //the spaces get "escaped out" in the HTTPFunctions class call at a lower level, don't worry about it here.
-            //Tack on all the search/query/page clauses here if any are passed in.  If an empty string is passed in account
-            //for it here.
-            if (pClauses != null)
-            {
-                for (int iCounter = 0; iCounter < pClauses.Length; iCounter++)
-                {
-                    if (string.IsNullOrEmpty(pClauses[iCounter]))
-                    {
-                        continue;
-                    }
-
-                    //if it's the first param seperate the clause from the URL with a ?, otherwise append compound clauses 
-                    //seperated by &
-                    if (iCounter == 0)
-                    {
-                        strUrl += "?";
-                    }
-                    else
-                    {
-                        strUrl += "&";
-                    }
-                    strUrl += pClauses[iCounter];
-                }
-            }
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null) 
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that does not mean an error - return true here along with an empty list.
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
-                res.Success = false;
+                pUsers = new List<UserBase>();
                 return res;
             }
 
-            //it's possible to have no user elements returned and yet have a valid call - no users returned for instance.
-            if (res.XmlElement.HasAttributes == false)
+            pUsers = HTTPFunctions.GetObjectsFromJson<UserBase>(res.ResponseText,"User");
+
+            if (pUsers == null)
             {
-                res.Success = true;
+                pUsers = new List<UserBase>();
                 return res;
             }
 
-            pUsers = GetUsersFromXElements(pConnectionServer, res.XmlElement);
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oUser in pUsers)
+            {
+                oUser.HomeServer = pConnectionServer;
+                oUser.ClearPendingChanges();
+            }
+
             return res;
 
         }
 
+
+        /// <summary>
+        /// This function allows for a GET of users from Connection via HTTP - it allows for passing any number of additional clauses  
+        /// for filtering (query directives), sorting and paging of results.  The format of the clauses should look like:
+        /// filter: "query=(alias startswith ab)"
+        /// sort: "sort=(alias asc)"
+        /// Escaping of spaces is done automatically, no need to account for that.
+        /// </summary>
+        /// <remarks>
+        /// While this method name does have the plural in it, you'll want to use it for fetching single users as well.  If searching by
+        /// ObjectId just construct a query in the form "query=(ObjectId is {ObjectId})".  This is just as fast as using the URI format of 
+        /// "{server name}\vmrest\users\{ObjectId}" but returns consistently formatted XML code as multiple users does so the parsing of 
+        /// the data to deserialize it into User objects is consistent.
+        /// </remarks>
+        /// <param name="pConnectionServer">
+        /// Reference to the ConnectionServer object that points to the home server where the users are being fetched from.
+        /// </param>
+        /// <param name="pUsers">
+        /// The list of users returned from the CUPI call (if any) is returned as a generic list of User class instances via this out param.  
+        /// If no users are  found NULL is returned for this parameter.
+        /// </param>
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
+        /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(FirstName startswith a)" in
+        /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+        /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+
+        public static WebCallResult GetUsers(ConnectionServer pConnectionServer, out List<UserBase> pUsers,int pPageNumber=1, 
+            int pRowsPerPage=20,params string[] pClauses)
+        {
+            //tack on the paging items to the parameters list
+            var temp = pClauses.ToList();
+            temp.Add("pageNumber=" + pPageNumber);
+            temp.Add("rowsPerPage=" + pRowsPerPage);
+
+            return GetUsers(pConnectionServer, out pUsers, temp.ToArray());
+        }
 
         /// <summary>
         /// returns a single UserBase object from an ObjectId string passed in.
@@ -843,7 +878,7 @@ namespace ConnectionCUPIFunctions
                 res.ErrorText = "Emtpy ObjectId and Alias passed to GetUser";
                 return res;
             }
-
+            
             //create a new UserBase instance passing the ObjectId which fills out the data automatically
             try
             {
@@ -988,7 +1023,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</User>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "users?templateAlias=" + pTemplateAlias, MethodType.Post,pConnectionServer,strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "users?templateAlias=" + pTemplateAlias, MethodType.POST,pConnectionServer,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -1054,7 +1089,7 @@ namespace ConnectionCUPIFunctions
 
             res =
                 HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/mwis", pConnectionServer.BaseUrl, pUserObjectId),
-                    MethodType.Post,pConnectionServer,strBody);
+                    MethodType.POST,pConnectionServer,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -1249,7 +1284,7 @@ namespace ConnectionCUPIFunctions
                 strUrl=pConnectionServer.BaseUrl + "users/" + pObjectId + "/credential/password";
             }
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Put,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.PUT,pConnectionServer,strBody,false);
         }
 
 
@@ -1310,7 +1345,7 @@ namespace ConnectionCUPIFunctions
 
 
         /// <summary>
-        /// Delete a user from the Connection directory.
+        /// DELETE a user from the Connection directory.
         /// </summary>
         /// <param name="pConnectionServer">
         /// Reference to the ConnectionServer object that points to the home server where the user is homed.
@@ -1330,7 +1365,7 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "users/" + pObjectId,MethodType.Delete,pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "users/" + pObjectId,MethodType.DELETE,pConnectionServer, "");
         }
 
 
@@ -1384,7 +1419,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</User>";
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "users/" + pObjectId,MethodType.Put,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "users/" + pObjectId,MethodType.PUT,pConnectionServer,strBody,false);
         }
 
 
@@ -1614,44 +1649,10 @@ namespace ConnectionCUPIFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.Put, pConnectionServer.LoginName,
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.PUT, pConnectionServer.LoginName,
                                                  pConnectionServer.LoginPw, oParams, out oOutput);
 
             return res;
-        }
-
-
-
-        //Helper function to take an XML blob returned from the REST interface for a user (or users) return and convert it into an generic
-        //list of UserBase class objects. 
-        private static List<UserBase> GetUsersFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-            List<UserBase> oUserList = new List<UserBase>();
-
-            //pulls all the users returned in the XML as set of elements using the power of LINQ
-            var users = from e in pXElement.Elements()
-                        where e.Name.LocalName == "User"
-                        select e;
-
-            //for each user returned in the list of users from the XML, construct a UserBase object using the elements associated with that 
-            //user.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlUser in users)
-            {
-                UserBase oUser = new UserBase(pConnectionServer);
-                foreach (XElement oElement in oXmlUser.Elements())
-                {
-                    //adds the XML property to the UserBase object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oUser, oElement);
-                }
-
-                oUser.ClearPendingChanges();
-
-                //add the fully populated UserBase object to the list that will be returned to the calling routine.
-                oUserList.Add(oUser);
-            }
-
-            return oUserList;
         }
 
 
@@ -1693,7 +1694,6 @@ namespace ConnectionCUPIFunctions
         private WebCallResult GetUser(string pObjectId, string pAlias = "")
         {
             string strUrl;
-            WebCallResult res;
 
             //when fetching a base user use the query construct (which returns less data and is quicker) than the users/(objectid) format for 
             //UserFull object.
@@ -1707,27 +1707,28 @@ namespace ConnectionCUPIFunctions
             }
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, HomeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            if (res.TotalObjectCount == 0)
             {
                 res.Success = false;
+                res.ErrorText = string.Format("No user found with alias={0} or objectI=d={1}", pAlias, pObjectId);
                 return res;
             }
 
-            //in the case of a single base user fetch construct, the list of elements is the full list of properties for the user, but it's nexted in 
-            //a "uers" sub element, not at the top level as a full user fetch is - so we have to go another level deep here.
-            //Call the same SafeXMLFetch routine for each to let the full user class instance "drive" the fetching of data
-            //from the XML elements.
-            foreach (XElement oElement in res.XmlElement.Elements().Elements())
+            try
             {
-                HomeServer.SafeXmlFetch(this, oElement);
+                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText,"User"), this);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                res.Success = false;
             }
 
             //the above fetch will set the proeprties as "changed", need to clear them out here
@@ -1890,7 +1891,7 @@ namespace ConnectionCUPIFunctions
         }
 
         /// <summary>
-        /// Delete a user from the Connection directory.
+        /// DELETE a user from the Connection directory.
         /// </summary>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -1970,9 +1971,9 @@ namespace ConnectionCUPIFunctions
         }
 
         //helper function used when a call is made to get a list of MWI devices from the property list
-        private WebCallResult GetMwiDevices(out List<Mwi> pMwiDevices)
+        private void GetMwiDevices(out List<Mwi> pMwiDevices)
         {
-            return Mwi.GetMwiDevices(HomeServer, ObjectId, out pMwiDevices);
+            Mwi.GetMwiDevices(HomeServer, ObjectId, out pMwiDevices);
         }
 
         /// <summary>
@@ -2319,6 +2320,7 @@ namespace ConnectionCUPIFunctions
         /// Id of associated EndUser, ApplicationUser, or DirectoryNumber in Call Manager.
         /// cannot change CcmId or type
         /// </summary>
+        [JsonProperty]
         public string CcmId { get; private set; }
         
         /// <summary>
@@ -2326,6 +2328,7 @@ namespace ConnectionCUPIFunctions
         /// 0=EndUser, 1=ApplicationUser, 2=DirectoryNumber, 3=LdapUser, 4=InactiveLdapUser
         /// You cannot set or change this.
         /// </summary>
+        [JsonProperty]
         public int CcmIdType { get; private set; }
 
   
@@ -2537,6 +2540,7 @@ namespace ConnectionCUPIFunctions
         /// These digits are used for searching the user by name via the phone.
         /// Changing the first/last names of the user will automatically adjust this value - there should be no need to set it directly.
         /// </summary>
+        [JsonProperty]
         public string DtmfNameFirstLast { get; private set; }
     
         /// <summary>
@@ -2544,9 +2548,13 @@ namespace ConnectionCUPIFunctions
         /// These digits are used for searching the user by name via the phone.
         /// Changing the first/last names of the user will automatically adjust this value - there should be no need to set it directly.
         /// </summary>
+        [JsonProperty]
         public string DtmfNameLastFirst { get; private set; }
 
+        [JsonProperty]
         public string DtmfNameLast { get; private set; }
+
+        [JsonProperty]
         public string DtmfNameFirst { get; private set; }
 
         private string _emailAddress;
@@ -2874,6 +2882,7 @@ namespace ConnectionCUPIFunctions
         /// <summary>
         /// cannot change the template value once built.
         /// </summary>
+        [JsonProperty]
         public bool IsTemplate { get; private set; }
 
         private bool _jumpToMessagesOnLogin;
@@ -3821,10 +3830,10 @@ namespace ConnectionCUPIFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public WebCallResult RefetchUserData()
-        {
-            return GetUserFull(this.ObjectId);
-        }
+        //public WebCallResult RefetchUserData()
+        //{
+        //    return GetUserFull(this.ObjectId);
+        //}
 
         /// <summary>
         /// Returns a single full user object filled with all the data Conneciton provides for a user via CUPI.  Many more properties are provided on a 
@@ -3843,26 +3852,21 @@ namespace ConnectionCUPIFunctions
             string strUrl = HomeServer.BaseUrl + "users/" + pObjectId;
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, HomeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
-                res.Success = false;
-                return res;
+                JsonConvert.PopulateObject(res.ResponseText, this);
             }
-
-            //in the case of a single user fetch construct, the list of elements is the full list of properties for the user, not a nested list
-            //of user definitions - call the same SafeXMLFetch routine for each to let the full user class instance "drive" the fetching of data
-            //from the XML elements.
-            foreach (XElement oElement in res.XmlElement.Elements())
+            catch (Exception ex)
             {
-                HomeServer.SafeXmlFetch(this, oElement);
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                res.Success = false;
             }
 
             return res;
@@ -3883,24 +3887,20 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}users/?query=(Alias is {1})", HomeServer.BaseUrl, pAlias);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, HomeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return "";
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
-            {
-                return "";
-            }
+            List<UserBase> oUsers = HTTPFunctions.GetObjectsFromJson<UserBase>(res.ResponseText,"User");
 
-            foreach (var oElement in res.XmlElement.Elements().Elements())
+            foreach (var oUser in oUsers)
             {
-                if (oElement.Name.ToString().Equals("ObjectId"))
+                if (oUser.Alias.Equals(pAlias, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return oElement.Value;
+                    return oUser.ObjectId;
                 }
             }
 

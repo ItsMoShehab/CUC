@@ -12,16 +12,16 @@
 using System;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     public class Credential
     {
         #region Fields and properties
 
         //reference to the ConnectionServer object used to create this credential instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         #endregion
 
@@ -29,21 +29,21 @@ namespace ConnectionCUPIFunctions
         #region Credential Properties
 
         //you can't change the ObjectId of a standing object
-        public string ObjectId { get; private set; }
+        public string ObjectId { get; set; }
 
-        public CredentialType Type { get; private set; }
+        public CredentialType Type { get; set; }
 
-        public string Alias { get; private set; }
-        public bool CredMustChange { get; private set; }
-        public bool CantChange { get; private set; }
-        public bool DoesntExpire { get; private set; }
-        public int EncryptionType { get; private set; }
-        public int HackCount { get; private set; }
-        public bool Hacked { get; private set; }
-        public bool IsPrimary { get; private set; }
-        public bool Locked { get; private set; }
-        public DateTime TimeChanged { get; private set; }
-        public string UserObjectId { get; private set; }
+        public string Alias { get; set; }
+        public bool CredMustChange { get; set; }
+        public bool CantChange { get; set; }
+        public bool DoesntExpire { get; set; }
+        public int EncryptionType { get; set; }
+        public int HackCount { get; set; }
+        public bool Hacked { get; set; }
+        public bool IsPrimary { get; set; }
+        public bool Locked { get; set; }
+        public DateTime TimeChanged { get; set; }
+        public string UserObjectId { get; set; }
 
         #endregion
 
@@ -75,7 +75,7 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Emtpy UserObjectID passed to Credential constructor");
             }
 
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             UserObjectId = pUserObjectId;
 
@@ -91,6 +91,13 @@ namespace ConnectionCUPIFunctions
 
         }
 
+        /// <summary>
+        /// generic constructor for JSON parsing library
+        /// </summary>
+        public Credential()
+        {
+            
+        }
 
         #endregion
 
@@ -205,34 +212,30 @@ namespace ConnectionCUPIFunctions
             string strUrl;
             if (pCredentialType == CredentialType.Password)
             {
-                strUrl = string.Format("{0}users/{1}/credential/password", _homeServer.BaseUrl,pUserObjectId);
+                strUrl = string.Format("{0}users/{1}/credential/password", HomeServer.BaseUrl,pUserObjectId);
             }
             else
             {
-                strUrl = string.Format("{0}users/{1}/credential/pin", _homeServer.BaseUrl, pUserObjectId);
+                strUrl = string.Format("{0}users/{1}/credential/pin", HomeServer.BaseUrl, pUserObjectId);
             }
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
+                JsonConvert.PopulateObject(res.ResponseText, this);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                 res.Success = false;
-                return res;
             }
-
-            //load all of the elements returned into the class object properties
-            foreach (XElement oElement in res.XmlElement.Elements())
-            {
-                _homeServer.SafeXmlFetch(this, oElement);
-            }
-
             return res;
         }
 

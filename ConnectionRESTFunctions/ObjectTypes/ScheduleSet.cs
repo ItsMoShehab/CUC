@@ -11,12 +11,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// A schedule can be be in one of 3 states - active (on) inactive (off) or active for a holiday.
@@ -30,12 +29,12 @@ namespace ConnectionCUPIFunctions
         
 
         //reference to the ConnectionServer object used to create this Alternate Extension instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
-        public string ObjectId { get; private set; }
-        public string DisplayName { get; private set; }
-        public string OwnerLocationObjectId { get; private set; }
-        public bool Undeletable { get; private set; }
+        public string ObjectId { get; set; }
+        public string DisplayName { get; set; }
+        public string OwnerLocationObjectId { get; set; }
+        public bool Undeletable { get; set; }
 
         //list of schedules associated with this schedule set.  Typically a schedule set will contain two schedules - one
         //for regular schedule details and one for holidays - but it may not contain a holiday schedule and can technically
@@ -67,7 +66,7 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Null ConnectionServer passed to ScheduleSet constructor");
             }
 
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pDisplayName))
             {
@@ -82,6 +81,13 @@ namespace ConnectionCUPIFunctions
                     pObjectId,pDisplayName, res));
             }
 
+        }
+
+        /// <summary>
+        /// General constructor for Json libraries
+        /// </summary>
+        public ScheduleSet()
+        {
         }
 
         #endregion
@@ -164,29 +170,25 @@ namespace ConnectionCUPIFunctions
                 }
             }
 
-            string strUrl = string.Format("{0}schedulesets/{1}", _homeServer.BaseUrl, strObjectId);
+            string strUrl = string.Format("{0}schedulesets/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
+                JsonConvert.PopulateObject(res.ResponseText, this);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                 res.Success = false;
-                return res;
             }
-
-            //populate this call handler instance with data from the XML fetch
-            foreach (XElement oElement in res.XmlElement.Elements())
-            {
-                _homeServer.SafeXmlFetch(this, oElement);
-            }
-
             return res;
         }
 
@@ -202,27 +204,23 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         private string GetObjectIdFromName(string pName)
         {
-            string strUrl = _homeServer.BaseUrl + string.Format("schedulesets/?query=(DisplayName is {0})", pName);
+            string strUrl = HomeServer.BaseUrl + string.Format("schedulesets/?query=(DisplayName is {0})", pName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
-            if (res.Success == false)
+            if (res.Success == false || res.TotalObjectCount == 0)
             {
                 return "";
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
-            {
-                return "";
-            }
+            List<ScheduleSet> oTemplates = HTTPFunctions.GetObjectsFromJson<ScheduleSet>(res.ResponseText);
 
-            foreach (var oElement in res.XmlElement.Elements().Elements())
+            foreach (var oTemplate in oTemplates)
             {
-                if (oElement.Name.ToString().Equals("ObjectId"))
+                if (oTemplate.DisplayName.Equals(pName, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return oElement.Value;
+                    return oTemplate.ObjectId;
                 }
             }
 
@@ -247,12 +245,12 @@ namespace ConnectionCUPIFunctions
             List<ScheduleSetMember> oScheduleSetMembers;
 
             //get the list of memebers (schedules) associated with this schedule set
-            GetSchedulesSetsMembers(_homeServer, ObjectId, out oScheduleSetMembers);
+            GetSchedulesSetsMembers(HomeServer, ObjectId, out oScheduleSetMembers);
 
             //for each one, build a new schedule object and add it to the list
             foreach (var oMember in oScheduleSetMembers)
             {
-                var oSchedule = new Schedule(_homeServer, oMember.ScheduleObjectId);
+                var oSchedule = new Schedule(HomeServer, oMember.ScheduleObjectId);
                 _schedules.Add(oSchedule);
             }
 
@@ -307,7 +305,15 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public WebCallResult AddScheduleSetMember(string pScheduleObjectId)
         {
-            return AddScheduleSetMember(this._homeServer, this.ObjectId, pScheduleObjectId);
+            return AddScheduleSetMember(this.HomeServer, this.ObjectId, pScheduleObjectId);
+        }
+
+        /// <summary>
+        /// Delete a schedule set
+        /// </summary>
+        public WebCallResult Delete()
+        {
+            return DeleteScheduleSet(HomeServer, this.ObjectId);
         }
 
         #endregion
@@ -378,13 +384,20 @@ namespace ConnectionCUPIFunctions
         /// <param name="pScheduleSets">
         /// Out parameter that is used to return the list of ScheduleSet objects defined on Connection - there must be at least one.
         /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetSchedulesSets(ConnectionServer pConnectionServer, out List<ScheduleSet> pScheduleSets)
+        public static WebCallResult GetSchedulesSets(ConnectionServer pConnectionServer, out List<ScheduleSet> pScheduleSets, int pPageNumber = 1, 
+            int pRowsPerPage = 20)
         {
             WebCallResult res;
-            pScheduleSets = null;
+            pScheduleSets = new List<ScheduleSet>();
 
             if (pConnectionServer == null)
             {
@@ -393,44 +406,40 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + "schedulesets";
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "schedulesets", "pageNumber=" + pPageNumber, 
+                "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements can be empty
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that means an error in this case - should always be at least one template
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
-                pScheduleSets = new List<ScheduleSet>();
+                res.Success = false;
                 return res;
             }
 
-            pScheduleSets = GetScheduleSetsFromXElements(pConnectionServer, res.XmlElement);
+            pScheduleSets = HTTPFunctions.GetObjectsFromJson<ScheduleSet>(res.ResponseText);
+
+            if (pScheduleSets == null)
+            {
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pScheduleSets)
+            {
+                oObject.HomeServer = pConnectionServer;
+            }
+
             return res;
-        }
-
-
-        //Helper function to take an XML blob returned from the REST interface for schedulesets returned and convert it into an generic
-        //list of scheduleset class objects.  
-        private static List<ScheduleSet> GetScheduleSetsFromXElements(ConnectionServer pConnetionServer, XElement pXElement)
-        {
-            //Use LINQ to XML to create a list of scheduleset objects in a single statement.  We're only interested in 4 properties for schedulesets
-            //here - they should always be present but protect from missing properties anyway.
-            IEnumerable<ScheduleSet> Schedules = from e in pXElement.Elements()
-                                              where e.Name.LocalName == "ScheduleSet"
-                                                 select new ScheduleSet(pConnetionServer, e.Element("ObjectId").Value)
-                                                          {
-                                                              DisplayName = (e.Element("DisplayName") == null) ? "" : e.Element("DisplayName").Value,
-                                                              OwnerLocationObjectId = (e.Element("OwnerLocationObjectId") == null) ? "" : e.Element("OwnerLocationObjectId").Value,
-                                                              Undeletable = (e.Element("Undeletable") == null) ? false : (bool.Parse(e.Element("Undeletable").Value)),
-                                                          };
-
-            return Schedules.ToList();
         }
 
 
@@ -453,7 +462,7 @@ namespace ConnectionCUPIFunctions
             out List<ScheduleSetMember> pScheduleSetsMembers)
         {
             WebCallResult res;
-            pScheduleSetsMembers = null;
+            pScheduleSetsMembers = new List<ScheduleSetMember>();
 
             if (pConnectionServer == null)
             {
@@ -466,40 +475,29 @@ namespace ConnectionCUPIFunctions
 
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements can be empty
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that means an error in this case - should always be at least one template
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
-                pScheduleSetsMembers= new List<ScheduleSetMember>();
+                res.Success = false;
                 return res;
             }
 
-            pScheduleSetsMembers = GetScheduleSetMembersFromXElements(res.XmlElement);
+            pScheduleSetsMembers = HTTPFunctions.GetObjectsFromJson<ScheduleSetMember>(res.ResponseText);
+
+            if (pScheduleSetsMembers == null)
+            {
+                return res;
+            }
+
             return res;
-        }
-
-
-        //Helper function to take an XML blob returned from the REST interface for schedulesets returned and convert it into an generic
-        //list of scheduleset class objects.  
-        private static List<ScheduleSetMember> GetScheduleSetMembersFromXElements(XElement pXElement)
-        {
-            //Use LINQ to XML to create a list of scheduleset objects in a single statement.  We're only interested in 4 properties for schedulesets
-            //here - they should always be present but protect from missing properties anyway.
-            IEnumerable<ScheduleSetMember> Schedules = from e in pXElement.Elements()
-                                                 where e.Name.LocalName == "ScheduleSetMember"
-                                                       select new ScheduleSetMember(e.Element("ScheduleSetObjectId").Value)
-                                                          {
-                                                              ScheduleObjectId = (e.Element("ScheduleObjectId") == null) ? "" : e.Element("ScheduleObjectId").Value,
-                                                              Exclude = (e.Element("Exclude") == null) ? false : (bool.Parse(e.Element("Exclude").Value)),
-                                                          };
-
-            return Schedules.ToList();
         }
 
 
@@ -573,7 +571,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</ScheduleSet>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "schedulesets", MethodType.Post, pConnectionServer, strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "schedulesets", MethodType.POST, pConnectionServer, strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -641,32 +639,79 @@ namespace ConnectionCUPIFunctions
         /// <param name="pScheduleSetObjectId">
         /// ObjectId of the schedule set to delete
         /// </param>
+        /// <param name="pRemoveAllSchedules">
+        /// By default when removing a schedule set all the schedules associated with it are removed as well - if passed as false then 
+        /// the schedules are left alone and you need to clean them up (or reuse them in another schedule set) or they will possibly 
+        /// show up the CUCA web admin interface as "stranded" schedule elements
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResult class
         /// </returns>
-        public static WebCallResult DeleteScheduleSet(ConnectionServer pConnectionServer, string pScheduleSetObjectId)
+        public static WebCallResult DeleteScheduleSet(ConnectionServer pConnectionServer, string pScheduleSetObjectId, bool pRemoveAllSchedules=true)
         {
-            WebCallResult res;
+            WebCallResult res =new WebCallResult {Success = false};
             if (pConnectionServer == null)
             {
-                res = new WebCallResult();
-                res.Success = false;
                 res.ErrorText = "Null ConnectionServer reference passed to DeleteScheduleSet";
                 return res;
             }
 
             if (string.IsNullOrEmpty(pScheduleSetObjectId))
             {
-                res = new WebCallResult();
-                res.Success = false;
                 res.ErrorText = "Empty objectId passed to DeleteScheduleSet";
                 return res;
             }
 
+            //delete all schedules associated with set if requested
+            if (pRemoveAllSchedules)
+            {
+                //don't proceed if there's an error removing one of the schedules in this case
+                res = DeleteAllSchedulesAssociatedWithScheduleSet(pConnectionServer, pScheduleSetObjectId);
+                if (res.Success == false)
+                {
+                    return res;
+                }
+            }
+
             return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "schedulesets/" + pScheduleSetObjectId,
-                                            MethodType.Delete, pConnectionServer, "");
+                                            MethodType.DELETE, pConnectionServer, "");
         }
 
+
+        /// <summary>
+        /// When deleting a schedule set, we need to get rid of all schedules associated with it as well.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// ConnectionServer that the schedule set resides on
+        /// </param>
+        /// <param name="pScheduleSetObjectId">
+        /// Schedule set to clear out
+        /// </param>
+        /// <returns>
+        /// instance of the WebCallResults class with details on the call and response if there's an error.
+        /// </returns>
+        private static WebCallResult DeleteAllSchedulesAssociatedWithScheduleSet(ConnectionServer pConnectionServer, string pScheduleSetObjectId)
+        {
+            List<ScheduleSetMember> oMembers;
+            WebCallResult res = ScheduleSet.GetSchedulesSetsMembers(pConnectionServer, pScheduleSetObjectId,out oMembers);
+
+            if (res.Success == false)
+            {
+                return res;
+            }
+
+            foreach (var oMember in oMembers)
+            {
+                res = Schedule.DeleteSchedule(pConnectionServer, oMember.ScheduleObjectId);
+                if (res.Success == false)
+                {
+                    return res;
+                }
+            }
+
+            //if we're here, all is well
+            return new WebCallResult {Success = true};
+        }
 
 
         /// <summary>
@@ -711,7 +756,7 @@ namespace ConnectionCUPIFunctions
             strBody += "</ScheduleSetMember>";
 
             string strPath = string.Format("schedulesets/{0}/schedulesetmembers", pScheduleSetObjectId);
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + strPath, MethodType.Post, pConnectionServer, strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + strPath, MethodType.POST, pConnectionServer, strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             strPath += "/";
@@ -806,6 +851,7 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
+            //first, create the schedule set
             res = AddScheduleSet(pConnectionServer, pDisplayName, pOwnerLocationObjectId, pOwnerSubscriberObjectId);
             if (res.Success == false)
             {
@@ -821,6 +867,7 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
+            //now add the schedule
             string strScheduleObjectId = res.ReturnedObjectId;
 
             res = Schedule.AddScheduleDetail(pConnectionServer, strScheduleObjectId, "", pStartTime, pEndTime,pActiveMonday, 
@@ -831,6 +878,7 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
+            //now map the schedule to the schedule set
             res = AddScheduleSetMember(pConnectionServer, strScheduleSetObjectId, strScheduleObjectId);
             if (res.Success == false)
             {

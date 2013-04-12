@@ -1,4 +1,4 @@
-﻿using ConnectionCUPIFunctions;
+﻿using Cisco.UnityConnection.RestFunctions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 

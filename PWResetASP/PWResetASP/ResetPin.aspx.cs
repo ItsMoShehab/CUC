@@ -1,5 +1,5 @@
 ﻿using System;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 
 namespace PWResetASP
 {

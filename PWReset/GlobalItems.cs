@@ -10,7 +10,7 @@
 #endregion
 
 using System;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 using SimpleLogger;
 
 namespace PWReset

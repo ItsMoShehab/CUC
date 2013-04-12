@@ -458,7 +458,7 @@ jQuery.extend = jQuery.fn.extend = function() {
 	///		var settings = jQuery.extend({}, defaults, options);
 	///		Part of JavaScript
 	///	</summary>
-	///	<param name="target" type="Object">
+	///	<param name="tarGET" type="Object">
 	///		 The object to extend
 	///	</param>
 	///	<param name="prop1" type="Object">
@@ -469,18 +469,18 @@ jQuery.extend = jQuery.fn.extend = function() {
 	///	</param>
 	///	<returns type="Object" />
 
-	// copy reference to target object
+	// copy reference to tarGET object
 	var target = arguments[0] || {}, i = 1, length = arguments.length, deep = false, options, name, src, copy;
 
 	// Handle a deep copy situation
 	if ( typeof target === "boolean" ) {
 		deep = target;
 		target = arguments[1] || {};
-		// skip the boolean and the target
+		// skip the boolean and the tarGET
 		i = 2;
 	}
 
-	// Handle case when target is a string or something (possible in deep copy)
+	// Handle case when tarGET is a string or something (possible in deep copy)
 	if ( typeof target !== "object" && !jQuery.isFunction(target) ) {
 		target = {};
 	}
@@ -559,7 +559,7 @@ jQuery.extend({
 
 		// Make sure that the DOM is not already loaded
 		if ( !jQuery.isReady ) {
-			// Make sure body exists, at least, in case IE gets a little overzealous (ticket #5443).
+			// Make sure body exists, at least, in case IE GETs a little overzealous (ticket #5443).
 			if ( !document.body ) {
 				return setTimeout( jQuery.ready, 13 );
 			}
@@ -880,7 +880,7 @@ jQuery.extend({
 
 	merge: function( first, second ) {
 		///	<summary>
-		///		Merge two arrays together, removing all duplicates.
+		///		Merge two arrays toGETher, removing all duplicates.
 		///		The new array is: All the results from the first array, followed
 		///		by the unique results from the second array.
 		///		Part of JavaScript
@@ -1074,7 +1074,7 @@ if ( document.addEventListener ) {
 
 } else if ( document.attachEvent ) {
 	DOMContentLoaded = function() {
-		// Make sure body exists, at least, in case IE gets a little overzealous (ticket #5443).
+		// Make sure body exists, at least, in case IE GETs a little overzealous (ticket #5443).
 		if ( document.readyState === "complete" ) {
 			document.detachEvent( "onreadystatechange", DOMContentLoaded );
 			jQuery.ready();
@@ -1122,7 +1122,7 @@ function evalScript( i, elem ) {
 	}
 }
 
-// Mutifunctional method to get and set values to a collection
+// Mutifunctional method to GET and set values to a collection
 // The value/s can be optionally by executed if its a function
 function access( elems, key, value, exec, fn, pass ) {
 	var length = elems.length;
@@ -1137,7 +1137,7 @@ function access( elems, key, value, exec, fn, pass ) {
 	
 	// Setting one attribute
 	if ( value !== undefined ) {
-		// Optionally, function values get executed if exec is true
+		// Optionally, function values GET executed if exec is true
 		exec = !pass && exec && jQuery.isFunction(value);
 		
 		for ( var i = 0; i < length; i++ ) {
@@ -1172,12 +1172,12 @@ function now() {
 	//		id = "script" + now();
 
 	//	div.style.display = "none";
-	//	div.innerHTML = "   <link/><table></table><a href='/a' style='color:red;float:left;opacity:.55;'>a</a><input type='checkbox'/>";
+	//	div.innerHTML = "   <link/><table></table><a href='/a' style='color:red;float:left;opacity:.55;'>a</a><inPUT type='checkbox'/>";
 
-	//	var all = div.getElementsByTagName("*"),
-	//		a = div.getElementsByTagName("a")[0];
+	//	var all = div.GETElementsByTagName("*"),
+	//		a = div.GETElementsByTagName("a")[0];
 
-	//	// Can't get basic test support
+	//	// Can't GET basic test support
 	//	if ( !all || !all.length || !a ) {
 	//		return;
 	//	}
@@ -1190,11 +1190,11 @@ function now() {
 		// IE will insert them into empty tables
 		tbody: false,
 
-		// Make sure that link elements get serialized correctly by innerHTML
+		// Make sure that link elements GET serialized correctly by innerHTML
 		// This requires a wrapper element in IE
 		htmlSerialize: false,
 
-		// Get the style information from getAttribute
+		// Get the style information from GETAttribute
 		// (IE uses .cssText insted)
 		style: false,
 
@@ -1239,7 +1239,7 @@ function now() {
 	//	// (IE doesn't support this, fails, and uses .text instead)
 	//	if ( window[ id ] ) {
 	//		jQuery.support.scriptEval = true;
-	//		delete window[ id ];
+	//		DELETE window[ id ];
 	//	}
 
 	//	root.removeChild( script );
@@ -1255,7 +1255,7 @@ function now() {
 	//	}
 
 	//	div = document.createElement("div");
-	//	div.innerHTML = "<input type='radio' name='radiotest' checked='checked'/>";
+	//	div.innerHTML = "<inPUT type='radio' name='radiotest' checked='checked'/>";
 
 	//	var fragment = document.createDocumentFragment();
 	//	fragment.appendChild( div.firstChild );
@@ -1356,7 +1356,7 @@ jQuery.extend({
 			return null;
 		}
 
-		// Compute a unique ID for the element
+		// ComPUTe a unique ID for the element
 		if ( !id ) { 
 			id = ++uuid;
 		}
@@ -1451,7 +1451,7 @@ jQuery.fn.extend({
 		parts[1] = parts[1] ? "." + parts[1] : "";
 
 		if ( value === undefined ) {
-			var data = this.triggerHandler("getData" + parts[1] + "!", [parts[0]]);
+			var data = this.triggerHandler("GETData" + parts[1] + "!", [parts[0]]);
 
 			if ( data === undefined && this.length ) {
 				data = jQuery.data( this[0], key );
@@ -1481,7 +1481,7 @@ jQuery.extend({
 		type = (type || "fx") + "queue";
 		var q = jQuery.data( elem, type );
 
-		// Speed up dequeue by getting out quickly if this is just a lookup
+		// Speed up dequeue by GETting out quickly if this is just a lookup
 		if ( !data ) {
 			return q || [];
 		}
@@ -1599,16 +1599,16 @@ var rclass = /[\n\t]/g,
 	rspace = /\s+/,
 	rreturn = /\r/g,
 	rspecialurl = /href|src|style/,
-	rtype = /(button|input)/i,
-	rfocusable = /(button|input|object|select|textarea)/i,
+	rtype = /(button|inPUT)/i,
+	rfocusable = /(button|inPUT|object|select|textarea)/i,
 	rclickable = /^(a|area)$/i,
 	rradiocheck = /radio|checkbox/;
 
 jQuery.fn.extend({
 	attr: function( name, value ) {
 		///	<summary>
-		///		Set a single property to a computed value, on all matched elements.
-		///		Instead of a value, a function is provided, that computes the value.
+		///		Set a single property to a comPUTed value, on all matched elements.
+		///		Instead of a value, a function is provided, that comPUTes the value.
 		///		Part of DOM/Attributes
 		///	</summary>
 		///	<returns type="jQuery" />
@@ -1921,7 +1921,7 @@ jQuery.extend({
 		}
 
 		var notxml = elem.nodeType !== 1 || !jQuery.isXMLDoc( elem ),
-			// Whether we are setting (or getting)
+			// Whether we are setting (or GETting)
 			set = value !== undefined;
 
 		// Try to normalize/fix the name
@@ -1963,7 +1963,7 @@ jQuery.extend({
 				}
 
 				// elem.tabIndex doesn't always return the correct value when it hasn't been explicitly set
-				// http://fluidproject.org/blog/2008/01/09/getting-setting-and-removing-tabindex-values-with-javascript/
+				// http://fluidproject.org/blog/2008/01/09/GETting-setting-and-removing-tabindex-values-with-javascript/
 				if ( name === "tabIndex" ) {
 					var attributeNode = elem.getAttributeNode( "tabIndex" );
 
@@ -2401,7 +2401,7 @@ jQuery.event = {
 		return event.result;
 	},
 
-	props: "altKey attrChange attrName bubbles button cancelable charCode clientX clientY ctrlKey currentTarget data detail eventPhase fromElement handler keyCode layerX layerY metaKey newValue offsetX offsetY originalTarget pageX pageY prevValue relatedNode relatedTarget screenX screenY shiftKey srcElement target toElement view wheelDelta which".split(" "),
+	props: "altKey attrChange attrName bubbles button cancelable charCode clientX clientY ctrlKey currentTarGET data detail eventPhase fromElement handler keyCode layerX layerY metaKey newValue offsetX offsetY originalTarGET pageX pageY prevValue relatedNode relatedTarGET screenX screenY shiftKey srcElement tarGET toElement view wheelDelta which".split(" "),
 
 	fix: function( event ) {
 		///	<summary>
@@ -2423,17 +2423,17 @@ jQuery.event = {
 			event[ prop ] = originalEvent[ prop ];
 		}
 
-		// Fix target property, if necessary
+		// Fix tarGET property, if necessary
 		if ( !event.target ) {
 			event.target = event.srcElement || document; // Fixes #1925 where srcElement might not be defined either
 		}
 
-		// check if target is a textnode (safari)
+		// check if tarGET is a textnode (safari)
 		if ( event.target.nodeType === 3 ) {
 			event.target = event.target.parentNode;
 		}
 
-		// Add relatedTarget, if necessary
+		// Add relatedTarGET, if necessary
 		if ( !event.relatedTarget && event.fromElement ) {
 			event.relatedTarget = event.fromElement === event.target ? event.toElement : event.fromElement;
 		}
@@ -2602,7 +2602,7 @@ var withinElement = function( event ) {
 
 	// Traverse up the tree
 	while ( parent && parent !== this ) {
-		// Firefox sometimes assigns relatedTarget a XUL element
+		// Firefox sometimes assigns relatedTarGET a XUL element
 		// which we cannot access the parentNode property of
 		try {
 			parent = parent.parentNode;
@@ -2683,7 +2683,7 @@ jQuery.event.special.submit = {
 // change delegation, happens here so we have bind.
 if ( !jQuery.support.changeBubbles ) {
 
-var formElems = /textarea|input|select/i;
+var formElems = /textarea|inPUT|select/i;
 
 function getVal( elem ) {
 	var type = elem.type, val = elem.value;
@@ -2760,7 +2760,7 @@ jQuery.event.special.change = {
 		beforeactivate: function( e ) {
 			var elem = e.target;
 
-			if ( elem.nodeName.toLowerCase() === "input" && elem.type === "radio" ) {
+			if ( elem.nodeName.toLowerCase() === "inPUT" && elem.type === "radio" ) {
 				jQuery.data( elem, "_change_data", getVal(elem) );
 			}
 		}
@@ -4025,7 +4025,7 @@ var Expr = Sizzle.selectors = {
 			return "button" === elem.type || elem.nodeName.toLowerCase() === "button";
 		},
 		input: function(elem){
-			return /input|select|textarea|button/i.test(elem.nodeName);
+			return /inPUT|select|textarea|button/i.test(elem.nodeName);
 		}
 	},
 	setFilters: {
@@ -4300,20 +4300,20 @@ function getText( elems ) {
 
 // [vsdoc] The following function has been modified for IntelliSense.
 // Check to see if the browser returns elements by name when
-// querying by getElementById (and provide a workaround)
+// querying by GETElementById (and provide a workaround)
 (function(){
-	// We're going to inject a fake input element with a specified name
+	// We're going to inject a fake inPUT element with a specified name
 	//	var form = document.createElement("div"),
-	//		id = "script" + (new Date).getTime();
+	//		id = "script" + (new Date).GETTime();
 	//	form.innerHTML = "<a name='" + id + "'/>";
 
 	//	// Inject it into the root element, check its status, and remove it quickly
 	//	var root = document.documentElement;
 	//	root.insertBefore( form, root.firstChild );
 
-	// The workaround has to do additional checks after a getElementById
+	// The workaround has to do additional checks after a GETElementById
 	// Which slows things down for other browsers (hence the branching)
-	//	if ( document.getElementById( id ) ) {
+	//	if ( document.GETElementById( id ) ) {
 		Expr.find.ID = function(match, context, isXML){
 			if ( typeof context.getElementById !== "undefined" && !isXML ) {
 				var m = context.getElementById(match[1]);
@@ -4334,14 +4334,14 @@ function getText( elems ) {
 // [vsdoc] The following function has been modified for IntelliSense.
 (function(){
 	// Check to see if the browser returns only elements
-	// when doing getElementsByTagName("*")
+	// when doing GETElementsByTagName("*")
 
 	// Create a fake element
 	//	var div = document.createElement("div");
 	//	div.appendChild( document.createComment("") );
 
 	// Make sure no comments are found
-	//	if ( div.getElementsByTagName("*").length > 0 ) {
+	//	if ( div.GETElementsByTagName("*").length > 0 ) {
 		Expr.find.TAG = function(match, context){
 			var results = context.getElementsByTagName(match[1]);
 
@@ -4364,8 +4364,8 @@ function getText( elems ) {
 
 	// Check to see if an attribute returns normalized href attributes
 	//	div.innerHTML = "<a href='#'></a>";
-	//	if ( div.firstChild && typeof div.firstChild.getAttribute !== "undefined" &&
-	//			div.firstChild.getAttribute("href") !== "#" ) {
+	//	if ( div.firstChild && typeof div.firstChild.GETAttribute !== "undefined" &&
+	//			div.firstChild.GETAttribute("href") !== "#" ) {
 		Expr.attrHandle.href = function(elem){
 			return elem.getAttribute("href", 2);
 		};
@@ -4413,7 +4413,7 @@ if ( document.querySelectorAll ) {
 	div.innerHTML = "<div class='test e'></div><div class='test'></div>";
 
 	// Opera can't find a second classname (in 9.6)
-	// Also, make sure that getElementsByClassName actually exists
+	// Also, make sure that GETElementsByClassName actually exists
 	if ( !div.getElementsByClassName || div.getElementsByClassName("e").length === 0 ) {
 		return;
 	}
@@ -4657,7 +4657,7 @@ jQuery.fn.extend({
 		///		Reduce the set of matched elements to those that have a descendant that matches the
 		///		selector or DOM element.
 		///	</summary>
-		///	<param name="target" type="String">
+		///	<param name="tarGET" type="String">
 		///		A string containing a selector expression to match elements against.
 		///	</param>
 		///	<returns type="jQuery" />
@@ -5061,7 +5061,7 @@ jQuery.extend({
 var rinlinejQuery = / jQuery\d+="(?:\d+|null)"/g,
 	rleadingWhitespace = /^\s+/,
 	rxhtmlTag = /(<([\w:]+)[^>]*?)\/>/g,
-	rselfClosing = /^(?:area|br|col|embed|hr|img|input|link|meta|param)$/i,
+	rselfClosing = /^(?:area|br|col|embed|hr|img|inPUT|link|meta|param)$/i,
 	rtagName = /<([\w:]+)/,
 	rtbody = /<tbody/i,
 	rhtml = /<|&\w+;/,
@@ -5133,7 +5133,7 @@ jQuery.fn.extend({
 		///	</summary>
 		///	<returns type="jQuery" />
 		///	<param name="html" type="Element">
-		///		A DOM element that will be wrapped around the target.
+		///		A DOM element that will be wrapped around the tarGET.
 		///	</param>
 
 		if ( jQuery.isFunction( html ) ) {
@@ -5143,7 +5143,7 @@ jQuery.fn.extend({
 		}
 
 		if ( this[0] ) {
-			// The elements to wrap the target around
+			// The elements to wrap the tarGET around
 			var wrap = jQuery( html, this[0].ownerDocument ).eq(0).clone(true);
 
 			if ( this[0].parentNode ) {
@@ -5169,7 +5169,7 @@ jQuery.fn.extend({
 		///		Wraps the inner child contents of each matched elemenht (including text nodes) with an HTML structure.
 		///	</summary>
 		///	<param name="html" type="String">
-		///		A string of HTML or a DOM element that will be wrapped around the target contents.
+		///		A string of HTML or a DOM element that will be wrapped around the tarGET contents.
 		///	</param>
 		///	<returns type="jQuery" />
 
@@ -5206,7 +5206,7 @@ jQuery.fn.extend({
 		///	</summary>
 		///	<returns type="jQuery" />
 		///	<param name="html" type="Element">
-		///		A DOM element that will be wrapped around the target.
+		///		A DOM element that will be wrapped around the tarGET.
 		///	</param>
 
 		return this.each(function() {
@@ -5313,11 +5313,11 @@ jQuery.fn.extend({
 				// IE copies events bound via attachEvent when
 				// using cloneNode. Calling detachEvent on the
 				// clone will also remove the events from the orignal
-				// In order to get around this, we use innerHTML.
+				// In order to GET around this, we use innerHTML.
 				// Unfortunately, this means some modifications to
 				// attributes in IE that are actually only stored
 				// as properties will not be copied (such as the
-				// the name attribute on an input).
+				// the name attribute on an inPUT).
 				var html = this.outerHTML, ownerDocument = this.ownerDocument;
 				if ( !html ) {
 					var div = ownerDocument.createElement("div");
@@ -5546,7 +5546,7 @@ function cloneCopyEvent(orig, ret) {
 function buildFragment( args, nodes, scripts ) {
 	var fragment, cacheable, cacheresults, doc;
 
-	// webkit does not clone 'checked' attribute of radio inputs on cloneNode, so don't cache if string has a checked
+	// webkit does not clone 'checked' attribute of radio inPUTs on cloneNode, so don't cache if string has a checked
 	if ( args.length === 1 && typeof args[0] === "string" && args[0].length < 512 && args[0].indexOf("<option") < 0 && (jQuery.support.checkClone || !rchecked.test( args[0] )) ) {
 		cacheable = true;
 		cacheresults = jQuery.fragments[ args[0] ];
@@ -5583,7 +5583,7 @@ jQuery.fragments = {};
 //			var ret = [], insert = jQuery( selector );
 
 //			for ( var i = 0, l = insert.length; i < l; i++ ) {
-//				var elems = (i > 0 ? this.clone(true) : this).get();
+//				var elems = (i > 0 ? this.clone(true) : this).GET();
 //				jQuery.fn[ original ].apply( jQuery(insert[i]), elems );
 //				ret = ret.concat( elems );
 //			}
@@ -5600,7 +5600,7 @@ jQuery.fn[ "appendTo" ] = function( selector ) {
 	///		A to B.
 	///	</summary>
 	///	<param name="selector" type="Selector">
-	///		 target to which the content will be appended.
+	///		 tarGET to which the content will be appended.
 	///	</param>
 	///	<returns type="jQuery" />
 
@@ -5623,7 +5623,7 @@ jQuery.fn[ "prependTo" ] = function( selector ) {
 	///		A to B.
 	///	</summary>
 	///	<param name="selector" type="Selector">
-	///		 target to which the content will be appended.
+	///		 tarGET to which the content will be appended.
 	///	</param>
 	///	<returns type="jQuery" />
 
@@ -5860,7 +5860,7 @@ var rexclude = /z-?index|font-?weight|opacity|zoom|line-?height/i,
 	cssWidth = [ "Left", "Right" ],
 	cssHeight = [ "Top", "Bottom" ],
 
-	// cache check for defaultView.getComputedStyle
+	// cache check for defaultView.GETComPUTedStyle
 	getComputedStyle = document.defaultView && document.defaultView.getComputedStyle,
 	// normalize float css property
 	styleFloat = jQuery.support.cssFloat ? "cssFloat" : "styleFloat",
@@ -5927,7 +5927,7 @@ jQuery.extend({
 				"";
 		}
 
-		// Make sure we're using the right name for getting the float value
+		// Make sure we're using the right name for GETting the float value
 		if ( rfloat.test( name ) ) {
 			name = styleFloat;
 		}
@@ -6001,7 +6001,7 @@ jQuery.extend({
 				ret;
 		}
 
-		// Make sure we're using the right name for getting the float value
+		// Make sure we're using the right name for GETting the float value
 		if ( rfloat.test( name ) ) {
 			name = styleFloat;
 		}
@@ -6030,7 +6030,7 @@ jQuery.extend({
 				ret = computedStyle.getPropertyValue( name );
 			}
 
-			// We should always get a number back from opacity
+			// We should always GET a number back from opacity
 			if ( name === "opacity" && ret === "" ) {
 				ret = "1";
 			}
@@ -6049,7 +6049,7 @@ jQuery.extend({
 				// Remember the original values
 				var left = style.left, rsLeft = elem.runtimeStyle.left;
 
-				// Put in the new values to get a computed value out
+				// Put in the new values to GET a comPUTed value out
 				elem.runtimeStyle.left = elem.currentStyle.left;
 				style.left = camelCase === "fontSize" ? "1em" : (ret || 0);
 				ret = style.pixelLeft + "px";
@@ -6063,7 +6063,7 @@ jQuery.extend({
 		return ret;
 	},
 
-	// A method for quickly swapping in/out CSS properties to get correct calculations
+	// A method for quickly swapping in/out CSS properties to GET correct calculations
 	swap: function( elem, options, callback ) {
 		///	<summary>
 		///		Swap in/out style options.
@@ -6195,7 +6195,7 @@ jQuery.fn.extend({
 
 	serialize: function() {
 		///	<summary>
-		///		Serializes a set of input elements into a string of data.
+		///		Serializes a set of inPUT elements into a string of data.
 		///	</summary>
 		///	<returns type="String">The serialized result</returns>
 
@@ -6499,7 +6499,7 @@ jQuery.extend({
 			s.url = ret + ((ret === s.url) ? (rquery.test(s.url) ? "&" : "?") + "_=" + ts : "");
 		}
 
-		// If data is available, append data to url for get requests
+		// If data is available, append data to url for GET requests
 		if ( s.data && type === "GET" ) {
 			s.url += (rquery.test(s.url) ? "&" : "?") + s.data;
 		}
@@ -7133,7 +7133,7 @@ jQuery.fn.extend({
 						var end = parseFloat( parts[2] ),
 							unit = parts[3] || "px";
 
-						// We need to compute starting value
+						// We need to comPUTe starting value
 						if ( unit !== "px" ) {
 							self.style[ name ] = (end || 1) + unit;
 							start = ((end || 1) / e.cur(true)) * start;
@@ -7163,7 +7163,7 @@ jQuery.fn.extend({
 		///		Stops all currently animations on the specified elements.
 		///	</summary>
 		///	<param name="clearQueue" optional="true" type="Boolean">True to clear animations that are queued to run.</param>
-		///	<param name="gotoEnd" optional="true" type="Boolean">True to move the element value to the end of its animation target.</param>
+		///	<param name="gotoEnd" optional="true" type="Boolean">True to move the element value to the end of its animation tarGET.</param>
 		///	<returns type="jQuery" />
 
 		var timers = jQuery.timers;
@@ -7558,7 +7558,7 @@ function genFx( type, num ) {
 
 	return obj;
 }
-if ( "getBoundingClientRect" in document.documentElement ) {
+if ( "GETBoundingClientRect" in document.documentElement ) {
 	jQuery.fn.offset = function( options ) {
 		///	<summary>
 		///		Set the current coordinates of every element in the set of matched elements,
@@ -7928,13 +7928,13 @@ jQuery.each([ "Height" ], function( i, name ) {
 	jQuery.fn[ type ] = function( size ) {
 		///	<summary>
 		///		Set the CSS height of every matched element. If no explicit unit
-		///		was specified (like 'em' or '%') then &quot;px&quot; is added to the width.  If no parameter is specified, it gets
-		///		the current computed pixel height of the first matched element.
+		///		was specified (like 'em' or '%') then &quot;px&quot; is added to the width.  If no parameter is specified, it GETs
+		///		the current comPUTed pixel height of the first matched element.
 		///		Part of CSS
 		///	</summary>
 		///	<returns type="jQuery" type="jQuery" />
 		///	<param name="cssProperty" type="String">
-		///		Set the CSS property to the specified value. Omit to get the value of the first matched element.
+		///		Set the CSS property to the specified value. Omit to GET the value of the first matched element.
 		///	</param>
 
 		// Get window width or height
@@ -8008,13 +8008,13 @@ jQuery.each([ "Width" ], function( i, name ) {
 	jQuery.fn[ type ] = function( size ) {
 		///	<summary>
 		///		Set the CSS width of every matched element. If no explicit unit
-		///		was specified (like 'em' or '%') then &quot;px&quot; is added to the width.  If no parameter is specified, it gets
-		///		the current computed pixel width of the first matched element.
+		///		was specified (like 'em' or '%') then &quot;px&quot; is added to the width.  If no parameter is specified, it GETs
+		///		the current comPUTed pixel width of the first matched element.
 		///		Part of CSS
 		///	</summary>
 		///	<returns type="jQuery" type="jQuery" />
 		///	<param name="cssProperty" type="String">
-		///		Set the CSS property to the specified value. Omit to get the value of the first matched element.
+		///		Set the CSS property to the specified value. Omit to GET the value of the first matched element.
 		///	</param>
 
 		// Get window width or height

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 
 
@@ -47,6 +47,9 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
+
+        #region Class Construction Failures
+
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
@@ -71,9 +74,56 @@ namespace ConnectionCUPIFunctionsTest
             InterviewHandler oTestInterviewer = new InterviewHandler(_connectionServer, "","blah");
         }
 
+        #endregion
+
+        [TestMethod]
+        public void StaticMethodFailures()
+        {
+            WebCallResult res;
+            InterviewHandler oInterviewer;
+            List<InterviewHandler> oHandlers;
+            res = InterviewHandler.GetInterviewHandlers(null, out oHandlers);
+            Assert.IsFalse(res.Success,"Calling static method GetInterviewHandlers did not fail with: null ConnectionServer");
+
+            res = InterviewHandler.AddInterviewHandler(null, "display name", null,out oInterviewer);
+            Assert.IsFalse(res.Success, "Calling static method AddInterviewHandler did not fail with: null ConnectionServer");
+
+            res = InterviewHandler.AddInterviewHandler(_connectionServer, "", null,out oInterviewer);
+            Assert.IsFalse(res.Success, "Calling static method AddInterviewHandler did not fail with: empty objectid ");
+
+            res = InterviewHandler.UpdateInterviewHandler(null, "objectId", null);
+            Assert.IsFalse(res.Success, "Calling static method UpdateInterviewHandler did not fail with: null ConnectionServer");
+
+            res = InterviewHandler.UpdateInterviewHandler(_connectionServer, "", null);
+            Assert.IsFalse(res.Success, "Calling static method UpdateInterviewHandler did not fail with: empty object id");
+
+            res = InterviewHandler.UpdateInterviewHandler(_connectionServer, "ObjectId", null);
+            Assert.IsFalse(res.Success, "Calling static method UpdateInterviewHandler did not fail with: empty property list");
+
+            ConnectionPropertyList oProps = new ConnectionPropertyList();
+            oProps.Add("bogus","bogusvalue");
+
+            res = InterviewHandler.UpdateInterviewHandler(_connectionServer, "ObjectId", oProps);
+            Assert.IsFalse(res.Success, "Calling static method UpdateInterviewHandler did not fail with: invalid objectId");
+
+            res = InterviewHandler.DeleteInterviewHandler(null, "objectid");
+            Assert.IsFalse(res.Success, "Calling static method DeleteInterviewHandler did not fail with: null ConnectionServer");
+
+            res = InterviewHandler.DeleteInterviewHandler(_connectionServer, "ObjectId");
+            Assert.IsFalse(res.Success, "Calling static method DeleteInterviewHandler did not fail with: invalid objectid");
+
+            res = InterviewHandler.GetInterviewHandler(out oInterviewer, null, "objectId", "DisplayName");
+            Assert.IsFalse(res.Success, "Calling static method GetInterviewHandler did not fail with: null ConnectionServer");
+
+            res = InterviewHandler.GetInterviewHandler(out oInterviewer, _connectionServer, "", "");
+            Assert.IsFalse(res.Success, "Calling static method GetInterviewHandler did not fail with: empty objectID and display name");
+
+            res = InterviewHandler.GetInterviewHandler(out oInterviewer, _connectionServer, "objectId", "DisplayName");
+            Assert.IsFalse(res.Success, "Calling static method GetInterviewHandler did not fail with: invalid objectId and display name");
+        }
 
         /// <summary>
-        /// Get first handler in directory using static method call, iterate over it and use the ToString and DumpAllProps
+        /// GET first handler in directory using static method call, iterate over it and use the ToString and DumpAllProps
         /// methods on it.
         /// For Interview handlers it's possible there are none here - so for this test to be valid it needs to be run after at least
         /// one interviewer is created.
@@ -106,6 +156,14 @@ namespace ConnectionCUPIFunctionsTest
             //fetch interviewer by ObjectId
             res = InterviewHandler.GetInterviewHandler(out oInterviewHandler, _connectionServer, strObjectId);
             Assert.IsTrue(res.Success, "Fetching of interview handler by objectId failed: " + res.ToString());
+
+            res = oInterviewHandler.RefetchInterviewHandlerData();
+            Assert.IsTrue(res.Success,"Failed refetching interviewer data:"+res);
+
+            Console.WriteLine(oInterviewHandler.DumpAllProps());
+
+            res = oInterviewHandler.Update();
+            Assert.IsFalse(res.Success,"Updating interview handler with no pending changes did not fail");
 
             //failed fetch using bogus name
             res = InterviewHandler.GetInterviewHandler(out oInterviewHandler, _connectionServer, "", "blah");

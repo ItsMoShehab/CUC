@@ -14,9 +14,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
         /// <summary>
         /// The DirectoryHandler class contains all the properties associated with a Interview Handler in Unity Connection that can be fetched via the 
@@ -106,8 +106,11 @@ namespace ConnectionCUPIFunctions
                 } 
             }
 
-            public string LocationObjectId { get; set; }
-            public string ObjectId { get; set; }
+            [JsonProperty]
+            public string LocationObjectId { get; private set; }
+            
+            [JsonProperty]
+            public string ObjectId { get; private set; }
 
             private string _partitionObjectId;
             public string PartitionObjectId
@@ -297,8 +300,11 @@ namespace ConnectionCUPIFunctions
                 }
             }
 
-            public bool VoiceEnabled { get; set; }
-            public string VoiceName { get; set; }
+            [JsonProperty]
+            public bool VoiceEnabled { get; private set; }
+
+            [JsonProperty]
+            public string VoiceName { get; private set; }
 
             //all exit methods
 
@@ -436,7 +442,7 @@ namespace ConnectionCUPIFunctions
 
 
             //reference to the ConnectionServer object used to create this handlers instance.
-            internal ConnectionServer HomeServer;
+            internal ConnectionServer HomeServer { get; private set; }
 
             //used to keep track of whic properties have been updated
             private readonly ConnectionPropertyList _changedPropList;
@@ -463,7 +469,7 @@ namespace ConnectionCUPIFunctions
             /// Optional display name search critiera - if both ObjectId and DisplayName are passed, ObjectId is used.  The display name search is not case
             /// sensitive.
             /// </param>
-            public DirectoryHandler(ConnectionServer pConnectionServer, string pObjectId="", string pDisplayName="")
+            public DirectoryHandler(ConnectionServer pConnectionServer, string pObjectId="", string pDisplayName=""):this()
             {
                 if (pConnectionServer == null)
                 {
@@ -472,9 +478,6 @@ namespace ConnectionCUPIFunctions
 
                 //keep track of the home Connection server this handler is created on.
                 HomeServer = pConnectionServer;
-
-                //make an instanced of the changed prop list to keep track of updated properties on this object
-                _changedPropList = new ConnectionPropertyList();
 
                 //if the user passed in a specific ObjectId or display name then go load that handler up, otherwise just return an empty instance.
                 if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pDisplayName))) return;
@@ -488,6 +491,15 @@ namespace ConnectionCUPIFunctions
                         string.Format("Directory Handler not found in DirectoryHandler constructor using ObjectId={0} and DisplayName={1}\n\r{2}"
                                      , pObjectId, pDisplayName, res.ErrorText));
                 }
+            }
+
+            /// <summary>
+            /// Generic constructor for Json parsing libraries
+            /// </summary>
+            public DirectoryHandler()
+            {
+                //make an instanced of the changed prop list to keep track of updated properties on this object
+                _changedPropList = new ConnectionPropertyList();
             }
 
             #endregion
@@ -520,12 +532,13 @@ namespace ConnectionCUPIFunctions
             /// <returns>
             /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
             /// </returns>
-            public static WebCallResult GetDirectoryHandlers(ConnectionServer pConnectionServer, out List<DirectoryHandler> pDirectoryHandlers, params string[] pClauses)
+            public static WebCallResult GetDirectoryHandlers(ConnectionServer pConnectionServer, out List<DirectoryHandler> pDirectoryHandlers, 
+                params string[] pClauses)
             {
                 WebCallResult res = new WebCallResult();
                 res.Success = false;
 
-                pDirectoryHandlers = null;
+                pDirectoryHandlers = new List<DirectoryHandler>();
 
                 if (pConnectionServer == null)
                 {
@@ -533,51 +546,81 @@ namespace ConnectionCUPIFunctions
                     return res;
                 }
 
-                string strUrl = pConnectionServer.BaseUrl + "handlers/directoryhandlers";
-
-                //the spaces get "escaped out" in the HTTPFunctions class call at a lower level, don't worry about it here.
-                //Tack on all the search/query/page clauses here if any are passed in.  If an empty string is passed in account
-                //for it here.
-                for (int iCounter = 0; iCounter < pClauses.Length; iCounter++)
-                {
-                    if (pClauses[iCounter].Length == 0)
-                    {
-                        continue;
-                    }
-
-                    //if it's the first param seperate the clause from the URL with a ?, otherwise append compound clauses 
-                    //seperated by &
-                    if (iCounter == 0)
-                    {
-                        strUrl += "?";
-                    }
-                    else
-                    {
-                        strUrl += "&";
-                    }
-                    strUrl += pClauses[iCounter];
-                }
+                string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "handlers/directoryhandlers",pClauses);
 
                 //issue the command to the CUPI interface
-                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
                 if (res.Success == false)
                 {
                     return res;
                 }
 
-                //if the call was successful the XML elements can be empty, that's legal.
-                if (res.XmlElement == null || res.XmlElement.HasElements == false)
+
+                //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+                //if this is empty this isn't an error - just return an empty list
+                if (string.IsNullOrEmpty(res.ResponseText))
                 {
-                    pDirectoryHandlers = new List<DirectoryHandler>();
                     return res;
                 }
 
-                pDirectoryHandlers = GetDirectoryHandlersFromXElements(pConnectionServer, res.XmlElement);
-                return res;
+                pDirectoryHandlers = HTTPFunctions.GetObjectsFromJson<DirectoryHandler>(res.ResponseText);
 
+                if (pDirectoryHandlers == null)
+                {
+                    return res;
+                }
+
+                //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+                //run through here and assign it for all instances.
+                foreach (var oObject in pDirectoryHandlers)
+                {
+                    oObject.HomeServer = pConnectionServer;
+                    oObject.ClearPendingChanges();
+                }
+
+                return res;
             }
 
+
+            /// <summary>
+            /// This method allows for a GET of handlers from Connection via HTTP - it allows for passing any number of additional clauses  
+            /// for filtering (query directives), sorting and paging of results.  The format of the clauses should look like:
+            /// filter: "query=(displayname startswith ab)"
+            /// sort: "sort=(displayname asc)"
+            /// Escaping of spaces is done automatically, no need to account for that.
+            /// </summary>
+            /// <param name="pConnectionServer">
+            /// Reference to the ConnectionServer object that points to the home server where the handlers are being fetched from.
+            /// </param>
+            /// <param name="pDirectoryHandlers">
+            /// The list of handlers returned from the CUPI call (if any) is returned as a generic list of DirectoryHandler class instances via this out param.  
+            /// If no handlers are found NULL is returned for this parameter.
+            /// </param>
+            /// <param name="pClauses">
+            /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
+            /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(FirstName startswith a)" in
+            /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+            /// </param>
+            /// <param name="pPageNumber">
+            /// Results page to fetch - defaults to 1
+            /// </param>
+            /// <param name="pRowsPerPage">
+            /// Results to return per page, defaults to 20
+            /// </param>
+            /// <returns>
+            /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+            /// </returns>
+            public static WebCallResult GetDirectoryHandlers(ConnectionServer pConnectionServer,out List<DirectoryHandler> pDirectoryHandlers,
+                int pPageNumber=1, int pRowsPerPage=20,params string[] pClauses)
+            {
+                //tack on the paging items to the parameters list
+                var temp = pClauses.ToList();
+                temp.Add("pageNumber=" + pPageNumber);
+                temp.Add("rowsPerPage=" + pRowsPerPage);
+
+                return GetDirectoryHandlers(pConnectionServer, out pDirectoryHandlers, temp.ToArray());
+            }
 
             /// <summary>
             /// returns a single DirectoryHandler object from an ObjectId or displayName string passed in.
@@ -635,54 +678,7 @@ namespace ConnectionCUPIFunctions
 
 
             /// <summary>
-            /// Helper function to take an XML blob returned from the REST interface for a handler (or handlers) return and convert it into an generic
-            /// list of DirectoryHandler class objects. 
-            /// </summary>
-            /// <param name="pConnectionServer">
-            /// Connection server the handler is homed on.
-            /// </param>
-            /// <param name="pXElement">
-            /// The list of XML elements fetched from the Connection server via a CUPI call
-            /// </param>
-            /// <returns>
-            /// List of DirectoryHandlers constructed from the XML elements.
-            /// </returns>
-            private static List<DirectoryHandler> GetDirectoryHandlersFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-            {
-                List<DirectoryHandler> oHandlerList = new List<DirectoryHandler>();
-
-                if (pConnectionServer == null)
-                {
-                    throw new ArgumentException("Null ConnectionServer referenced passed to GetDirectoryHandlersFromXElements");
-                }
-
-                //pull out a set of XMLElements for each CallHandler object returned using the power of LINQ
-                var handlers = from e in pXElement.Elements()
-                               where e.Name.LocalName == "DirectoryHandler"
-                               select e;
-
-                //for each handler returned in the list of handlers from the XML, construct an DirectoryHandler object using the elements associated with that 
-                //handler.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-                //typed objects.
-                foreach (var oXmlHandler in handlers)
-                {
-                    DirectoryHandler oHandler = new DirectoryHandler(pConnectionServer);
-                    foreach (XElement oElement in oXmlHandler.Elements())
-                    {
-                        //adds the XML property to the DirectoryHandler object if the proeprty name is found as a property on the object.
-                        pConnectionServer.SafeXmlFetch(oHandler, oElement);
-                    }
-
-                    //add the fully populated DirectoryHandler object to the list that will be returned to the calling routine.
-                    oHandlerList.Add(oHandler);
-                }
-
-                return oHandlerList;
-            }
-
-
-            /// <summary>
-            /// Create a new directory handler in the Connection directory 
+            /// Create a new directory handler in the Connection directory, only works for Connection 10.0 builds and later
             /// </summary>
             /// <param name="pConnectionServer">
             /// Connection server being edited
@@ -789,7 +785,7 @@ namespace ConnectionCUPIFunctions
 
                 strBody += "</DirectoryHandler>";
 
-                res= HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/directoryhandlers", MethodType.Post,pConnectionServer,strBody);
+                res= HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/directoryhandlers", MethodType.POST,pConnectionServer,strBody,false);
 
                 //fetch the objectId of the newly created object off the return
                 if (res.Success)
@@ -804,7 +800,7 @@ namespace ConnectionCUPIFunctions
             }
 
             /// <summary>
-            /// Delete a handler from the Connection directory.
+            /// DELETE a handler from the Connection directory.
             /// </summary>
             /// <param name="pConnectionServer">
             /// Reference to the ConnectionServer object that points to the home server where the handler is homed.
@@ -825,7 +821,7 @@ namespace ConnectionCUPIFunctions
                 }
 
                 return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/directoryhandlers/" + pObjectId,
-                                                MethodType.Delete,pConnectionServer, "");
+                                                MethodType.DELETE,pConnectionServer, "");
             }
 
 
@@ -878,7 +874,7 @@ namespace ConnectionCUPIFunctions
                 strBody += "</DirectoryHandler>";
 
                 return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/directoryhandlers/" + pObjectId,
-                                                MethodType.Put,pConnectionServer,strBody);
+                                                MethodType.PUT,pConnectionServer,strBody,false);
 
             }
 
@@ -950,7 +946,7 @@ namespace ConnectionCUPIFunctions
             private WebCallResult GetDirectoryHandler(string pObjectId, string pDisplayName = "")
             {
                 string strUrl;
-                WebCallResult res;
+                WebCallResult res = new WebCallResult {Success = false};
 
                 //when fetching a handler use the query construct in both cases so the XML parsing is identical
                 if (pObjectId.Length > 0)
@@ -963,38 +959,42 @@ namespace ConnectionCUPIFunctions
                 }
                 else
                 {
-                    res = new WebCallResult();
-                    res.Success = false;
                     res.ErrorText = "No value for ObjectId or display name passed to GetDirectoryHandler.";
                     return res;
                 }
 
                 //issue the command to the CUPI interface
-                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, HomeServer, "");
+                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
                 if (res.Success == false)
                 {
                     return res;
                 }
 
-                //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-                if (res.XmlElement == null || res.XmlElement.HasElements == false)
+                if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
                 {
                     res.Success = false;
+                    res.ErrorText = "Failed to find directory handler by objectid=" + pObjectId + " or name=" +DisplayName;
                     return res;
                 }
 
-                //populate this call handler instance with data from the XML fetch
-                foreach (XElement oElement in res.XmlElement.Elements().Elements())
+                try
                 {
-                    HomeServer.SafeXmlFetch(this, oElement);
+                    JsonConvert.PopulateObject(res.ResponseText, this);
                 }
+                catch (Exception ex)
+                {
+                    res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                    res.Success = false;
+                }
+
+                ClearPendingChanges();
 
                 return res;
             }
 
             /// <summary>
-            /// Delete a directory handler from the Connection directory.
+            /// DELETE a directory handler from the Connection directory.
             /// </summary>
             /// <returns>
             /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.

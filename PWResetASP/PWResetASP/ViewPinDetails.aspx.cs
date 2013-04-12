@@ -1,5 +1,5 @@
 ﻿using System;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 
 namespace PWResetASP
 {
@@ -23,7 +23,7 @@ namespace PWResetASP
                 Response.Redirect("~/SelectUser.aspx");
             }
 
-            oUser = (UserBase) Session["SelectedUser"];
+            oUser = (UserBase)Session["SelectedUser"];
 
             LabelUserInfo.Text = "Connection User: "+oUser.ToString();
 

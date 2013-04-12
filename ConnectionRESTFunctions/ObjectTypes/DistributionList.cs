@@ -15,9 +15,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The DistribtuionList class contains all the properties associated with a distribution list in Unity Connection that can be fetched via the 
@@ -29,10 +29,10 @@ namespace ConnectionCUPIFunctions
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this distribution list instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
-        private ConnectionPropertyList _changedPropList;
+        private readonly ConnectionPropertyList _changedPropList;
 
         #endregion
 
@@ -56,21 +56,14 @@ namespace ConnectionCUPIFunctions
         /// <param name="pAlias">
         /// Optional alias search critiera - if both ObjectId and Alias are passed, ObjectId is used.  
         /// </param>
-        public DistributionList(ConnectionServer pConnectionServer, string pObjectId="",string pAlias="")
+        public DistributionList(ConnectionServer pConnectionServer, string pObjectId="",string pAlias=""):this()
         {
             if (pConnectionServer == null)
             {
                 throw new ArgumentException("Null ConnectionServer passed to DistributionList constructor.");
             }
 
-            //make an instanced of the changed prop list to keep track of updated properties on this object
-            _changedPropList=new ConnectionPropertyList();
-            
-            _homeServer = pConnectionServer;
-
-            //the data returned when using a search query or getting a list back is "light" a few properties - indicate that as the 
-            //default starting state here - if a missing item is fetched a full data fetch is issues on the fly to fill it in.
-            IsFullListData = false;
+            HomeServer = pConnectionServer;
 
             //if the user passed in a specific ObjectId or display name then go load that list up, otherwise just return an empty instance.
             if ((pObjectId.Length == 0) & (pAlias.Length==0)) return;
@@ -86,6 +79,19 @@ namespace ConnectionCUPIFunctions
         }
 
 
+        /// <summary>
+        /// Generic constructor for Json parsing libraries
+        /// </summary>
+        public DistributionList()
+        {
+            //make an instanced of the changed prop list to keep track of updated properties on this object
+            _changedPropList = new ConnectionPropertyList();
+
+            //the data returned when using a search query or getting a list back is "light" a few properties - indicate that as the 
+            //default starting state here - if a missing item is fetched a full data fetch is issues on the fly to fill it in.
+            IsFullListData = false;
+        }
+
         #endregion
 
 
@@ -94,10 +100,10 @@ namespace ConnectionCUPIFunctions
         /// <summary>
         /// Unique for lists in the directory - cannot be changed post create.
         /// </summary>
+        [JsonProperty]
         public String Alias { get; private set; }
 
         private bool _allowContacts;
-
         /// <summary>
         /// A flag indicating whether contacts (system, VPIM, virtual) are allowed to be members of this Distribution List. Purpose of this flag 
         /// is to enable administrators to create a Distribution List whose members are Unity users only. A flag indicating whether contacts 
@@ -161,7 +167,10 @@ namespace ConnectionCUPIFunctions
                 }
                 return _creationTime;
             }
-            private set { _creationTime = value; }
+            set
+            {
+                _creationTime = value;
+            }
         }
 
         
@@ -231,7 +240,10 @@ namespace ConnectionCUPIFunctions
                 }
                 return _isPublic;
             }
-            private set { _isPublic = value; }
+            set
+            {
+                _isPublic = value;
+            }
         }
 
         /// <summary>
@@ -245,11 +257,13 @@ namespace ConnectionCUPIFunctions
         /// <summary>
         /// The unique identifier of the LocationVMS object to which this system distribution list belongs.
         /// </summary>
+        [JsonProperty]
         public String LocationObjectId { get; private set; }
 
         /// <summary>
         /// Unique GUID for this distribution list.  Cannot be changed post create.
         /// </summary>
+        [JsonProperty]
         public String ObjectId { get; private set; }
 
         private string _partitionObjectId;
@@ -345,50 +359,83 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + "distributionlists";
-
-            //the spaces get "escaped out" in the HTTPFunctions class call at a lower level, don't worry about it here.
-            //Tack on all the search/query/page clauses here if any are passed in.  If an empty string is passed in account
-            //for it here.
-            for (int iCounter = 0; iCounter < pClauses.Length; iCounter++)
-            {
-                if (pClauses[iCounter].Length == 0)
-                {
-                    continue;
-                }
-
-                //if it's the first param seperate the clause from the URL with a ?, otherwise append compound clauses 
-                //seperated by &
-                if (iCounter == 0)
-                {
-                    strUrl += "?";
-                }
-                else
-                {
-                    strUrl += "&";
-                }
-                strUrl += pClauses[iCounter];
-            }
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "distributionlists", pClauses);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements can be empty - that's not an error, it could just
-            //mean no lists were found for the query - return true with an empty list
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that means an error in this case - should always be at least one template
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
-                pDistributionLists=new List<DistributionList>();
+                pDistributionLists = new List<DistributionList>();
+                res.Success = false;
                 return res;
             }
 
-            pDistributionLists = GetDistributionListsFromXElements(pConnectionServer, res.XmlElement);
-            return res;
+            pDistributionLists = HTTPFunctions.GetObjectsFromJson<DistributionList>(res.ResponseText);
 
+            if (pDistributionLists == null)
+            {
+                pDistributionLists = new List<DistributionList>();
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pDistributionLists)
+            {
+                oObject.HomeServer = pConnectionServer;
+                oObject.ClearPendingChanges();
+            }
+
+            return res;
+        }
+
+
+        /// <summary>
+        /// This function allows for a GET of lists from Connection via HTTP - it allows for passing any number of additional clauses  
+        /// for filtering (query directives), sorting and paging of results.  The format of the clauses should look like:
+        /// filter: "query=(displayname startswith ab)"
+        /// sort: "sort=(displayname asc)"
+        /// Escaping of spaces is done automatically, no need to account for that.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Reference to the ConnectionServer object that points to the home server where the lists are being fetched from.
+        /// </param>
+        /// <param name="pDistributionLists">
+        /// The list of distribution lists returned from the CUPI call (if any) is returned as a generic list of DistributionList class 
+        /// instances via this out param.  If no lists are found NULL is returned for this parameter.
+        /// </param>
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
+        /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(FirstName startswith a)" in
+        /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+        /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+
+        public static WebCallResult GetDistributionLists(ConnectionServer pConnectionServer,out List<DistributionList> pDistributionLists,
+            int pPageNumber=1, int pRowsPerPage=20,params string[] pClauses)
+        {
+            //tack on the paging items to the parameters list
+            var temp = pClauses.ToList();
+            temp.Add("pageNumber=" + pPageNumber);
+            temp.Add("rowsPerPage=" + pRowsPerPage);
+
+            return GetDistributionLists(pConnectionServer, out pDistributionLists, temp.ToArray());
         }
 
 
@@ -423,7 +470,6 @@ namespace ConnectionCUPIFunctions
                                                     string pExtension,
                                                     ConnectionPropertyList pPropList)
         {
-            string strBody = "";
             WebCallResult res = new WebCallResult();
             res.Success = false;
 
@@ -455,7 +501,7 @@ namespace ConnectionCUPIFunctions
                 pPropList.Add("DtmfAccessId", pExtension);
             }
 
-            strBody = "<DistributionList>";
+            string strBody = "<DistributionList>";
 
             foreach (var oPair in pPropList)
             {
@@ -465,7 +511,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</DistributionList>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "distributionlists", MethodType.Post,pConnectionServer,strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "distributionlists", MethodType.POST,pConnectionServer,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -639,12 +685,12 @@ namespace ConnectionCUPIFunctions
             strBody += "</DistributionList>";
 
             return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "distributionlists/" + pObjectId,
-                                            MethodType.Put,pConnectionServer,strBody);
+                                            MethodType.PUT,pConnectionServer,strBody,false);
         }
 
 
         /// <summary>
-        /// Delete a list from the Connection directory.
+        /// DELETE a list from the Connection directory.
         /// </summary>
         /// <param name="pConnectionServer">
         /// Reference to the ConnectionServer object that points to the home server where the list is homed.
@@ -665,47 +711,7 @@ namespace ConnectionCUPIFunctions
             }
 
             return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "distributionlists/" + pObjectId,
-                                            MethodType.Delete,pConnectionServer, "");
-        }
-
-
-        /// <summary>
-        ///Helper function to take an XML blob returned from the REST interface for a list (or listss) return and convert it into an generic
-        ///list of DistributionList class objects. 
-        /// </summary>
-        private static List<DistributionList> GetDistributionListsFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-            List<DistributionList> oDlList = new List<DistributionList>();
-
-            if (pConnectionServer == null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced passed to GetDistributionListsFromXElements");
-            }
-
-            //pull out a set of XMLElements for each CallHandler object returned using the power of LINQ
-            var lists = from e in pXElement.Elements()
-                           where e.Name.LocalName == "DistributionList"
-                           select e;
-
-            //for each handler returned in the list of handlers from the XML, construct a CallHandler object using the elements associated with that 
-            //handler.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlList in lists)
-            {
-                DistributionList oDistributionList = new DistributionList(pConnectionServer);
-                foreach (XElement oElement in oXmlList.Elements())
-                {
-                    //adds the XML property to the CallHandler object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oDistributionList, oElement);
-                }
-
-                oDistributionList.ClearPendingChanges();
-
-                //add the fully populated CallHandler object to the list that will be returned to the calling routine.
-                oDlList.Add(oDistributionList);
-            }
-
-            return oDlList;
+                                            MethodType.DELETE,pConnectionServer, "");
         }
 
 
@@ -933,7 +939,7 @@ namespace ConnectionCUPIFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.Put, pConnectionServer.LoginName,
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.PUT, pConnectionServer.LoginName,
                                                  pConnectionServer.LoginPw, oParams, out oOutput);
 
             return res;
@@ -978,7 +984,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</DistributionListMember>\n\r";
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Post,pConnectionServer, strBody);
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.POST,pConnectionServer, strBody,false);
         }
 
 
@@ -999,7 +1005,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</DistributionListMember>\n\r";
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Post,pConnectionServer, strBody);
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.POST,pConnectionServer, strBody,false);
         }
 
 
@@ -1017,7 +1023,7 @@ namespace ConnectionCUPIFunctions
                         pDistributionListObjectId,
                         pMemberUserObjectId);
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.Delete,pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.DELETE,pConnectionServer, "");
         }
 
 
@@ -1116,33 +1122,29 @@ namespace ConnectionCUPIFunctions
                 pObjectId = res.ReturnedObjectId;
             }
 
-            string strUrl = string.Format("{0}distributionlists/{1}", _homeServer.BaseUrl, pObjectId);
+            string strUrl = string.Format("{0}distributionlists/{1}", HomeServer.BaseUrl, pObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
-                res.Success = false;
-                return res;
+                JsonConvert.PopulateObject(res.ResponseText, this);
             }
-
-            //populate this distribution list instance with data from the XML fetch
-            foreach (XElement oElement in res.XmlElement.Elements())
+            catch (Exception ex)
             {
-                _homeServer.SafeXmlFetch(this, oElement);
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                res.Success = false;
             }
 
             //flip the flag indicating all properties are filled in for the list now- if this had been a "search list" result a few properties
             //would be missing but since we just did a full ObjectId fetch we have them all.
             this.IsFullListData = true;
-
 
             //all the updates above will flip pending changes into the queue - clear that here.
             this.ClearPendingChanges();
@@ -1161,35 +1163,34 @@ namespace ConnectionCUPIFunctions
         /// <returns></returns>
         private WebCallResult GetObjectIdForListByAlias(string pAlias)
         {
-            string strUrl = string.Format("{0}distributionlists?query=(Alias is {1})", _homeServer.BaseUrl, pAlias);
+            string strUrl = string.Format("{0}distributionlists?query=(Alias is {1})", HomeServer.BaseUrl, pAlias);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount==0)
             {
                 res.Success = false;
                 return res;
             }
 
-            //fish out just the ObjectId value here
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            foreach (XElement oElement in res.XmlElement.Elements().Elements())
+            List<DistributionList> oLists = HTTPFunctions.GetObjectsFromJson<DistributionList>(res.ResponseText);
+
+            foreach (var oList in oLists)
             {
-                if (oElement.Name=="ObjectId")
+                if (oList.Alias.Equals(pAlias, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    res.Success = true;
-                    res.ReturnedObjectId = oElement.Value;
+                    res.ReturnedObjectId= oList.ObjectId;
                     return res;
                 }
             }
 
-            res.ErrorText="No ObjectId element found in return in FetchObjectIdForHandlerByAlias:"+res.ToString();
+            res.ReturnedObjectId= "";
             res.Success = false;
             return res;
         }
@@ -1218,7 +1219,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //just call the static method with the info from the instance 
-            res = UpdateDistributionList(_homeServer, ObjectId, _changedPropList);
+            res = UpdateDistributionList(HomeServer, ObjectId, _changedPropList);
 
             //if the update went through then clear the changed properties list.
             if (res.Success)
@@ -1230,7 +1231,7 @@ namespace ConnectionCUPIFunctions
         }
 
         /// <summary>
-        /// Delete a public list from the Connection directory.
+        /// DELETE a public list from the Connection directory.
         /// </summary>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -1238,7 +1239,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult Delete()
         {
             //just call the static method with the info on the instance
-            return DeleteDistributionList(_homeServer, ObjectId);
+            return DeleteDistributionList(HomeServer, ObjectId);
         }
 
 
@@ -1259,7 +1260,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult SetVoiceName(string pSourceLocalFilePath, bool pConvertToPcmFirst = false)
         {
             //just call the static method with the information from the instance
-            return SetDistributionListVoiceName(_homeServer, pSourceLocalFilePath, ObjectId, pConvertToPcmFirst);
+            return SetDistributionListVoiceName(HomeServer, pSourceLocalFilePath, ObjectId, pConvertToPcmFirst);
         }
 
          /// <summary>
@@ -1275,7 +1276,7 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public WebCallResult SetVoiceNameToStreamFile(string pStreamFileResourceName)
          {
-             return SetDistributionListVoiceNameToStreamFile(_homeServer, ObjectId, pStreamFileResourceName);
+             return SetDistributionListVoiceNameToStreamFile(HomeServer, ObjectId, pStreamFileResourceName);
          }
 
         /// <summary>
@@ -1293,7 +1294,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult GetVoiceName(string pTargetLocalFilePath)
         {
             //just call the static method with the info from the instance of this object
-            return GetDistributionListVoiceName(_homeServer, pTargetLocalFilePath, ObjectId, VoiceName);
+            return GetDistributionListVoiceName(HomeServer, pTargetLocalFilePath, ObjectId, VoiceName);
         }
 
 
@@ -1309,7 +1310,7 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public WebCallResult GetMembersList(out List<DistributionListMember> pMemberList)
         {
-            return GetMembersList(_homeServer, ObjectId, out pMemberList);
+            return GetMembersList(HomeServer, ObjectId, out pMemberList);
         }
 
 
@@ -1321,7 +1322,7 @@ namespace ConnectionCUPIFunctions
         /// <returns></returns>
         public WebCallResult AddMemberUser(string pUserObjectId)
         {
-            return AddMemberUser(_homeServer, ObjectId, pUserObjectId);
+            return AddMemberUser(HomeServer, ObjectId, pUserObjectId);
         }
 
 
@@ -1332,7 +1333,7 @@ namespace ConnectionCUPIFunctions
         /// <returns></returns>
         public WebCallResult AddMemberList(string pListObjectId)
         {
-            return AddMemberList(_homeServer, ObjectId, pListObjectId);
+            return AddMemberList(HomeServer, ObjectId, pListObjectId);
         }
 
 
@@ -1343,7 +1344,7 @@ namespace ConnectionCUPIFunctions
         /// <returns></returns>
         public WebCallResult RemoveMember(string pMemberUserObjectId)
         {
-            return RemoveMember(_homeServer, ObjectId, pMemberUserObjectId);
+            return RemoveMember(HomeServer, ObjectId, pMemberUserObjectId);
         }
 
 

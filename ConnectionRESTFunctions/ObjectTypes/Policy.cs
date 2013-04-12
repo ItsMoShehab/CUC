@@ -14,9 +14,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// Class that provides methods for creating, featching and deleting policies in Connection.
@@ -34,7 +34,7 @@ namespace ConnectionCUPIFunctions
         public string TargetHandlerObjectId { get; set; }
 
         //reference to the ConnectionServer object used to create this instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         #endregion
 
@@ -49,7 +49,7 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Null ConnectionServer referenced passed to Policy construtor");
             }
 
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             if (string.IsNullOrEmpty(pObjectId))
             {
@@ -61,6 +61,14 @@ namespace ConnectionCUPIFunctions
             {
                 throw new Exception(string.Format("Failed to fetch policy by ObjectId={0}",pObjectId));
             }
+        }
+
+        /// <summary>
+        /// general constructor for Json parsing libararies
+        /// </summary>
+        public Policy()
+        {
+            
         }
 
         #endregion
@@ -114,32 +122,25 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         private WebCallResult GetPolicy(string pObjectId)
         {
-            WebCallResult res = new WebCallResult();
-
-            string strUrl = _homeServer.BaseUrl + "policies/" + pObjectId;
+            string strUrl = HomeServer.BaseUrl + "policies/" + pObjectId;
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
-
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            
+            try
             {
+                JsonConvert.PopulateObject(res.ResponseText, this);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                 res.Success = false;
-                res.ErrorText = "No XML elements returned from policy fetch";
-                return res;
             }
-
-            foreach (var oElement in res.XmlElement.Elements())
-            {
-                _homeServer.SafeXmlFetch(this, oElement);
-            }
-
-            res.Success = true;
             return res;
         }
 
@@ -149,9 +150,9 @@ namespace ConnectionCUPIFunctions
         /// Remove policy definition from Connection
         /// </summary>
         /// <returns></returns>
-        //public WebCallResult Delete()
+        //public WebCallResult DELETE()
         //{
-        //    return DeletePolicy(this._homeServer, this.ObjectId);
+        //    return DeletePolicy(this.HomeServer, this.ObjectId);
         //}
 
         #endregion
@@ -230,7 +231,7 @@ namespace ConnectionCUPIFunctions
 
         /// NOT SUPPORTED YET
         /// <summary>
-        /// Delete a handler from the Connection directory.
+        /// DELETE a handler from the Connection directory.
         /// </summary>
         /// <param name="pConnectionServer">
         /// Reference to the ConnectionServer object that points to the home server where the handler is homed.
@@ -290,50 +291,81 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + "policies";
-
-            //the spaces get "escaped out" in the HTTPFunctions class call at a lower level, don't worry about it here.
-            //Tack on all the search/query/page clauses here if any are passed in.  If an empty string is passed in account
-            //for it here.
-            for (int iCounter = 0; iCounter < pClauses.Length; iCounter++)
-            {
-                if (pClauses[iCounter].Length == 0)
-                {
-                    continue;
-                }
-
-                //if it's the first param seperate the clause from the URL with a ?, otherwise append compound clauses 
-                //seperated by &
-                if (iCounter == 0)
-                {
-                    strUrl += "?";
-                }
-                else
-                {
-                    strUrl += "&";
-                }
-                strUrl += pClauses[iCounter];
-            }
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "policies", pClauses);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements can be empty, that's legal
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that's not an error, just return an empty list
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
-                pPolicies= new List<Policy>();
+                pPolicies = new List<Policy>();
                 return res;
             }
 
-            pPolicies = GetPoliciesFromXElements(pConnectionServer, res.XmlElement);
-            return res;
+            pPolicies = HTTPFunctions.GetObjectsFromJson<Policy>(res.ResponseText);
 
+            if (pPolicies == null)
+            {
+                pPolicies = new List<Policy>();
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pPolicies)
+            {
+                oObject.HomeServer = pConnectionServer;
+            }
+
+            return res;
         }
+
+
+        /// <summary>
+        /// This function allows for a GET of policies from Connection via HTTP - it allows for passing any number of additional clauses  
+        /// for filtering (query directives), sorting and paging of results.  The format of the clauses should look like:
+        /// filter: "query=(UserObjectId is 0d84fee3-8680-4bd2-aa81-49e32921299b)"
+        /// Escaping of spaces is done automatically, no need to account for that.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Reference to the ConnectionServer object that points to the home server where the policies are being fetched from.
+        /// </param>
+        /// <param name="pPolicies">
+        /// The list of handlers returned from the CUPI call (if any) is returned as a generic list of CallHAndler class instances via this out param.  
+        /// If no handlers are  found NULL is returned for this parameter.
+        /// </param>
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
+        /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(UserObjectId is 0d84fee3-8680-4bd2-aa81-49e32921299b)"
+        /// in the same call.  Also if you have a sort and a query clause they must both reference the same column.
+        /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult GetPolicies(ConnectionServer pConnectionServer, out List<Policy> pPolicies,int pPageNumber=1, 
+            int pRowsPerPage=20,params string[] pClauses)
+        {
+            //tack on the paging items to the parameters list
+            var temp = pClauses.ToList();
+            temp.Add("pageNumber=" + pPageNumber);
+            temp.Add("rowsPerPage=" + pRowsPerPage);
+
+            return GetPolicies(pConnectionServer, out pPolicies, temp.ToArray());
+        }
+
 
         /// <summary>
         /// Helper function for fetching all policies targeted at a particular user.
@@ -441,37 +473,6 @@ namespace ConnectionCUPIFunctions
             return GetPolicies(pConnectionServer, out pPolicies, strClause);
         }
 
-
-
-        //Helper function to take an XML blob returned from the REST interface for a policy (or policies) return and convert it into an generic
-        //list of Policy class objects. 
-        private static List<Policy> GetPoliciesFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-            List<Policy> oPolicyList = new List<Policy>();
-
-            //pull out a set of XMLElements for each CallHandler object returned using the power of LINQ
-            var policies = from e in pXElement.Elements()
-                           where e.Name.LocalName == "Policy"
-                           select e;
-
-            //for each policy returned in the list of policies from the XML, construct a Policy object using the elements associated with that 
-            //policy.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlPolicy in policies)
-            {
-                Policy oPolicy = new Policy(pConnectionServer);
-                foreach (XElement oElement in oXmlPolicy.Elements())
-                {
-                    //adds the XML property to the Policy object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oPolicy, oElement);
-                }
-
-                //add the fully populated Policy object to the list that will be returned to the calling routine.
-                oPolicyList.Add(oPolicy);
-            }
-
-            return oPolicyList;
-        }
         #endregion
     }
 }

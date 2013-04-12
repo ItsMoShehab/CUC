@@ -34,7 +34,7 @@ namespace ConnectionCUPIFunctionsTest.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("jlindborg")]
+        [global::System.Configuration.DefaultSettingValueAttribute("CCMAdministrator")]
         public string ConnectionLogin {
             get {
                 return ((string)(this["ConnectionLogin"]));
@@ -43,7 +43,7 @@ namespace ConnectionCUPIFunctionsTest.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Ecsbulab!")]
+        [global::System.Configuration.DefaultSettingValueAttribute("ecsbulab")]
         public string ConnectionPW {
             get {
                 return ((string)(this["ConnectionPW"]));

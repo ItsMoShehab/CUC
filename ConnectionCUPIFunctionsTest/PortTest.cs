@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -51,6 +51,8 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
+
+        #region Class Creation Failures
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
@@ -79,6 +81,52 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure3()
         {
             Port oPort = new Port(_connectionServer,"blah");
+        }
+
+        #endregion
+
+
+        [TestMethod]
+        public void StaticMethodFailures()
+        {
+            WebCallResult res;
+
+            Port oPort;
+            res = Port.GetPort(out oPort, null, "objectId");
+            Assert.IsFalse(res.Success,"Static call to GetPort did not fail with null Connection server");
+
+            res = Port.GetPort(out oPort, _connectionServer, "");
+            Assert.IsFalse(res.Success, "Static call to GetPort did not fail with empty objectId");
+
+            res = Port.GetPort(out oPort, _connectionServer, "objectId");
+            Assert.IsFalse(res.Success, "Static call to GetPort did not fail with invalid objectId");
+
+            res = Port.UpdatePort(null, "objectid", null);
+            Assert.IsFalse(res.Success, "Static call to UpdatePort did not fail with null Connection server");
+
+            res = Port.UpdatePort(_connectionServer, "", null);
+            Assert.IsFalse(res.Success, "Static call to UpdatePort did not fail with empty objectid");
+
+            res = Port.UpdatePort(_connectionServer, "objectId", null);
+            Assert.IsFalse(res.Success, "Static call to UpdatePort did not fail with empty prop list");
+
+            res = Port.AddPort(null, "portgroupid", 4, null);
+            Assert.IsFalse(res.Success, "Static call to AddPort did not fail with null connection server");
+
+            res = Port.AddPort(_connectionServer, "", 4, null);
+            Assert.IsFalse(res.Success, "Static call to AddPort did not fail with empty port group objectId");
+
+            res = Port.AddPort(_connectionServer, "portgroupid", 4, null);
+            Assert.IsFalse(res.Success, "Static call to AddPort did not fail with invalid prop group objectId");
+
+            res = Port.DeletePort(null, "objectId");
+            Assert.IsFalse(res.Success, "Static call to DeletePort did not fail with null Connection server");
+
+            res = Port.DeletePort(_connectionServer, "");
+            Assert.IsFalse(res.Success, "Static call to DeletePort did not fail with empty objectId");
+
+            res = Port.DeletePort(_connectionServer, "objectId");
+            Assert.IsFalse(res.Success, "Static call to DeletePort did not fail with Invalid objectId");
         }
 
 

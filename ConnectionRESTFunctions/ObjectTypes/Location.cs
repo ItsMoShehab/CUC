@@ -14,9 +14,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The Location class holds data about a Location.
@@ -28,7 +28,7 @@ namespace ConnectionCUPIFunctions
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this location instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         #endregion
 
@@ -60,7 +60,7 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Null Connection Server passed to the Location constructor");
             }
 
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             if (pObjectId.Length == 0 & pDisplayName.Length == 0) return;
 
@@ -74,6 +74,13 @@ namespace ConnectionCUPIFunctions
             }
         }
 
+
+        /// <summary>
+        /// Generic constructor for Json libaries
+        /// </summary>
+        public Location()
+        {
+        }
        
         #endregion
 
@@ -83,48 +90,48 @@ namespace ConnectionCUPIFunctions
         //The names of the properties must match exactly the tags in XML for them including case - the routine that deserializes data from XML into the 
         //objects requires this to match them up.
 
-        public string DtmfAccessId { get; private set; }
-        public string DisplayName { get; private set; }
-        public int DestinationType { get; private set; }
-        public string HostAddress { get; private set; }
-        public string ObjectId { get; private set; }
-        public string SmtpDomain { get; private set; }
-        public int TransferNumberOfRings { get; private set; }
-        public int TransferTimeout { get; private set; }
-        public bool IsPrimary { get; private set; }
-        public string DefaultWaveFormatObjectId { get; private set; }
-        public bool IncludeLocations { get; private set; }
-        public int KeypadMapId { get; private set; }
-        public string DtmfName { get; private set; }
-        public int TimeZone { get; private set; }
-        public int DefaultLanguage { get; private set; }
-        public int DefaultTTSLanguage { get; private set; }
-        public int MaxGreetingLength { get; private set; }
-        public int MaxContacts { get; private set; }
-        public int AgcTargetDb { get; private set; }
-        public string SynchronizationUserObjectId { get; private set; }
-        public int LastUSNSent { get; private set; }
-        public string SystemVersion { get; private set; }
-        public string DefaultPartitionObjectId { get; private set; }
-        public string DefaultSearchSpaceObjectId { get; private set; }
-        public int SmtpUnknownRecipientAction { get; private set; }
-        public int LastUSNReceived { get; private set; }
-        public bool PushDirectory { get; private set; }
-        public bool PullDirectory { get; private set; }
-        public int ReplicationSet { get; private set; }
-        public string EncryptionKey { get; private set; }
-        public bool UseSmartSmtpHost { get; private set; }
-        public bool AllowCrossBoxLogin { get; private set; }
-        public bool AllowCrossBoxTransfer { get; private set; }
-        public int CrossBoxMaxRings { get; private set; }
-        public int CrossBoxSendDelay { get; private set; }
-        public int CrossBoxResponseTimeout { get; private set; }
-        public int LastUSNAck { get; private set; }
-        public int ReplicationSetIncoming { get; private set; }
-        public int ReplicationSetOutgoing { get; private set; }
-        public int PushState { get; private set; }
-        public int PullState { get; private set; }
-        public int Status { get; private set; }
+        public string DtmfAccessId { get; set; }
+        public string DisplayName { get; set; }
+        public int DestinationType { get; set; }
+        public string HostAddress { get; set; }
+        public string ObjectId { get; set; }
+        public string SmtpDomain { get; set; }
+        public int TransferNumberOfRings { get; set; }
+        public int TransferTimeout { get; set; }
+        public bool IsPrimary { get; set; }
+        public string DefaultWaveFormatObjectId { get; set; }
+        public bool IncludeLocations { get; set; }
+        public int KeypadMapId { get; set; }
+        public string DtmfName { get; set; }
+        public int TimeZone { get; set; }
+        public int DefaultLanguage { get; set; }
+        public int DefaultTTSLanguage { get; set; }
+        public int MaxGreetingLength { get; set; }
+        public int MaxContacts { get; set; }
+        public int AgcTargetDb { get; set; }
+        public string SynchronizationUserObjectId { get; set; }
+        public int LastUSNSent { get; set; }
+        public string SystemVersion { get; set; }
+        public string DefaultPartitionObjectId { get; set; }
+        public string DefaultSearchSpaceObjectId { get; set; }
+        public int SmtpUnknownRecipientAction { get; set; }
+        public int LastUSNReceived { get; set; }
+        public bool PushDirectory { get; set; }
+        public bool PullDirectory { get; set; }
+        public int ReplicationSet { get; set; }
+        public string EncryptionKey { get; set; }
+        public bool UseSmartSmtpHost { get; set; }
+        public bool AllowCrossBoxLogin { get; set; }
+        public bool AllowCrossBoxTransfer { get; set; }
+        public int CrossBoxMaxRings { get; set; }
+        public int CrossBoxSendDelay { get; set; }
+        public int CrossBoxResponseTimeout { get; set; }
+        public int LastUSNAck { get; set; }
+        public int ReplicationSetIncoming { get; set; }
+        public int ReplicationSetOutgoing { get; set; }
+        public int PushState { get; set; }
+        public int PullState { get; set; }
+        public int Status { get; set; }
 
         #endregion
 
@@ -173,52 +180,86 @@ namespace ConnectionCUPIFunctions
                 res.ErrorText = "Null Connection server object passed to GetLocations";
                 return res;
             }
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "locations/connectionlocations",pClauses);
 
-            string strUrl = pConnectionServer.BaseUrl + "locations/connectionlocations";
-
-            //the spaces get "escaped out" in the HTTPFunctions class call at a lower level, don't worry about it here.
-            //Tack on all the search/query/page clauses here if any are passed in.  If an empty string is passed in account
-            //for it here.
-            if (pClauses != null)
-            {
-                for (int iCounter = 0; iCounter < pClauses.Length; iCounter++)
-                {
-                    if (string.IsNullOrEmpty(pClauses[iCounter]))
-                    {
-                        continue;
-                    }
-
-                    //if it's the first param seperate the clause from the URL with a ?, otherwise append compound clauses 
-                    //seperated by &
-                    if (iCounter == 0)
-                    {
-                        strUrl += "?";
-                    }
-                    else
-                    {
-                        strUrl += "&";
-                    }
-                    strUrl += pClauses[iCounter];
-                }
-            }
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements can be empty, that's legal
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that's not an error, just return an empty list
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
                 pLocations = new List<Location>();
                 return res;
             }
 
-            pLocations = GetLocationsFromXElements(pConnectionServer, res.XmlElement);
-            return res;
+            pLocations = HTTPFunctions.GetObjectsFromJson<Location>(res.ResponseText,"ConnectionLocation");
 
+            if (pLocations == null)
+            {
+                pLocations = new List<Location>();
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pLocations)
+            {
+                oObject.HomeServer = pConnectionServer;
+            }
+
+            return res;
+        }
+
+
+        /// <summary>
+        /// This function allows for a GET of Locations from Connection via HTTP - it allows for passing any number of additional clauses  
+        /// for filtering (query directives), sorting and paging of results.  The format of the clauses should look like:
+        /// filter: "query=(hostaddress startswith ab)"
+        /// sort: "sort=(hostaddress asc)"
+        /// Escaping of spaces is done automatically, no need to account for that.
+        /// </summary>
+        /// <remarks>
+        /// While this method name does have the plural in it, you can use it for fetching single locations as well.  If searching by
+        /// ObjectId just construct a query in the form "query=(ObjectId is {ObjectId})".  This is just as fast as using the URI format of 
+        /// "{server name}\vmrest\locations\{ObjectId}" but returns consistently formatted XML code as multiple locations does so the parsing of 
+        /// the data to deserialize it into Location objects is consistent.
+        /// </remarks>
+        /// <param name="pConnectionServer">
+        /// Reference to the ConnectionServer object that points to the home server where the Locations are being fetched from.
+        /// </param>
+        /// <param name="pLocations">
+        /// The list of Locations returned from the CUPI call (if any) is returned as a generic list of Location class instances via this out param.  
+        /// If no Locations are  found NULL is returned for this parameter.
+        /// </param>
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
+        /// are currently supported by CUPI - in other words you can't have "query=(hostaddress startswith ab)" and "query=(FirstName startswith a)" in
+        /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+        /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult GetLocations(ConnectionServer pConnectionServer, out List<Location> pLocations,int pPageNumber=1, 
+            int pRowsPerPage=20,params string[] pClauses)
+        {
+            //tack on the paging items to the parameters list
+            var temp = pClauses.ToList();
+            temp.Add("pageNumber=" + pPageNumber);
+            temp.Add("rowsPerPage=" + pRowsPerPage);
+
+            return GetLocations(pConnectionServer, out pLocations, temp.ToArray());
         }
 
 
@@ -277,39 +318,6 @@ namespace ConnectionCUPIFunctions
             return res;
         }
 
-
-
-        //Helper function to take an XML blob returned from the REST interface for a Location (or Locations) return and convert it into an generic
-        //list of Location class objects. 
-        private static List<Location> GetLocationsFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-            List<Location> oLocationList = new List<Location>();
-
-            //pulls all the Locations returned in the XML as set of elements using the power of LINQ
-            var locations = from e in pXElement.Elements()
-                            where e.Name.LocalName == "ConnectionLocation"
-                        select e;
-
-            //for each Location returned in the list of Locations from the XML, construct a Location object using the elements associated with that 
-            //Location.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlLocation in locations)
-            {
-                Location oLocation = new Location(pConnectionServer);
-                foreach (XElement oElement in oXmlLocation.Elements())
-                {
-                    //adds the XML property to the Location object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oLocation, oElement);
-                }
-
-                //add the fully populated Location object to the list that will be returned to the calling routine.
-                oLocationList.Add(oLocation);
-            }
-
-            return oLocationList;
-        }
-
-
         #endregion
 
 
@@ -361,32 +369,26 @@ namespace ConnectionCUPIFunctions
                 }
             }
 
-            string strUrl = string.Format("{0}locations/connectionlocations/{1}", _homeServer.BaseUrl, strObjectId);
+            string strUrl = string.Format("{0}locations/connectionlocations/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
+                JsonConvert.PopulateObject(res.ResponseText, this);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                 res.Success = false;
-                return res;
             }
-
-            //in the case of a single base Location fetch construct, the list of elements is the full list of properties for the Location, but it's nexted in 
-            //a "uers" sub element, not at the top level as a full Location fetch is - so we have to go another level deep here.
-            //Call the same SafeXMLFetch routine for each to let the full Location class instance "drive" the fetching of data
-            //from the XML elements.
-            foreach (XElement oElement in res.XmlElement.Elements())
-            {
-                _homeServer.SafeXmlFetch(this, oElement);
-            }
-
+            
             return res;
         }
 
@@ -401,28 +403,24 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         private string GetObjectIdFromName(string pName)
         {
-            // string strUrl = string.Format("{0}coses/?query=(DisplayName is {1})", _homeServer.BaseUrl, pCosName);
-            string strUrl = string.Format("{0}locations/connectionlocations/?query=(DisplayName is {1})", _homeServer.BaseUrl, pName);
+            // string strUrl = string.Format("{0}coses/?query=(DisplayName is {1})", HomeServer.BaseUrl, pCosName);
+            string strUrl = string.Format("{0}locations/connectionlocations/?query=(DisplayName is {1})", HomeServer.BaseUrl, pName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
-            if (res.Success == false)
+            if (res.Success == false || res.TotalObjectCount == 0)
             {
                 return "";
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
-            {
-                return "";
-            }
+            List<CallHandlerTemplate> oLocations = HTTPFunctions.GetObjectsFromJson<CallHandlerTemplate>(res.ResponseText,"ConnectionLocation");
 
-            foreach (var oElement in res.XmlElement.Elements().Elements())
+            foreach (var oLocation in oLocations)
             {
-                if (oElement.Name.ToString().Equals("ObjectId"))
+                if (oLocation.DisplayName.Equals(pName, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return oElement.Value;
+                    return oLocation.ObjectId;
                 }
             }
 

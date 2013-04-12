@@ -15,7 +15,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 using SimpleLogger;
 
 namespace CUPIFastStart
@@ -434,7 +434,7 @@ namespace CUPIFastStart
             string strDisplayName = gridHandlers.SelectedRows[0].Cells["DisplayName"].Value.ToString();
 
             //verify with the user before deleting
-            if (MessageBox.Show("Are you sure you want to delete the call handler: " + strDisplayName + "?", "Delete Confirmation",
+            if (MessageBox.Show("Are you sure you want to delete the call handler: " + strDisplayName + "?", "DELETE Confirmation",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
             {
                 //the user changed their minds, bail out

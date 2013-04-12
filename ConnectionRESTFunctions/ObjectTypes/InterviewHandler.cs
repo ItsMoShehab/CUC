@@ -14,9 +14,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
         /// <summary>
         /// The InterviewHandler class contains all the properties associated with a Interview Handler in Unity Connection that can be fetched via the 
@@ -190,7 +190,7 @@ namespace ConnectionCUPIFunctions
             public string VoiceName { get; set; }
 
             //reference to the ConnectionServer object used to create this handlers instance.
-            internal ConnectionServer HomeServer;
+            internal ConnectionServer HomeServer { get; private set; }
 
             //used to keep track of whic properties have been updated
             private readonly ConnectionPropertyList _changedPropList;
@@ -217,7 +217,7 @@ namespace ConnectionCUPIFunctions
             /// Optional display name search critiera - if both ObjectId and DisplayName are passed, ObjectId is used.  The display name search is not case
             /// sensitive.
             /// </param>
-            public InterviewHandler(ConnectionServer pConnectionServer, string pObjectId="", string pDisplayName="")
+            public InterviewHandler(ConnectionServer pConnectionServer, string pObjectId="", string pDisplayName=""):this()
             {
                 if (pConnectionServer == null)
                 {
@@ -226,9 +226,6 @@ namespace ConnectionCUPIFunctions
 
                 //keep track of the home Connection server this handler is created on.
                 HomeServer = pConnectionServer;
-
-                //make an instanced of the changed prop list to keep track of updated properties on this object
-                _changedPropList = new ConnectionPropertyList();
 
                 //if the user passed in a specific ObjectId or display name then go load that handler up, otherwise just return an empty instance.
                 if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pDisplayName))) return;
@@ -242,6 +239,16 @@ namespace ConnectionCUPIFunctions
                         string.Format("Interview Handler not found in InterviewHandler constructor using ObjectId={0} and DisplayName={1}\n\r{2}"
                                      , pObjectId, pDisplayName, res.ErrorText));
                 }
+            }
+
+
+            /// <summary>
+            /// generic constructor for Json parsing libraries
+            /// </summary>
+            public InterviewHandler()
+            {
+                //make an instanced of the changed prop list to keep track of updated properties on this object
+                _changedPropList = new ConnectionPropertyList();
             }
 
             #endregion
@@ -287,49 +294,82 @@ namespace ConnectionCUPIFunctions
                     return res;
                 }
 
-                string strUrl = pConnectionServer.BaseUrl + "handlers/interviewhandlers";
-
-                //the spaces get "escaped out" in the HTTPFunctions class call at a lower level, don't worry about it here.
-                //Tack on all the search/query/page clauses here if any are passed in.  If an empty string is passed in account
-                //for it here.
-                for (int iCounter = 0; iCounter < pClauses.Length; iCounter++)
-                {
-                    if (pClauses[iCounter].Length == 0)
-                    {
-                        continue;
-                    }
-
-                    //if it's the first param seperate the clause from the URL with a ?, otherwise append compound clauses 
-                    //seperated by &
-                    if (iCounter == 0)
-                    {
-                        strUrl += "?";
-                    }
-                    else
-                    {
-                        strUrl += "&";
-                    }
-                    strUrl += pClauses[iCounter];
-                }
+                string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "handlers/interviewhandlers",pClauses);
 
                 //issue the command to the CUPI interface
-                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
                 if (res.Success == false)
                 {
                     return res;
                 }
 
-                //if the call was successful the XML elements can be empty, that's legal
-                if (res.XmlElement == null || res.XmlElement.HasElements == false)
+                //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+                //if this is not an error, just return an empty list
+                if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
                 {
                     pInterviewHandlers = new List<InterviewHandler>();
                     return res;
                 }
 
-                pInterviewHandlers = GetInterviewHandlersFromXElements(pConnectionServer, res.XmlElement);
-                return res;
+                pInterviewHandlers = HTTPFunctions.GetObjectsFromJson<InterviewHandler>(res.ResponseText);
 
+                if (pInterviewHandlers == null)
+                {
+                    pInterviewHandlers = new List<InterviewHandler>();
+                    return res;
+                }
+
+                //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+                //run through here and assign it for all instances.
+                foreach (var oObject in pInterviewHandlers)
+                {
+                    oObject.HomeServer = pConnectionServer;
+                    oObject.ClearPendingChanges();
+                }
+
+                return res;
+            }
+
+
+            /// <summary>
+            /// This method allows for a GET of handlers from Connection via HTTP - it allows for passing any number of additional clauses  
+            /// for filtering (query directives), sorting and paging of results.  The format of the clauses should look like:
+            /// filter: "query=(displayname startswith ab)"
+            /// sort: "sort=(displayname asc)"
+            /// Escaping of spaces is done automatically, no need to account for that.
+            /// </summary>
+            /// <param name="pConnectionServer">
+            /// Reference to the ConnectionServer object that points to the home server where the handlers are being fetched from.
+            /// </param>
+            /// <param name="pInterviewHandlers">
+            /// The list of handlers returned from the CUPI call (if any) is returned as a generic list of InterviewHandler class instances via this out param.  
+            /// If no handlers are found NULL is returned for this parameter.
+            /// </param>
+            /// <param name="pClauses">
+            /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
+            /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(FirstName startswith a)" in
+            /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+            /// </param>
+            /// <param name="pPageNumber">
+            /// Results page to fetch - defaults to 1
+            /// </param>
+            /// <param name="pRowsPerPage">
+            /// Results to return per page, defaults to 20
+            /// </param>
+            /// <returns>
+            /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+            /// </returns>
+
+            public static WebCallResult GetInterviewHandlers(ConnectionServer pConnectionServer,out List<InterviewHandler> pInterviewHandlers,
+                int pPageNumber=1, int pRowsPerPage=20,params string[] pClauses)
+            {
+                //tack on the paging items to the parameters list
+                var temp = pClauses.ToList();
+                temp.Add("pageNumber=" + pPageNumber);
+                temp.Add("rowsPerPage=" + pRowsPerPage);
+
+                return GetInterviewHandlers(pConnectionServer, out pInterviewHandlers, temp.ToArray());
             }
 
 
@@ -352,7 +392,8 @@ namespace ConnectionCUPIFunctions
             /// <returns>
             /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
             /// </returns>
-            public static WebCallResult GetInterviewHandler(out InterviewHandler pInterviewHandler, ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+            public static WebCallResult GetInterviewHandler(out InterviewHandler pInterviewHandler, ConnectionServer pConnectionServer, 
+                string pObjectId = "", string pDisplayName = "")
             {
                 WebCallResult res = new WebCallResult();
                 res.Success = false;
@@ -385,53 +426,6 @@ namespace ConnectionCUPIFunctions
                 }
 
                 return res;
-            }
-
-
-            /// <summary>
-            /// Helper function to take an XML blob returned from the REST interface for a handler (or handlers) return and convert it into an generic
-            /// list of InterviewHandler class objects. 
-            /// </summary>
-            /// <param name="pConnectionServer">
-            /// Connection server the handler is homed on.
-            /// </param>
-            /// <param name="pXElement">
-            /// The list of XML elements fetched from the Connection server via a CUPI call
-            /// </param>
-            /// <returns>
-            /// List of InterviewHandlers constructed from the XML elements.
-            /// </returns>
-            private static List<InterviewHandler> GetInterviewHandlersFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-            {
-                List<InterviewHandler> oHandlerList = new List<InterviewHandler>();
-
-                if (pConnectionServer == null)
-                {
-                    throw new ArgumentException("Null ConnectionServer referenced passed to GetInterviewHandlersFromXElements");
-                }
-
-                //pull out a set of XMLElements for each InterviewHandler object returned using the power of LINQ
-                var handlers = from e in pXElement.Elements()
-                               where e.Name.LocalName == "InterviewHandler"
-                               select e;
-
-                //for each handler returned in the list of handlers from the XML, construct an InterviewHandler object using the elements associated with that 
-                //handler.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-                //typed objects.
-                foreach (var oXmlHandler in handlers)
-                {
-                    InterviewHandler oHandler = new InterviewHandler(pConnectionServer);
-                    foreach (XElement oElement in oXmlHandler.Elements())
-                    {
-                        //adds the XML property to the InterviewHandler object if the proeprty name is found as a property on the object.
-                        pConnectionServer.SafeXmlFetch(oHandler, oElement);
-                    }
-
-                    //add the fully populated InterviewHandler object to the list that will be returned to the calling routine.
-                    oHandlerList.Add(oHandler);
-                }
-
-                return oHandlerList;
             }
 
 
@@ -534,7 +528,7 @@ namespace ConnectionCUPIFunctions
 
                 strBody += "</InterviewHandler>";
 
-                res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/interviewhandlers",MethodType.Post,pConnectionServer,strBody);
+                res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/interviewhandlers",MethodType.POST,pConnectionServer,strBody);
 
                 //fetch the objectId of the newly created object off the return
                 if (res.Success)
@@ -581,7 +575,7 @@ namespace ConnectionCUPIFunctions
 
                 //the update command takes a body in the request, construct it based on the name/value pair of properties passed in.  
                 //at lest one such pair needs to be present
-                if (pPropList.Count < 1)
+                if (pPropList == null || pPropList.Count < 1)
                 {
                     res.ErrorText = "empty property list passed to UpdateInterviewHandler";
                     return res;
@@ -598,12 +592,12 @@ namespace ConnectionCUPIFunctions
                 strBody += "</InterviewHandler>";
 
                 return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/interviewhandlers/" + pObjectId,
-                                                MethodType.Put,pConnectionServer,strBody);
+                                                MethodType.PUT,pConnectionServer,strBody);
             }
 
 
             /// <summary>
-            /// Delete a handler from the Connection directory.
+            /// DELETE a handler from the Connection directory.
             /// </summary>
             /// <param name="pConnectionServer">
             /// Reference to the ConnectionServer object that points to the home server where the handler is homed.
@@ -624,7 +618,7 @@ namespace ConnectionCUPIFunctions
                 }
 
                 return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/interviewhandlers/" + pObjectId,
-                                                MethodType.Delete,pConnectionServer, "");
+                                                MethodType.DELETE,pConnectionServer, "");
             }
 
 
@@ -717,26 +711,32 @@ namespace ConnectionCUPIFunctions
                 }
 
                 //issue the command to the CUPI interface
-                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, HomeServer, "");
+                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
                 if (res.Success == false)
                 {
                     return res;
                 }
 
-                //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-                if (res.XmlElement == null || res.XmlElement.HasElements == false)
+                if (res.TotalObjectCount == 0)
                 {
                     res.Success = false;
+                    res.ErrorText="Interviewer not found by objectId="+pObjectId+" or name="+pDisplayName;
                     return res;
                 }
 
-                //populate this call handler instance with data from the XML fetch
-                foreach (XElement oElement in res.XmlElement.Elements().Elements())
+                try
                 {
-                    HomeServer.SafeXmlFetch(this, oElement);
+                    JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText,"InterviewHandler"), this);
+                }
+                catch (Exception ex)
+                {
+                    res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                    res.Success = false;
                 }
 
+                ClearPendingChanges();
+                
                 return res;
             }
 

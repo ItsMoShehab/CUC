@@ -14,9 +14,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The MenuEntry class contains all the properties associated with a menu entries in Unity Connection that can be fetched 
@@ -27,6 +27,15 @@ namespace ConnectionCUPIFunctions
     {
 
         #region Constructor
+
+        /// <summary>
+        /// default constructor for JSON parsing
+        /// </summary>
+        public MenuEntry()
+        {
+            //make an instanced of the changed prop list to keep track of updated properties on this object
+            _changedPropList = new ConnectionPropertyList();
+        }
 
         /// <summary>
         /// Creates a new instance of the MenuEntry class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
@@ -43,7 +52,7 @@ namespace ConnectionCUPIFunctions
         /// <param name="pKey">
         /// Key name to fetch - can be 0-9, # or *
         /// </param>
-        public MenuEntry(ConnectionServer pConnectionServer, string pCallHandlerObjectId, string pKey = "")
+        public MenuEntry(ConnectionServer pConnectionServer, string pCallHandlerObjectId, string pKey = ""):this()
         {
             if (pConnectionServer == null)
             {
@@ -56,10 +65,7 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Invalid CallHandlerObjectID passed to MenuEntry constructor.");
             }
 
-            //make an instanced of the changed prop list to keep track of updated properties on this object
-            _changedPropList = new ConnectionPropertyList();
-
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             //remember the objectID of the owner of the menu entry as the CUPI interface requires this in the URL construction
             //for operations editing them.
@@ -84,7 +90,7 @@ namespace ConnectionCUPIFunctions
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this menu entry instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         //used to keep track of whic properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -105,6 +111,7 @@ namespace ConnectionCUPIFunctions
         }
 
         //you can't change the call handler owner
+        [JsonProperty]
         public string CallHandlerObjectId { get; private set; }
 
         private bool _locked;
@@ -123,6 +130,7 @@ namespace ConnectionCUPIFunctions
         }
 
         //you can't change the ObjectId of a standing object
+        [JsonProperty]
         public string ObjectId { get; private set; }
 
         private string _targetConversation;
@@ -152,6 +160,7 @@ namespace ConnectionCUPIFunctions
 
 
         //you cannot change the key name of a standing menu entry
+        [JsonProperty]
         public string TouchtoneKey { get; private set; }
 
         private string _transferNumber;
@@ -279,66 +288,42 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/menuentries", pConnectionServer.BaseUrl, pCallHandlerObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty thats an error - there should alway be menu entries returned
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
+                pMenuEntries = new List<MenuEntry>();
                 res.Success = false;
                 return res;
             }
 
-            pMenuEntries = GetMenuEntriesFomXElements(pConnectionServer, pCallHandlerObjectId, res.XmlElement);
+            pMenuEntries = HTTPFunctions.GetObjectsFromJson<MenuEntry>(res.ResponseText);
+
+            if (pMenuEntries == null)
+            {
+                pMenuEntries = new List<MenuEntry>();
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pMenuEntries)
+            {
+                oObject.HomeServer = pConnectionServer;
+                oObject.CallHandlerObjectId = pCallHandlerObjectId;
+                oObject.ClearPendingChanges();
+            }
+
             return res;
-
         }
 
-
-
-
-        //Helper function to take an XML blob returned from the REST interface for menu entries return and convert it into an generic
-        //list of MenuEntry class objects. 
-        private static List<MenuEntry> GetMenuEntriesFomXElements(ConnectionServer pConnectionServer,
-                                                                                    string pCallHandlerObjectId,
-                                                                                   XElement pXElement)
-        {
-            List<MenuEntry> oMenuEntries = new List<MenuEntry>();
-
-            if (pConnectionServer == null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced passed to GetMenuEntriesFomXElements");
-            }
-
-            //pull out a set of XMLElements for each MenuEntry object returned using the power of LINQ
-            var menuEntries = from e in pXElement.Elements()
-                                      where e.Name.LocalName == "MenuEntry"
-                                      select e;
-
-            //for each menu entry returned in the list from the XML, construct a MenuEntry object using the elements associated with that 
-            //entry.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlMenuEntry in menuEntries)
-            {
-                MenuEntry oMenuEntry = new MenuEntry(pConnectionServer, pCallHandlerObjectId);
-                foreach (XElement oElement in oXmlMenuEntry.Elements())
-                {
-                    //adds the XML property to the MenuEntry object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oMenuEntry, oElement);
-                }
-
-                oMenuEntry.ClearPendingChanges();
-
-                //add the fully populated MenuEntry object to the list that will be returned to the calling routine.
-                oMenuEntries.Add(oMenuEntry);
-            }
-
-            return oMenuEntries;
-        }
 
 
         /// <summary>
@@ -400,7 +385,7 @@ namespace ConnectionCUPIFunctions
             strBody += "</MenuEntry>";
 
             return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/menuentries/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, pKeyName),
-                                            MethodType.Put,pConnectionServer,strBody);
+                                            MethodType.PUT,pConnectionServer,strBody,false);
 
         }
 
@@ -470,32 +455,28 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = string.Format("{0}handlers/callhandlers/{1}/menuentries/{2}", _homeServer.BaseUrl, CallHandlerObjectId, pKey);
+            string strUrl = string.Format("{0}handlers/callhandlers/{1}/menuentries/{2}", HomeServer.BaseUrl, CallHandlerObjectId, pKey);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
-                res.Success = false;
-                return res;
+                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "MenuEntry"), this);
             }
-
-            //load all of the elements returned into the class object properties
-            foreach (XElement oElement in res.XmlElement.Elements())
+            catch (Exception ex)
             {
-                _homeServer.SafeXmlFetch(this, oElement);
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                res.Success = false;
             }
 
             //all the updates above will flip pending changes into the queue - clear that here.
             this.ClearPendingChanges();
-
             return res;
         }
 
@@ -532,7 +513,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //just call the static method with the info from the instance 
-            res = UpdateMenuEntry(_homeServer, CallHandlerObjectId, TouchtoneKey, _changedPropList);
+            res = UpdateMenuEntry(HomeServer, CallHandlerObjectId, TouchtoneKey, _changedPropList);
 
             //if the update went through then clear the changed properties list.
             if (res.Success)

@@ -12,12 +12,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The Greeting class contains all the properties associated with a greeting rule in Unity Connection that can be fetched 
@@ -28,6 +27,15 @@ namespace ConnectionCUPIFunctions
     {
 
         #region Constructor
+
+        /// <summary>
+        /// Generic constructor for JSON parsing
+        /// </summary>
+        public Greeting()
+        {
+            //make an instanced of the changed prop list to keep track of updated properties on this object
+            _changedPropList = new ConnectionPropertyList();
+        }
 
         /// <summary>
         /// Creates a new instance of the Greeting class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
@@ -44,7 +52,7 @@ namespace ConnectionCUPIFunctions
         /// <param name="pGreetingType">
         /// The greeting rule to fetch (Standard, Alternate, OffHours, Busy, Internal, Error, Holdiay)
         /// </param>
-        public Greeting(ConnectionServer pConnectionServer, string pCallHandlerObjectId, string pGreetingType = "")
+        public Greeting(ConnectionServer pConnectionServer, string pCallHandlerObjectId, string pGreetingType = ""):this()
             {
             if (pConnectionServer == null)
             {
@@ -57,10 +65,7 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Invalid CallHandlerObjectID passed to Greeting constructor.");
             }
 
-            //make an instanced of the changed prop list to keep track of updated properties on this object
-            _changedPropList = new ConnectionPropertyList();
-
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             //remember the objectID of the owner of the menu entry as the CUPI interface requires this in the URL construction
             //for operations editing them.
@@ -90,10 +95,10 @@ namespace ConnectionCUPIFunctions
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this Greeting instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         //used to keep track of whic properties have been updated
-        private ConnectionPropertyList _changedPropList;
+        private readonly ConnectionPropertyList _changedPropList;
 
 
         private int _afterGreetingAction;
@@ -139,6 +144,7 @@ namespace ConnectionCUPIFunctions
         /// Reference to the call handler that owns this greeting.
         /// You cannot set or change this value after creation.
         /// </summary>
+        [JsonProperty]
         public string CallHandlerObjectId { get; private set; }
 
         private bool _enableTransfer;
@@ -162,6 +168,7 @@ namespace ConnectionCUPIFunctions
         /// Alternate, Busy, Error, Internal, Off Hours, Standard, Holiday
         /// This value cannot be changed after greeting creation.
         /// </summary>
+        [JsonProperty]
         public string GreetingType { get; private set; }
 
         private bool _ignoreDigits;
@@ -182,6 +189,7 @@ namespace ConnectionCUPIFunctions
         /// Unique identifier for this greeting.
         /// You cannot change the objectID of a standing object.
         /// </summary>
+        [JsonProperty]
         public string ObjectId { get; private set; }
 
         private bool _playRecordMessagePrompt;
@@ -373,64 +381,42 @@ namespace ConnectionCUPIFunctions
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/greetings", pConnectionServer.BaseUrl, pCallHandlerObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that's an error - there should always been greetings returned.
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount ==0)
             {
+                pGreetings = new List<Greeting>();
                 res.Success = false;
                 return res;
             }
 
-            pGreetings = GetGreetingsFomXElements(pConnectionServer, pCallHandlerObjectId, res.XmlElement);
+            pGreetings = HTTPFunctions.GetObjectsFromJson<Greeting>(res.ResponseText);
+
+            if (pGreetings == null)
+            {
+                pGreetings = new List<Greeting>();
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pGreetings)
+            {
+                oObject.HomeServer = pConnectionServer;
+                oObject.CallHandlerObjectId = pCallHandlerObjectId;
+                oObject.ClearPendingChanges();
+            }
+
             return res;
-
         }
 
-
-        //Helper function to take an XML blob returned from the REST interface forgreetings and convert it into n generic
-        //list of Greeting class objects. 
-        private static List<Greeting> GetGreetingsFomXElements(ConnectionServer pConnectionServer,
-                                                                string pCallHandlerObjectId,
-                                                                XElement pXElement)
-        {
-            List<Greeting> oGreetingss = new List<Greeting>();
-
-            if (pConnectionServer == null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced passed to GetGreetingsFomXElements");
-            }
-
-            //pull out a set of XMLElements for each TransferOption object returned using the power of LINQ
-            var greetings = from e in pXElement.Elements()
-                                  where e.Name.LocalName == "Greeting"
-                                  select e;
-
-            //for each transfer option returned in the list from the XML, construct an TransferOption object using the elements associated with that 
-            //option.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlGreeting in greetings)
-            {
-                Greeting oGreeting = new Greeting(pConnectionServer, pCallHandlerObjectId);
-                foreach (XElement oElement in oXmlGreeting.Elements())
-                {
-                    //adds the XML property to the TransferOption object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oGreeting, oElement);
-                }
-
-                oGreeting.ClearPendingChanges();
-
-                //add the fully populated TransferOption object to the list that will be returned to the calling routine.
-                oGreetingss.Add(oGreeting);
-            }
-
-            return oGreetingss;
-        }
 
 
         /// <summary>
@@ -488,7 +474,7 @@ namespace ConnectionCUPIFunctions
             strBody += "</Greeting>";
 
             return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, pGreetingType),
-                                            MethodType.Put,pConnectionServer,strBody);
+                                            MethodType.PUT,pConnectionServer,strBody,false);
 
         }
 
@@ -612,8 +598,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Greeting>";
 
-            return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, pGreetingType),
-                                            MethodType.Put,pConnectionServer,strBody);
+            return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, 
+                pGreetingType),MethodType.PUT,pConnectionServer,strBody,false);
         }
 
 
@@ -702,39 +688,6 @@ namespace ConnectionCUPIFunctions
                                               pConnectionServer.LoginPw, pSourceLocalFilePath);
 
 
-            //old construction - this method uses "two steps" for uploading the greeting and works on older versions of Connection.  It's slightly 
-            //more complex and a bit slower, but more or less equivalent to the "newer" method above.
-            //I leave it here for reference in case anyone needs to use the older method.
-
-            //string strConnectionStreamFilePath;
-
-            //res = HTTPFunctions.UploadWavFileToStreamLibrary(pConnectionServer.ServerName,
-            //                                       pConnectionServer.LoginName,
-            //                                       pConnectionServer.LoginPw,
-            //                                       pSourceLocalFilePath,
-            //                                       out strConnectionStreamFilePath);
-
-            //if (res.Success==false)
-            //{
-            //    return res;
-            //}
-
-            ////
-            //string strUrl = string.Format("https://{0}:8443/vmrest/handlers/callhandlers/{1}/greetings/{2}/greetingstreamfiles/{3}",
-            //                             pConnectionServer.ServerName,pCallHandlerObjectId,pGreetingType,pLanguageId);
-            //string strBody = string.Format("<GreetingStreamFile><StreamFile>{0}</StreamFile></GreetingStreamFile>",strConnectionStreamFilePath);
-
-            ////now update the greeting stream file property - this is a little tricky in that you need to do a POST if there is not already a greeting 
-            ////in place and a PUT if there is.  
-            //if (DoesGreetingStreamExist(pConnectionServer,pCallHandlerObjectId,pGreetingType,pLanguageId))
-            //{
-            //    res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.PUT, pConnectionServer.LoginName, pConnectionServer.LoginPw, strBody);    
-            //}
-            //else
-            //{
-            //    res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, pConnectionServer.LoginName, pConnectionServer.LoginPw,strBody);    
-            //}
-            
             return res;
 
         }
@@ -802,7 +755,7 @@ namespace ConnectionCUPIFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            return HTTPFunctions.GetJsonResponse(strUrl, MethodType.Put, pConnectionServer.LoginName,
+            return HTTPFunctions.GetJsonResponse(strUrl, MethodType.PUT, pConnectionServer.LoginName,
                                                  pConnectionServer.LoginPw, oParams, out oOutput);
         }
 
@@ -838,7 +791,7 @@ namespace ConnectionCUPIFunctions
                                           pGreetingType, 
                                           pLanguageId);
             
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             //the only reason this will fail is if it doesn't exists - return that here
             return res.Success;
@@ -907,27 +860,24 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public WebCallResult GetGreeting(string pCallHandlerObjectId, string pGreetingType)
         {
-            string strUrl = string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", _homeServer.BaseUrl, pCallHandlerObjectId, pGreetingType);
+            string strUrl = string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", HomeServer.BaseUrl, pCallHandlerObjectId, pGreetingType);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
-                res.Success = false;
-                return res;
+                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "Greeting"), this);
             }
-
-            //load all of the elements returned into the class object properties
-            foreach (XElement oElement in res.XmlElement.Elements())
+            catch (Exception ex)
             {
-                _homeServer.SafeXmlFetch(this, oElement);
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                res.Success = false;
             }
 
             //all the updates above will flip pending changes into the queue - clear that here.
@@ -940,7 +890,7 @@ namespace ConnectionCUPIFunctions
         //If there are no custom recorded greetings the pGreetingStreamFiles out param is returned as null.
         private WebCallResult GetGreetingStreamFiles(out List<GreetingStreamFile> pGreetingStreamFiles)
         {
-            return GreetingStreamFile.GetGreetingStreamFiles(_homeServer, CallHandlerObjectId, GreetingType, out pGreetingStreamFiles);
+            return GreetingStreamFile.GetGreetingStreamFiles(HomeServer, CallHandlerObjectId, GreetingType, out pGreetingStreamFiles);
         }
 
         /// <summary>
@@ -1022,7 +972,7 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public WebCallResult SetGreetingWavFile(int pLanguageId, string pSourceLocalFilePath, bool pConvertToPcmFirst=false)
         {
-            return SetGreetingWavFile(_homeServer, pSourceLocalFilePath, CallHandlerObjectId, GreetingType, pLanguageId,pConvertToPcmFirst);
+            return SetGreetingWavFile(HomeServer, pSourceLocalFilePath, CallHandlerObjectId, GreetingType, pLanguageId,pConvertToPcmFirst);
             
         }
 
@@ -1052,7 +1002,7 @@ namespace ConnectionCUPIFunctions
                                                      string pGreetingType,
                                                      int pLanguageId)
         {
-            return SetGreetingRecordingToStreamFile(_homeServer, pStreamFileResourceName, pCallHandlerObjectId,pGreetingType, pLanguageId);
+            return SetGreetingRecordingToStreamFile(HomeServer, pStreamFileResourceName, pCallHandlerObjectId,pGreetingType, pLanguageId);
         }
 
 
@@ -1088,7 +1038,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //just call the static method with the info from the instance 
-            res = UpdateGreeting(_homeServer, CallHandlerObjectId, GreetingType, _changedPropList);
+            res = UpdateGreeting(HomeServer, CallHandlerObjectId, GreetingType, _changedPropList);
 
             //if the update went through then clear the changed properties list.
             if (res.Success)
@@ -1128,7 +1078,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult UpdateGreetingEnabledStatus(bool pEnabled,DateTime? pTillDate = null)
          {
              ClearPendingChanges();
-             return UpdateGreetingEnabledStatus( _homeServer, CallHandlerObjectId, GreetingType, pEnabled,pTillDate);
+             return UpdateGreetingEnabledStatus( HomeServer, CallHandlerObjectId, GreetingType, pEnabled,pTillDate);
          }
 
         #endregion

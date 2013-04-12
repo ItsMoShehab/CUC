@@ -11,10 +11,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// Read only class for fetching all the roles defined on the Connection server and returning them as a generic list of 
@@ -32,7 +31,7 @@ namespace ConnectionCUPIFunctions
         public bool ReadOnly { get; set; }
 
         //reference to the ConnectionServer object used to create this instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         #endregion
 
@@ -47,7 +46,7 @@ namespace ConnectionCUPIFunctions
                 throw new ArgumentException("Null ConnectionServer referenced pasted to Role construtor");
             }
 
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             if (string.IsNullOrEmpty(pObjectId) && string.IsNullOrEmpty(pRoleName))
             {
@@ -59,6 +58,13 @@ namespace ConnectionCUPIFunctions
             {
                 throw new Exception(string.Format("Failed to fetch role by ObjectId={0} or Name={1}",pObjectId,pRoleName));
             }
+        }
+
+        /// <summary>
+        /// General constructor for Json parsing libraries
+        /// </summary>
+        public Role()
+        {
         }
 
         #endregion
@@ -95,7 +101,7 @@ namespace ConnectionCUPIFunctions
             string strObjectId = pObjectId;
             if (string.IsNullOrEmpty(pObjectId))
             {
-                strObjectId = GetObjectIdFromName(_homeServer, pName);
+                strObjectId = GetObjectIdFromName(HomeServer, pName);
                 if (string.IsNullOrEmpty(strObjectId))
                 {
                     res.Success = false;
@@ -104,30 +110,26 @@ namespace ConnectionCUPIFunctions
                 }
             }
 
-            string strUrl = _homeServer.BaseUrl + "roles/" + strObjectId;
+            string strUrl = HomeServer.BaseUrl + "roles/" + strObjectId;
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
-            if (res.Success == false)
+            if (res.Success == false || res.TotalObjectCount == 0)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
+                JsonConvert.PopulateObject(res.ResponseText, this);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                 res.Success = false;
-                res.ErrorText = "No XML elements returned from role fetch";
-                return res;
             }
 
-            foreach (var oElement in res.XmlElement.Elements())
-            {
-                _homeServer.SafeXmlFetch(this,oElement);
-            }
-
-            res.Success = true;
             return res;
         }
 
@@ -148,24 +150,20 @@ namespace ConnectionCUPIFunctions
             string strUrl = pConnectionServer.BaseUrl + string.Format("roles/?query=(RoleName is {0})", pRoleName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
-            if (res.Success == false)
+            if (res.Success == false || res.TotalObjectCount == 0)
             {
                 return "";
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
-            {
-                return "";
-            }
+            List<Role> oTemplates = HTTPFunctions.GetObjectsFromJson<Role>(res.ResponseText);
 
-            foreach (var oElement in res.XmlElement.Elements().Elements())
+            foreach (var oTemplate in oTemplates)
             {
-                if (oElement.Name.ToString().Equals("ObjectId"))
+                if (oTemplate.RoleName.Equals(pRoleName, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return oElement.Value;
+                    return oTemplate.ObjectId;
                 }
             }
 
@@ -175,6 +173,7 @@ namespace ConnectionCUPIFunctions
         /// <summary>
         /// Gets the list of all roles and resturns them as a generic list of Role objects.  This
         /// list can be used for providing drop down list selection or the like.
+        /// The roles in Connection are static and cannot be added to.
         /// </summary>
         /// <param name="pConnectionServer">
         /// The Connection server object that the roles should be pulled from
@@ -200,58 +199,41 @@ namespace ConnectionCUPIFunctions
             string strUrl = pConnectionServer.BaseUrl + "roles";
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements can be empty
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that means an error in this case - should always be at least one role
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
-                pRoles =new List<Role>();
+                pRoles = new List<Role>();
+                res.Success = false;
                 return res;
             }
 
-            pRoles = GetRolesFromXElements(pConnectionServer, res.XmlElement);
+            pRoles = HTTPFunctions.GetObjectsFromJson<Role>(res.ResponseText);
+
+            if (pRoles == null)
+            {
+                pRoles = new List<Role>();
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pRoles)
+            {
+                oObject.HomeServer = pConnectionServer;
+            }
+
             return res;
         }
 
-
-        //Helper function to take an XML blob returned from the REST interface for Roles returned and convert it into an generic
-        //list of Role class objects.  
-        private static List<Role> GetRolesFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-
-            List<Role> oRoleList = new List<Role>();
-
-            //Use LINQ to XML to create a list of Role objects in a single statement.
-            var roles = from e in pXElement.Elements()
-                                      where e.Name.LocalName == "Role"
-                                      select e;
-
-            //for each object returned in the list from the XML, construct a class object using the elements associated with that 
-            //object.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlRole in roles)
-            {
-                Role oRole = new Role(pConnectionServer);
-                foreach (XElement oElement in oXmlRole.Elements())
-                {
-                    //adds the XML property to the object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oRole, oElement);
-                }
-
-                //add the fully populated object to the list that will be returned to the calling routine.
-                oRoleList.Add(oRole);
-            }
-
-            return oRoleList;
-        }
-
         #endregion
-
 
     }
 }

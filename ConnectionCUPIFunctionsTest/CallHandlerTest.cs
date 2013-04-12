@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -33,7 +33,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -57,6 +57,8 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Class Creation Failures
+
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
@@ -69,7 +71,23 @@ namespace ConnectionCUPIFunctionsTest
 
 
         /// <summary>
-        /// Get first 3 handler in directory using static method call, iterate over them and use the ToString and DumpAllProps
+        /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
+        /// </summary>
+        [TestMethod()]
+        [ExpectedException(typeof(ArgumentException))]
+        public void CallHandlerTemplate_ClassCreationFailure()
+        {
+            CallHandlerTemplate oTestTemplate = new CallHandlerTemplate(null, "aaa");
+        }
+
+
+        #endregion
+
+
+        #region Live Test Methods
+
+        /// <summary>
+        /// GET first 3 handler in directory using static method call, iterate over them and use the ToString and DumpAllProps
         /// methods on them each.
         /// </summary>
         [TestMethod()]
@@ -137,9 +155,8 @@ namespace ConnectionCUPIFunctionsTest
 
             //Just grab the first template - doesn't really matter here.
             res = CallHandler.AddCallHandler(_connectionServer, oTemplates[0].ObjectId, strHandlerName, "", null, out oHandler);
-
-            Assert.AreEqual(res.Success, true);
-            Assert.AreNotEqual(oHandler, null);
+            Assert.IsTrue(res.Success,"Failed to create new call handler");
+            Assert.AreNotEqual(oHandler, null,"Call handler object returned from new creation is null");
 
             //call update with no edits - this should fail
             res = oHandler.Update();
@@ -289,21 +306,60 @@ namespace ConnectionCUPIFunctionsTest
             foreach (CallHandlerTemplate oTemplate in oTemplates)
             {
                 Console.WriteLine(oTemplate.ToString());
+                Console.WriteLine(oTemplate.DumpAllProps());
             }
+
+            //exercise the NEW create methods
+            CallHandlerTemplate oNewTemplate;
+            try
+            {
+                oNewTemplate = new CallHandlerTemplate(_connectionServer, oTemplates[0].ObjectId);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Failed to get call handler template via NEW by objectId:"+ex);
+            }
+
+            try
+            {
+                oNewTemplate = new CallHandlerTemplate(_connectionServer, "",oTemplates[0].DisplayName);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Failed to get call handler template via NEW by displayName:" + ex);
+            }
+
+            try
+            {
+                oNewTemplate = new CallHandlerTemplate(_connectionServer, "");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Failed to create empty call handler template via NEW:" + ex);
+            }
+            
+            //exercise the static methods
+            res = CallHandlerTemplate.GetCallHandlerTemplate(out oNewTemplate, _connectionServer);
+            Assert.IsFalse(res.Success, "Static call to get call handler template did not fail with empty objectid and name");
+
+            res = CallHandlerTemplate.GetCallHandlerTemplate(out oNewTemplate, null);
+            Assert.IsFalse(res.Success, "Static call to get call handler template did not fail with null ConnectionServer");
+
+            res = CallHandlerTemplate.GetCallHandlerTemplate(out oNewTemplate, _connectionServer,oTemplates[0].ObjectId);
+            Assert.IsTrue(res.Success,"Failed to get call handler via static call using ObjectID:"+res);
+
+            res = CallHandlerTemplate.GetCallHandlerTemplate(out oNewTemplate, _connectionServer,"", oTemplates[0].DisplayName);
+            Assert.IsTrue(res.Success, "Failed to get call handler via static call using DisplayName:" + res);
+
+            res = CallHandlerTemplate.GetCallHandlerTemplate(out oNewTemplate, _connectionServer, "", "bogus");
+            Assert.IsFalse(res.Success, "Call to get call handler via static call using invalid DisplayName did not fail.");
 
          }
 
+        #endregion
 
-        /// <summary>
-        /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
-        /// </summary>
-        [TestMethod()]
-        [ExpectedException(typeof(ArgumentException))]
-        public void CallHandlerTemplate_ClassCreationFailure()
-        {
-            CallHandlerTemplate oTestTemplate = new CallHandlerTemplate(null,"aaa");
-        }
 
+        #region Static Method Call Failure Tests
 
         /// <summary>
         /// exercise failure points
@@ -458,7 +514,36 @@ namespace ConnectionCUPIFunctionsTest
             List<CallHandlerTemplate> oTemplates;
             res = CallHandlerTemplate.GetCallHandlerTemplates(null, out oTemplates);
             Assert.IsFalse(res.Success, "Passing null connection server should fail.");
+
+
+            CallHandlerTemplate oTemplate;
+
+            try
+            {
+                oTemplate = new CallHandlerTemplate(_connectionServer, "");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Creating an empty call handler template failed:"+ex);
+            }
+
+            try
+            {
+                oTemplate = new CallHandlerTemplate(_connectionServer, "blah");
+                Assert.Fail("Creating call handler template via NEW with invalid objectId did not fail");
+            }
+            catch{}
+
+            try
+            {
+                oTemplate = new CallHandlerTemplate(_connectionServer, "","blah");
+                Assert.Fail("Creating call handler template via NEW with invalid name did not fail");
+            }
+            catch { }
+
+
         }
 
+        #endregion
     }
 }

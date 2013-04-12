@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using ConnectionCUPIFunctions;
+using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -144,8 +144,8 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Empty UserObjectID should fail.");
 
             res = NotificationDevice.GetNotificationDevices(_connectionServer, "aaa", out oDevices);
-            Assert.IsFalse(res.Success, "Invalid UserObjectID should fail.");
-
+            Assert.IsFalse(oDevices == null, "Invalid UserObjectID fetch returned null devices list.");
+            Assert.IsTrue(oDevices.Count == 0, "Invalid UserObjectID fetch returned one or more devices.");
         }
 
         /// <summary>

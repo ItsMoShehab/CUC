@@ -15,9 +15,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// Class for adding, editing, deleting and fetching/searching for contact objects in Connection.
@@ -43,17 +43,14 @@ namespace ConnectionCUPIFunctions
         /// <param name="pAlias">
         /// 
         /// </param>
-        public Contact(ConnectionServer pConnectionServer, string pObjectId = "", string pAlias = "")
+        public Contact(ConnectionServer pConnectionServer, string pObjectId = "", string pAlias = ""):this()
         {
             if (pConnectionServer == null)
             {
                 throw new ArgumentException("Null ConnectionServer passed to Contact constructor.");
             }
 
-            //make an instanced of the changed prop list to keep track of updated properties on this object
-            _changedPropList=new ConnectionPropertyList();
-            
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             //if the user passed in a specific ObjectId or display name then go load that contact up, otherwise just return an empty instance.
             if ((pObjectId.Length == 0) & (pAlias.Length == 0)) return;
@@ -68,16 +65,25 @@ namespace ConnectionCUPIFunctions
             }
         }
 
+        /// <summary>
+        /// Generic constructor for JSON parsing libraries
+        /// </summary>
+        public Contact()
+        {
+            //make an instanced of the changed prop list to keep track of updated properties on this object
+            _changedPropList = new ConnectionPropertyList();   
+        }
+
         #endregion
 
 
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this contact instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         //used to keep track of whic properties have been updated
-        private ConnectionPropertyList _changedPropList;
+        private readonly ConnectionPropertyList _changedPropList;
 
         public DateTime CreationTime { get; set; }
         
@@ -155,6 +161,7 @@ namespace ConnectionCUPIFunctions
         public bool IsAddressable { get; set; }
 
         //you cannot change the is template setting via CUPI
+        [JsonProperty]
         public bool IsTemplate { get; private set; }
 
         private string _lastName;
@@ -180,9 +187,11 @@ namespace ConnectionCUPIFunctions
         }
 
         //you cannot change the location objectID
-        public string LocationObjectId { get; set; }
+        [JsonProperty]
+        public string LocationObjectId { get; private set; }
 
         //you cannot edit the ObjectId value
+        [JsonProperty]
         public string ObjectId { get; private set; }
 
         private string _partitionObjectId;
@@ -243,6 +252,7 @@ namespace ConnectionCUPIFunctions
         }
 
         //voice name needs to be edited via a special interface
+        [JsonProperty]
         public string VoiceName { get;  private set; }
 
 
@@ -289,51 +299,84 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + "contacts";
-
-            //the spaces get "escaped out" in the HTTPFunctions class call at a lower level, don't worry about it here.
-            //Tack on all the search/query/page clauses here if any are passed in.  If an empty string is passed in account
-            //for it here.
-            for (int iCounter = 0; iCounter < pClauses.Length; iCounter++)
-            {
-                if (pClauses[iCounter].Length == 0)
-                {
-                    continue;
-                }
-
-                //if it's the first param seperate the clause from the URL with a ?, otherwise append compound clauses 
-                //seperated by &
-                if (iCounter == 0)
-                {
-                    strUrl += "?";
-                }
-                else
-                {
-                    strUrl += "&";
-                }
-                strUrl += pClauses[iCounter];
-            }
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "contacts", pClauses);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements can be empty, that's legal
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that isn't an error in this case, just return an empty list
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
-                pContacts= new List<Contact>();
+                pContacts = new List<Contact>();
                 return res;
             }
 
-            pContacts = GetContactsFromXElements(pConnectionServer, res.XmlElement);
-            return res;
+            pContacts = HTTPFunctions.GetObjectsFromJson<Contact>(res.ResponseText);
 
+            if (pContacts == null)
+            {
+                pContacts = new List<Contact>();
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pContacts)
+            {
+                oObject.HomeServer = pConnectionServer;
+                
+                oObject.ClearPendingChanges();
+            }
+
+            return res;
         }
 
+
+        /// <summary>
+        /// This function allows for a GET of contacts from Connection via HTTP - it allows for passing any number of additional clauses  
+        /// for filtering (query directives), sorting and paging of results.  The format of the clauses should look like:
+        /// filter: "query=(displayname startswith ab)"
+        /// sort: "sort=(displayname asc)"
+        /// Escaping of spaces is done automatically, no need to account for that.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Reference to the ConnectionServer object that points to the home server where the contacts are being fetched from.
+        /// </param>
+        /// <param name="pContacts">
+        /// The list of contacts returned from the CUPI call (if any) is returned as a generic list of Contact class instances via this out param.  
+        /// If no contacts are  found NULL is returned for this parameter.
+        /// </param>
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
+        /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(FirstName startswith a)" in
+        /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+        /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+
+        public static WebCallResult GetContacts(ConnectionServer pConnectionServer, out List<Contact> pContacts,int pPageNumber=1, 
+            int pRowsPerPage=20,params string[] pClauses)
+        {
+            //tack on the paging items to the parameters list
+            var temp = pClauses.ToList();
+            temp.Add("pageNumber=" + pPageNumber);
+            temp.Add("rowsPerPage=" + pRowsPerPage);
+
+            return GetContacts(pConnectionServer, out pContacts, temp.ToArray());
+        }
 
         /// <summary>
         /// returns a single Contact object from an ObjectId string passed in.
@@ -464,8 +507,8 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Contact>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "contacts?templateAlias="+pContactTemplateAlias, MethodType.Post,
-                                            pConnectionServer,strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "contacts?templateAlias="+pContactTemplateAlias, MethodType.POST,
+                                            pConnectionServer,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -535,7 +578,7 @@ namespace ConnectionCUPIFunctions
 
 
         /// <summary>
-        /// Delete a contact from the Connection directory.
+        /// DELETE a contact from the Connection directory.
         /// </summary>
         /// <param name="pConnectionServer">
         /// Reference to the ConnectionServer object that points to the home server where the contact is homed.
@@ -555,7 +598,7 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "contacts/" + pObjectId,MethodType.Delete,pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "contacts/" + pObjectId,MethodType.DELETE,pConnectionServer, "");
         }
 
 
@@ -608,41 +651,8 @@ namespace ConnectionCUPIFunctions
             strBody += "</Contact>";
 
             return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "contacts/" + pObjectId,
-                                            MethodType.Put,pConnectionServer,strBody);
+                                            MethodType.PUT,pConnectionServer,strBody,false);
 
-        }
-
-
-        //Helper function to take an XML blob returned from the REST interface for a contact (or contacts) return and convert it into an generic
-        //list of Contact class objects. 
-        private static List<Contact> GetContactsFromXElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-            List<Contact> oContactList = new List<Contact>();
-
-            //pull out a set of XMLElements for each Contact object returned using the power of LINQ
-            var contacts = from e in pXElement.Elements()
-                        where e.Name.LocalName == "Contact"
-                        select e;
-
-            //for each contact returned in the list of contacts from the XML, construct a Contact object using the elements associated with that 
-            //contact.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlContact in contacts)
-            {
-                Contact oContact = new Contact(pConnectionServer);
-                foreach (XElement oElement in oXmlContact.Elements())
-                {
-                    //adds the XML property to the Contact object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oContact, oElement);
-                }
-
-                oContact.ClearPendingChanges();
-
-                //add the fully populated Contact object to the list that will be returned to the calling routine.
-                oContactList.Add(oContact);
-            }
-
-            return oContactList;
         }
 
 
@@ -868,7 +878,7 @@ namespace ConnectionCUPIFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.Put, pConnectionServer.LoginName,
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.PUT, pConnectionServer.LoginName,
                                                  pConnectionServer.LoginPw, oParams, out oOutput);
 
             return res;
@@ -930,9 +940,6 @@ namespace ConnectionCUPIFunctions
         //Fills the current instance of Contact in with properties fetched from the server.
         private WebCallResult GetContact(string pObjectId, string pAlias="")
         {
-            string strUrl;
-            WebCallResult res;
-
             string strObjectId = pObjectId;
             if (string.IsNullOrEmpty(pObjectId))
             {
@@ -947,27 +954,31 @@ namespace ConnectionCUPIFunctions
                 }
             }
 
-             strUrl = string.Format("{0}contacts/{1}", _homeServer.BaseUrl, strObjectId);
+             string strUrl = string.Format("{0}contacts/{1}", HomeServer.BaseUrl, strObjectId);
             
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
+                JsonConvert.PopulateObject(res.ResponseText, this);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                 res.Success = false;
-                return res;
             }
 
-            //populate this contact instance with data from the XML fetch
-            foreach (XElement oElement in res.XmlElement.Elements())
+            //failed to find contact
+            if (string.IsNullOrEmpty(this.Alias))
             {
-                _homeServer.SafeXmlFetch(this, oElement);
+                res.Success = false;
+                res.ErrorText = "Failed to find contact by alias=" + pAlias + " or objectId=" + pObjectId;
             }
 
             //all the updates above will flip pending changes into the queue - clear that here.
@@ -987,27 +998,23 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         private string GetObjectIdAlias(string pAlias)
         {
-            string strUrl = string.Format("{0}contacts/?query=(Alias is {1})", _homeServer.BaseUrl, pAlias);
+            string strUrl = string.Format("{0}contacts/?query=(Alias is {1})", HomeServer.BaseUrl, pAlias);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
-            if (res.Success == false)
+            if (res.Success == false || res.TotalObjectCount==0)
             {
                 return "";
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
-            {
-                return "";
-            }
+            List<Contact> oContacts = HTTPFunctions.GetObjectsFromJson<Contact>(res.ResponseText);
 
-            foreach (var oElement in res.XmlElement.Elements().Elements())
+            foreach (var oContact in oContacts)
             {
-                if (oElement.Name.ToString().Equals("ObjectId"))
+                if (oContact.Alias.Equals(pAlias, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return oElement.Value;
+                    return oContact.ObjectId;
                 }
             }
 
@@ -1045,7 +1052,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //just call the static method with the info from the instance 
-            res=UpdateContact(_homeServer, ObjectId, _changedPropList);
+            res=UpdateContact(HomeServer, ObjectId, _changedPropList);
 
             //if the update went through then clear the changed properties list.
             if (res.Success)
@@ -1057,7 +1064,7 @@ namespace ConnectionCUPIFunctions
         }
 
         /// <summary>
-        /// Delete a contact from the Connection directory.
+        /// DELETE a contact from the Connection directory.
         /// </summary>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -1065,7 +1072,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult Delete()
         {
             //just call the static method with the info on the instance
-            return DeleteContact(_homeServer, ObjectId);
+            return DeleteContact(HomeServer, ObjectId);
         }
 
 
@@ -1086,7 +1093,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult SetVoiceName(string pSourceLocalFilePath, bool pConvertToPcmFirst = false)
         {
             //just call the static method with the information from the instance
-            return SetContactVoiceName(_homeServer, pSourceLocalFilePath, ObjectId, pConvertToPcmFirst);
+            return SetContactVoiceName(HomeServer, pSourceLocalFilePath, ObjectId, pConvertToPcmFirst);
         }
 
         
@@ -1103,7 +1110,7 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         public WebCallResult SetVoiceNameToStreamFile(string pStreamFileResourceName)
         {
-            return SetContactVoiceNameToStreamFile(_homeServer, ObjectId, pStreamFileResourceName);
+            return SetContactVoiceNameToStreamFile(HomeServer, ObjectId, pStreamFileResourceName);
         }
 
         /// <summary>
@@ -1121,7 +1128,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult GetVoiceName(string pTargetLocalFilePath)
         {
             //just call the static method with the info from the instance of this object
-            return GetContactVoiceName(_homeServer, pTargetLocalFilePath, ObjectId, VoiceName);
+            return GetContactVoiceName(HomeServer, pTargetLocalFilePath, ObjectId, VoiceName);
         }
 
         #endregion

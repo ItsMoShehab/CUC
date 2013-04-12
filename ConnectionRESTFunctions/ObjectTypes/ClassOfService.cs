@@ -15,9 +15,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
+using Newtonsoft.Json;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The ClassOfService class contains all the properties associated with a COS in Unity Connection that can be fetched 
@@ -29,7 +29,7 @@ namespace ConnectionCUPIFunctions
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this TransferOption instance.
-        private readonly ConnectionServer _homeServer;
+        public ConnectionServer HomeServer { get; private set; }
 
         //used to keep track of whic properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -345,14 +345,14 @@ namespace ConnectionCUPIFunctions
             }
         }
 
-        private int _maxMembersPVL;
+        private int _maxMembersPvl;
         public int MaxMembersPVL
         {
-            get { return _maxMembersPVL; }
+            get { return _maxMembersPvl; }
             set
             {
                 _changedPropList.Add("MaxMembersPVL", value);
-                _maxMembersPVL = value;
+                _maxMembersPvl = value;
             }
         }
 
@@ -422,25 +422,25 @@ namespace ConnectionCUPIFunctions
             }
         }
 
-        private bool _accessSTT;
+        private bool _accessStt;
         public bool AccessSTT
         {
-            get { return _accessSTT; }
+            get { return _accessStt; }
             set
             {
                 _changedPropList.Add("AccessSTT", value);
-                _accessSTT = value;
+                _accessStt = value;
             }
         }
 
-        private int _enableSTTSecureMessage;
+        private int _enableSttSecureMessage;
         public int EnableSTTSecureMessage
         {
-            get { return _enableSTTSecureMessage; }
+            get { return _enableSttSecureMessage; }
             set
             {
                 _changedPropList.Add("EnableSTTSecureMessage", value);
-                _enableSTTSecureMessage = value;
+                _enableSttSecureMessage = value;
             }
         }
 
@@ -480,6 +480,7 @@ namespace ConnectionCUPIFunctions
         /// <summary>
         /// The unique identifier of the LocationVMS object to which this system distribution list belongs.
         /// </summary>
+        [JsonProperty]
         public String LocationObjectId { get; private set; }
 
 
@@ -487,6 +488,7 @@ namespace ConnectionCUPIFunctions
         /// Unique identifier for this transfer option.
         /// You cannot change the objectID of a standing object.
         /// </summary>
+        [JsonProperty]
         public string ObjectId { get; private set; }
 
 
@@ -528,11 +530,12 @@ namespace ConnectionCUPIFunctions
             {
                 try
                 {
-                    _restrictionTableTransfer = new RestrictionTable(_homeServer, this.XferRestrictionObjectId);
+                    _restrictionTableTransfer = new RestrictionTable(HomeServer, this.XferRestrictionObjectId);
                 }
                 catch (Exception ex)
                 {
                     if (Debugger.IsAttached) Debugger.Break();
+                    Console.WriteLine("Failed fetching TransferRestrictionTable:"+ex);
                 }
             }
 
@@ -563,11 +566,12 @@ namespace ConnectionCUPIFunctions
             {
                 try
                 {
-                    _restrictionTableFax = new RestrictionTable(_homeServer, this.FaxRestrictionObjectId);
+                    _restrictionTableFax = new RestrictionTable(HomeServer, this.FaxRestrictionObjectId);
                 }
                 catch (Exception ex)
                 {
                     if (Debugger.IsAttached) Debugger.Break();
+                    Console.WriteLine("Failed fetching FaxRestrictionTable:"+ex);
                 }
             }
 
@@ -597,11 +601,12 @@ namespace ConnectionCUPIFunctions
             {
                 try
                 {
-                    _restrictionTableOutcall = new RestrictionTable(_homeServer, this.OutcallRestrictionObjectId);
+                    _restrictionTableOutcall = new RestrictionTable(HomeServer, this.OutcallRestrictionObjectId);
                 }
                 catch (Exception ex)
                 {
                     if (Debugger.IsAttached) Debugger.Break();
+                    Console.WriteLine("Failed fetching OutcallRestrictionTable:"+ex);
                 }
             }
 
@@ -615,6 +620,15 @@ namespace ConnectionCUPIFunctions
         #region Constructor
 
         /// <summary>
+        /// Generic constructor for JSON parsing library
+        /// </summary>
+        public ClassOfService()
+        {
+            //make an instanced of the changed prop list to keep track of updated properties on this object
+            _changedPropList = new ConnectionPropertyList();
+        }
+
+        /// <summary>
         /// Creates a new instance of the TransferOption class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
         /// updating data for this entry.  
         /// If you pass the pTransferOptionType parameter the transfer option is automatically filled with data for that entry from the server.  
@@ -625,17 +639,14 @@ namespace ConnectionCUPIFunctions
         /// </param>
         /// <param name="pObjectId"></param>
         /// <param name="pDisplayName"></param>
-        public ClassOfService(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+        public ClassOfService(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = ""):this()
         {
             if (pConnectionServer == null)
             {
                 throw new ArgumentException("Null ConnectionServer passed to TransferOption constructor.");
             }
 
-            //make an instanced of the changed prop list to keep track of updated properties on this object
-            _changedPropList = new ConnectionPropertyList();
-
-            _homeServer = pConnectionServer;
+            HomeServer = pConnectionServer;
 
             //if the user passed in a specific ObjectId or display name then go load that COS up, otherwise just return an empty instance.
             if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pDisplayName))) return;
@@ -645,8 +656,7 @@ namespace ConnectionCUPIFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(
-                    string.Format("COS not found in ClassOfService constructor using ObjectId={0} and DisplayName={1}\n\r{2}"
+                throw new Exception(string.Format("COS not found in ClassOfService constructor using ObjectId={0} and DisplayName={1}\n\r{2}"
                                  , pObjectId, pDisplayName, res.ErrorText));
             }
         }
@@ -694,49 +704,81 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + "coses";
-
-            //the spaces get "escaped out" in the HTTPFunctions class call at a lower level, don't worry about it here.
-            //Tack on all the search/query/page clauses here if any are passed in.  If an empty string is passed in account
-            //for it here.
-            for (int iCounter = 0; iCounter < pClauses.Length; iCounter++)
-            {
-                if (pClauses[iCounter].Length == 0)
-                {
-                    continue;
-                }
-
-                //if it's the first param seperate the clause from the URL with a ?, otherwise append compound clauses 
-                //seperated by &
-                if (iCounter == 0)
-                {
-                    strUrl += "?";
-                }
-                else
-                {
-                    strUrl += "&";
-                }
-                strUrl += pClauses[iCounter];
-            }
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "coses", pClauses);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, pConnectionServer, "");
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements can be empty, that's legal
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that doesn't mean an error - just return the empty list.
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
                 pClassOfServices = new List<ClassOfService>();
                 return res;
             }
 
-            pClassOfServices = GetClassesOfServiceFromXmlElements(pConnectionServer, res.XmlElement);
-            return res;
+            pClassOfServices = HTTPFunctions.GetObjectsFromJson<ClassOfService>(res.ResponseText);
 
+            if (pClassOfServices == null)
+            {
+                pClassOfServices = new List<ClassOfService>();
+                return res;
+            }
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pClassOfServices)
+            {
+                oObject.HomeServer = pConnectionServer;
+                oObject.ClearPendingChanges();
+            }
+
+            return res;
+        }
+
+
+        /// <summary>
+        /// This function allows for a GET of coses from Connection via HTTP - it allows for passing any number of additional clauses  
+        /// for filtering (query directives), sorting and paging of results.  The format of the clauses should look like:
+        /// filter: "query=(displayname startswith ab)"
+        /// sort: "sort=(displayname asc)"
+        /// Escaping of spaces is done automatically, no need to account for that.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Reference to the ConnectionServer object that points to the home server where the lists are being fetched from.
+        /// </param>
+        /// <param name="pClassOfServices">
+        /// The list of coses returned from the CUPI call (if any) is returned as a generic list of ClassOfService class 
+        /// instances via this out param.  If no COSes are found NULL is returned for this parameter.
+        /// </param>
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
+        /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(FirstName startswith a)" in
+        /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+        /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult GetClassesOfService(ConnectionServer pConnectionServer,out List<ClassOfService> pClassOfServices,
+            int pPageNumber=1, int pRowsPerPage=20,params string[] pClauses)
+        {
+            //tack on the paging items to the parameters list
+            var temp = pClauses.ToList();
+            temp.Add("pageNumber=" + pPageNumber);
+            temp.Add("rowsPerPage=" + pRowsPerPage);
+
+            return GetClassesOfService(pConnectionServer, out pClassOfServices, temp.ToArray());
         }
 
         /// <summary>
@@ -849,7 +891,7 @@ namespace ConnectionCUPIFunctions
 
             strBody += "</Cos>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "coses", MethodType.Post,pConnectionServer,strBody);
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "coses", MethodType.POST,pConnectionServer,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -955,13 +997,13 @@ namespace ConnectionCUPIFunctions
             strBody += "</Cos>";
 
             return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "coses/" + pObjectId,
-                                            MethodType.Put,pConnectionServer,strBody);
+                                            MethodType.PUT,pConnectionServer,strBody,false);
 
         }
 
 
         /// <summary>
-        /// Delete a COS from the Connection directory.
+        /// DELETE a COS from the Connection directory.
         /// </summary>
         /// <param name="pConnectionServer">
         /// Reference to the ConnectionServer object that points to the home server where the COS is homed.
@@ -981,42 +1023,7 @@ namespace ConnectionCUPIFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "coses/" + pObjectId,MethodType.Delete,pConnectionServer, "");
-        }
-
-
-        /// <summary>
-        ///Helper function to take an XML blob returned from the REST interface for a cos (or coses) return and convert it into an generic
-        ///list of ClassOfService class objects. 
-        /// </summary>
-        private static List<ClassOfService> GetClassesOfServiceFromXmlElements(ConnectionServer pConnectionServer, XElement pXElement)
-        {
-            List<ClassOfService> oCoses = new List<ClassOfService>();
-
-            //pull out a set of XMLElements for each CallHandler object returned using the power of LINQ
-            var cos = from e in pXElement.Elements()
-                        where e.Name.LocalName == "Cos"
-                        select e;
-
-            //for each handler returned in the list of handlers from the XML, construct a CallHandler object using the elements associated with that 
-            //handler.  This is done using the SafeXMLFetch routine which is a general purpose mechanism for deserializing XML data into strongly
-            //types objects.
-            foreach (var oXmlList in cos)
-            {
-                ClassOfService oCos = new ClassOfService(pConnectionServer);
-                foreach (XElement oElement in oXmlList.Elements())
-                {
-                    //adds the XML property to the CallHandler object if the proeprty name is found as a property on the object.
-                    pConnectionServer.SafeXmlFetch(oCos, oElement);
-                }
-
-                oCos.ClearPendingChanges();
-
-                //add the fully populated CallHandler object to the list that will be returned to the calling routine.
-                oCoses.Add(oCos);
-            }
-
-            return oCoses;
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "coses/" + pObjectId,MethodType.DELETE,pConnectionServer, "");
         }
 
 
@@ -1088,7 +1095,6 @@ namespace ConnectionCUPIFunctions
         /// </returns>
         private WebCallResult GetClassOfService(string pObjectId, string pDisplayName = "")
         {
-            WebCallResult res;
             string strObjectId;
 
             //when fetching a COS prefer the ObjectId if provided
@@ -1118,27 +1124,24 @@ namespace ConnectionCUPIFunctions
                     };
             }
 
-            string strUrl = string.Format("{0}coses/{1}", _homeServer.BaseUrl, strObjectId);
+            string strUrl = string.Format("{0}coses/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return res;
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
+            try
             {
-                res.Success = false;
-                return res;
+                JsonConvert.PopulateObject(res.ResponseText, this);
             }
-
-            //populate this call handler instance with data from the XML fetch
-            foreach (XElement oElement in res.XmlElement.Elements())
+            catch (Exception ex)
             {
-                _homeServer.SafeXmlFetch(this, oElement);
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                res.Success = false;
             }
 
             ClearPendingChanges();
@@ -1160,29 +1163,23 @@ namespace ConnectionCUPIFunctions
         private string GetObjectIdByCosName(string pCosName)
         {
 
-            string strUrl = string.Format("{0}coses/?query=(DisplayName is {1})", _homeServer.BaseUrl, pCosName);
+            string strUrl = string.Format("{0}coses/?query=(DisplayName is {1})", HomeServer.BaseUrl, pCosName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.Get, _homeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
                 return "";
             }
 
-            //if the call was successful the XML elements should always be populated with something, but just in case do a check here.
-            if (res.XmlElement == null || res.XmlElement.HasElements == false)
-            {
-                res.Success = false;
-                return "";
-            }
+            List<ClassOfService> oCoses = HTTPFunctions.GetObjectsFromJson<ClassOfService>(res.ResponseText);
 
-            //populate this call handler instance with data from the XML fetch
-            foreach (XElement oElement in res.XmlElement.Elements().Elements())
+            foreach (var oCos in oCoses)
             {
-                if (oElement.Name.ToString().Equals("ObjectId"))
+                if (oCos.DisplayName.Equals(pCosName, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return oElement.Value;
+                    return oCos.ObjectId;
                 }
             }
 
@@ -1213,7 +1210,7 @@ namespace ConnectionCUPIFunctions
             }
 
             //just call the static method with the info from the instance 
-            res = UpdateClassOfService(_homeServer, ObjectId, _changedPropList);
+            res = UpdateClassOfService(HomeServer, ObjectId, _changedPropList);
 
             //if the update went through then clear the changed properties list.
             if (res.Success)
@@ -1225,7 +1222,7 @@ namespace ConnectionCUPIFunctions
         }
 
         /// <summary>
-        /// Delete a COS from the Connection directory.
+        /// DELETE a COS from the Connection directory.
         /// </summary>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -1233,7 +1230,7 @@ namespace ConnectionCUPIFunctions
         public WebCallResult Delete()
         {
             //just call the static method with the info on the instance
-            return DeleteClassOfService(_homeServer, ObjectId);
+            return DeleteClassOfService(HomeServer, ObjectId);
         }
 
 

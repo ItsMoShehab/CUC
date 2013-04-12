@@ -12,7 +12,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ConnectionCUPIFunctions
+namespace Cisco.UnityConnection.RestFunctions
 {
     // Collection of enums, structs and classes to help make the code more readable and avoid mistakes when setting values for various 
     // Connection objects such as the addressing mode for a subscriber or the target conversation name for a menu entry key or the like.
