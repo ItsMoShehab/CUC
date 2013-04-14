@@ -948,20 +948,21 @@ namespace Cisco.UnityConnection.RestFunctions
                 string strUrl;
                 WebCallResult res = new WebCallResult {Success = false};
 
-                //when fetching a handler use the query construct in both cases so the XML parsing is identical
-                if (pObjectId.Length > 0)
+                string strObjectId = pObjectId;
+                if (string.IsNullOrEmpty(pObjectId))
                 {
-                    strUrl = string.Format("{0}handlers/directoryhandlers/?query=(ObjectId is {1})", HomeServer.BaseUrl, pObjectId);
+                    strObjectId = GetObjectIdFromName(pDisplayName);
+                    if (string.IsNullOrEmpty(strObjectId))
+                    {
+                        return new WebCallResult
+                        {
+                            Success = false,
+                            ErrorText = "No directory handler found for name=" + pDisplayName
+                        };
+                    }
                 }
-                else if (pDisplayName.Length > 0)
-                {
-                    strUrl = string.Format("{0}handlers/directoryhandlers/?query=(DisplayName is {1})", HomeServer.BaseUrl, pDisplayName);
-                }
-                else
-                {
-                    res.ErrorText = "No value for ObjectId or display name passed to GetDirectoryHandler.";
-                    return res;
-                }
+
+                strUrl = string.Format("{0}handlers/directoryhandlers/{1}", HomeServer.BaseUrl, strObjectId);
 
                 //issue the command to the CUPI interface
                 res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
@@ -971,7 +972,7 @@ namespace Cisco.UnityConnection.RestFunctions
                     return res;
                 }
 
-                if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+                if (string.IsNullOrEmpty(res.ResponseText))
                 {
                     res.Success = false;
                     res.ErrorText = "Failed to find directory handler by objectid=" + pObjectId + " or name=" +DisplayName;
@@ -991,6 +992,42 @@ namespace Cisco.UnityConnection.RestFunctions
                 ClearPendingChanges();
 
                 return res;
+            }
+
+
+            /// <summary>
+            /// Fetch the ObjectId of a directory handler by it's name.  Empty string returned if not match is found.
+            /// </summary>
+            /// <param name="pName">
+            /// name of the directory handler to find
+            /// </param>
+            /// <returns>
+            /// ObjectId of directory handler if found or empty string if not.
+            /// </returns>
+            private string GetObjectIdFromName(string pName)
+            {
+                // string strUrl = string.Format("{0}coses/?query=(DisplayName is {1})", HomeServer.BaseUrl, pCosName);
+                string strUrl = string.Format("{0}handlers/directoryhandlers/?query=(DisplayName is {1})", HomeServer.BaseUrl, pName);
+
+                //issue the command to the CUPI interface
+                WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+
+                if (res.Success == false || res.TotalObjectCount == 0)
+                {
+                    return "";
+                }
+
+                List<DirectoryHandler> oHandlers = HTTPFunctions.GetObjectsFromJson<DirectoryHandler>(res.ResponseText);
+
+                foreach (var oHandler in oHandlers)
+                {
+                    if (oHandler.DisplayName.Equals(pName, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        return oHandler.ObjectId;
+                    }
+                }
+
+                return "";
             }
 
             /// <summary>

@@ -1078,7 +1078,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Calling update on MWi device with no pending changes did not fail");
             
             oMwiDevice.DisplayName = "Updated Display Name";
-            oMwiDevice.IncludeFaxMessages = true;
+            oMwiDevice.Active = false;
 
             res = oMwiDevice.Update();
             Assert.IsTrue(res.Success,"Updating MWI properties failed:"+res);

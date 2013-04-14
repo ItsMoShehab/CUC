@@ -16,7 +16,6 @@ namespace CUPIVerySimple
     class Program
     {
 
-
         //To keep things simple we'll just do this all in a long Main method here.
         static void Main(string[] args)
         {
@@ -28,7 +27,7 @@ namespace CUPIVerySimple
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
-                connectionServer = new ConnectionServer("192.168.0.194", "CCMAdministrator", "ecsbulab");
+                connectionServer = new ConnectionServer("192.168.0.184", "CCMAdministrator", "ecsbulab");
             }
 
             catch (Exception ex)
@@ -55,10 +54,9 @@ namespace CUPIVerySimple
 
             //fetch user with alias of "jlindborg" - we will be sending the message from his 
             //mailbox.
-            UserFull oUserTestDude;
+            UserFull oUserTestDude=null;
 
-
-            res =UserBase.GetUser(out oUserTestDude, connectionServer, "", "jlindborg");
+            res = UserBase.GetUser(out oUserTestDude, connectionServer, "", "jlindborg");
             if (res.Success == false)
             {
                 Console.WriteLine(res);
