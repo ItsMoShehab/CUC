@@ -1257,7 +1257,7 @@ namespace Cisco.UnityConnection.RestFunctions
               	//when clearing the hacked lockout you need to clear both the hacked count and the boolean Hacked flag to unlock
                 //the account - this method is only for clearing the hack lockout, not setting it.
                 oProps.Add("Hacked",false);
-                oProps.Add("HackCount",0);
+                //oProps.Add("HackCount",0);
             }
 
             //the update command takes a body in the request, construct it based on the name/value pair of properties passed in.  

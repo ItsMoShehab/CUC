@@ -289,13 +289,6 @@ namespace Cisco.UnityConnection.RestFunctions
                 return ret;
             }
 
-            //if (ret.XmlElement == null || (ret.XmlElement.HasElements == false) || ret.XmlElement.Element("version") == null)
-            //{
-            //    //invalid XML returned
-            //    ret.ErrorText=string.Format("Invalid version XML returned logging into Connection server: {0}, return text={1}", pServerName, ret.ResponseText);
-            //    ret.Success = false;
-            //    return ret;
-            //}
             oResponse.TryGetValue("version", out strVersion);
 
             if (ParseVersionString(strVersion) == false)
@@ -304,12 +297,6 @@ namespace Cisco.UnityConnection.RestFunctions
                ret.ErrorText= String.Format("No version version returned logging into Connection server: {0}, return text={1}", pServerName, ret.ResponseText);
                 ret.Success = false;
                 return ret;
-            }
-
-            if (!string.IsNullOrEmpty(ret.SessionCookie))
-            {
-                this.LastSessionCookie = ret.SessionCookie;
-                this.LastSessionActivity = DateTime.Now;
             }
 
             return ret;

@@ -753,47 +753,24 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res = GetCupiResponse(pUrl, pMethod, pConnectionServer.LoginName, pConnectionServer.LoginPw,pRequestBody,
                 pConnectionServer.LastSessionCookie, pJson);
 
-            //update the details of the session cookie and last connect time.
-            if (res.Success && !string.IsNullOrEmpty(res.SessionCookie))
+            //update the details of the session cookie and last connect time.  If the session cookie contains an instance
+            //of JSESSIONID in it then store the entire cookie in the LastSessionCookie property and roll the date/time 
+            //note of the last time it was updated.
+            if (res.Success)
             {
-                pConnectionServer.LastSessionCookie = FishJsessionIdFromCookie(res.SessionCookie);
+                //update the last time we had activity using the current cookie
                 pConnectionServer.LastSessionActivity = DateTime.Now;
+             
+                //if the response includes a new JSESSIONID (and/or JSESSIONIDSSO) update the cookie.
+                if ((!string.IsNullOrEmpty(res.SessionCookie)) && (res.SessionCookie.IndexOf("JSESSIONID=") > 0))
+                {
+                    pConnectionServer.LastSessionCookie = res.SessionCookie;
+                }
             }
+
             return res;
         }
 
-        
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pCookie"></param>
-        /// <returns></returns>
-        private static string FishJsessionIdFromCookie(string pCookie)
-        {
-            //10.0 b90
-            //JSESSIONIDSSO=A976EE088AAB8E63B92B6F70ADC52B2B; Path=/; Secure; HttpOnly,JSESSIONID=01F6BDBFDFED3738EB3A6F4215772851; Path=/vmrest/; Secure; HttpOnly
-
-            //10.0 b117
-            //APP_SPACE_ID=F5FA59E34087C5A9A6C899F29B123FE1; Path=/; Secure; HttpOnly,JSESSIONID=906FE0D63602E5CD2F4231DD56B1D53B; Path=/vmrest/; Secure; HttpOnly,
-            //REQUEST_TOKEN_KEY=-3258261678766800929; Path=/; Secure; HttpOnly
-
-            if (string.IsNullOrEmpty(pCookie) || pCookie.IndexOf("JSESSIONID=") < 1)
-            {
-                return "";
-            }
-
-            return pCookie;
-            //int iIndex = pCookie.IndexOf("JSESSIONID=");
-            //int iIndex2 = pCookie.IndexOf(";", iIndex);
-
-            //if (iIndex2 < 1)
-            //{
-            //    return "";
-            //}
-
-            //return pCookie.Substring(iIndex, iIndex2 - iIndex + 1);
-        }
 
         /// <summary>
         /// Primary method for sending/fetching data to and from the Connection server via CUMI - tries to parse results returned into JSON format.

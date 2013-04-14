@@ -222,8 +222,9 @@ namespace ConnectionCUPIFunctionsTest
             oMenu.TransferType = (int)TransferTypes.Supervised;
             oMenu.TransferNumber = "123";
             oMenu.TransferRings = 3;
+            oMenu.Action = (int)ActionTypes.TransferToAlternateContactNumber;
             res = oMenu.Update();
-            Assert.IsTrue(res.Success, "Failed updating menu entry");
+            Assert.IsTrue(res.Success, "Failed updating menu entry:"+res);
 
         }
 

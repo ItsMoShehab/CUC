@@ -235,6 +235,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Invalid call handler ObjectId should fail");
 
             res = Greeting.GetGreetings(_connectionServer, _callHandler.ObjectId, out oGreetings);
+            Assert.IsTrue(res.Success,"Failed to fetch greetings in GetGreetings_Failure:"+res);
             Assert.IsNotNull(oGreetings, "Null greetings colleciton returned");
             Assert.IsTrue(oGreetings.Count > 1, "Empty list of greetings returned");
 
@@ -376,7 +377,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Invalid greeting type name should fail");
 
             res = oGreeting.GetGreeting(_callHandler.ObjectId, "Standard");
-            Assert.IsTrue(res.Success, "Failed to fill greeting object with Standard greeting rule details");
+            Assert.IsTrue(res.Success, "Failed to fill greeting object with Standard greeting rule details"+ res);
         }
 
 

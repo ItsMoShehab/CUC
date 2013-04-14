@@ -266,11 +266,11 @@ namespace ConnectionCUPIFunctionsTest
 
             //get the notificaiton devices for the operator
             res = NotificationDevice.GetNotificationDevices(_connectionServer, _user.ObjectId, out oDevices);
-            Assert.IsTrue(res.Success, "Failed to fetch notification devices for operator");
+            Assert.IsTrue(res.Success, "Failed to fetch notification devices for operator:"+res);
 
             //fetch the single device returned as the first in the list from the last test
             res = NotificationDevice.GetNotificationDeivce(_connectionServer, _user.ObjectId, oDevices.First().ObjectId,"", out oDevice);
-            Assert.IsTrue(res.Success, "Failed to fetch notification device for operator");
+            Assert.IsTrue(res.Success, "Failed to fetch notification device for operator:" + res);
 
             //now check some failure points.
             res = NotificationDevice.GetNotificationDeivce(null, _user.ObjectId, oDevices.First().ObjectId,"", out oDevice);
