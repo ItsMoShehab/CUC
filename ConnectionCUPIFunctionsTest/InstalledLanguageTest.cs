@@ -40,6 +40,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 _connectionServer = new ConnectionServer(mySettings.ConnectionServer, mySettings.ConnectionLogin, mySettings.ConnectionPW);
+                HTTPFunctions.DebugMode = mySettings.DebugOn;
             }
 
             catch (Exception ex)

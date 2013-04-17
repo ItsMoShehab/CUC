@@ -28,8 +28,8 @@ namespace Cisco.UnityConnection.RestFunctions
             public int Type { get; set; }
             public string FullName { get; set; }
             public bool UserSetting { get; set; }
-            public int MinValue { get; set; }
-            public int MaxValue { get; set; }
+            public int MinVal { get; set; }
+            public int MaxVal { get; set; }
             public bool RequiresRestart { get; set; }
             public DateTime LastModifiedTime { get; set; }
             public string LastModifiedByComponent { get; set; }
@@ -315,7 +315,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
                 try
                 {
-                    JsonConvert.PopulateObject(res.ResponseText, this);
+                    JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
                 }
                 catch (Exception ex)
                 {

@@ -26,6 +26,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Fields and Properties
 
+        public string ObjectId { get; set; }
+        public string HostName { get; set; }
         public string ServerName { get; set; }
         public string VmsServerObjectId { get; set; }
         public string IpAddress { get; set; }
@@ -133,7 +135,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this);
+                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

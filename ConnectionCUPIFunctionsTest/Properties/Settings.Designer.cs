@@ -61,5 +61,17 @@ namespace ConnectionCUPIFunctionsTest.Properties {
                 this["ExtensionToDial"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool DebugOn {
+            get {
+                return ((bool)(this["DebugOn"]));
+            }
+            set {
+                this["DebugOn"] = value;
+            }
+        }
     }
 }

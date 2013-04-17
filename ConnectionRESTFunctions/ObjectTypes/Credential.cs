@@ -31,10 +31,12 @@ namespace Cisco.UnityConnection.RestFunctions
         //you can't change the ObjectId of a standing object
         public string ObjectId { get; set; }
 
-        public CredentialType Type { get; set; }
+        public CredentialType CredentialType { get; set; }
 
         public string Alias { get; set; }
         public bool CredMustChange { get; set; }
+        public string CredentialPolicyObjectId { get; set; }
+        public string Credentials { get; set; }
         public bool CantChange { get; set; }
         public bool DoesntExpire { get; set; }
         public int EncryptionType { get; set; }
@@ -79,7 +81,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             UserObjectId = pUserObjectId;
 
-            Type = pCredentialType;
+            CredentialType = pCredentialType;
 
             WebCallResult res = GetCredential(pUserObjectId,pCredentialType);
 
@@ -166,7 +168,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public override string ToString()
         {
-            return String.Format("{0} [{1}]", this.Alias ,this.Type);
+            return String.Format("{0} [{1}]", this.Alias ,this.CredentialType);
         }
 
         /// <summary>
@@ -229,7 +231,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this);
+                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

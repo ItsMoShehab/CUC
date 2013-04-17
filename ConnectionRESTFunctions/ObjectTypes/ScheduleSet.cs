@@ -182,7 +182,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this);
+                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

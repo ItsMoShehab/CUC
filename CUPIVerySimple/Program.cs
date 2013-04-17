@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using Cisco.UnityConnection.RestFunctions;
 
+using SimpleLogger;
+
 namespace CUPIVerySimple
 {
 
@@ -15,7 +17,6 @@ namespace CUPIVerySimple
     /// </summary>
     class Program
     {
-
         //To keep things simple we'll just do this all in a long Main method here.
         static void Main(string[] args)
         {
@@ -24,6 +25,11 @@ namespace CUPIVerySimple
             //just attaches to one server.
             ConnectionServer connectionServer = null;
 
+            //turn on "chatty" output to console
+            HTTPFunctions.DebugMode = true;
+
+            Logger.Log("Starting log output");            
+            
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
@@ -61,6 +67,7 @@ namespace CUPIVerySimple
             {
                 Console.WriteLine(res);
             }
+
 
             List<UserMessage> oUserMessages;
             res = UserMessage.GetMessages(connectionServer, oUserTestDude.ObjectId, out oUserMessages);
@@ -415,5 +422,7 @@ namespace CUPIVerySimple
             Environment.Exit(0);
         }
 
+
+       
     }
 }

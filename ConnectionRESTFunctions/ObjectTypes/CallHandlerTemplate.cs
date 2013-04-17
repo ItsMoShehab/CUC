@@ -25,10 +25,371 @@ namespace Cisco.UnityConnection.RestFunctions
     {
         #region Fields and Properties
 
-        public ConnectionServer HomeServer { get; private set; }
 
-        public string DisplayName { get; set; }
-        public string ObjectId { get; set; }
+        private int _afterMessageAction;
+        /// <summary>
+        /// 0 =Ignore , 1=Hangup,2=Goto, 3=Error, 5=SkipGreeting, 4=TakeMsg, 6=RestartGreeting, 7=TransferAltContact, 8=RouteFromNextRule
+        /// </summary>
+        public int AfterMessageAction
+        {
+            get { return _afterMessageAction; }
+            set
+            {
+                _changedPropList.Add("AfterMessageAction", value);
+                _afterMessageAction = value;
+            }
+        }
+
+        private string _afterMessageTargetConversation;
+        public string AfterMessageTargetConversation
+        {
+            set
+            {
+                _afterMessageTargetConversation = value;
+                _changedPropList.Add("AfterMessageTargetConversation", value);
+            }
+            get { return _afterMessageTargetConversation; }
+        }
+
+
+        private string _afterMessageTargetHandlerObjectId;
+        public string AfterMessageTargetHandlerObjectId
+        {
+            get { return _afterMessageTargetHandlerObjectId; }
+            set
+            {
+                _afterMessageTargetHandlerObjectId = value;
+                _changedPropList.Add("AfterMessageTargetHandlerObjectId", value);
+            }
+        }
+
+        private string _callSearchSpaceObjectId;
+        public string CallSearchSpaceObjectId
+        {
+            get { return _callSearchSpaceObjectId; }
+            set
+            {
+                _callSearchSpaceObjectId = value;
+                _changedPropList.Add("CallSearchSpaceHandlerObjectId", value);
+            }
+        }
+
+        [JsonProperty]
+        public DateTime CreationTime { get; private set; }
+
+        private bool _dispatchDelivery;
+        /// <summary>
+        /// A flag indicating that all messages left for the call handler is for dispatch delivery. 
+        /// </summary>
+        public bool DispatchDelivery
+        {
+            get { return _dispatchDelivery; }
+            set
+            {
+                _dispatchDelivery = value;
+                _changedPropList.Add("DispatchDelivery", value);
+            }
+        }
+
+        private string _displayName;
+        public string DisplayName
+        {
+            get { return _displayName; }
+            set
+            {
+                _displayName = value;
+                _changedPropList.Add("DisplayName", value);
+            }
+        }
+
+        private bool _editMsg;
+        public bool EditMsg
+        {
+            get { return _editMsg; }
+            set
+            {
+                _editMsg = value;
+                _changedPropList.Add("EditMsg", value);
+            }
+        }
+
+        private bool _enablePrependDigits;
+        /// <summary>
+        /// Touch-Tone digits to prepended to extension when dialing transfer number
+        /// </summary>
+        public bool EnablePrependDigits
+        {
+            get { return _enablePrependDigits; }
+            set
+            {
+                _enablePrependDigits = value;
+                _changedPropList.Add("EnablePrependDigits", value);
+            }
+        }
+
+
+        private bool _inheritSearchSpaceFromCall;
+        /// <summary>
+        /// A flag indicating whether the call handler inherits the search space from the call or uses the call handler CallSearchSpaceObject. 
+        /// </summary>
+        public bool InheritSearchSpaceFromCall
+        {
+            get { return _inheritSearchSpaceFromCall; }
+            set
+            {
+                _inheritSearchSpaceFromCall = value;
+                _changedPropList.Add("InheritSearchSpaceFromCall", value);
+            }
+        }
+
+        //you cannot change the IsPrimary flag for a handler 
+        [JsonProperty]
+        public bool IsPrimary { get; private set; }
+
+        //you cannot change the is template setting via CUPI
+        public bool IsTemplate { get; private set; }
+
+        private int _language;
+        public int Language
+        {
+            get { return _language; }
+            set
+            {
+                _language = value;
+                _changedPropList.Add("Language", value);
+            }
+        }
+
+        //you cannot change the location objectID
+        [JsonProperty]
+        public string LocationObjectId { get; private set; }
+
+
+        private int _maxMsgLen;
+        /// <summary>
+        /// The maximum recording length (in seconds) for messages left by unidentified callers
+        /// </summary>
+        public int MaxMsgLen
+        {
+            get { return _maxMsgLen; }
+            set
+            {
+                _maxMsgLen = value;
+                _changedPropList.Add("MaxMsgLen", value);
+            }
+        }
+
+        private string _mediaSwitchObjectId;
+        public string MediaSwitchObjectId
+        {
+            get { return _mediaSwitchObjectId; }
+            set
+            {
+                _mediaSwitchObjectId = value;
+                _changedPropList.Add("MediaSwitchObjectId", value);
+            }
+        }
+
+        [JsonProperty]
+        public string ObjectId { get; private set; }
+
+        private int _oneKeyDelay;
+        /// <summary>
+        /// The amount of time (in milliseconds) that Cisco Unity Connection waits for additional input after callers press a single key that is not locked. 
+        /// If there is no input within this time, Cisco Unity Connection performs the action assigned to the single key.
+        /// </summary>
+        public int OneKeyDelay
+        {
+            get { return _oneKeyDelay; }
+            set
+            {
+                _oneKeyDelay = value;
+                _changedPropList.Add("OneKeyDelay", value);
+            }
+        }
+
+        private string _partitionObjectId;
+        public string PartitionObjectId
+        {
+            get { return _partitionObjectId; }
+            set
+            {
+                _partitionObjectId = value;
+                _changedPropList.Add("PartitionObjectId", value);
+            }
+        }
+
+        private int _playAfterMessage;
+        public int PlayAfterMessage
+        {
+            get { return _playAfterMessage; }
+            set
+            {
+                _playAfterMessage = value;
+                _changedPropList.Add("PlayAfterMessage", value);
+            }
+        }
+
+        private int _playPostGreetingRecording;
+        public int PlayPostGreetingRecording
+        {
+            get { return _playPostGreetingRecording; }
+            set
+            {
+                _playPostGreetingRecording = value;
+                _changedPropList.Add("PlayPostGreetingRecording", value);
+            }
+        }
+
+        private string _recipientContactObjectId;
+        public string RecipientContactObjectId
+        {
+            get { return _recipientContactObjectId; }
+            set
+            {
+                _recipientContactObjectId = value;
+                _changedPropList.Add("RecipientContactObjectId", value);
+            }
+        }
+
+        private string _recipientDistributionListObjectId;
+        public string RecipientDistributionListObjectId
+        {
+            get { return _recipientDistributionListObjectId; }
+            set
+            {
+                _recipientDistributionListObjectId = value;
+                _changedPropList.Add("RecipientDistributionListObjectId", value);
+            }
+        }
+
+        private string _recipientSubscriberObjectId;
+        public string RecipientSubscriberObjectId
+        {
+            get { return _recipientSubscriberObjectId; }
+            set
+            {
+                _recipientSubscriberObjectId = value;
+                _changedPropList.Add("RecipientSubscriberObjectId", value);
+            }
+        }
+
+        private string _scheduleSetObjectId;
+        public string ScheduleSetObjectId
+        {
+            get { return _scheduleSetObjectId; }
+            set
+            {
+                _scheduleSetObjectId = value;
+                _changedPropList.Add("ScheduleSetObjectId", value);
+            }
+        }
+
+        private int _sendPrivateMsg;
+        /// <summary>
+        /// A flag indicating whether an unidentified caller can mark a message as secure.
+        /// </summary>
+        public int SendPrivateMsg
+        {
+            get { return _sendPrivateMsg; }
+            set
+            {
+                _sendPrivateMsg = value;
+                _changedPropList.Add("SendPrivateMsg", value);
+            }
+        }
+
+        private bool _sendSecureMsg;
+        /// <summary>
+        /// A flag indicating whether an unidentified caller can mark a message as secure.
+        /// </summary>
+        public bool SendSecureMsg
+        {
+            get { return _sendSecureMsg; }
+            set
+            {
+                _sendSecureMsg = value;
+                _changedPropList.Add("SendSecureMsg", value);
+            }
+        }
+
+        private int _sendUrgentMsg;
+        /// <summary>
+        /// A flag indicating whether an unidentified caller can mark a message as urgent.
+        /// 1=Always, 2=Ask, 0=Never
+        /// </summary>
+        public int SendUrgentMsg
+        {
+            get { return _sendUrgentMsg; }
+            set
+            {
+                _sendUrgentMsg = value;
+                _changedPropList.Add("SendUrgentMsg", value);
+            }
+        }
+
+        private int _timeZone;
+        public int TimeZone
+        {
+            get { return _timeZone; }
+            set
+            {
+                _timeZone = value;
+                _changedPropList.Add("TimeZone", value);
+            }
+        }
+
+        private bool _useCallLanguage;
+        /// <summary>
+        /// A flag indicating whether Cisco Unity Connection will use the language assigned to the call
+        /// </summary>
+        public bool UseCallLanguage
+        {
+            get { return _useCallLanguage; }
+            set
+            {
+                _useCallLanguage = value;
+                _changedPropList.Add("UseCallLanguage", value);
+            }
+        }
+
+        private bool _useDefaultLanguage;
+        public bool UseDefaultLanguage
+        {
+            get { return _useDefaultLanguage; }
+            set
+            {
+                _useDefaultLanguage = value;
+                _changedPropList.Add("UseDefaultLanguage", value);
+            }
+        }
+
+        private bool _useDefaultTimeZone;
+        public bool UseDefaultTimeZone
+        {
+            get { return _useDefaultTimeZone; }
+            set
+            {
+                _useDefaultTimeZone = value;
+                _changedPropList.Add("UseDefaultTimeZone", value);
+            }
+        }
+
+        private bool _undeletable;
+        public bool Undeletable
+        {
+            get { return _undeletable; }
+            set
+            {
+                _undeletable = value;
+                _changedPropList.Add("Undeletable", value);
+            }
+        }
+
+        //used to keep track of whic properties have been updated
+        private readonly ConnectionPropertyList _changedPropList;
+
+        public ConnectionServer HomeServer { get; private set; }
 
         #endregion
 
@@ -41,6 +402,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public CallHandlerTemplate()
         {
+            _changedPropList = new ConnectionPropertyList();
         }
 
         /// <summary>
@@ -276,7 +638,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this);
+                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -318,6 +680,14 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             return "";
+        }
+
+        /// <summary>
+        /// If the call handler object has andy pending updates that have not yet be comitted, this will clear them out.
+        /// </summary>
+        public void ClearPendingChanges()
+        {
+            _changedPropList.Clear();
         }
 
         #endregion

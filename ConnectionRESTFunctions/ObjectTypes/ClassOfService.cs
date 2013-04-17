@@ -722,7 +722,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pClassOfServices = HTTPFunctions.GetObjectsFromJson<ClassOfService>(res.ResponseText);
+            pClassOfServices = HTTPFunctions.GetObjectsFromJson<ClassOfService>(res.ResponseText,"cos");
 
             if (pClassOfServices == null)
             {
@@ -1136,7 +1136,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this);
+                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

@@ -26,6 +26,20 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Fields and Properties
 
+        private string _address;
+        /// <summary>
+        /// The physical address such as a house number and street name where the user is located, or with which a user is associated
+        /// </summary>
+        public string Address
+        {
+            get { return _address; }
+            set
+            {
+                _changedPropList.Add("Address", value);
+                _address = value;
+            }
+        }
+
         private string _alias;
         public string Alias
         {
@@ -47,6 +61,17 @@ namespace Cisco.UnityConnection.RestFunctions
                 //only allow it to be changed if it's empty, otherwise this is a no-op
                 if (string.IsNullOrEmpty(_callHandlerObjectId))
                     _callHandlerObjectId = value;
+            }
+        }
+
+        private string _city;
+        public string City
+        {
+            get { return _city; }
+            set
+            {
+                _changedPropList.Add("City", value);
+                _city = value;
             }
         }
 
@@ -90,78 +115,8 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private int _language;
-        /// <summary>
-        /// The preferred language of this user. For a user with a voice mailbox, it is the language in which the subscriber hears instructions 
-        /// played to them. If the subscriber has TTS enabled by their COS, it is the language used for TTS
-        /// </summary>
-        public int Language
-        {
-            get { return _language; }
-            set
-            {
-                _language = value;
-                _changedPropList.Add("Language", value);
-            }
-        }
-
-        private bool _listInDirectory;
-        /// <summary>
-        /// A flag indicating whether Cisco Unity Connection should list the subscriber in the phone directory for outside callers.
-        /// This does not affect the ability of other users from finding them when addressing messages.
-        /// </summary>
-        public bool ListInDirectory
-        {
-            get { return _listInDirectory; }
-            set
-            {
-                _listInDirectory = value;
-                _changedPropList.Add("ListInDirectory", value);
-            }
-        }
-
-        //you cannot change the location objectId
-        private string _locationObjectId;
-        public string LocationObjectId
-        {
-            get { return _locationObjectId; }
-            set
-            {
-                //only allow it to be updated if it's empty, otherwise this is a no-op
-                if (string.IsNullOrEmpty(_locationObjectId))
-                    _locationObjectId = value;
-            }
-        }
-
-        private string _mediaSwitchObjectId;
-        /// <summary>
-        /// The unique identifier of the MediaSwitch object Cisco Unity Connection uses for subscriber Telephone Record and Playback (TRAP) sessions 
-        /// and to dial MWI on or off requests when the Cisco Unity Connection system has a dual switch integration.
-        /// </summary>
-        public string MediaSwitchObjectId
-        {
-            get { return _mediaSwitchObjectId; }
-            set
-            {
-                _mediaSwitchObjectId = value;
-                _changedPropList.Add("MediaSwitchObjectId", value);
-            }
-        }
-
-        /// <summary>
-        /// Unique identifier for the user - this cannot be changed for an existing user.
-        /// </summary>
-        private string _objectId;
-        public string ObjectId
-        {
-            get { return _objectId; }
-            set
-            {
-                //only allow it to be set if it's empty
-                if (string.IsNullOrEmpty(_objectId))
-                    _objectId = value;
-            }
-        }
+       
+       
 
         private string _partitionObjectId;
         /// <summary>
@@ -177,27 +132,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private int _timeZone;
-        public int TimeZone
-        {
-            get { return _timeZone; }
-            set
-            {
-                _timeZone = value;
-                _changedPropList.Add("TimeZone", value);
-            }
-        }
-
-        private bool _voiceNameRequired;
-        public bool VoiceNameRequired
-        {
-            get { return _voiceNameRequired; }
-            set
-            {
-                _voiceNameRequired = value;
-                _changedPropList.Add("VoiceNameRequired", value);
-            }
-        }
+        
 
 
         private bool _addressAfterRecord;
@@ -269,6 +204,27 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
+        private string _billingId;
+        public string BillingId
+        {
+            get { return _billingId; }
+            set
+            {
+                _changedPropList.Add("BillingId", value);
+                _billingId = value;
+            }
+        }
+
+        private string _building;
+        public string Building
+        {
+            get { return _building; }
+            set
+            {
+                _changedPropList.Add("Building", value);
+                _building = value;
+            }
+        }
 
         private int _callAnswerTimeout;
         /// <summary>
@@ -414,6 +370,29 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
+        private string _country;
+        public string Country
+        {
+            get { return _country; }
+            set
+            {
+                _changedPropList.Add("Country", value);
+                _country = value;
+            }
+        }
+
+        private bool _createSmtpProxyFromCorp;
+        public bool CreateSmtpProxyFromCorp
+        {
+            get { return _createSmtpProxyFromCorp; }
+            set
+            {
+                _changedPropList.Add("CreateSmtpProxyFromCorp", value);
+                _createSmtpProxyFromCorp = value;
+            }
+        }
+
+
         private int _delayAfterGreeting;
         /// <summary>
         /// The amount of time (in milliseconds) Cisco Unity Connection will delay after playing greeting
@@ -443,14 +422,14 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private bool _createSmtpProxyFromCorp;
-        public bool CreateSmtpProxyFromCorp
+        private string _department;
+        public string Department
         {
-            get { return _createSmtpProxyFromCorp; }
+            get { return _department; }
             set
             {
-                _changedPropList.Add("CreateSmtpProxyFromCorp", value);
-                _createSmtpProxyFromCorp = value;
+                _changedPropList.Add("Department", value);
+                _department = value;
             }
         }
 
@@ -800,7 +779,52 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        public int LdapType { get; set; }
+
+        private int _language;
+        /// <summary>
+        /// The preferred language of this user. For a user with a voice mailbox, it is the language in which the subscriber hears instructions 
+        /// played to them. If the subscriber has TTS enabled by their COS, it is the language used for TTS
+        /// </summary>
+        public int Language
+        {
+            get { return _language; }
+            set
+            {
+                _language = value;
+                _changedPropList.Add("Language", value);
+            }
+        }
+
+        private bool _listInDirectory;
+        /// <summary>
+        /// A flag indicating whether Cisco Unity Connection should list the subscriber in the phone directory for outside callers.
+        /// This does not affect the ability of other users from finding them when addressing messages.
+        /// </summary>
+        public bool ListInDirectory
+        {
+            get { return _listInDirectory; }
+            set
+            {
+                _listInDirectory = value;
+                _changedPropList.Add("ListInDirectory", value);
+            }
+        }
+
+        //you cannot change the location objectId
+        private string _locationObjectId;
+        public string LocationObjectId
+        {
+            get { return _locationObjectId; }
+            set
+            {
+                //only allow it to be updated if it's empty, otherwise this is a no-op
+                if (string.IsNullOrEmpty(_locationObjectId))
+                    _locationObjectId = value;
+            }
+        }
+
+        [JsonProperty]
+        public int LdapType { get; private set; }
 
 
         private string _mailboxStoreObjectId;
@@ -813,6 +837,35 @@ namespace Cisco.UnityConnection.RestFunctions
                 _mailboxStoreObjectId = value;
             }
         }
+
+
+        private string _manager;
+        public string Manager
+        {
+            get { return _manager; }
+            set
+            {
+                _changedPropList.Add("Manager", value);
+                _manager = value;
+            }
+        }
+
+        private string _mediaSwitchObjectId;
+        /// <summary>
+        /// The unique identifier of the MediaSwitch object Cisco Unity Connection uses for subscriber Telephone Record and Playback (TRAP) sessions 
+        /// and to dial MWI on or off requests when the Cisco Unity Connection system has a dual switch integration.
+        /// </summary>
+        public string MediaSwitchObjectId
+        {
+            get { return _mediaSwitchObjectId; }
+            set
+            {
+                _mediaSwitchObjectId = value;
+                _changedPropList.Add("MediaSwitchObjectId", value);
+            }
+        }
+
+        
 
         private string _messageAgingPolicyObjectId;
         public string MessageAgingPolicyObjectId
@@ -912,7 +965,20 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-
+        /// <summary>
+        /// Unique identifier for the user - this cannot be changed for an existing user.
+        /// </summary>
+        private string _objectId;
+        public string ObjectId
+        {
+            get { return _objectId; }
+            set
+            {
+                //only allow it to be set if it's empty
+                if (string.IsNullOrEmpty(_objectId))
+                    _objectId = value;
+            }
+        }
 
         private int _pcaAddressBookRowsPerPage;
         public int PcaAddressBookRowsPerPage
@@ -922,6 +988,17 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 _changedPropList.Add("PcaAddressBookRowsPerPage", value);
                 _pcaAddressBookRowsPerPage = value;
+            }
+        }
+
+        private string _postalCode;
+        public string PostalCode
+        {
+            get { return _postalCode; }
+            set
+            {
+                _changedPropList.Add("PostalCode", value);
+                _postalCode = value;
             }
         }
 
@@ -1564,6 +1641,18 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
+        private string _state;
+        public string State
+        {
+            get { return _state; }
+            set
+            {
+                _changedPropList.Add("State", value);
+                _state = value;
+            }
+        }
+
+
         private string _synchScheduleObjectId;
         /// <summary>
         /// The unique identifier of the Schedule object to use for synchronization Calendar information from groupware (such as Exchange)
@@ -1575,6 +1664,28 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 _changedPropList.Add("SynchScheduleObjectId", value);
                 _synchScheduleObjectId = value;
+            }
+        }
+
+        private int _timeZone;
+        public int TimeZone
+        {
+            get { return _timeZone; }
+            set
+            {
+                _timeZone = value;
+                _changedPropList.Add("TimeZone", value);
+            }
+        }
+
+        private bool _voiceNameRequired;
+        public bool VoiceNameRequired
+        {
+            get { return _voiceNameRequired; }
+            set
+            {
+                _voiceNameRequired = value;
+                _changedPropList.Add("VoiceNameRequired", value);
             }
         }
 
@@ -2006,7 +2117,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "UserTemplate"), this);
+                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "UserTemplate"), this,
+                    HTTPFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

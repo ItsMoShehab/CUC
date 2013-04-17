@@ -38,7 +38,7 @@ namespace Cisco.UnityConnection.RestFunctions
         
         public string Alias { get; set; }
 
-        public bool AllowForeignMessages { get; set; }
+        public bool AllowForeignMessage { get; set; }
         
         public string DisplayName { get; set; }
         public string DistributionListObjectId { get; set; }
@@ -49,8 +49,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
         public string MemberContactObjectId { get; set; }
         public string MemberDistributionListObjectId { get; set; }
-        public string MemberGlobalObjectId { get; set; }
-        public string MemberGlobalDignetObjectId { get; set; }
+        public string MemberGlobalUserObjectId { get; set; }
+        public string MemberGlobalUserDignetObjectId { get; set; }
         public string MemberUserObjectId { get;  set; }
 
         public string MemberLocationObjectId { get; set; }

@@ -190,6 +190,28 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
             }
 
+            private string _searchScopeObjectId;
+            public string SearchScopeObjectId
+            {
+                get { return _searchScopeObjectId; }
+                set
+                {
+                    _changedPropList.Add("SearchScopeObjectId", value);
+                    _searchScopeObjectId = value;
+                }
+            }
+
+            private int _speechConfidenceThreshold;
+            public int SpeechConfidenceThreshold
+            {
+                get { return _speechConfidenceThreshold; }
+                set
+                {
+                    _changedPropList.Add("SpeechConfidenceThreshold", value);
+                    _speechConfidenceThreshold = value;
+                }
+            }
+
             private int _startDelay;
             public int StartDialDelay
             {
@@ -253,6 +275,17 @@ namespace Cisco.UnityConnection.RestFunctions
                 {
                     _changedPropList.Add("Tries", value);
                     _tries = value;
+                }
+            }
+
+            private bool _useCustomGreeting;
+            public bool UseCustomGreeting
+            {
+                get { return _useCustomGreeting; }
+                set
+                {
+                    _changedPropList.Add("UseCustomGreeting", value);
+                    _useCustomGreeting = value;
                 }
             }
 
@@ -981,7 +1014,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
                 try
                 {
-                    JsonConvert.PopulateObject(res.ResponseText, this);
+                    JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
                 }
                 catch (Exception ex)
                 {

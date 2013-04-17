@@ -102,8 +102,24 @@ namespace Cisco.UnityConnection.RestFunctions
         [JsonProperty]
         public string MediaPortGroupTemplateObjectId { get; private set; }
 
+
+        private string _mediaSipSecurityProfileObjectId;
+        public string MediaSipSecurityProfileObjectId
+        {
+            get { return _mediaSipSecurityProfileObjectId; }
+            set
+            {
+                _changedPropList.Add("MediaSipSecurityProfileObjectId", value);
+                _mediaSipSecurityProfileObjectId = value;
+            }
+        }
+
+
         [JsonProperty]
         public string MediaSwitchObjectId { get; private set; }
+
+        [JsonProperty]
+        public string MediaSwitchDisplayName { get; private set; }
 
 
         private string _mwiOnCode;
@@ -172,9 +188,6 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        [JsonProperty]
-        public string MediaSwitchDisplayName { get; private set; }
-
         private bool _noiseFreeEnable;
         public bool NoiseFreeEnable
         {
@@ -185,6 +198,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 _noiseFreeEnable = value;
             }
         }
+
 
         [JsonProperty]
         public string ObjectId { get; private set; }
@@ -224,6 +238,19 @@ namespace Cisco.UnityConnection.RestFunctions
 
         [JsonProperty]
         public int PortCount { get; private set; }
+
+
+        public int _preferredCallControl;
+        public int PreferredCallControl
+        {
+            get { return _preferredCallControl; }
+            set
+            {
+                _changedPropList.Add("PreferredCallControl", value);
+                _preferredCallControl = value;
+            }
+        }
+
 
         private int _recordingDTMFClipMs;
         public int RecordingDTMFClipMs
@@ -269,6 +296,76 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
+        private string _sipContactLineName;
+        public string SipContactLineName
+        {
+            get { return _sipContactLineName; }
+            set
+            {
+                _changedPropList.Add("SipContactLineName", value);
+                _sipContactLineName = value;
+            }
+        }
+
+
+        private bool _sipDoAuthenticate;
+        public bool SipDoAuthenticate
+        {
+            get { return _sipDoAuthenticate; }
+            set
+            {
+                _changedPropList.Add("SipDoAuthenticate", value);
+                _sipDoAuthenticate = value;
+            }
+        }
+
+        private bool _sipDoDtmfRfc2833;
+        public bool SipDoDtmfRfc2833
+        {
+            get { return _sipDoDtmfRfc2833; }
+            set
+            {
+                _changedPropList.Add("SipDoDtmfRfc2833", value);
+                _sipDoDtmfRfc2833 = value;
+            }
+        }
+
+        private bool _sipDoDtmfKPML;
+        public bool SipDoDtmfKPML
+        {
+            get { return _sipDoDtmfKPML; }
+            set
+            {
+                _changedPropList.Add("SipDoDtmfKPML", value);
+                _sipDoDtmfKPML = value;
+            }
+        }
+
+
+        private int _sipPreferredMedia;
+        public int SipPreferredMedia
+        {
+            get { return _sipPreferredMedia; }
+            set
+            {
+                _changedPropList.Add("SipPreferredMedia", value);
+                _sipPreferredMedia = value;
+            }
+        }
+
+
+        private bool _sipRegisterWithProxyServer;
+        public bool SipRegisterWithProxyServer
+        {
+            get { return _sipRegisterWithProxyServer; }
+            set
+            {
+                _changedPropList.Add("SipRegisterWithProxyServer", value);
+                _sipRegisterWithProxyServer = value;
+            }
+        }
+
+
         private int _sipTLSModeEnum;
         public int SipTLSModeEnum
         {
@@ -280,6 +377,18 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
+        private int _sipTransportProtocolEnum;
+        public int SipTransportProtocolEnum
+        {
+            get { return _sipTransportProtocolEnum; }
+            set
+            {
+                _changedPropList.Add("SipTransportProtocolEnum", value);
+                _sipTransportProtocolEnum = value;
+            }
+        }
+
+
         private string _skinnyDevicePrefix;
         public string SkinnyDevicePrefix
         {
@@ -290,6 +399,19 @@ namespace Cisco.UnityConnection.RestFunctions
                 _skinnyDevicePrefix = value;
             }
         }
+
+        private int _waitForCallInfoMs;
+        public int WaitForCallInfoMs
+        {
+            get { return _waitForCallInfoMs; }
+            set
+            {
+                _changedPropList.Add("WaitForCallInfoMs", value);
+                _waitForCallInfoMs = value;
+            }
+        }
+
+
 
         [JsonProperty]
         public int TelephonyIntegrationMethodEnum { get; private set; }
@@ -449,7 +571,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this);
+                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

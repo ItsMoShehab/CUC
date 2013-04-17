@@ -27,9 +27,9 @@ namespace SimpleLogger
     {
         public static bool DebugEnabled { get; set; }
         
-        private static string _fileName;
-        private static StreamWriter _swLog;
-        private static object _lock = new Object(); //used to make sure only one thread at a time is writing to the file
+        private static readonly string FileName;
+        private static readonly StreamWriter SwLog;
+        private static readonly object Lock = new Object(); //used to make sure only one thread at a time is writing to the file
 
         //Class constructor - creates a new file name with date in the name to make it unique and opens the stream file writer.
         //The file is opened for append so if there happens to be a file with that name (not likely) it will simply tack onto the 
@@ -38,7 +38,7 @@ namespace SimpleLogger
         {
             //generate a new log file name in the OS's temporary output folder.
             string strDate = DateTime.Now.ToString("yyyy_MM_dd_hh_mm_ss");
-            _fileName = string.Format("{0}RESTFastStart_Log_{1}.txt", Path.GetTempPath(), strDate);
+            FileName = string.Format("{0}RESTFastStart_Log_{1}.txt", Path.GetTempPath(), strDate);
 
             //by default debug is off unless the user explicitly turns it on
             DebugEnabled = false;
@@ -46,12 +46,12 @@ namespace SimpleLogger
             //open the log file stream and leave it open for the duration of the application's life.
             try
             {
-                _swLog = new StreamWriter(_fileName, true);
+                SwLog = new StreamWriter(FileName, true);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(String.Format("Could not open log file in {0}, error={1}", _fileName, ex.Message));
-                _swLog = null;
+                MessageBox.Show(String.Format("Could not open log file in {0}, error={1}", FileName, ex.Message));
+                SwLog = null;
             }
 
         }
@@ -70,7 +70,7 @@ namespace SimpleLogger
         public static void Log(string pOutput, bool pDebugOutput = false)
         {
             //if there was some sort of error opening the stream writer than bail out here.
-            if (_swLog==null)
+            if (SwLog==null)
              {
                  return;
              }
@@ -82,17 +82,17 @@ namespace SimpleLogger
             }
 
             //make sure only one thread at a time is writing to the output file.
-            lock (_lock)
+            lock (Lock)
             {
                 //don't include the timestamp prefix for debug output
                 if (pDebugOutput)
                 {
-                    _swLog.WriteLine(pOutput);
+                    SwLog.WriteLine(pOutput);
                 }
                 else
                 {
                     string strDate = DateTime.Now.ToString("[yyyy_MM_dd hh:mm:ss] ");
-                    _swLog.WriteLine(strDate + pOutput);
+                    SwLog.WriteLine(strDate + pOutput);
                 }
             }
         }
@@ -106,7 +106,7 @@ namespace SimpleLogger
         /// </returns>
         public static string GetCurrentLogFilePath()
         {
-            return _fileName;
+            return FileName;
         }
 
         /// <summary>
@@ -115,9 +115,9 @@ namespace SimpleLogger
         /// </summary>
         public static void FlushLog()
         {
-          	if (_swLog != null)
+          	if (SwLog != null)
             {
-              	_swLog.Flush();
+              	SwLog.Flush();
             }
         }
 
@@ -127,11 +127,11 @@ namespace SimpleLogger
         /// </summary>
         public static void StopLogging()
         {
-            if (_swLog!=null)
+            if (SwLog!=null)
             {
                 Log("Exiting application.");
-                _swLog.Close();
-                _swLog.Dispose();
+                SwLog.Close();
+                SwLog.Dispose();
             }
         }
 

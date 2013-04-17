@@ -608,7 +608,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "AlternateExtension"), this);
+                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "AlternateExtension"), this,
+                    HTTPFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
