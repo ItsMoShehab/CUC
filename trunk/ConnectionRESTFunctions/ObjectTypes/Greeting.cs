@@ -872,7 +872,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "Greeting"), this);
+                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "Greeting"), this,
+                    HTTPFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

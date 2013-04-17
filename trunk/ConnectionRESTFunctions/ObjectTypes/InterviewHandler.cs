@@ -727,7 +727,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
                 try
                 {
-                    JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText,"InterviewHandler"), this);
+                    JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText,"InterviewHandler"), this,
+                        HTTPFunctions.JsonSerializerSettings);
                 }
                 catch (Exception ex)
                 {

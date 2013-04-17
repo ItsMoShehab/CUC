@@ -21,6 +21,14 @@ namespace Cisco.UnityConnection.RestFunctions
         public bool Exclude { get; set; }
 
 
+        /// <summary>
+        /// empty constructor for JSON serializer
+        /// </summary>
+        public ScheduleSetMember()
+        {
+            
+        }
+
         public ScheduleSetMember(string pScheduleSetObjectId)
         {
             ScheduleSetObjectId = pScheduleSetObjectId;

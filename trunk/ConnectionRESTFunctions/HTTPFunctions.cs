@@ -21,6 +21,7 @@ using System.Xml.Linq;
 using System.Windows.Forms;
 using System.Drawing;
 using Newtonsoft.Json;
+using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
@@ -129,19 +130,60 @@ namespace Cisco.UnityConnection.RestFunctions
         //how many characters to "chop off" the rich text output control when it reaches its max.
         private const int CharsToRemoveWhenMaxReached = 10000;
 
+        /// <summary>
+        /// Used to customize JSON serialization and deserialization behavior - used internally only to hook the error handling event so we 
+        /// can easily log out missing properties in classes or properties not coming from REST call that should be.
+        /// </summary>
+        public static JsonSerializerSettings JsonSerializerSettings { get; private set; }
+
+        /// <summary>
+        /// When in debug mode missing member flags are output to the command window, otherwise 
+        /// </summary>
+        public static bool DebugMode { get; set; }
+
+        #endregion
+
+        #region Constructors
+
         // Default construtor - attach the VAlidateRemoteCertificate to the validation check so we don't get errors on self signed certificates 
         //when attaching to Connection servers.
         static HTTPFunctions()
         {
             // allows for validation of SSL conversations
+            DebugMode = false;
             ServicePointManager.ServerCertificateValidationCallback += ValidateRemoteCertificate;
             ServicePointManager.Expect100Continue = false;
+            JsonSerializerSettings = new JsonSerializerSettings();
+            JsonSerializerSettings.Error += JsonSerializerErrorEvent;
+            JsonSerializerSettings.MissingMemberHandling = MissingMemberHandling.Error;
         }
 
         #endregion
 
 
         #region Helper Methods
+
+        /// <summary>
+        /// Method that fires on the JSON serialization or deserialization errors.  Dumps information out to the console and then flags the 
+        /// error as handled.
+        /// Ignore any error about missing properties when it ends with "URI'" - we don't store the URIs for allt he sub objects since it's
+        /// not necessary as all those can easily be derived.
+        /// </summary>
+        private static void JsonSerializerErrorEvent(object sender, ErrorEventArgs e)
+        {
+            //if debug mode is on and it's not about URI properties then output to the console and the RTE control if one
+            //is established.
+            if (DebugMode && !e.ErrorContext.Error.Message.Contains("URI'"))
+            {
+                var oColor = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("[debug] JSON:"+e.ErrorContext.Error.Message);
+                Console.ForegroundColor = oColor;
+                
+                AddToOutputToRichTextControl("[debug] JSON:" + e.ErrorContext.Error.Message, Color.Red);
+            }
+            e.ErrorContext.Handled = true;
+        }
 
         /// <summary>
         /// If the calling client has passed in a handle to a Rich Text Edit box we can optionally drop inbound and outbound traffic to the 
@@ -153,7 +195,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pColor">
         /// Color to make the text
         /// </param>
-        private static void AddToOutputConsole(string pLine, Color pColor)
+        private static void AddToOutputToRichTextControl(string pLine, Color pColor)
         {
             //if no rich text control has been passed in then this is a no op
             if (RichTextControlToOutputTo == null) return;
@@ -269,14 +311,10 @@ namespace Cisco.UnityConnection.RestFunctions
         /// using the name of the type off the class.
         /// Used for classes like User and UserFull that need to be parsed using just "User"
         /// </param>
-        /// <param name="pSerializerSettings">
-        /// Custom serialization settings that can be optionally passed in - can be used for handling ill formed Json scenarios such as 
-        /// arrays presented as single objects for instance.
-        /// </param>
         /// <returns>
         /// List of instances of the object type passed in.
         /// </returns>
-        public static List<T> GetObjectsFromJson<T>(string pJson, string pTypeNameOverride = "", JsonSerializerSettings pSerializerSettings = null)
+        public static List<T> GetObjectsFromJson<T>(string pJson, string pTypeNameOverride = "")
         {
             //chop out the "wrapper" JSON for easier parsing
 
@@ -293,11 +331,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                if (pSerializerSettings == null)
-                {
-                    return JsonConvert.DeserializeObject<List<T>>(strCleanJson);
-                }
-                return JsonConvert.DeserializeObject<List<T>>(strCleanJson, pSerializerSettings);
+                return JsonConvert.DeserializeObject<List<T>>(strCleanJson, JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -320,14 +354,10 @@ namespace Cisco.UnityConnection.RestFunctions
         /// If what's returned via the JSON text does not match the class name itself, you can override it 
         /// with this string.  Needed when parsing UserBase, UserFull and other classes that don't match.
         /// </param>
-        /// <param name="pSerializerSettings">
-        /// Custom serialization settings that can be optionally passed in - can be used for handling ill formed Json scenarios such as 
-        /// arrays presented as single objects for instance.
-        /// </param>
         /// <returns>
         /// Instance of the class passed in filled out (hopefully) with the data from the JSON text.
         /// </returns>
-        public static T GetObjectFromJson<T>(string pJson, string pTypeNameOverride = "", JsonSerializerSettings pSerializerSettings = null) where T : new()
+        public static T GetObjectFromJson<T>(string pJson, string pTypeNameOverride = "") where T : new()
         {
             //chop out the "wrapper" JSON for easier parsing
             string strCleanJson;
@@ -342,11 +372,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                if (pSerializerSettings == null)
-                {
-                    return JsonConvert.DeserializeObject<T>(strCleanJson);
-                }
-                return JsonConvert.DeserializeObject<T>(strCleanJson, pSerializerSettings);
+                return JsonConvert.DeserializeObject<T>(strCleanJson, JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -466,10 +492,10 @@ namespace Cisco.UnityConnection.RestFunctions
                     //    request.Proxy = null;
                     //}
 
-                    AddToOutputConsole("**** Sending to server ****",Color.Blue);
-                    AddToOutputConsole("    URI:" + request.RequestUri, Color.Blue);
-                    AddToOutputConsole("    Method:" + pMethod, Color.Blue);
-                    AddToOutputConsole("    Body:" + pRequestBody, Color.Blue);
+                    AddToOutputToRichTextControl("**** Sending to server ****",Color.Blue);
+                    AddToOutputToRichTextControl("    URI:" + request.RequestUri, Color.Blue);
+                    AddToOutputToRichTextControl("    Method:" + pMethod, Color.Blue);
+                    AddToOutputToRichTextControl("    Body:" + pRequestBody, Color.Blue);
                     
                     request.Method = pMethod.ToString();
                     request.Credentials = new NetworkCredential(pLoginName, pLoginPw);
@@ -541,8 +567,8 @@ namespace Cisco.UnityConnection.RestFunctions
                             res.StatusDescription = ((HttpWebResponse)ex.Response).StatusDescription;
                             res.StatusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
                             
-                            AddToOutputConsole("**** Error encountered ****", Color.Red  );
-                            AddToOutputConsole(res.ToString(), Color.Red);
+                            AddToOutputToRichTextControl("**** Error encountered ****", Color.Red  );
+                            AddToOutputToRichTextControl(res.ToString(), Color.Red);
                             return res;
                         }
                         else
@@ -555,8 +581,8 @@ namespace Cisco.UnityConnection.RestFunctions
                     {
                         //some other error (connection lost, server down etc...) happened, just return it as a general error.
                         res.ErrorText = "Error fetching request in GetResponse on HTTPFunctions.cs:" + ex.Message;
-                        AddToOutputConsole("**** Error encountered ****", Color.Red);
-                        AddToOutputConsole(ex.Message, Color.Red);
+                        AddToOutputToRichTextControl("**** Error encountered ****", Color.Red);
+                        AddToOutputToRichTextControl(ex.Message, Color.Red);
                         return res;
                     }
 
@@ -572,9 +598,9 @@ namespace Cisco.UnityConnection.RestFunctions
                         //at this point the send is considered good - parse out the response as XML if any was recieved (not all requests get them).
                         res.Success = true;
 
-                        AddToOutputConsole("**** Response from server ****",Color.Black );
-                        AddToOutputConsole(string.Format("Status={0}",res.StatusCode) , Color.Black);
-                        AddToOutputConsole(res.ResponseText, Color.Black);
+                        AddToOutputToRichTextControl("**** Response from server ****",Color.Black );
+                        AddToOutputToRichTextControl(string.Format("Status={0}",res.StatusCode) , Color.Black);
+                        AddToOutputToRichTextControl(res.ResponseText, Color.Black);
 
                         return res;
                     }
@@ -587,8 +613,8 @@ namespace Cisco.UnityConnection.RestFunctions
                                                 + "This usually means an invalid property name or ID that could not be found was passed on the URL."
                                                 ,ex.Message);
 
-                    AddToOutputConsole("**** Error encountered ****", Color.Red);
-                    AddToOutputConsole(res.ErrorText, Color.Red);
+                    AddToOutputToRichTextControl("**** Error encountered ****", Color.Red);
+                    AddToOutputToRichTextControl(res.ErrorText, Color.Red);
                     
                     res.Success = false;
                 }
@@ -596,8 +622,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 {
                     res.ErrorText = "Error encountered in GetResponse on HTTPFunctions.cs:" + ex.Message;
                     res.Success = false;
-                    AddToOutputConsole("**** Error encountered ****", Color.Red);
-                    AddToOutputConsole(res.ErrorText, Color.Red);
+                    AddToOutputToRichTextControl("**** Error encountered ****", Color.Red);
+                    AddToOutputToRichTextControl(res.ErrorText, Color.Red);
                 }
                 finally
                 {
@@ -853,7 +879,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             catch (Exception ex)
             {
-                AddToOutputConsole("(error)Failed to parse JSON response:" + ex,Color.Red);
+                AddToOutputToRichTextControl("(error)Failed to parse JSON response:" + ex,Color.Red);
             }
             return res;
         }
@@ -1185,9 +1211,9 @@ namespace Cisco.UnityConnection.RestFunctions
                 if (File.Exists(pLocalWavFilePath))
                     File.Delete(pLocalWavFilePath);
 
-                AddToOutputConsole("**** Sending to server ****", Color.Blue);
-                AddToOutputConsole("    URI:" + pFullUrl, Color.Blue);
-                AddToOutputConsole("    Method: GET", Color.Blue);
+                AddToOutputToRichTextControl("**** Sending to server ****", Color.Blue);
+                AddToOutputToRichTextControl("    URI:" + pFullUrl, Color.Blue);
+                AddToOutputToRichTextControl("    Method: GET", Color.Blue);
 
                 //large try block here - many of these web calls can fail - wrapping them all individually is a bit much.
                 try
@@ -1369,10 +1395,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 webReq.ContentLength = buffer.Length;
                 webReq.ContentType = "audio/wav";
 
-                AddToOutputConsole("**** Sending to server ****", Color.Blue);
-                AddToOutputConsole("    URI:" + webReq.RequestUri, Color.Blue);
-                AddToOutputConsole("    Method: PUT", Color.Blue);
-                AddToOutputConsole("    ContentType:" + webReq.ContentLength, Color.Blue);
+                AddToOutputToRichTextControl("**** Sending to server ****", Color.Blue);
+                AddToOutputToRichTextControl("    URI:" + webReq.RequestUri, Color.Blue);
+                AddToOutputToRichTextControl("    Method: PUT", Color.Blue);
+                AddToOutputToRichTextControl("    ContentType:" + webReq.ContentLength, Color.Blue);
 
                 webReq.Credentials = new NetworkCredential(pLogin, pPassword);
                 webReq.KeepAlive = false;
@@ -1438,8 +1464,8 @@ namespace Cisco.UnityConnection.RestFunctions
                     res.XmlElement = GetXElementFromString(res.ResponseText);
                     res.StatusDescription = ((HttpWebResponse) ex.Response).StatusDescription;
                     res.StatusCode = (int) ((HttpWebResponse) ex.Response).StatusCode;
-                    AddToOutputConsole("**** Error encountered ****", Color.Red);
-                    AddToOutputConsole(res.ToString(),Color.Red);
+                    AddToOutputToRichTextControl("**** Error encountered ****", Color.Red);
+                    AddToOutputToRichTextControl(res.ToString(),Color.Red);
                 }
                 else
                 {
@@ -1656,8 +1682,8 @@ namespace Cisco.UnityConnection.RestFunctions
                     res.StatusDescription = ((HttpWebResponse)ex.Response).StatusDescription;
                     res.StatusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
                     
-                    AddToOutputConsole("**** Error encountered ****", Color.Red);
-                    AddToOutputConsole(res.ToString(), Color.Red);
+                    AddToOutputToRichTextControl("**** Error encountered ****", Color.Red);
+                    AddToOutputToRichTextControl(res.ToString(), Color.Red);
                 }
                 else
                 {
@@ -1868,8 +1894,8 @@ namespace Cisco.UnityConnection.RestFunctions
                     res.StatusDescription = ((HttpWebResponse)ex.Response).StatusDescription;
                     res.StatusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
 
-                    AddToOutputConsole("**** Error encountered ****", Color.Red);
-                    AddToOutputConsole(res.ToString(), Color.Red);
+                    AddToOutputToRichTextControl("**** Error encountered ****", Color.Red);
+                    AddToOutputToRichTextControl(res.ToString(), Color.Red);
                 }
                 else
                 {
@@ -2069,8 +2095,8 @@ namespace Cisco.UnityConnection.RestFunctions
                     res.StatusDescription = ((HttpWebResponse)ex.Response).StatusDescription;
                     res.StatusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
 
-                    AddToOutputConsole("**** Error encountered ****", Color.Red);
-                    AddToOutputConsole(res.ToString(), Color.Red);
+                    AddToOutputToRichTextControl("**** Error encountered ****", Color.Red);
+                    AddToOutputToRichTextControl(res.ToString(), Color.Red);
                 }
                 else
                 {

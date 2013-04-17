@@ -25,6 +25,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
         public string TextName { get; set; }
         public string ObjectId { get; set; }
+        public bool IsEnabled { get; set; }
 
         #endregion
 
@@ -99,7 +100,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this);
+                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

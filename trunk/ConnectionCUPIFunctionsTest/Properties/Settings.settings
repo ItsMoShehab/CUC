@@ -14,5 +14,8 @@
     <Setting Name="ExtensionToDial" Type="System.String" Scope="User">
       <Value Profile="(Default)">1001</Value>
     </Setting>
+    <Setting Name="DebugOn" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

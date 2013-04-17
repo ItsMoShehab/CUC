@@ -107,6 +107,9 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public string DtmfAccessId { get; set; }
 
+        public string DtmfNameFirstLast { get; set; }
+        public string DtmfNameLastFirst { get; set; }
+
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
@@ -381,7 +384,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this);
+                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

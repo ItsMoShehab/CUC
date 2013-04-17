@@ -142,7 +142,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         //you cannot edit the creation time.
-        public DateTime CreationTime { get; set; }
+         [JsonProperty]
+        public DateTime CreationTime { get; private set; }
 
         private string _displayName;
         public string DisplayName
@@ -238,7 +239,8 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         //you cannot change the location objectID
-        public string LocationObjectId { get; set; }
+        [JsonProperty]
+        public string LocationObjectId { get; private set; }
 
         private int _maxMsgLen;
         /// <summary>
@@ -292,6 +294,29 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 _partitionObjectId = value;
                 _changedPropList.Add("PartitionObjectId", value);
+            }
+        }
+
+        private int _playAfterMessage;
+        public int PlayAfterMessage
+        {
+            get { return _playAfterMessage; }
+            set
+            {
+                _playAfterMessage = value;
+                _changedPropList.Add("PlayAfterMessage", value);
+            }
+        }
+
+
+        private int _playPostGreetingRecording;
+        public int PlayPostGreetingRecording
+        {
+            get { return _playPostGreetingRecording; }
+            set
+            {
+                _playPostGreetingRecording = value;
+                _changedPropList.Add("PlayPostGreetingRecording", value);
             }
         }
 
@@ -352,6 +377,22 @@ namespace Cisco.UnityConnection.RestFunctions
                 _changedPropList.Add("ScheduleSetObjectId", value);
             }
         }
+
+
+        private int _sendPrivateMsg;
+        /// <summary>
+        /// A flag indicating whether an unidentified caller can mark a message as secure.
+        /// </summary>
+        public int SendPrivateMsg
+        {
+            get { return _sendPrivateMsg; }
+            set
+            {
+                _sendPrivateMsg = value;
+                _changedPropList.Add("SendPrivateMsg", value);
+            }
+        }
+
 
         private bool _sendSecureMsg;
         /// <summary>
@@ -1217,7 +1258,8 @@ namespace Cisco.UnityConnection.RestFunctions
             
             try
             {
-                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "Callhandler"), this);
+                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "Callhandler"), this,
+                    HTTPFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

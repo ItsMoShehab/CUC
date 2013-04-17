@@ -90,48 +90,66 @@ namespace Cisco.UnityConnection.RestFunctions
         //The names of the properties must match exactly the tags in XML for them including case - the routine that deserializes data from XML into the 
         //objects requires this to match them up.
 
-        public string DtmfAccessId { get; set; }
-        public string DisplayName { get; set; }
-        public int DestinationType { get; set; }
-        public string HostAddress { get; set; }
-        public string ObjectId { get; set; }
-        public string SmtpDomain { get; set; }
-        public int TransferNumberOfRings { get; set; }
-        public int TransferTimeout { get; set; }
-        public bool IsPrimary { get; set; }
-        public string DefaultWaveFormatObjectId { get; set; }
-        public bool IncludeLocations { get; set; }
-        public int KeypadMapId { get; set; }
-        public string DtmfName { get; set; }
-        public int TimeZone { get; set; }
-        public int DefaultLanguage { get; set; }
-        public int DefaultTTSLanguage { get; set; }
-        public int MaxGreetingLength { get; set; }
-        public int MaxContacts { get; set; }
         public int AgcTargetDb { get; set; }
-        public string SynchronizationUserObjectId { get; set; }
-        public int LastUSNSent { get; set; }
-        public string SystemVersion { get; set; }
-        public string DefaultPartitionObjectId { get; set; }
-        public string DefaultSearchSpaceObjectId { get; set; }
-        public int SmtpUnknownRecipientAction { get; set; }
-        public int LastUSNReceived { get; set; }
-        public bool PushDirectory { get; set; }
-        public bool PullDirectory { get; set; }
-        public int ReplicationSet { get; set; }
-        public string EncryptionKey { get; set; }
-        public bool UseSmartSmtpHost { get; set; }
+
         public bool AllowCrossBoxLogin { get; set; }
         public bool AllowCrossBoxTransfer { get; set; }
+
         public int CrossBoxMaxRings { get; set; }
         public int CrossBoxSendDelay { get; set; }
         public int CrossBoxResponseTimeout { get; set; }
+
+        public string DefaultWaveFormatObjectId { get; set; }
+        public int DefaultLanguage { get; set; }
+        public int DefaultTTSLanguage { get; set; }
+        public string DefaultPartitionObjectId { get; set; }
+        public string DefaultSearchSpaceObjectId { get; set; }
+        public string DtmfAccessId { get; set; }
+        public string DisplayName { get; set; }
+        public int DestinationType { get; set; }
+        public string DtmfName { get; set; }
+        public string EncryptionKey { get; set; }
+        public string HostAddress { get; set; }
+        
+        public bool IncludeLocations { get; set; }
+        public bool IsPrimary { get; set; }
+
         public int LastUSNAck { get; set; }
-        public int ReplicationSetIncoming { get; set; }
-        public int ReplicationSetOutgoing { get; set; }
+        public int LastUSNSent { get; set; }
+        public int LastUSNReceived { get; set; }
+
+        public int KeypadMapId { get; set; }
+
+        public int MaxGreetingLength { get; set; }
+        public int MaxContacts { get; set; }
+
+        public string ObjectId { get; set; }
+        
+        public bool PushDirectory { get; set; }
+        public bool PullDirectory { get; set; }
+        
         public int PushState { get; set; }
         public int PullState { get; set; }
+
+        public int ReplicationSet { get; set; }
+        public int ReplicationSetIncoming { get; set; }
+        public int ReplicationSetOutgoing { get; set; }
+
+        public string SkinnyLocalCACertificate { get; set; }
+        public string SkinnyLocalCAPrivateKey { get; set; }
+        public string SkinnyLocalCACertificateFileName { get; set; }
+        public string SmtpDomain { get; set; }
+        public string SmtpSmartHost { get; set; }
+        public int SmtpUnknownRecipientAction { get; set; }
         public int Status { get; set; }
+        public string SystemVersion { get; set; }
+        public string SynchronizationUserObjectId { get; set; }
+
+        public int TimeZone { get; set; }
+        public int TransferNumberOfRings { get; set; }
+        public int TransferTimeout { get; set; }
+
+        public bool UseSmartSmtpHost { get; set; }
 
         #endregion
 
@@ -381,7 +399,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this);
+                JsonConvert.PopulateObject(res.ResponseText, this,HTTPFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

@@ -467,7 +467,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "MenuEntry"), this);
+                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "MenuEntry"), this, 
+                    HTTPFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
