@@ -35,6 +35,8 @@ namespace LoadEachObjectTypeTest
         {
             HTTPFunctions.JsonSerializerSettings.Error += JsonSerializerError;
 
+            HTTPFunctions.ErrorEvents += HttpFunctionsOnErrorEvents;
+
             try
             {
                 _server = new ConnectionServer("192.168.0.184", "CCMAdministrator", "ecsbulab");
@@ -49,7 +51,7 @@ namespace LoadEachObjectTypeTest
             //test user that has private lists, notification devices, mwis, alternate extensions and messages
             _userAliasToUse = "jlindborg";
 
-            Logger.Log("Starting Object load test on:" + _server);
+            WriteOutput("Starting Object load test on:" + _server);
 
             RunTests();
 
@@ -57,19 +59,23 @@ namespace LoadEachObjectTypeTest
             Process.Start(Logger.GetCurrentLogFilePath());
 
             Console.WriteLine("Test compelte.  Press enter to exit");
-            Console.WriteLine();
+            Console.ReadLine();
         }
 
-        
+
+        private static void HttpFunctionsOnErrorEvents(object sender, HTTPFunctions.LogEventArgs logEventArgs)
+        {
+            Console.WriteLine(logEventArgs.Line);
+        }
+
+
         private static void RunTests()
         {
-            WebCallResult res;
-
             // keep these in rough alphabetical order
 
             //grab the user to test with first - it gets used by many classes that need it
             UserFull oTestUser;
-            res = UserBase.GetUser(out oTestUser, _server, "", _userAliasToUse);
+            WebCallResult res = UserBase.GetUser(out oTestUser, _server, "", _userAliasToUse);
             if (res.Success == false || oTestUser == null)
             {
                 WriteOutput("[ERROR] test user not found on target server with alias="+_userAliasToUse);
@@ -228,6 +234,15 @@ namespace LoadEachObjectTypeTest
                 WriteOutput("[ERROR] fetching interview handlers:" + res);
                 return;
             }
+
+            List<InterviewQuestion> oQuestions;
+            res = InterviewQuestion.GetInterviewQuestions(_server, oInterviewHandlers[0].ObjectId, out oQuestions);
+            if (res.Success == false || oQuestions.Count == 0)
+            {
+                WriteOutput("[ERROR] fetching interview handler questions:" + res);
+                return;
+            }
+
 
             //Location
             List<Location> oLocations;
@@ -492,7 +507,7 @@ namespace LoadEachObjectTypeTest
             }
             catch (Exception ex)
             {
-                WriteOutput("[ERROR] fetching time zones");
+                WriteOutput("[ERROR] fetching time zones:"+ex);
                 return;
             }
             

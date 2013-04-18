@@ -195,6 +195,26 @@ namespace Cisco.UnityConnection.RestFunctions
             //used to keep track of whic properties have been updated
             private readonly ConnectionPropertyList _changedPropList;
 
+            //The list of questions is NULL by default but get fetched on the fly when referenced
+            private List<InterviewQuestion> _questions;
+            public List<InterviewQuestion> GetInterviewQuestions(bool pForceRefetch = false)
+            {
+                if (pForceRefetch)
+                {
+                    _questions = null;
+                }
+
+                //fetch transfer options only if they are referenced
+                if (_questions == null)
+                {
+                    GetInterviewQuestions(out _questions);
+                }
+
+                return _questions;
+            }
+
+            
+
             #endregion
 
 
@@ -790,6 +810,13 @@ namespace Cisco.UnityConnection.RestFunctions
             public void ClearPendingChanges()
             {
                 _changedPropList.Clear();
+            }
+
+            //helper function used when a call is made to get at the list of questions for the handler instance - the public interface is up in the 
+            //properties section and keeps the list of questions around once they've been fetched.
+            private WebCallResult GetInterviewQuestions(out List<InterviewQuestion> pInterviewQuestions)
+            {
+                return InterviewQuestion.GetInterviewQuestions(HomeServer, ObjectId, out pInterviewQuestions);
             }
 
             #endregion
