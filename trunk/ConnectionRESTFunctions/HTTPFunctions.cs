@@ -18,8 +18,6 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml.Linq;
-using System.Windows.Forms;
-using System.Drawing;
 using Newtonsoft.Json;
 using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 
@@ -120,16 +118,6 @@ namespace Cisco.UnityConnection.RestFunctions
         //do implement a much more sophisticated approach that is well beyond the scope of this example solution.
         private static readonly Object ThisLock = new Object();
 
-        //if set to an instance of a rich text control this can be used to show a "rolling output" of commands sent and received if the calling 
-        //client wishes to show it (can be handy to learn the CUPI details).
-        public static RichTextBox RichTextControlToOutputTo { get; set; }
-
-        //the total number of characters to allow in the rich text edit box we're optionally dumping inbound and outbound traffic to.
-        private const int MaxCharsInRte = 50000;
-
-        //how many characters to "chop off" the rich text output control when it reaches its max.
-        private const int CharsToRemoveWhenMaxReached = 10000;
-
         /// <summary>
         /// Used to customize JSON serialization and deserialization behavior - used internally only to hook the error handling event so we 
         /// can easily log out missing properties in classes or properties not coming from REST call that should be.
@@ -142,6 +130,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public static bool DebugMode { get; set; }
 
         #endregion
+
 
         #region Constructors
 
@@ -160,70 +149,101 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #endregion
 
+        #region Events 
+
+        /// <summary>
+        /// Event handle for external clients to register with so they can get logging events on errors and warnings that happen
+        /// within this class.
+        /// </summary>
+        public static event LoggingEventHandler ErrorEvents;
+
+        /// <summary>
+        /// Debug events can be registered for and recieved to view raw send/response text
+        /// </summary>
+        public static event LoggingEventHandler DebugEvents;
+
+        /// <summary>
+        /// The HTTPFunctions class sends errors and warnings encountered in the class as an event that's raised which 
+        /// clients can subscribe to for logging events if they wish.  A custom eventArg is used for this that contains
+        /// just a simple string "Line" property.
+        /// </summary>
+        public class LogEventArgs : EventArgs
+        {
+            public string Line { get; set; }
+
+            public LogEventArgs(string pLine)
+            {
+                Line = pLine;
+            }
+
+            public override string ToString()
+            {
+                return Line;
+            }
+        }
+
+        /// <summary>
+        /// Alternative event handler for logging events that includes the LogEventArgs that include the log string in the 
+        /// argument
+        /// </summary>
+        public delegate void LoggingEventHandler(object sender, LogEventArgs e);
+
+        /// <summary>
+        /// If there's one or more clients registered for the ErrorEvent event then issue it here.
+        /// </summary>
+        /// <param name="pLine">
+        /// String to pass back to the receiving method
+        /// </param>
+        private static void RaiseErrorEvent(string pLine)
+        {
+            //notify registered clients 
+            LoggingEventHandler handler = ErrorEvents;
+
+            if (handler != null)
+            {
+                LogEventArgs oArgs = new LogEventArgs(pLine);
+                handler(null, oArgs);
+            }
+        }
+
+        /// <summary>
+        /// If there's one or more clients registerd for the DebugEvents event then issue it here.
+        /// </summary>
+        /// <param name="pLine">
+        /// String to pass back to the receiving method
+        /// </param>
+        private static void RaiseDebugEvent(string pLine)
+        {
+            //notify registered clients
+            LoggingEventHandler handler = DebugEvents;
+
+            if (handler != null)
+            {
+                LogEventArgs oArgs = new LogEventArgs(pLine);
+                handler(null, oArgs);
+            }
+        }
+
+        #endregion
+
 
         #region Helper Methods
 
         /// <summary>
-        /// Method that fires on the JSON serialization or deserialization errors.  Dumps information out to the console and then flags the 
-        /// error as handled.
+        /// Method that fires on the JSON serialization or deserialization errors.  Raises an error event only if debug mode is turned on.
         /// Ignore any error about missing properties when it ends with "URI'" - we don't store the URIs for allt he sub objects since it's
         /// not necessary as all those can easily be derived.
         /// </summary>
         private static void JsonSerializerErrorEvent(object sender, ErrorEventArgs e)
         {
-            //if debug mode is on and it's not about URI properties then output to the console and the RTE control if one
-            //is established.
-            if (DebugMode && !e.ErrorContext.Error.Message.Contains("URI'"))
+            //if debug mode is on and it's not about URI properties then raise a debug event 
+            if (!e.ErrorContext.Error.Message.Contains("URI'"))
             {
-                var oColor = Console.ForegroundColor;
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("[debug] JSON:"+e.ErrorContext.Error.Message);
-                Console.ForegroundColor = oColor;
-                
-                AddToOutputToRichTextControl("[debug] JSON:" + e.ErrorContext.Error.Message, Color.Red);
+                RaiseErrorEvent("JSON:" + e.ErrorContext.Error.Message);
             }
             e.ErrorContext.Handled = true;
         }
 
-        /// <summary>
-        /// If the calling client has passed in a handle to a Rich Text Edit box we can optionally drop inbound and outbound traffic to the 
-        /// control for a nice "rolling dialog" of what's going back and forth via CUPI to make various calls.
-        /// </summary>
-        /// <param name="pLine">
-        /// The string to add to the RTE output.  It will be added to the bottom and the control will "scroll" to show it.
-        /// </param>
-        /// <param name="pColor">
-        /// Color to make the text
-        /// </param>
-        private static void AddToOutputToRichTextControl(string pLine, Color pColor)
-        {
-            //if no rich text control has been passed in then this is a no op
-            if (RichTextControlToOutputTo == null) return;
-
-            if ((RichTextControlToOutputTo == null) || RichTextControlToOutputTo.IsDisposed)
-            {
-                //if a log request comes in after the form the RTE control lives on is disposed then this can happen - just exit.
-                return;
-            }
-
-            //make sure the RTF control doesn't chew up too much space - it's just a progress indicator here...
-            if (RichTextControlToOutputTo.Text.Length > MaxCharsInRte)
-            {
-                //chop off the first X characters without losing any formatting/colors that may be there.
-                RichTextControlToOutputTo.Select(1, CharsToRemoveWhenMaxReached);
-                RichTextControlToOutputTo.SelectedText = "";
-            }
-
-            //tack the text onto the RTE control and color it appropriately
-            int iPos = RichTextControlToOutputTo.Text.Length;
-            RichTextControlToOutputTo.AppendText(pLine + "\n");
-            RichTextControlToOutputTo.SelectionStart = iPos;
-            RichTextControlToOutputTo.SelectionLength = pLine.Length;
-            RichTextControlToOutputTo.SelectionColor = pColor;
-
-            //force the output to scroll to the bottom
-            RichTextControlToOutputTo.ScrollToCaret();
-        }
 
 
         //used to ignore self signed certificate errors when using HTTP to move wav files on and off Conneciton servers - nearly every production
@@ -336,7 +356,7 @@ namespace Cisco.UnityConnection.RestFunctions
             catch (Exception ex)
             {
                 if (Debugger.IsAttached) Debugger.Break();
-                Console.WriteLine("Failed in GetObjectsFromJson:" + ex);
+                RaiseErrorEvent("Failed in GetObjectsFromJson:" + ex);
                 return new List<T>();
             }
         }
@@ -377,7 +397,7 @@ namespace Cisco.UnityConnection.RestFunctions
             catch (Exception ex)
             {
                 if (Debugger.IsAttached) Debugger.Break();
-                Console.WriteLine("Failed in GetObjectFromJson:" + ex);
+                RaiseErrorEvent("Failed in GetObjectFromJson:" + ex);
                 return new T();
             }
         }
@@ -481,21 +501,14 @@ namespace Cisco.UnityConnection.RestFunctions
                     if (request == null)
                     {
                         res.ErrorText ="Error - null returned for WebRequest create in GetResponse on HTTPFunctions.cs using URL=" +pUrl;
+                        RaiseErrorEvent(res.ErrorText);
                         return res;
                     }
 
-                    //test if a proxy is present - leave this alone for now.
-                    //IWebProxy proxy = request.Proxy;
-                    //if (request.Proxy != null)
-                    //{
-                    //    Console.WriteLine("Removing proxy: {0}", proxy.GetProxy(request.RequestUri));
-                    //    request.Proxy = null;
-                    //}
-
-                    AddToOutputToRichTextControl("**** Sending to server ****",Color.Blue);
-                    AddToOutputToRichTextControl("    URI:" + request.RequestUri, Color.Blue);
-                    AddToOutputToRichTextControl("    Method:" + pMethod, Color.Blue);
-                    AddToOutputToRichTextControl("    Body:" + pRequestBody, Color.Blue);
+                    RaiseDebugEvent("**** Sending to server ****");
+                    RaiseDebugEvent("    URI:" + request.RequestUri);
+                    RaiseDebugEvent("    Method:" + pMethod);
+                    RaiseDebugEvent("    Body:" + pRequestBody);
                     
                     request.Method = pMethod.ToString();
                     request.Credentials = new NetworkCredential(pLoginName, pLoginPw);
@@ -567,22 +580,21 @@ namespace Cisco.UnityConnection.RestFunctions
                             res.StatusDescription = ((HttpWebResponse)ex.Response).StatusDescription;
                             res.StatusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
                             
-                            AddToOutputToRichTextControl("**** Error encountered ****", Color.Red  );
-                            AddToOutputToRichTextControl(res.ToString(), Color.Red);
+                            RaiseErrorEvent(res.ToString());
                             return res;
                         }
                         else
                         {
                             //there's not a lot of good reasons the WebException will be thrown without it being a protocol error, but just in case.
                             res.ErrorText = "Web exception error in GetResponse on HTTPFunctions.cs:" + ex.Message;
+                            RaiseErrorEvent(res.ErrorText);
                         }
                     }
                     catch (Exception ex)
                     {
                         //some other error (connection lost, server down etc...) happened, just return it as a general error.
                         res.ErrorText = "Error fetching request in GetResponse on HTTPFunctions.cs:" + ex.Message;
-                        AddToOutputToRichTextControl("**** Error encountered ****", Color.Red);
-                        AddToOutputToRichTextControl(ex.Message, Color.Red);
+                        RaiseErrorEvent(ex.Message);
                         return res;
                     }
 
@@ -598,9 +610,9 @@ namespace Cisco.UnityConnection.RestFunctions
                         //at this point the send is considered good - parse out the response as XML if any was recieved (not all requests get them).
                         res.Success = true;
 
-                        AddToOutputToRichTextControl("**** Response from server ****",Color.Black );
-                        AddToOutputToRichTextControl(string.Format("Status={0}",res.StatusCode) , Color.Black);
-                        AddToOutputToRichTextControl(res.ResponseText, Color.Black);
+                        RaiseDebugEvent("**** Response from server ****");
+                        RaiseDebugEvent(string.Format("Status={0}", res.StatusCode));
+                        RaiseDebugEvent(res.ResponseText);
 
                         return res;
                     }
@@ -613,8 +625,7 @@ namespace Cisco.UnityConnection.RestFunctions
                                                 + "This usually means an invalid property name or ID that could not be found was passed on the URL."
                                                 ,ex.Message);
 
-                    AddToOutputToRichTextControl("**** Error encountered ****", Color.Red);
-                    AddToOutputToRichTextControl(res.ErrorText, Color.Red);
+                    RaiseErrorEvent(res.ErrorText);
                     
                     res.Success = false;
                 }
@@ -622,8 +633,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 {
                     res.ErrorText = "Error encountered in GetResponse on HTTPFunctions.cs:" + ex.Message;
                     res.Success = false;
-                    AddToOutputToRichTextControl("**** Error encountered ****", Color.Red);
-                    AddToOutputToRichTextControl(res.ErrorText, Color.Red);
+                    RaiseErrorEvent(res.ErrorText);
                 }
                 finally
                 {
@@ -718,6 +728,7 @@ namespace Cisco.UnityConnection.RestFunctions
                     else
                     {
                         if (Debugger.IsAttached) Debugger.Break();
+                        RaiseErrorEvent("Failed converting count to integer in GetCupiResponse:" + strCount);
                     }
                     return res;
                 }
@@ -879,132 +890,8 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             catch (Exception ex)
             {
-                AddToOutputToRichTextControl("(error)Failed to parse JSON response:" + ex,Color.Red);
+                RaiseErrorEvent("Failed to parse JSON response:" + ex);
             }
-            return res;
-        }
-
-
-        /// <summary>
-        /// Primary method for sending/fetching data to and from the MediaSense server via REST - tries to parse results returned into JSON format.
-        /// This looks for ResponseMessage, ResponseCode and ResponseBody coming back at the top level and then parses out the ResponseBody string 
-        /// as the pResults dictionary value
-        /// </summary>
-        /// <param name="pUrl">
-        /// Full URL to send to Connection - format should look like:
-        /// https://{Connection Server Name}:8443/vmrest/users
-        /// </param>
-        /// <param name="pMethod">
-        /// GET, PUT, POST, DELETE method type
-        /// </param>
-        /// <param name="pLoginName">
-        /// The login name used to authenticate to the CUPI interface on Connection.
-        /// </param>
-        /// <param name="pLoginPw">
-        /// The login password used to authenticate to the CUPI interface on Connection
-        /// </param>
-        /// <param name="pJsonParams">
-        /// Dictionary of name/value pairs as strings - this method will construct it into a JSON body and include it with the request.  You can 
-        /// pass NULL for this value if the call does not require a body.
-        /// </param>
-        /// <param name="pResults">
-        /// Results (if any) are passed back as a string/object dictionary - you must always pass this in even if you don't expect the server 
-        /// to return any results.
-        ///  </param>
-        /// <param name="pSessionCookie"></param>
-        /// <returns>
-        /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
-        /// with the call so the calling party can easily log details in the event of a failure.
-        /// </returns>
-        public static WebCallResult GetJsonResponseMediaSense(string pUrl, MethodType pMethod, string pLoginName, string pLoginPw,
-                                                    Dictionary<string, string> pJsonParams, out Dictionary<string, object> pResults, 
-                                                    string pSessionCookie="")
-        {
-            pResults = new Dictionary<string, object>();
-
-            StringBuilder strRequestBody = new StringBuilder();
-            //construct the JSON format request body based on name/value pairs passed in via dictionary
-            if (pJsonParams != null && pJsonParams.Count > 0)
-            {
-                //MediaSense wraps all params in a "requestParameters" section
-                strRequestBody.Append("{\"requestParameters\":");
-
-                strRequestBody.Append("{");
-                bool pFirstPair = true;
-                foreach (KeyValuePair<string, string> oPair in pJsonParams)
-                {
-                    if (pFirstPair)
-                    {
-                        pFirstPair = false;
-                    }
-                    else
-                    {
-                        strRequestBody.Append(",");
-                    }
-
-                    strRequestBody.Append("\"");
-                    strRequestBody.Append(oPair.Key);
-                    strRequestBody.Append("\":");
-                    strRequestBody.Append("\"");
-                    strRequestBody.Append(oPair.Value);
-                    strRequestBody.Append("\"");
-                }
-                strRequestBody.Append("}}");
-            }
-
-            //fetch the raw results from the Connection server - anything returned by the server will be stored in the ResponseText
-            //in the WebCallResult instance.
-            WebCallResult res = GetHttpResponse(pUrl, pMethod, pLoginName, pLoginPw, strRequestBody.ToString(), true,pSessionCookie);
-
-            //if we get a result text blob back, try and parse it out and check for a "total" item in there.  This gets used for 
-            //paging scenarios and such.
-            if (res.Success == false || string.IsNullOrEmpty(res.ResponseText))
-            {
-                return res;
-            }
-
-            Dictionary<string, object> oTopLevel;
-
-            //use the JavaScriptSerializer to dump what's in the returned text into the string/object dictionary.  
-            try
-            {
-                oTopLevel = JsonConvert.DeserializeObject<Dictionary<string, object>>(res.ResponseText);
-            }
-            catch (Exception ex)
-            {
-                res.ErrorText = "(error)Failed to parse JSON response:" + ex;
-                res.Success = false;
-                return res;
-            }
-
-            //now check to see what the return/results are - if tehre's a responseBody parse that string out for the calling function
-            //to digest
-            object oValue;
-
-            //there should always be a responseCode and a responseMessage returned
-            if (oTopLevel.TryGetValue("responseCode",out oValue))
-            {
-                res.StatusCode = (int) oValue;
-            }
-
-            if (oTopLevel.TryGetValue("responseMessage", out oValue))
-            {
-                res.ResponseText = oValue.ToString();
-            }
-
-            //not all requests have response bodies but if they do, include them here
-            if (oTopLevel.TryGetValue("responseBody", out oValue))
-            {
-                if (oValue == null || !oValue.GetType().Name.Contains("Dictionary"))
-                {
-                    res.ErrorText = "responseBody not returned as a dictionary from JSON parser";
-                    res.Success = false;
-                    return res;
-                }
-            }
-
-            pResults = oValue as Dictionary<string, object>;
-            
             return res;
         }
 
@@ -1211,9 +1098,9 @@ namespace Cisco.UnityConnection.RestFunctions
                 if (File.Exists(pLocalWavFilePath))
                     File.Delete(pLocalWavFilePath);
 
-                AddToOutputToRichTextControl("**** Sending to server ****", Color.Blue);
-                AddToOutputToRichTextControl("    URI:" + pFullUrl, Color.Blue);
-                AddToOutputToRichTextControl("    Method: GET", Color.Blue);
+                RaiseDebugEvent("**** Sending to server ****");
+                RaiseDebugEvent("    URI:" + pFullUrl);
+                RaiseDebugEvent("    Method: GET");
 
                 //large try block here - many of these web calls can fail - wrapping them all individually is a bit much.
                 try
@@ -1248,6 +1135,7 @@ namespace Cisco.UnityConnection.RestFunctions
                             else
                             {
                                 res.ErrorText = "(warning) empty source stream returned in DownloadMessageAttachment";
+                                RaiseErrorEvent(res.ErrorText);
                                 return res;
                             }
                             if (blockSize > 0)
@@ -1272,6 +1160,7 @@ namespace Cisco.UnityConnection.RestFunctions
                     else
                     {
                         res.ErrorText = "(warning) empty answer response returned in DownloadMessageAttachment on ConnectionWAVFiles";
+                        RaiseErrorEvent(res.ErrorText);
                         return res;
                     }
 
@@ -1284,6 +1173,7 @@ namespace Cisco.UnityConnection.RestFunctions
                     if (strResponse.Length > 0)
                     {
                         res.ErrorText = "(warning) response handle returned in DownloadMessageAttachment:" + strResponse;
+                        RaiseErrorEvent(res.ErrorText);
                         return res;
                     }
 
@@ -1294,8 +1184,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
                 catch (Exception em)
                 {
-                    //if (Debugger.IsAttached) Debugger.Break();
                     res.ErrorText = "(error) in DownloadWAVFile on DownloadMessageAttachment:" + em.Message;
+                    RaiseErrorEvent(res.ErrorText);
                     return res;
                 }
             }
@@ -1345,18 +1235,21 @@ namespace Cisco.UnityConnection.RestFunctions
             if (File.Exists(pLocalWavFilePath) == false)
             {
                 res.ErrorText = "(error) invalid local WAV file path passed to UploadWAVFile:" + pLocalWavFilePath;
+                RaiseErrorEvent(res.ErrorText);
                 return res;
             }
 
             if (string.IsNullOrEmpty(pFullResourcePath))
             {
                 res.ErrorText = "(error) invalid resource path passed to UploadWAVFile:" + pFullResourcePath;
+                RaiseErrorEvent(res.ErrorText);
                 return res;
             }
 
             if (string.IsNullOrEmpty(pLogin) | string.IsNullOrEmpty(pPassword))
             {
                 res.ErrorText = "Empty login or password passed to UploadWavFile";
+                RaiseErrorEvent(res.ErrorText);
                 return res;
             }
 
@@ -1395,10 +1288,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 webReq.ContentLength = buffer.Length;
                 webReq.ContentType = "audio/wav";
 
-                AddToOutputToRichTextControl("**** Sending to server ****", Color.Blue);
-                AddToOutputToRichTextControl("    URI:" + webReq.RequestUri, Color.Blue);
-                AddToOutputToRichTextControl("    Method: PUT", Color.Blue);
-                AddToOutputToRichTextControl("    ContentType:" + webReq.ContentLength, Color.Blue);
+                RaiseDebugEvent("**** Sending to server ****");
+                RaiseDebugEvent("    URI:" + webReq.RequestUri);
+                RaiseDebugEvent("    Method: PUT");
+                RaiseDebugEvent("    ContentType:" + webReq.ContentLength);
 
                 webReq.Credentials = new NetworkCredential(pLogin, pPassword);
                 webReq.KeepAlive = false;
@@ -1434,6 +1327,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 else
                 {
                     res.ErrorText = "(warning) empty response returned in UploadWAVFile on HTTPFunctions.cs";
+                    RaiseErrorEvent(res.ErrorText);
                     return res;
                 }
 
@@ -1446,6 +1340,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 if (strResponse.Length > 0)
                 {
                     res.ErrorText = "(warning) response handle returned in UploadWAVFile:" + strResponse;
+                    RaiseErrorEvent(res.ErrorText);
                 }
 
                 //only if we made it this far do we declar victory and pass back true
@@ -1464,18 +1359,20 @@ namespace Cisco.UnityConnection.RestFunctions
                     res.XmlElement = GetXElementFromString(res.ResponseText);
                     res.StatusDescription = ((HttpWebResponse) ex.Response).StatusDescription;
                     res.StatusCode = (int) ((HttpWebResponse) ex.Response).StatusCode;
-                    AddToOutputToRichTextControl("**** Error encountered ****", Color.Red);
-                    AddToOutputToRichTextControl(res.ToString(),Color.Red);
+                    
+                    RaiseErrorEvent(res.ToString());
                 }
                 else
                 {
                     //there's not a lot of good reasons the WebException will be thrown without it being a protocol error, but just in case.
                     res.ErrorText = "Web exception error in GetResponse on HTTPFunctions.cs:" + ex.Message;
+                    RaiseErrorEvent(res.ErrorText);
                 }
             }
             catch (Exception em)
             {
                 res.ErrorText = "(error) in UploadWAVFile on HTTPFunctions.cs: " + em.Message;
+                RaiseErrorEvent(res.ErrorText);
             }
 
             return res;
@@ -1534,6 +1431,7 @@ namespace Cisco.UnityConnection.RestFunctions
             if (string.IsNullOrEmpty(pServerName) | string.IsNullOrEmpty(pLogin)| string.IsNullOrEmpty(pPassword) | string.IsNullOrEmpty(pWavFilePath))
             {
                 res.ErrorText = "Invalid parameters passed to UploadBroadcastMessage on HTTPFunctions.cs";
+                RaiseErrorEvent(res.ErrorText);
                 return res;
 
             }
@@ -1644,6 +1542,7 @@ namespace Cisco.UnityConnection.RestFunctions
             catch (Exception ex)
             {
                 res.ErrorText = "Failed processing wav file in UploadBroadcastMessage on HTTPFunctions.cs: " + ex;
+                RaiseErrorEvent(res.ErrorText);
                 return res;
             }
 
@@ -1658,7 +1557,8 @@ namespace Cisco.UnityConnection.RestFunctions
                         var oStream = response.GetResponseStream();
                         if (oStream == null)
                         {
-                            res.ErrorText = "Unable to get response stream.";
+                            res.ErrorText = "Unable to get response stream in UploadBroadcastMessage in HTTPFunctions.cs";
+                            RaiseErrorEvent(res.ErrorText);
                             return res;
                         }
                         var reader = new StreamReader(oStream);
@@ -1682,18 +1582,19 @@ namespace Cisco.UnityConnection.RestFunctions
                     res.StatusDescription = ((HttpWebResponse)ex.Response).StatusDescription;
                     res.StatusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
                     
-                    AddToOutputToRichTextControl("**** Error encountered ****", Color.Red);
-                    AddToOutputToRichTextControl(res.ToString(), Color.Red);
+                    RaiseErrorEvent(res.ToString());
                 }
                 else
                 {
                     //there's not a lot of good reasons the WebException will be thrown without it being a protocol error, but just in case.
                     res.ErrorText = "Web exception error in GetResponse on HTTPFunctions.cs:" + ex.Message;
+                    RaiseErrorEvent(res.ErrorText);
                 }
             }
             catch(Exception ex)
             {
                 res.ErrorText = string.Format("Failed sending broadcast message to {0}, error={1}", pServerName,ex);
+                RaiseErrorEvent(res.ErrorText);
             }
             return res;
         }
@@ -1744,12 +1645,14 @@ namespace Cisco.UnityConnection.RestFunctions
             if (string.IsNullOrEmpty(pServerName) | string.IsNullOrEmpty(pLogin) | string.IsNullOrEmpty(pPassword) | string.IsNullOrEmpty(pPathToLocalWav))
             {
                 res.ErrorText = "Invalid parameters passed to UploadVoiceMessageWav on HTTPFunctions.cs";
+                RaiseErrorEvent(res.ErrorText);
                 return res;
             }
 
             if (File.Exists(pPathToLocalWav) == false)
             {
                 res.ErrorText = "File not found in UploadVoiceMessageWav:" + pPathToLocalWav;
+                RaiseErrorEvent(res.ErrorText);
                 return res;
             }
 
@@ -1856,6 +1759,7 @@ namespace Cisco.UnityConnection.RestFunctions
             catch (Exception ex)
             {
                 res.ErrorText = "Failed processing wav file in UploadVoiceMessageWav on HTTPFunctions.cs: " + ex;
+                RaiseErrorEvent(res.ErrorText);
                 return res;
             }
 
@@ -1870,7 +1774,8 @@ namespace Cisco.UnityConnection.RestFunctions
                         var oStream = response.GetResponseStream();
                         if (oStream == null)
                         {
-                            res.ErrorText = "Unable to get response stream";
+                            res.ErrorText = "Unable to get response stream in UploadVoiceMessageWav on HTTPFunctions.cs";
+                            RaiseErrorEvent(res.ErrorText);
                             return res;
                         }
                         var reader = new StreamReader(oStream);
@@ -1894,18 +1799,19 @@ namespace Cisco.UnityConnection.RestFunctions
                     res.StatusDescription = ((HttpWebResponse)ex.Response).StatusDescription;
                     res.StatusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
 
-                    AddToOutputToRichTextControl("**** Error encountered ****", Color.Red);
-                    AddToOutputToRichTextControl(res.ToString(), Color.Red);
+                    RaiseErrorEvent(res.ToString());
                 }
                 else
                 {
                     //there's not a lot of good reasons the WebException will be thrown without it being a protocol error, but just in case.
                     res.ErrorText = "Web exception error in UploadVoiceMessageWav on HTTPFunctions.cs:" + ex.Message;
+                    RaiseErrorEvent(res.ErrorText);
                 }
             }
             catch (Exception ex)
             {
                 res.ErrorText = string.Format("Failed sending message to {0}, error={1}", pServerName, ex);
+                RaiseErrorEvent(res.ErrorText);
             }
             return res;
         }
@@ -1957,6 +1863,7 @@ namespace Cisco.UnityConnection.RestFunctions
             if (string.IsNullOrEmpty(pServerName) | string.IsNullOrEmpty(pLogin) | string.IsNullOrEmpty(pPassword) | string.IsNullOrEmpty(pResourceId))
             {
                 res.ErrorText = "Invalid parameters passed to UploadVoiceMessageResourceId on HTTPFunctions.cs";
+                RaiseErrorEvent(res.ErrorText);
                 return res;
             }
 
@@ -2057,6 +1964,7 @@ namespace Cisco.UnityConnection.RestFunctions
             catch (Exception ex)
             {
                 res.ErrorText = "Failed processing wav file in UploadVoiceMessageResourceId on HTTPFunctions.cs: " + ex;
+                RaiseErrorEvent(res.ErrorText);
                 return res;
             }
 
@@ -2071,7 +1979,8 @@ namespace Cisco.UnityConnection.RestFunctions
                         var oStream = response.GetResponseStream();
                         if (oStream == null)
                         {
-                            res.ErrorText = "Unable to get response stream";
+                            res.ErrorText = "Unable to get response stream in UploadVoiceMessageResourceId";
+                            RaiseErrorEvent(res.ErrorText);
                             return res;
                         }
                         var reader = new StreamReader(oStream);
@@ -2095,18 +2004,19 @@ namespace Cisco.UnityConnection.RestFunctions
                     res.StatusDescription = ((HttpWebResponse)ex.Response).StatusDescription;
                     res.StatusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
 
-                    AddToOutputToRichTextControl("**** Error encountered ****", Color.Red);
-                    AddToOutputToRichTextControl(res.ToString(), Color.Red);
+                    RaiseErrorEvent(res.ToString());
                 }
                 else
                 {
                     //there's not a lot of good reasons the WebException will be thrown without it being a protocol error, but just in case.
                     res.ErrorText = "Web exception error in UploadVoiceMessageResourceId on HTTPFunctions.cs:" + ex.Message;
+                    RaiseErrorEvent(res.ErrorText);
                 }
             }
             catch (Exception ex)
             {
                 res.ErrorText = string.Format("Failed sending message to {0}, error={1}", pServerName, ex);
+                RaiseErrorEvent(res.ErrorText);
             }
             return res;
         }
@@ -2189,6 +2099,7 @@ namespace Cisco.UnityConnection.RestFunctions
             if (res.Success==false)
             {
                 res.ErrorText = "Failed generating new temporary stream file in GetTemporarySTreamFileName";
+                RaiseErrorEvent(res.ErrorText);
                 return res;
             }
 
@@ -2197,6 +2108,7 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 res.ErrorText = "Empty response text returned in GetTemporaryStreamFileName";
                 res.Success = false;
+                RaiseErrorEvent(res.ErrorText);
                 return res;
             }
 

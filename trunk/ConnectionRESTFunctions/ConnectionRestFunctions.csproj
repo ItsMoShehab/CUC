@@ -40,7 +40,6 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
@@ -65,6 +64,7 @@
     <Compile Include="ObjectTypes\InstalledLanguage.cs" />
     <Compile Include="ObjectTypes\InterviewHandler.cs" />
     <Compile Include="ObjectTypes\DirectoryHandler.cs" />
+    <Compile Include="ObjectTypes\InterviewQuestion.cs" />
     <Compile Include="ObjectTypes\Location.cs" />
     <Compile Include="ObjectTypes\MailboxInfo.cs" />
     <Compile Include="ObjectTypes\Mwi.cs" />

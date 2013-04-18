@@ -166,7 +166,6 @@ namespace CUPIFastStart
         {
             FormHttpTraffic oTraffic = new FormHttpTraffic();
             oTraffic.Show();
-            Cisco.UnityConnection.RestFunctions.HTTPFunctions.RichTextControlToOutputTo = oTraffic.RichTextBoxOutput;
         }
 
     }
