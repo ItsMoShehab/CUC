@@ -282,7 +282,7 @@ namespace Cisco.UnityConnection.RestFunctions
         private List<GreetingStreamFile> _greetingStreamFiles;
         public List<GreetingStreamFile> GetGreetingStreamFiles()
         {
-            //fetch transfer options only if they are referenced
+            //fetch greeting options only if they are referenced
             if (_greetingStreamFiles == null)
             {
                 GetGreetingStreamFiles(out _greetingStreamFiles);
@@ -494,17 +494,17 @@ namespace Cisco.UnityConnection.RestFunctions
         /// The change queue will be cleared when this is called - if you wish to make other changes do it ahead of time or after making this call.
         /// </remarks>
         /// <param name="pConnectionServer">
-        /// Connection server that the transfer option being edited lives on.
+        /// Connection server that the greeting option being edited lives on.
         /// </param>
         /// <param name="pCallHandlerObjectId">
-        /// The GUID that identifies the call handler which owns the transfer option being edited.
+        /// The GUID that identifies the call handler which owns the greeting option being edited.
         /// </param>
         /// <param name="pGreetingType">
-        /// The greeting type being edited (Standard, Off Hours, Alternate etc...).  You cannot edit the Standard transfer option in this routine, it is always
+        /// The greeting type being edited (Standard, Off Hours, Alternate etc...).  You cannot edit the Standard greeting option in this routine, it is always
         /// set to enabled on the server and that cannot be changed.
         /// </param>
         /// <param name="pEnabled">
-        /// Pass TRUE to enable the transfer option, FALSE to disable it.  If you pass TRUE you may optionally pass a pTillDate DateTime property to indicate the
+        /// Pass TRUE to enable the greeting option, FALSE to disable it.  If you pass TRUE you may optionally pass a pTillDate DateTime property to indicate the
         /// date the rule will disable itself automatically.
         /// </param>
         /// <param name="pTillDate">
@@ -808,7 +808,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Greeting display function - outputs the type, playWhat and if it's enabled
         /// </summary>
         /// <returns>
-        /// String describing the transfer option
+        /// String describing the greeting option
         /// </returns>
         public override string ToString()
         {
@@ -895,18 +895,18 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// Pass in the transfer option type (Standard, Off Hours, Alternate) and this will return an instance of the TransferOption class for that
-        /// transfer rule (if found).  
+        /// Pass in the greeting option type (Standard, Off Hours, Alternate) and this will return an instance of the GreetingStreamFile class for that
+        /// greeting rule (if found) for the language code provided.  
         /// </summary>
         /// <remarks>
-        /// This routine will fetch the full list of transfer options if they have not yet been fetched for this handler and return the one of interest.
-        /// If the transfer options have already been fetched it simply returns the appropriate instance.
+        /// This routine will fetch the full list of greeting options if they have not yet been fetched for this handler and return the one of interest.
+        /// If the greeting options have already been fetched it simply returns the appropriate instance.
         /// </remarks>
         /// <param name="pLanguageCode">
         /// The language code to fetch (1033=US English for instance).  The LanguageCodes enum defined in the ConnectionTypes class can be helpful here.
         /// </param>
         /// <param name="pGreetingStreamFile">
-        /// Out param on which the transfer option is passed.  If there is an error finding the option then null is returned.
+        /// Out param on which the greeting option is passed.  If there is an error finding the option then null is returned.
         /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -1017,7 +1017,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
-        /// Allows one or more properties on a transfer option to be udpated.  The caller needs to construct a list of property
+        /// Allows one or more properties on a greeting option to be udpated.  The caller needs to construct a list of property
         /// names and new values using the ConnectionPropertyList class's "Add" method.  At least one property pair needs to be passed in 
         /// but as many as are desired can be included in a single call.
         /// </summary>
@@ -1054,7 +1054,7 @@ namespace Cisco.UnityConnection.RestFunctions
          /// <summary>
         /// Special helper function for dealing with the enabled/disabled status of greeting.  This can be done directly using the timeExpiresSetNull
         /// option found in the propertis seciton above but it's less than intuative and most users do not get how the timeExpires functionality works for 
-        /// transfer options and greeting rules - as such this routine wraps it up in a simple single call option.
+        /// greeting options and greeting rules - as such this routine wraps it up in a simple single call option.
         /// If TRUE is passed for the enabled then the greeting TimeExpires is set to null (meaning it's always enabled) unless a pTillDate value is passed.  
         /// If this value is passed then the TimeExpires value is set to that.  
         /// If a pTillDate is a time in the passed  and it's a time in the past then nothing is  done and and error is returned - a TimeExpires in the future 
@@ -1066,7 +1066,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// The change queue will be cleared when this is called - if you wish to make other changes do it ahead of time or after making this call.
         /// </remarks>
         /// <param name="pEnabled">
-        /// Pass TRUE to enable the transfer option, FALSE to disable it.  If you pass TRUE you may optionally pass a pTillDate DateTime property to indicate the
+        /// Pass TRUE to enable the greeting option, FALSE to disable it.  If you pass TRUE you may optionally pass a pTillDate DateTime property to indicate the
         /// date the rule will disable itself automatically.
         /// </param>
         /// <param name="pTillDate">

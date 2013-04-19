@@ -11,6 +11,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -19,9 +20,9 @@ using Newtonsoft.Json;
 namespace Cisco.UnityConnection.RestFunctions
 {
         /// <summary>
-        /// The DirectoryHandler class contains all the properties associated with a Interview Handler in Unity Connection that can be fetched via the 
-        /// CUPI interface.  This class also contains a number of static and instance methods for finding and listing interview handlers.  At the time
-        /// of this writing CUPI does not support creating, deleting or editing interview handlers or fetching/setting voice names.
+        /// The DirectoryHandler class contains all the properties associated with a directory Handler in Unity Connection that can be fetched via the 
+        /// CUPI interface.  This class also contains a number of static and instance methods for finding and listing directory handlers.  At the time
+        /// of this writing CUPI does not support creating, deleting or editing directory handlers or fetching/setting voice names.
         /// </summary>
         public class DirectoryHandler
         {
@@ -480,6 +481,19 @@ namespace Cisco.UnityConnection.RestFunctions
             //used to keep track of whic properties have been updated
             private readonly ConnectionPropertyList _changedPropList;
 
+            //greeting stream files are fetched on the fly if referenced
+            private List<DirectoryHandlerGreetingStreamFile> _greetingStreamFiles;
+            public List<DirectoryHandlerGreetingStreamFile> GetGreetingStreamFiles()
+            {
+                //fetch greeting options only if they are referenced
+                if (_greetingStreamFiles == null)
+                {
+                    GetGreetingStreamFiles(out _greetingStreamFiles);
+                }
+
+                return _greetingStreamFiles;
+            }
+
             #endregion
 
 
@@ -668,7 +682,7 @@ namespace Cisco.UnityConnection.RestFunctions
             /// The out param that the filled out instance of the DirectoryHandler class is returned on.
             /// </param>
             /// <param name="pDisplayName">
-            /// Optional display name to search for an interview handler on.  If both the ObjectId and display name are passed, the ObjectId is used.
+            /// Optional display name to search for an directory handler on.  If both the ObjectId and display name are passed, the ObjectId is used.
             /// The display name search is not case sensitive.
             /// </param>
             /// <returns>
@@ -911,6 +925,185 @@ namespace Cisco.UnityConnection.RestFunctions
 
             }
 
+
+            /// <summary>
+            /// Sets the custom greeting recording for a particular language on a directory handler.  The WAV file is uploaded (after optionally being
+            /// converted to a format Conneciton will accept), however the "use custom greeting" flag is not set automatically on the directory handler
+            /// when you upload a new greeting - that needs to be set seperately on the directory handler object and saved.
+            /// </summary>
+            /// <param name="pConnectionServer">
+            /// The Connection server that houses the directory handler being edited.
+            /// </param>
+            /// <param name="pSourceLocalFilePath">
+            /// Full path on the local file system to the WAV file to be uploaded as the greeting.
+            /// </param>
+            /// <param name="pDirectoryHandlerObjectId">
+            /// The GUID identifying the directory handler that owns the greeting being edited.
+            /// </param>
+            /// <param name="pLanguageId">
+            /// The language ID of the WAV file being uploaded (for US English this is 1033).  The LanguageCodes enum defined in the ConnectionTypes
+            /// class can be helpful here.  The language must be installed and active on the Connection server for this to be allowed.
+            /// </param>
+            /// <param name="pConvertToPcmFirst">
+            /// Defaults to false, but if passed as true this has the target WAV file first converted PCM, 16 Khz, 8 bit mono before uploading.  This 
+            /// helps ensure Connection will not complain about the media file format.
+            /// </param>
+            /// <returns>
+            /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+            /// </returns>
+            public static WebCallResult SetGreetingWavFile(ConnectionServer pConnectionServer,
+                                                            string pSourceLocalFilePath,
+                                                            string pDirectoryHandlerObjectId,
+                                                            int pLanguageId,
+                                                            bool pConvertToPcmFirst = false)
+            {
+                WebCallResult res = new WebCallResult();
+
+                if (pConnectionServer == null)
+                {
+                    res.ErrorText = "Null ConnectionServer referenced passed to SetGreetingWavFile";
+                    return res;
+                }
+
+                //check and make sure a legit folder is referenced in the target path
+                if (String.IsNullOrEmpty(pSourceLocalFilePath) || (File.Exists(pSourceLocalFilePath) == false))
+                {
+                    res = new WebCallResult();
+                    res.Success = false;
+                    res.ErrorText = "Invalid local file path passed to SetGreetingWavFile: " + pSourceLocalFilePath;
+                    return res;
+                }
+
+                //if the user wants to try and rip the WAV file into G711 first before uploading the file, do that conversion here
+                if (pConvertToPcmFirst)
+                {
+                    string strConvertedWavFilePath = pConnectionServer.ConvertWavFileToPcm(pSourceLocalFilePath);
+
+                    if (string.IsNullOrEmpty(strConvertedWavFilePath))
+                    {
+                        res.ErrorText = "Failed converting WAV file into G711 format in SetGreetingWavFile.";
+                        return res;
+                    }
+
+                    if (File.Exists(strConvertedWavFilePath) == false)
+                    {
+                        res.ErrorText = "Converted G711 WAV file path not found in SetGreetingWavFile: " +
+                                        strConvertedWavFilePath;
+                        return res;
+                    }
+
+                    //point the wav file we'll be uploading to the newly converted G711 WAV format file.
+                    pSourceLocalFilePath = strConvertedWavFilePath;
+
+                }
+
+                //new construction - requires 8.5 or later and is done in one step to send the greeting to the server.
+                string strGreetingStreamUriPath = string.Format("https://{0}:8443/vmrest/handlers/directoryhandlers/{1}/directoryhandlerstreamfiles/{2}/audio",
+                                             pConnectionServer.ServerName, pDirectoryHandlerObjectId, pLanguageId);
+
+
+                res = HTTPFunctions.UploadWavFile(strGreetingStreamUriPath, pConnectionServer.LoginName,
+                                                  pConnectionServer.LoginPw, pSourceLocalFilePath);
+
+
+                return res;
+            }
+
+            /// <summary>
+            /// If you have a recording stream already recorded and in the stream files table on the Connection server (for instance
+            /// you are using the telephone as a media device) you can assign a greeting stream file directly to a greeting using this 
+            /// method instead of uploading a WAV file from the local hard drive.
+            /// </summary>
+            /// <param name="pConnectionServer" type="ConnectionServer">
+            ///   The Connection server that houses the greeting to be updated      
+            /// </param>
+            /// <param name="pStreamFileResourceName" type="string">
+            ///  the unique identifier (usually GUID.wav type construction) for the greeting stream to be assigned.
+            /// </param>
+            /// <param name="pDirectoryHandlerObjectId"> 
+            /// The GUID identifying the directory handler that owns the greeting being edited.
+            /// </param>
+            /// <param name="pLanguageId">
+            /// The language ID of the WAV file being uploaded (for US English this is 1033).  The LanguageCodes enum defined in the ConnectionTypes
+            /// class can be helpful here.  The language must be installed and active on the Connection server for this to be allowed.
+            /// </param>
+            /// <returns>
+            /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+            /// </returns>
+            public static WebCallResult SetGreetingRecordingToStreamFile(ConnectionServer pConnectionServer,
+                                                         string pStreamFileResourceName,
+                                                         string pDirectoryHandlerObjectId,
+                                                         int pLanguageId)
+            {
+                WebCallResult res = new WebCallResult();
+
+                if (pConnectionServer == null)
+                {
+                    res.ErrorText = "Null ConnectionServer referenced passed to SetGreetingRecordingToStreamFile";
+                    return res;
+                }
+
+                //check and make sure a legit folder is referenced in the target path
+                if (String.IsNullOrEmpty(pStreamFileResourceName))
+                {
+                    res = new WebCallResult();
+                    res.Success = false;
+                    res.ErrorText = "Invalid stream file resource id passed to SetGreetingRecordingToStreamFile";
+                    return res;
+                }
+
+                //construct the full URL to call for updating the greeting to a stream file id
+                string strUrl = string.Format(@"{0}handlers/directoryhandlers/{1}/directoryhandlerstreamfiles/{2}",
+                        pConnectionServer.BaseUrl, pDirectoryHandlerObjectId, pLanguageId);
+
+                Dictionary<string, string> oParams = new Dictionary<string, string>();
+                Dictionary<string, object> oOutput;
+
+                oParams.Add("op", "RECORD");
+                oParams.Add("ResourceType", "STREAM");
+                oParams.Add("resourceId", pStreamFileResourceName);
+                oParams.Add("lastResult", "0");
+                oParams.Add("speed", "100");
+                oParams.Add("volume", "100");
+                oParams.Add("startPosition", "0");
+
+                return HTTPFunctions.GetJsonResponse(strUrl, MethodType.PUT, pConnectionServer.LoginName,
+                                                     pConnectionServer.LoginPw, oParams, out oOutput);
+            }
+
+
+
+            /// <summary>
+            /// When updating a greeting wav file you need to do a POST if it's not there already and a PUT if there is - so we need a quick way to 
+            /// indicate if a streamfile for a particular greeting exists or not.
+            /// </summary>
+            /// <param name="pConnectionServer">
+            /// Connection server that owns the greeting being checked.
+            /// </param>
+            /// <param name="pDirectoryHandlerObjectId">
+            /// GUID that identifies directory handler that owns the greeting being checked.
+            /// </param>
+            /// <param name="pLanguageId">
+            /// Language ID of the stream file to check for (i.e. English US = 1033)
+            /// </param>
+            /// <returns>
+            /// True if the greeting stream already exists, false if it does not.
+            /// </returns>
+            private static bool DoesGreetingStreamExist(ConnectionServer pConnectionServer,
+                                                            string pDirectoryHandlerObjectId,
+                                                            int pLanguageId)
+            {
+                string strUrl = string.Format("{0}handlers/directoryhandlers/{1}/directoryhandlerstreamfiles/{2}",
+                                              pConnectionServer.BaseUrl,
+                                              pDirectoryHandlerObjectId,
+                                              pLanguageId);
+
+                WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+
+                //the only reason this will fail is if it doesn't exists - return that here
+                return res.Success;
+            }
+
             #endregion
 
 
@@ -925,7 +1118,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             /// <summary>
-            /// Dumps out all the properties associated with the instance of the interview handler object in "name=value" format - each pair is on its
+            /// Dumps out all the properties associated with the instance of the directory handler object in "name=value" format - each pair is on its
             /// own line in the string returned.
             /// </summary>
             /// <param name="pPrefix">
@@ -967,10 +1160,10 @@ namespace Cisco.UnityConnection.RestFunctions
             /// parameters are provided, the ObjectId is used for the search.
             /// </summary>
             /// <param name="pObjectId">
-            /// Unique GUID of the interview handler to fetch - can be blank if the display name is passed in.
+            /// Unique GUID of the directory handler to fetch - can be blank if the display name is passed in.
             /// </param>
             /// <param name="pDisplayName">
-            /// Display name (required to be unique for all interview handlers) to search on an interview handler by.  Can be blank if the ObjectId 
+            /// Display name (required to be unique for all directory handlers) to search on an directory handler by.  Can be blank if the ObjectId 
             /// parameter is provided.
             /// </param>
             /// <returns>
@@ -1116,7 +1309,62 @@ namespace Cisco.UnityConnection.RestFunctions
                 _changedPropList.Clear();
             }
 
+
+            /// <summary>
+            /// Sets the custom greeting recording for a particular language on a directory handler.  The WAV file is uploaded (after optionally being
+            /// converted to a format Conneciton will accept), however the "use custom greeting" flag is not set automatically on the directory handler
+            /// when you upload a new greeting - that needs to be set seperately on the directory handler object and saved.
+            /// </summary>
+            /// <param name="pSourceLocalFilePath">
+            /// Full path on the local file system to the WAV file to be uploaded as the greeting.
+            /// </param>
+            /// <param name="pLanguageId">
+            /// The language ID of the WAV file being uploaded (for US English this is 1033).  The LanguageCodes enum defined in the ConnectionTypes
+            /// class can be helpful here.  The language must be installed and active on the Connection server for this to be allowed.
+            /// </param>
+            /// <param name="pConvertToPcmFirst">
+            /// Defaults to false, but if passed as true this has the target WAV file first converted PCM, 16 Khz, 8 bit mono before uploading.  This 
+            /// helps ensure Connection will not complain about the media file format.
+            /// </param>
+            /// <returns>
+            /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+            /// </returns>
+            public WebCallResult SetGreetingWavFile(string pSourceLocalFilePath,
+                                                           int pLanguageId,
+                                                           bool pConvertToPcmFirst = false)
+            {
+                return SetGreetingWavFile(HomeServer, pSourceLocalFilePath, ObjectId, pLanguageId, pConvertToPcmFirst);
+            }
+
+            /// <summary>
+            /// If you have a recording stream already recorded and in the stream files table on the Connection server (for instance
+            /// you are using the telephone as a media device) you can assign a greeting stream file directly to a greeting using this 
+            /// method instead of uploading a WAV file from the local hard drive.
+            /// </summary>
+            /// <param name="pStreamFileResourceName" type="string">
+            ///  the unique identifier (usually GUID.wav type construction) for the greeting stream to be assigned.
+            /// </param>
+            /// <param name="pLanguageId">
+            /// The language ID of the WAV file being uploaded (for US English this is 1033).  The LanguageCodes enum defined in the ConnectionTypes
+            /// class can be helpful here.  The language must be installed and active on the Connection server for this to be allowed.
+            /// </param>
+            /// <returns>
+            /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+            /// </returns>
+            public WebCallResult SetGreetingRecordingToStreamFile(string pStreamFileResourceName,int pLanguageId)
+            {
+                return SetGreetingRecordingToStreamFile(HomeServer, pStreamFileResourceName, ObjectId, pLanguageId);
+            }
+
+
+            //helper function to fetch all greeting stream files associated with this dir handler (if any).
+            //If there are no custom recorded greetings the pGreetingStreamFiles out param is returned as null.
+            private WebCallResult GetGreetingStreamFiles(out List<DirectoryHandlerGreetingStreamFile> pGreetingStreamFiles)
+            {
+                return DirectoryHandlerGreetingStreamFile.GetGreetingStreamFiles(HomeServer, ObjectId, out pGreetingStreamFiles);
+            }
+
             #endregion
 
-    }
+        }
 }

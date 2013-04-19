@@ -55,6 +55,7 @@
     <Compile Include="ObjectTypes\ConfigurationValue.cs" />
     <Compile Include="ObjectTypes\Contact.cs" />
     <Compile Include="ObjectTypes\Credential.cs" />
+    <Compile Include="ObjectTypes\DirectoryHandlerGreetingStreamFile.cs" />
     <Compile Include="ObjectTypes\DistributionList.cs" />
     <Compile Include="HTTPFunctions.cs" />
     <Compile Include="ObjectTypes\DistributionListMember.cs" />
@@ -92,6 +93,7 @@
     <Compile Include="ObjectTypes\Cluster.cs" />
     <Compile Include="ObjectTypes\SearchSpace.cs" />
     <Compile Include="ObjectTypes\SmppProvider.cs" />
+    <Compile Include="ObjectTypes\Tenant.cs" />
     <Compile Include="ObjectTypes\TimeZones.cs" />
     <Compile Include="ObjectTypes\TransferOption.cs" />
     <Compile Include="ObjectTypes\User.cs" />
