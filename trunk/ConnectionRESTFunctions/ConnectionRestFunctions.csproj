@@ -80,6 +80,8 @@
     <Compile Include="ObjectTypes\PortGroupCodec.cs" />
     <Compile Include="ObjectTypes\PortGroupServer.cs" />
     <Compile Include="ObjectTypes\PortGroupTemplate.cs" />
+    <Compile Include="ObjectTypes\PostGreetingRecording.cs" />
+    <Compile Include="ObjectTypes\PostGreetingRecordingStreamFile.cs" />
     <Compile Include="ObjectTypes\PrivateList.cs" />
     <Compile Include="ObjectTypes\PrivateListMember.cs" />
     <Compile Include="ObjectTypes\RestrictionPattern.cs" />

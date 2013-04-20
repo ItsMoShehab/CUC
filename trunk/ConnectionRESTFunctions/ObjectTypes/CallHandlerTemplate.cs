@@ -11,6 +11,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using Newtonsoft.Json;
@@ -406,7 +407,7 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// constructor with server and optional display name items
+        /// 
         /// </summary>
         /// <param name="pConnectionServer"></param>
         /// <param name="pObjectId"></param>
@@ -454,11 +455,16 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pRowsPerPage">
         /// Results to return per page, defaults to 20
         /// </param>
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
+        /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(FirstName startswith a)" in
+        /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
         public static WebCallResult GetCallHandlerTemplates(ConnectionServer pConnectionServer, out List<CallHandlerTemplate> pCallHandlerTemplates
-            , int pPageNumber = 1, int pRowsPerPage = 20)
+            , int pPageNumber = 1, int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res;
             pCallHandlerTemplates = new List<CallHandlerTemplate>();
@@ -470,8 +476,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "callhandlertemplates", "pageNumber=" + pPageNumber, 
-                "rowsPerPage=" + pRowsPerPage);
+            var temp = pClauses.ToList();
+            temp.Add("pageNumber=" + pPageNumber);
+            temp.Add("rowsPerPage=" + pRowsPerPage);
+
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "callhandlertemplates", temp.ToArray());
 
             //issue the command to the CUPI interface
             res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
@@ -501,6 +510,7 @@ namespace Cisco.UnityConnection.RestFunctions
             foreach (var oObject in pCallHandlerTemplates)
             {
                 oObject.HomeServer = pConnectionServer;
+                oObject.ClearPendingChanges();
             }
 
             return res;
@@ -558,6 +568,219 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             return res;
+        }
+
+        /// <summary>
+        /// Pull the data from the Connection server for this object again - if changes have been made external this will 
+        /// "refresh" the object
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResult class.
+        /// </returns>
+        public WebCallResult RefetchUserTemplateData()
+        {
+            return GetCallHandlerTemplate(this.ObjectId,"");
+        }
+
+
+        /// <summary>
+        /// Create a new call handler template in the Connection directory 
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Connection server being edited
+        /// </param>
+        /// <param name="pTemplateObjectId">
+        /// The ObjectId of a user template on Connection to base the new template off of
+        /// </param>
+        /// <param name="pDisplayName">
+        /// Display Name of the new call handler template - must be unique.
+        /// </param>
+        /// <param name="pPropList">
+        /// List ConnectionProperty pairs that identify a property name and a new value for that property to apply to the template being created.
+        /// This is passed in as a ConnectionPropertyList instance which contains 1 or more ConnectionProperty instances.  Can be passed as null here.
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResult class.
+        /// </returns>
+        public static WebCallResult AddCallHandlerTemplate(ConnectionServer pConnectionServer, string pTemplateObjectId, string pDisplayName, 
+            ConnectionPropertyList pPropList)
+        {
+            WebCallResult res = new WebCallResult();
+            res.Success = false;
+
+            if (pConnectionServer == null)
+            {
+                res.ErrorText = "Null ConnectionServer referenced passed to AddCallHandlerTemplate";
+                return res;
+            }
+
+            if (String.IsNullOrEmpty(pDisplayName) || string.IsNullOrEmpty(pTemplateObjectId))
+            {
+                res.ErrorText = "Empty value passed for display name or template objectId in AddCallHandlerTemplate";
+                return res;
+            }
+
+            //create an empty property list if it's passed as null since we use it below
+            if (pPropList == null)
+            {
+                pPropList = new ConnectionPropertyList();
+            }
+
+            pPropList.Add("DisplayName", pDisplayName);
+
+            string strBody = "<CallhandlerTemplate>";
+
+            foreach (var oPair in pPropList)
+            {
+                //tack on the property value pair with appropriate tags
+                strBody += string.Format("<{0}>{1}</{0}>", oPair.PropertyName, oPair.PropertyValue);
+            }
+
+            strBody += "</CallhandlerTemplate>";
+
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "CallHandlerTemplates?templateObjectId=" + pTemplateObjectId, 
+                MethodType.POST, pConnectionServer, strBody, false);
+
+            //fetch the objectId of the newly created object off the return
+            if (res.Success)
+            {
+                if (res.ResponseText.Contains(@"/vmrest/CallHandlerTemplates/"))
+                {
+                    res.ReturnedObjectId = res.ResponseText.Replace(@"/vmrest/CallHandlerTemplates/", "").Trim();
+                }
+            }
+
+            return res;
+        }
+
+        /// <summary>
+        /// Create a new call handler template in the Connection directory 
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Connection server being edited
+        /// </param>
+        /// <param name="pTemplateObjectId">
+        /// Unique identifier for template to base new template off of
+        /// </param>
+        /// <param name="pDisplayName">
+        /// Display Name of the new call handler template - must be unique.
+        /// </param>
+        /// <param name="pPropList">
+        /// List ConnectionProperty pairs that identify a property name and a new value for that property to apply to the template being created.
+        /// This is passed in as a ConnectionPropertyList instance which contains 1 or more ConnectionProperty instances.  Can be passed as null here.
+        /// </param>
+        /// <param name="pCallHandlerTemplate">
+        /// Newly created call handler template instance is passed back in this out parameter
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResult class.
+        /// </returns>
+        public static WebCallResult AddCallHandlerTemplate(ConnectionServer pConnectionServer,
+                                                        string pTemplateObjectId,                                             
+                                                        string pDisplayName,
+                                                         ConnectionPropertyList pPropList,
+                                                         out CallHandlerTemplate pCallHandlerTemplate)
+        {
+            pCallHandlerTemplate = null;
+
+            WebCallResult res = AddCallHandlerTemplate(pConnectionServer,pTemplateObjectId, pDisplayName, pPropList);
+
+            //if the call went through then the ObjectId will be returned in the URI form.
+            if (res.Success)
+            {
+                //fetc the instance of the directory handler just created.
+                try
+                {
+                    pCallHandlerTemplate = new CallHandlerTemplate(pConnectionServer, res.ReturnedObjectId);
+                }
+                catch (Exception)
+                {
+                    res.Success = false;
+                    res.ErrorText = "Could not find newly created handler template by objectId:" + res;
+                }
+            }
+
+            return res;
+        }
+
+
+        /// <summary>
+        /// Allows one or more properties on a template to be udpated (for instance display name etc...).  The caller needs to construct a list
+        /// of property names and new values using the ConnectionPropertyList class's "Add" method.  At least one property pair needs to be passed in 
+        /// but as many as are desired can be included in a single call.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Reference to the ConnectionServer object that points to the home server where the handler template is homed.
+        /// </param>
+        /// <param name="pObjectId">
+        /// The unqiue GUID identifying the handler template to be updated.
+        /// </param>
+        /// <param name="pPropList">
+        /// List ConnectionProperty pairs that identify a handler property name and a new value for that property to apply to the object being updated.
+        /// This is passed in as a ConnectionPropertyList instance which contains 1 or more ConnectionProperty instances.  At least one property
+        /// pair needs to be included for the funtion to execute.
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult UpdateCallHandlerTemplate(ConnectionServer pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
+        {
+            WebCallResult res = new WebCallResult();
+            res.Success = false;
+
+            if (pConnectionServer == null)
+            {
+                res.ErrorText = "Null ConnectionServer referenced passed to UpdateCallHandlerTemplate";
+                return res;
+            }
+
+            //the update command takes a body in the request, construct it based on the name/value pair of properties passed in.  
+            //at lest one such pair needs to be present
+            if (pPropList.Count < 1)
+            {
+                res.ErrorText = "empty property list passed to UpdateCallHandlerTemplate";
+                return res;
+            }
+
+            string strBody = "<CallHandlerTemplate>";
+
+            foreach (var oPair in pPropList)
+            {
+                //tack on the property value pair with appropriate tags
+                strBody += string.Format("<{0}>{1}</{0}>", oPair.PropertyName, oPair.PropertyValue);
+            }
+
+            strBody += "</CallHandlerTemplate>";
+
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "callhandlertemplates/" + pObjectId,
+                                            MethodType.PUT, pConnectionServer, strBody, false);
+
+        }
+
+
+        /// <summary>
+        /// DELETE a handler template from the Connection directory.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Reference to the ConnectionServer object that points to the home server where the template is homed.
+        /// </param>
+        /// <param name="pObjectId">
+        /// GUID to uniquely identify the handler template in the directory.
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult DeleteCallHandlerTemplate(ConnectionServer pConnectionServer, string pObjectId)
+        {
+            if (pConnectionServer == null)
+            {
+                WebCallResult res = new WebCallResult();
+                res.ErrorText = "Null ConnectionServer referenced passed to DeleteCallHandlerTemplate";
+                return res;
+            }
+
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "callhandlertemplates/" + pObjectId,
+                                            MethodType.DELETE, pConnectionServer, "");
         }
 
 
@@ -645,6 +868,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                 res.Success = false;
             }
+
+            this.ClearPendingChanges();
             return res;
         }
 
@@ -689,6 +914,44 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             _changedPropList.Clear();
         }
+
+
+        /// <summary>
+        /// Allows one or more properties on a template to be udpated (for instance display name etc...).  
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public WebCallResult Update()
+        {
+            WebCallResult res;
+            //check if the handler intance has any pending changes, if not return false with an appropriate error message
+            if (!_changedPropList.Any())
+            {
+                res = new WebCallResult();
+                res.Success = false;
+                res.ErrorText = string.Format("Update called but there are no pending changes for handler template {0}", this);
+                return res;
+            }
+
+            res= UpdateCallHandlerTemplate(HomeServer, ObjectId, _changedPropList);
+            if (res.Success)
+            {
+                ClearPendingChanges();
+            }
+            return res;
+        }
+
+        /// <summary>
+         /// DELETE a handler template from the Connection directory.
+         /// </summary>
+         /// <returns>
+         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+         /// </returns>
+         public WebCallResult Delete()
+         {
+             return DeleteCallHandlerTemplate(HomeServer, ObjectId);
+         }
 
         #endregion
 

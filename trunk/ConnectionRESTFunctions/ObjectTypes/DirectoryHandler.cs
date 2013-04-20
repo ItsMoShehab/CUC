@@ -942,7 +942,7 @@ namespace Cisco.UnityConnection.RestFunctions
             /// </param>
             /// <param name="pLanguageId">
             /// The language ID of the WAV file being uploaded (for US English this is 1033).  The LanguageCodes enum defined in the ConnectionTypes
-            /// class can be helpful here.  The language must be installed and active on the Connection server for this to be allowed.
+            /// class can be helpful here.  
             /// </param>
             /// <param name="pConvertToPcmFirst">
             /// Defaults to false, but if passed as true this has the target WAV file first converted PCM, 16 Khz, 8 bit mono before uploading.  This 

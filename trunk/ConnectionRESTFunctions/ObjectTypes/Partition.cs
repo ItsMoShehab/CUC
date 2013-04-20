@@ -124,10 +124,10 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// Fills current instance of class with details of search space for objectId passed in if found.
+        /// Fills current instance of class with details of partition for objectId passed in if found.
         /// </summary>
         /// <param name="pObjectId">
-        /// Unique Id for search space to load
+        /// Unique Id for partition to load
         /// </param>
         /// <param name="pName">
         /// Optional name of partition to find
@@ -198,13 +198,13 @@ namespace Cisco.UnityConnection.RestFunctions
                 return "";
             }
 
-            List<Partition> oTemplates = HTTPFunctions.GetObjectsFromJson<Partition>(res.ResponseText);
+            List<Partition> oPartitions = HTTPFunctions.GetObjectsFromJson<Partition>(res.ResponseText);
 
-            foreach (var oTemplate in oTemplates)
+            foreach (var oPartition in oPartitions)
             {
-                if (oTemplate.Name.Equals(pName, StringComparison.InvariantCultureIgnoreCase))
+                if (oPartition.Name.Equals(pName, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return oTemplate.ObjectId;
+                    return oPartition.ObjectId;
                 }
             }
 
@@ -351,7 +351,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
                     if (res.Success)
                     {
-                        //fetc the instance of the partition just created.
+                        //fetch the instance of the partition just created.
                         try
                         {
                             pPartition = new Partition(pConnectionServer, res.ReturnedObjectId);
@@ -491,7 +491,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Updated description - optional
         /// </param>
         /// <returns>
-        /// Instance of the WEbCallResult class
+        /// Instance of the WebCallResult class
         /// </returns>
         public static WebCallResult UpdatePartition(ConnectionServer pConnectionServer, string pObjectId, string pName="", string pDescription="")
         {

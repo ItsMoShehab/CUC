@@ -51,6 +51,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             HomeServer = pConnectionServer;
+            UserObjectId = pUserObjectId;
 
             //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
             WebCallResult res = GetMailboxInfo(pUserObjectId);
@@ -69,6 +70,9 @@ namespace Cisco.UnityConnection.RestFunctions
         //reference to the ConnectionServer object 
         public ConnectionServer HomeServer { get; private set; }
 
+        //not returned from server, saved from constructor
+        public string UserObjectId { get; private set; }
+
         //all the properties returned from Connection for the mailbox info
 
         public string DisplayName { get; set; }
@@ -85,10 +89,11 @@ namespace Cisco.UnityConnection.RestFunctions
         public long SendQuota { get; set; }
         public bool IsDeletedFolderEnabled { get; set; }
 
+
         #endregion
 
 
-        #region Methods
+        #region Instance Methods
 
         /// <summary>
         /// Returns a string with the name and size of the mailstore
@@ -154,6 +159,96 @@ namespace Cisco.UnityConnection.RestFunctions
             return res;
         }
 
+
+        /// <summary>
+        /// Update the information for this instance of the mailbox info class
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResult class with details of the fetch and results from the server
+        /// </returns>
+        public WebCallResult RefetchMailboxData()
+        {
+            return GetMailboxInfo(UserObjectId);
+        }
+
+
+        /// <summary>
+        /// Returns the message counts for the inbox, deleted items and sent items folders for the user tied to the 
+        /// mailbox of this MailboxInfo instance.
+        /// </summary>
+        /// <param name="pInboxCount"></param>
+        /// <param name="pDeletedItemsCount"></param>
+        /// <param name="pSentItemsCount"></param>
+        /// <returns>
+        /// Instance of the WebCallResult class with details of the fetch and results from the server
+        /// </returns>
+        public WebCallResult GetFolderMessageCounts(out int pInboxCount, out int pDeletedItemsCount,out int pSentItemsCount)
+        {
+            pInboxCount = 0;
+            pSentItemsCount = 0;
+            pDeletedItemsCount = 0;
+
+            WebCallResult res = GetFolderCount(FolderTypes.inbox, out pInboxCount);
+            if (res.Success == false) return res;
+
+            res = GetFolderCount(FolderTypes.deleted, out pDeletedItemsCount);
+            if (res.Success == false) return res;
+
+            res = GetFolderCount(FolderTypes.sent, out pSentItemsCount);
+            return res;
+        }
+
+        /// <summary>
+        /// for fetching message counts from folders
+        /// </summary>
+        private class Folder
+        {
+            public string DisplayName { get; set; }
+            public int MessageCount { get; set; }
+        }
+
+        private enum FolderTypes {inbox, deleted, sent}
+
+        /// <summary>
+        /// Returns the message count for a specific folder type (inbox, sent, deleted)
+        /// </summary>
+        /// <param name="pFolder">
+        /// Mailbox folder to fetch count for
+        /// </param>
+        /// <param name="pCount">
+        /// Message count for the folder type
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResult class with details of the fetch and results from the server
+        /// </returns>
+        private WebCallResult GetFolderCount(FolderTypes pFolder, out int pCount)
+        {
+            pCount = 0;
+            string strUrl = string.Format("{0}mailbox/folders/{1}?userobjectid={2}", HomeServer.BaseUrl, pFolder.ToString(), UserObjectId);
+
+            //issue the command to the CUPI interface
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+
+            if (res.Success == false)
+            {
+                return res;
+            }
+
+            Folder oFolder = new Folder();
+            try
+            {
+                JsonConvert.PopulateObject(res.ResponseText, oFolder, HTTPFunctions.JsonSerializerSettings);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                res.Success = false;
+                return res;
+            }
+
+            pCount = oFolder.MessageCount;
+            return res;
+        }
 
         #endregion
 
