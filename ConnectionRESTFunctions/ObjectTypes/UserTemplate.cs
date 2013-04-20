@@ -1999,11 +1999,18 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
-        /// 
+        /// Basic constructor - requires Connection server object be passed in - optionally the ObjectId and/or alias
+        /// of the template to load can be passed in.  If neither are provided an empty version of the class is created.
         /// </summary>
-        /// <param name="pConnectionServer"></param>
-        /// <param name="pObjectId"></param>
-        /// <param name="pAlias"></param>
+        /// <param name="pConnectionServer">
+        /// Connection server where the user template is homed.
+        /// </param>
+        /// <param name="pObjectId">
+        /// Unique identifier for template
+        /// </param>
+        /// <param name="pAlias">
+        /// Alias of template - if both alias and objectId are provided the objectId is used.
+        /// </param>
         public UserTemplate(ConnectionServer pConnectionServer, string pObjectId="", string pAlias = ""):this()
         {
             if (pConnectionServer==null)
@@ -2079,7 +2086,7 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// Helper function to fill in the user instance with data from a user by their objectID string or their alias string.
+        /// Helper function to fill in the template instance with data from a user by their objectID string or their alias string.
         /// </summary>
         /// <param name="pObjectId">
         /// ObjectId of the user template to fetch - can be passed as a blank string if the alias is being used instead.
@@ -2092,9 +2099,6 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         private WebCallResult GetUserTemplate(string pObjectId, string pAlias = "")
         {
-            string strUrl;
-            WebCallResult res;
-
             string strObjectId = pObjectId;
             if (string.IsNullOrEmpty(pObjectId))
             {
@@ -2105,10 +2109,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
             }
 
-            strUrl = string.Format("{0}usertemplates/{1}", HomeServer.BaseUrl, strObjectId);
+            string strUrl = string.Format("{0}usertemplates/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {
@@ -2133,12 +2137,14 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// Pass in the alias of a distribution list and this routine will return it's ObjectId
+        /// Pass in the alias of a user template and this routine will return it's ObjectId
         /// </summary>
         /// <param name="pAlias">
-        /// Alias uniquely identifying a distribution list.
+        /// Alias uniquely identifying a user template.
         /// </param>
-        /// <returns></returns>
+        /// <returns>
+        /// ObjectId of template
+        /// </returns>
         private string GetObjectIdAlias(string pAlias)
         {
             string strUrl = string.Format("{0}usertemplates?query=(Alias is {1})", HomeServer.BaseUrl, pAlias);
@@ -2177,7 +2183,8 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 res = new WebCallResult();
                 res.Success = false;
-                res.ErrorText = string.Format("Update called but there are no pending changes for user template {0} [{1}]", Alias, ObjectId);
+                res.ErrorText = string.Format("Update called but there are no pending changes for user template {0} [{1}]", 
+                    Alias, ObjectId);
                 return res;
             }
             //just call the static method with the info from the instance 
@@ -2302,8 +2309,8 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pPrimaryCallHandler = null;
                 res.Success = false;
-                res.ErrorText =string.Format("Error fetching primary call handler for a user template using ObjectId={0}, error={1}, request details={2}",
-                                  this.CallHandlerObjectId , ex, res);
+                res.ErrorText =string.Format("Error fetching primary call handler for a user template using ObjectId={0}, error={1}, " +
+                                             "request details={2}",this.CallHandlerObjectId , ex, res);
             }
 
             return res;
@@ -2382,7 +2389,7 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// Clear the queue of changed properties for this user instance.
+        /// Clear the queue of changed properties for this template instance.
         /// </summary>
         public void ClearPendingChanges()
         {
@@ -2468,11 +2475,16 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pRowsPerPage">
         /// Results to return per page, defaults to 20
         /// </param>
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
+        /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(FirstName startswith a)" in
+        /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetUserTemplates(ConnectionServer pConnectionServer, out List<UserTemplate> pUserTemplates, int pPageNumber = 1, 
-            int pRowsPerPage = 20)
+        public static WebCallResult GetUserTemplates(ConnectionServer pConnectionServer, out List<UserTemplate> pUserTemplates, int pPageNumber = 1,
+            int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res;
             pUserTemplates = null;
@@ -2484,8 +2496,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "usertemplates", "pageNumber=" + pPageNumber, 
-                "rowsPerPage=" + pRowsPerPage);
+            var temp = pClauses.ToList();
+            temp.Add("pageNumber=" + pPageNumber);
+            temp.Add("rowsPerPage=" + pRowsPerPage);
+
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "usertemplates", temp.ToArray());
 
             //issue the command to the CUPI interface
             res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
@@ -2494,7 +2509,6 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 return res;
             }
-
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
             //if this is empty that does not mean an error - return true here along with an empty list.
@@ -2525,24 +2539,25 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
-        /// Allows for the creation of a new user with a mailbox on the Connection server directory.  Both the alias and extension number must be 
-        /// provided along with a template alias to use when creating the new user, however other user properties and their values may be passed 
-        /// in via the ConnectonPropertyList structure.
+        /// Allows for the creation of a new user template on the Connection server directory.  Both the alias and dispaly name must be 
+        /// provided along with a template alias to use when creating the new template, however other template properties and their values 
+        /// may be passed in via the ConnectonPropertyList structure.
         /// </summary>
         /// <param name="pConnectionServer">
-        /// Reference to the ConnectionServer object that points to the home server where the users is being added.
+        /// Reference to the ConnectionServer object that points to the home server where the user template is being added.
         /// </param>
         /// <param name="pTemplateAlias">
-        /// The alias of a user template on Connection - this provides importat details such as the Class of Service and dial partition assignment.  It's
-        /// required and must exist on the server or the user creation will fail.
+        /// The alias of a user template on Connection - this provides importat details such as the Class of Service and dial partition assignment.  
+        /// It's required and must exist on the server or the user creation will fail.
         /// </param>
         /// <param name="pAlias">
-        /// Alias to be used for the new user with a mailbox.  This must be unique against all users in the directory or the add will fail.
+        /// Alias to be used for the new user template.  This must be unique against all template in the directory or the add will fail.
         /// </param>
         /// <param name="pDisplayName">
+        /// Display name of the template to be added
         /// </param>
         /// <param name="pPropList">
-        /// List ConnectionProperty pairs that identify a user property name and a new value for that property to apply to the user being created.
+        /// List ConnectionProperty pairs that identify a property name and a new value for that property to apply to the object being created.
         /// This is passed in as a ConnectionPropertyList instance which contains 1 or more ConnectionProperty instances.  Can be passed as null.
         /// </param>
         /// <returns>
@@ -2605,34 +2620,29 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// Allows for the creation of a new user with a mailbox on the Connection server directory.  Both the alias and extension number must be 
-        /// provided along with a template alias to use when creating the new user, however other user properties and their values may be passed 
-        /// in via the ConnectonPropertyList structure.
+        /// Allows for the creation of a new user template on the Connection server directory.  Both the alias and dispaly name must be 
+        /// provided along with a template alias to use when creating the new template, however other template properties and their values 
+        /// may be passed in via the ConnectonPropertyList structure.
         /// </summary>
-        /// <remarks>
-        /// This is an alternateive AddUser that passes back a UserFull object with the newly created user filled out in it if the add goes through.
-        /// </remarks>
         /// <param name="pConnectionServer">
-        /// Reference to the ConnectionServer object that points to the home server where the users is being added.
+        /// Reference to the ConnectionServer object that points to the home server where the user template is being added.
         /// </param>
         /// <param name="pTemplateAlias">
-        /// The alias of a user template on Connection - this provides importat details such as the Class of Service and dial partition assignment.  It's
-        /// required and must exist on the server or the user creation will fail.
+        /// The alias of a user template on Connection - this provides importat details such as the Class of Service and dial partition assignment.  
+        /// It's required and must exist on the server or the user creation will fail.
         /// </param>
         /// <param name="pAlias">
-        /// Alias to be used for the new user with a mailbox.  This must be unique against all users in the directory or the add will fail.
+        /// Alias to be used for the new user template.  This must be unique against all template in the directory or the add will fail.
         /// </param>
-        /// <param name="pExtension">
-        /// The primary extension number to be assigned to the new user.  This must be unqiue in the partition the user is created in or the 
-        /// new user creation will fail.  The partition is determined by the user template used to created new users.
+        /// <param name="pDisplayName">
+        /// Display name of the template to be added
         /// </param>
         /// <param name="pPropList">
-        /// List ConnectionProperty pairs that identify a user property name and a new value for that property to apply to the user being created.
+        /// List ConnectionProperty pairs that identify a property name and a new value for that property to apply to the object being created.
         /// This is passed in as a ConnectionPropertyList instance which contains 1 or more ConnectionProperty instances.  Can be passed as null.
         /// </param>
         /// <param name="pUserTemplate">
-        /// Out paramter that passes back a UserFull object with the details of the newly added user.  If the new user add fails, NULL is returned 
-        /// for this value.
+        /// Instance of the newly created template is passed back on this out param
         /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -2640,20 +2650,20 @@ namespace Cisco.UnityConnection.RestFunctions
         public static WebCallResult AddUserTemplate(ConnectionServer pConnectionServer,
                                             string pTemplateAlias,
                                             string pAlias,
-                                            string pExtension,
+                                            string pDisplayName,
                                             ConnectionPropertyList pPropList,
                                             out UserTemplate pUserTemplate)
         {
             pUserTemplate = null;
 
-            WebCallResult res = AddUserTemplate(pConnectionServer, pTemplateAlias, pAlias, pExtension, pPropList);
+            WebCallResult res = AddUserTemplate(pConnectionServer, pTemplateAlias, pAlias,pDisplayName, pPropList);
 
-            //if the add goes through, fill a UserFull object out and pass it back.
+            //if the add goes through, fill an object out and pass it back.
             if (res.Success)
             {
-                res = UserTemplate.GetUserTemplate(pConnectionServer, res.ReturnedObjectId, "", out pUserTemplate);
+                res = GetUserTemplate(pConnectionServer, res.ReturnedObjectId, "", out pUserTemplate);
 
-                //stuff the objectID back in the res structure since we took overwrote it with the GetUser fetch.
+                //stuff the objectID back in the res structure since we took overwrote it with the fetch.
                 res.ReturnedObjectId = pUserTemplate.ObjectId;
             }
 
@@ -2661,13 +2671,13 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// DELETE a user from the Connection directory.
+        /// DELETE a user template from the Connection directory.
         /// </summary>
         /// <param name="pConnectionServer">
-        /// Reference to the ConnectionServer object that points to the home server where the user is homed.
+        /// Reference to the ConnectionServer object that points to the home server where the template is homed.
         /// </param>
         /// <param name="pObjectId">
-        /// GUID to uniquely identify the user in the directory.
+        /// GUID to uniquely identify the user template in the directory.
         /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -2737,20 +2747,20 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// Resets the PIN for a user - be aware that this routine does not do any validation of the PIN format or complixty/length.  If the PIN
+        /// Resets the PIN for a template - be aware that this routine does not do any validation of the PIN format or complixty/length.  If the PIN
         /// is not valid the error will be returned via the WebCallResult class that will contain information and a failure code from the server.
         /// You can set/clear the locked, must-change, cant-change and doesnt-expire options for the credential as well - by default all values are 
         /// left alone.  There is no checking of these values for consistency (i.e. if you pass cant change and must change).  Handling that is 
         /// left to the server.
         /// </summary>
         /// <param name="pConnectionServer">
-        /// Reference to the ConnectionServer object that points to the home server where the user is homed.
+        /// Reference to the ConnectionServer object that points to the home server where the template is homed.
         /// </param>
         /// <param name="pObjectId">
-        /// Unique GUID of the user to reset the PIN for.
+        /// Unique GUID of the user template to reset the PIN for.
         /// </param>
         /// <param name="pNewPin">
-        /// New PIN (phone password) to apply to the user's account.  If passed as blank this value is skipped.  You can, for instance, pass a blank
+        /// New PIN (phone password) to apply to the template account.  If passed as blank this value is skipped.  You can, for instance, pass a blank
         /// password if you wish to change the "mustchange" flag on a credential but not reset the password itself.  If you pass blank here and you 
         /// pass no other values then CUPI will return an error.
         /// </param>
@@ -2798,15 +2808,15 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// Resets the password for a user (GUI) - be aware that this routine does not do any validation of the password format or complixty/length.  
+        /// Resets the password for a template (GUI) - be aware that this routine does not do any validation of the password format or complixty/length.  
         /// If the password is not valid the error will be returned via the WebCallResult class that will contain information and a failure code 
         /// from the server.
         /// </summary>
         /// <param name="pConnectionServer">
-        /// Reference to the ConnectionServer object that points to the home server where the user is homed.
+        /// Reference to the ConnectionServer object that points to the home server where the user template is homed.
         /// </param>
         /// <param name="pObjectId">
-        /// Unique GUID of the user to reset the password for.
+        /// Unique GUID of the user template to reset the password for.
         /// </param>
         /// <param name="pNewPassword">
         /// New password (GUI password) to apply to the user's account.  If passed as blank this value is skipped.  You can, for instance, pass a blank

@@ -57,6 +57,75 @@ namespace CUPIVerySimple
             //the WebCallResult is the structure returned on most calls into the CUPIFunctions library.
             WebCallResult res;
 
+            Tenant oTenant;
+            //res = Tenant.AddTenant(connectionServer, "TenantAlias", "Teant.fun.com", "Tenant Description",out oTenant);
+
+            res = Tenant.GetTenant(out oTenant, connectionServer, "", "TenantAlias");
+
+            Console.WriteLine(res);
+
+            List<ClassOfService> oCoses;
+            res = oTenant.GetClassesOfService(out oCoses);
+            if (res.Success == false)
+            {
+                Console.WriteLine(res);
+            }
+
+            ClassOfService oNewCos;
+            res = ClassOfService.GetClassOfService(out oNewCos, connectionServer,"", "Jeffs new COS");
+            Console.WriteLine(res);
+
+            res = oTenant.AddClassOfServiceToTenant(oNewCos.ObjectId);
+            Console.WriteLine(res);
+
+
+            res = oTenant.GetClassesOfService(out oCoses);
+            if (res.Success == false)
+            {
+                Console.WriteLine(res);
+            }
+
+
+            List<ScheduleSet> oScheduleSets;
+            res = oTenant.GetScheduleSets(out oScheduleSets);
+            if (res.Success == false)
+            {
+                Console.WriteLine(res);
+            }
+
+            List<PhoneSystem> oPhoneSystems;
+            res = oTenant.GetPhoneSystems(out oPhoneSystems);
+            if (res.Success == false)
+            {
+                Console.WriteLine(res);
+            }
+
+            List<UserTemplate> oUserTemplates;
+            res = oTenant.GetUserTemplates(out oUserTemplates);
+            Console.WriteLine(res);
+
+            List<CallHandlerTemplate> pHandlerTemplates;
+            res = oTenant.GetCallHandlerTemplates(out pHandlerTemplates);
+            Console.WriteLine(res);
+
+            List<DistributionList> oPublicLists;
+            res = oTenant.GetDistributionLists(out oPublicLists);
+            Console.WriteLine(res);
+
+
+
+            List<UserBase> oTenantUsers;
+
+            res = oTenant.GetUsers(out oTenantUsers, 1, 10);
+
+            Console.WriteLine(res);
+
+            List<CallHandler> oTenantHandlers;
+            res = oTenant.GetCallHandlers(out oTenantHandlers);
+
+            Console.WriteLine(res);
+
+
             //fetch user with alias of "jlindborg" - we will be sending the message from his 
             //mailbox.
             UserFull oUserTestDude=null;
@@ -66,7 +135,6 @@ namespace CUPIVerySimple
             {
                 Console.WriteLine(res);
             }
-
 
             List<UserMessage> oUserMessages;
             res = UserMessage.GetMessages(connectionServer, oUserTestDude.ObjectId, out oUserMessages);

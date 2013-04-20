@@ -1173,7 +1173,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return "";
             }
 
-            List<ClassOfService> oCoses = HTTPFunctions.GetObjectsFromJson<ClassOfService>(res.ResponseText);
+            List<ClassOfService> oCoses = HTTPFunctions.GetObjectsFromJson<ClassOfService>(res.ResponseText,"Cos");
 
             foreach (var oCos in oCoses)
             {

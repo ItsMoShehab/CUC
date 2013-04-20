@@ -320,6 +320,18 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
+        private string _postGreetingRecordingObjectId;
+        public string PostGreetingRecordingObjectId
+        {
+            get { return _postGreetingRecordingObjectId; }
+            set
+            {
+                _postGreetingRecordingObjectId = value;
+                _changedPropList.Add("PostGreetingRecordingObjectId", value);
+            }
+        }
+
+
         private string _prependDigits;
         /// <summary>
         /// Touch-Tone digits to prepended to extension when dialing transfer number 
