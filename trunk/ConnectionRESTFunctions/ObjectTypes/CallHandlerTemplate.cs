@@ -412,7 +412,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pConnectionServer"></param>
         /// <param name="pObjectId"></param>
         /// <param name="pDisplayName"></param>
-        public CallHandlerTemplate(ConnectionServer pConnectionServer, string pObjectId, string pDisplayName="")
+        public CallHandlerTemplate(ConnectionServer pConnectionServer, string pObjectId, string pDisplayName=""):this()
         {
             if (pConnectionServer==null)
             {

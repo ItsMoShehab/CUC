@@ -702,11 +702,16 @@ namespace Cisco.UnityConnection.RestFunctions
                 //dictionary first
                 if (!string.IsNullOrEmpty(res.ResponseText))
                 {
+                    //unfortunately the different interfaces send counts back differently - check for both
                     int iPos = res.ResponseText.IndexOf("{\"@total\":\"");
                     if (iPos < 0 | iPos > 10)
                     {
-                        //not a valid position or missing
-                        return res;
+                        iPos = res.ResponseText.IndexOf("{\"@total\"=\"");
+                        if (iPos < 0 | iPos > 10)
+                        {
+                            //not a valid position or missing
+                            return res;
+                        }
                     }
 
                     //account for length of "total" token
@@ -715,8 +720,13 @@ namespace Cisco.UnityConnection.RestFunctions
                     int iPos2 = res.ResponseText.IndexOf(",", iPos, StringComparison.InvariantCulture);
                     if (iPos2 <= iPos | iPos2 > 20)
                     {
-                        //invalid
-                        return res;
+                        //check for 2nd construction
+                        iPos2 = res.ResponseText.IndexOf("}", iPos, StringComparison.InvariantCulture);
+                        if (iPos2 <= iPos | iPos2 > 20)
+                        {
+                            //invalid
+                            return res;
+                        }
                     }
 
                     string strCount = res.ResponseText.Substring(iPos, iPos2-iPos).TrimEnd('\"').TrimStart('\"');
