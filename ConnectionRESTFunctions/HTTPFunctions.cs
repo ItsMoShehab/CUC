@@ -71,7 +71,6 @@ namespace Cisco.UnityConnection.RestFunctions
                 strRet.AppendLine("    Misc data:" + Misc);
 
             return strRet.ToString();
-
         }
     }
 
@@ -148,6 +147,7 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         #endregion
+
 
         #region Events 
 
