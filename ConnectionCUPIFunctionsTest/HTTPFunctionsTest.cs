@@ -67,7 +67,7 @@ namespace ConnectionCUPIFunctionsTest
         ///Test for WAV upload call failures.
         /// Note that "Dummy.wav" does exist in the output folder the test is being run from.
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         public void UploadWAVFile_Failure()
                 {
                     WebCallResult res;

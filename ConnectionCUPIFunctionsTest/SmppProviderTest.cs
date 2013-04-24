@@ -64,7 +64,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         ///A test for getting and listing PhoneSystems
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         public void SmppProvider_Test()
         {
             WebCallResult res;
@@ -99,7 +99,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an Exception is thrown if the objectId for an SMPP provider is not found
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void ClassCreation_Failure()
         {
@@ -110,7 +110,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an ArgumentException is thrown if an empty objectID is passed in
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreation_Failure2()
         {

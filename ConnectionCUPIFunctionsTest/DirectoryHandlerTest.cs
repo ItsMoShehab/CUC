@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Cisco.UnityConnection.RestFunctions;
@@ -14,16 +15,23 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class DirectoryHandlerTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
+        #region Fields and Properties
+
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
         private static ConnectionServer _connectionServer;
 
+        private static DirectoryHandler _tempHandler;
+
+        #endregion
+
+
         #region Additional test attributes
-        // 
-        //You can use the following additional attributes as you write your tests:
-        //
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -43,19 +51,41 @@ namespace ConnectionCUPIFunctionsTest
                 throw new Exception("Unable to attach to Connection server to start DirectoryHandler test:" + ex.Message);
             }
 
+            //create new handler with GUID in the name to ensure uniqueness
+            String strName = "TempHandler_" + Guid.NewGuid().ToString().Replace("-", "");
+
+            WebCallResult res = DirectoryHandler.AddDirectoryHandler(_connectionServer, strName, false, null, out _tempHandler);
+            Assert.IsTrue(res.Success, "Failed creating temporary directory handler:" + res.ToString());
+        }
+
+
+        [ClassCleanup]
+        public static void MyClassCleanup()
+        {
+            if (_tempHandler != null)
+            {
+                WebCallResult res = _tempHandler.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete temporary directory handler on cleanup.");
+            }
         }
 
         #endregion
 
+
+        #region Constructor Tests
+
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure()
         {
             DirectoryHandler oTestHandler = new DirectoryHandler(null);
+            Console.WriteLine(oTestHandler);
         }
+
+        #endregion
 
 
         /// <summary>
@@ -63,17 +93,13 @@ namespace ConnectionCUPIFunctionsTest
         /// methods on it.
         /// For Directory handlers there should always be one in a valid Connection installation
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetDirectoryHandlers_Test()
         {
-            WebCallResult res;
             List<DirectoryHandler> oHandlerList;
             DirectoryHandler oNewHandler;
 
-            //limit the fetch to the first 1 handler 
-            string[] pClauses = { "rowsPerPage=1" };
-
-            res = DirectoryHandler.GetDirectoryHandlers(_connectionServer, out oHandlerList, pClauses);
+            WebCallResult res = DirectoryHandler.GetDirectoryHandlers(_connectionServer, out oHandlerList,1,1);
 
             Assert.IsTrue(res.Success, "Fetching of first directory handler failed: " + res.ToString());
             Assert.AreEqual(oHandlerList.Count, 1, "Fetching of the first directory handler returned a different number of handlers: " + res.ToString());
@@ -99,13 +125,12 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetDirectoryHandlers_Failure()
         {
-            WebCallResult res;
             List<DirectoryHandler> oHandlerList;
 
-            res = DirectoryHandler.GetDirectoryHandlers(null, out oHandlerList, null);
+            WebCallResult res = DirectoryHandler.GetDirectoryHandlers(null, out oHandlerList, null);
             Assert.IsFalse(res.Success, "GetDirectoryHandler should fail with null ConnectionServer passed to it");
 
         }
@@ -113,43 +138,67 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetDirectoryHandler_Failure()
         {
-            WebCallResult res;
             DirectoryHandler oHandler;
 
-            res = DirectoryHandler.GetDirectoryHandler(out oHandler, null);
+            WebCallResult res = DirectoryHandler.GetDirectoryHandler(out oHandler, null);
             Assert.IsFalse(res.Success, "GetDirectoryHandler should fail if the ConnectionServer is null");
 
-            res = DirectoryHandler.GetDirectoryHandler(out oHandler, _connectionServer, "", "");
+            res = DirectoryHandler.GetDirectoryHandler(out oHandler, _connectionServer);
             Assert.IsFalse(res.Success, "GetDirectoryHandler should fail if the ObjectId and display name are both blank");
         }
 
         [TestMethod]
-        public void AddEditDeleteDirectoryHandler()
+        public void DirectoryHandler_EditTopLevel()
         {
-            //create new list with GUID in the name to ensure uniqueness
-            String strName = "TempHandler_" + Guid.NewGuid().ToString().Replace("-", "");
-
-            DirectoryHandler tempHandler;
-            //use a bogus extension number that's legal but non dialable to avoid conflicts
-            WebCallResult res = DirectoryHandler.AddDirectoryHandler(_connectionServer, strName,false,null, out tempHandler);
-            Assert.IsTrue(res.Success, "Failed creating temporary handler :" + res.ToString());
-
             //updating without any pending changes should fail
-            res = tempHandler.Update();
+            WebCallResult res = _tempHandler.Update();
             Assert.IsFalse(res.Success,"Calling update on newly created handler did not fail");
 
-            tempHandler.DisplayName = "New" + Guid.NewGuid().ToString();
-            res = tempHandler.Update();
+            _tempHandler.DisplayName = "New" + Guid.NewGuid().ToString();
+            res = _tempHandler.Update();
             Assert.IsTrue(res.Success,"Updating directory handler failed:"+res);
 
-            res = tempHandler.RefetchDirectoryHandlerData();
+            res = _tempHandler.RefetchDirectoryHandlerData();
             Assert.IsTrue(res.Success, "Refetching directory handler data failed:" + res);
-
-            res = tempHandler.Delete();
-            Assert.IsTrue(res.Success,"Deleting temp directory handler failed");
         }
+
+         [TestMethod]
+        public void DirectoryHandler_CustomStream()
+         {
+             WebCallResult res = _tempHandler.SetGreetingWavFile("temp.wav",1033,true);
+             Assert.IsTrue(res.Success,"Failed to upload custom directory handler greeting:"+res);
+
+             _tempHandler.UseCustomGreeting = true;
+             res = _tempHandler.Update();
+             Assert.IsTrue(res.Success,"Failed to update directory handler to play custom greeting:"+res);
+
+             res = _tempHandler.SetGreetingRecordingToStreamFile("blah", 1033);
+             Assert.IsFalse(res.Success,"Setting custom stream to invalid streamId did not fail");
+
+             List<DirectoryHandlerGreetingStreamFile> oStreamFiles = _tempHandler.GetGreetingStreamFiles();
+             if (oStreamFiles == null || oStreamFiles.Count == 0)
+             {
+                 Assert.Fail("Fetching greeting streams after uploading one failed to return any");
+             }
+
+             string strFileName = Guid.NewGuid().ToString() + ".wav";
+             res = oStreamFiles[0].GetGreetingWavFile(strFileName);
+             Assert.IsTrue(res.Success,"Failed to download stream file as WAV:"+res);
+
+             Assert.IsTrue(File.Exists(strFileName),"Stream file downloaded as WAV not written to disk");
+
+             try
+             {
+                 File.Delete(strFileName);
+             }
+             catch (Exception ex)
+             {
+                 Assert.Fail("Temporary file failed to delete:"+ex);
+             }
+
+         }
     }
 }

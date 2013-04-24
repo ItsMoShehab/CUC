@@ -54,21 +54,21 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure_nullServer()
         {
             InterviewHandler oTestInterviewer = new InterviewHandler(null);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void ClassCreationFailure_InvalidObjectId()
         {
             InterviewHandler oTestInterviewer = new InterviewHandler(_connectionServer,"blah");
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void ClassCreationFailure_Name()
         {
@@ -129,7 +129,7 @@ namespace ConnectionCUPIFunctionsTest
         /// For Interview handlers it's possible there are none here - so for this test to be valid it needs to be run after at least
         /// one interviewer is created.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetInterviewHandlers_Test()
         {
             WebCallResult res;
@@ -177,7 +177,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetInterviewHandlers_Failure()
         {
             WebCallResult res;
@@ -191,7 +191,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetInterviewHandler_Failure()
         {
             WebCallResult res;

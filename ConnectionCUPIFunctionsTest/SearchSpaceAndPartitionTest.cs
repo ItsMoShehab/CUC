@@ -58,7 +58,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void PartitionClassCreationFailure()
         {
@@ -68,7 +68,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an Exception is thrown if an invalid ObjectId is passed
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void PartitionClassCreationFailure2()
         {
@@ -78,7 +78,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an Exception is thrown if an invalid name is passed
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void PartitionClassCreationFailure3()
         {
@@ -89,7 +89,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void SearchSpaceClassCreationFailure()
         {
@@ -99,7 +99,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an Exception is thrown if an invalid objectId is passed
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void SearchSpaceClassCreationFailure2()
         {
@@ -108,7 +108,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an Exception is thrown if an invalid name is passed
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void SearchSpaceClassCreationFailure3()
         {

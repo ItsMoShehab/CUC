@@ -98,7 +98,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise greeting rules
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void Greeting_Test()
         {
             WebCallResult res;
@@ -134,7 +134,7 @@ namespace ConnectionCUPIFunctionsTest
         }
 
 
-        [TestMethod()]
+        [TestMethod]
         public void GreetingStream_Test()
         {
             WebCallResult res;
@@ -218,7 +218,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetGreetings_Failure()
         {
             WebCallResult res;
@@ -245,7 +245,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise greeting rules failure conditions
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void UpdateGreeting_Failure()
         {
             WebCallResult res;
@@ -270,7 +270,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise greeting rules failure conditions
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void SetGreetingWavFile_Failure()
         {
             WebCallResult res;
@@ -300,7 +300,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise greeting rules failure conditions
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void UpdateGreetingEnabledStatus_Failure()
         {
             WebCallResult res;
@@ -335,7 +335,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise greeting rules failure conditions
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetGreeting_Failure()
         {
             WebCallResult res;

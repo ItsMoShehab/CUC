@@ -101,7 +101,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise menu entry functions
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void MenuEntry_Test()
         {
             WebCallResult res;
@@ -138,7 +138,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void CallHandlerMenuEntry_ClassCreationFailure()
         {
@@ -148,7 +148,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure class creation failes if an empty objectId is passed
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void CallHandlerMenuEntry_ClassCreationFailure2()
         {
@@ -159,7 +159,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise menu entry failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void UpdateMenuEntry_Failure()
         {
             WebCallResult res;
@@ -182,7 +182,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise menu entry failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetMenuEntry_Failure()
         {
             WebCallResult res;

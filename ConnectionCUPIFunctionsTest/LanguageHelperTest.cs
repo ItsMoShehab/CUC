@@ -66,7 +66,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         ///A test for GetLanguageIdFromLanguageEnum
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetLanguageIdFromLanguageEnumTest()
         {
             int iRet = LanguageHelper.GetLanguageIdFromLanguageEnum(LanguageCodes.EnglishUnitedStates);
@@ -81,7 +81,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         ///A test for GetLanguageNameFromLanguageID
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetLanguageNameFromLanguageIDTest()
         {
             string strRet = LanguageHelper.GetLanguageNameFromLanguageId(1033);

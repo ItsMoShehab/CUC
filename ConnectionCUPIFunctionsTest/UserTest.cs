@@ -15,6 +15,8 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class UserTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
 
@@ -38,7 +40,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -90,14 +92,15 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure()
         {
             UserBase oTemp = new UserBase(null);
+            Console.WriteLine(oTemp);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void ClassCreationEmpty()
         {
             UserBase oTemp = new UserBase();
@@ -108,52 +111,58 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void UserTemplateClassCreationFailure()
         {
             UserTemplate oTemp = new UserTemplate(null, "xxxx");
+            Console.WriteLine(oTemp);
         }
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a blank ObjectId is passed
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void AlternateExtensionCreationFailure2()
         {
             AlternateExtension oTemp = new AlternateExtension(_connectionServer, "");
+            Console.WriteLine(oTemp);
         }
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void AlternateExtensionCreationFailure()
         {
             AlternateExtension oTemp = new AlternateExtension(null, "xxxx");
+            Console.WriteLine(oTemp);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void MWiCreationFailure()
         {
             Mwi oTemp = new Mwi(null,"bogus");
+            Console.WriteLine(oTemp);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void MWiCreationFailure2()
         {
             Mwi oTemp = new Mwi(_connectionServer, "bogus","bogus");
+            Console.WriteLine(oTemp);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void MWiCreationFailure3()
         {
             Mwi oTemp = new Mwi(_connectionServer, "", "bogus");
+            Console.WriteLine(oTemp);
         }
 
 
@@ -165,15 +174,14 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetAndListUsers_Test()
         {
-            WebCallResult res;
             UserFull oUserFull;
             List<UserBase> oUserBaseList;
             
             //get the first couple user found (could be only 1 -operator- but that doesn't matter here).
-            res = UserBase.GetUsers(_connectionServer, out oUserBaseList, "rowsPerPage=5");
+            WebCallResult res = UserBase.GetUsers(_connectionServer, out oUserBaseList, "rowsPerPage=5");
             Assert.IsTrue(res.Success, "Failed to fetch first user in system");
             Assert.IsNotNull(oUserBaseList, "Null user list returned");
             Assert.IsTrue(oUserBaseList.Count > 0, "Empty user list returned");
@@ -217,10 +225,10 @@ namespace ConnectionCUPIFunctionsTest
 
 
             //Show the user's credentials for PIN and Password
-            Console.WriteLine("User PIN credential details:"+oUserFull.Pin().ToString());
+            Console.WriteLine("User PIN credential details:"+oUserFull.Pin());
             Console.WriteLine(oUserFull.Pin().DumpAllProps());
 
-            Console.WriteLine("User Password credential details:"+oUserFull.Password().ToString());
+            Console.WriteLine("User Password credential details:"+oUserFull.Password());
             Console.WriteLine(oUserFull.Password().DumpAllProps());
 
             //Fetch credentials via static function
@@ -257,20 +265,19 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetUser_Failure()
         {
-            WebCallResult res;
             UserBase oUserBase;
             UserFull oUserFull;
 
-            res = UserBase.GetUser(out oUserBase, null, "aaa");
+            WebCallResult res = UserBase.GetUser(out oUserBase, null, "aaa");
             Assert.IsFalse(res.Success, "Null Connection server object should fail");
 
             res = UserBase.GetUser(out oUserBase, _connectionServer, "aaa");
             Assert.IsFalse(res.Success, "Invalid Usser ObjectId should fail");
 
-            res = UserBase.GetUser(out oUserBase, _connectionServer, "","");
+            res = UserBase.GetUser(out oUserBase, _connectionServer, "");
             Assert.IsFalse(res.Success, "Empty User ObjectId and alias should fail");
 
             res = UserBase.GetUser(out oUserBase, _connectionServer, "","aaa");
@@ -292,18 +299,16 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetUsers_Failure()
         {
-            WebCallResult res;
             List<UserBase> oUserList;
-            string[] strList;
-            strList = new string[2];
+            string[] strList = new string[2];
 
             strList[0] = "rowsPerPage=1";
             strList[1] = ""; //make sure empty clause is handled
 
-            res = UserBase.GetUsers(_connectionServer, out oUserList, strList);
+            WebCallResult res = UserBase.GetUsers(_connectionServer, out oUserList, strList);
             Assert.IsTrue(res.Success, "Could not fetch first user");
             Assert.IsNotNull(oUserList, "Null user list returned");
             Assert.IsTrue(oUserList.Count > 0, "Empty list of users returned");
@@ -320,14 +325,13 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void UpdateUsers_Failure()
         {
-            WebCallResult res;
             ConnectionPropertyList oPropList = new ConnectionPropertyList();
             oPropList.Add("test", "value");
 
-            res = UserBase.UpdateUser(_connectionServer, "aaa", oPropList);
+            WebCallResult res = UserBase.UpdateUser(_connectionServer, "aaa", oPropList);
             Assert.IsFalse(res.Success, "Invalid ObjectId should fail");
 
             res = UserBase.UpdateUser(_connectionServer, "", oPropList);
@@ -344,11 +348,10 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetUserVoiceName_Failure()
         {
-            WebCallResult res;
-            res = UserBase.GetUserVoiceName(_connectionServer, "temp.wav", "aaa");
+            WebCallResult res = UserBase.GetUserVoiceName(_connectionServer, "temp.wav", "aaa");
             Assert.IsFalse(res.Success, "Invalid user objectID should fail");
 
             res = UserBase.GetUserVoiceName(_connectionServer, "temp.wav", "");
@@ -365,11 +368,10 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void SetUserVoiceName_Failure()
         {
-            WebCallResult res;
-            res = UserBase.SetUserVoiceName(_connectionServer, "Dummy.wav", "aaa", true);
+            WebCallResult res = UserBase.SetUserVoiceName(_connectionServer, "Dummy.wav", "aaa", true);
             Assert.IsFalse(res.Success, "Invalid user objectID should fail");
 
             res = UserBase.SetUserVoiceName(_connectionServer, "wavcopy.exe", "aaa", true);
@@ -386,12 +388,10 @@ namespace ConnectionCUPIFunctionsTest
 
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SetUserVoiceNameToStreamFile_Failure()
         {
-            WebCallResult res;
-
-            res = UserBase.SetUserVoiceNameToStreamFile(_connectionServer, "aaa", "bbb");
+            WebCallResult res = UserBase.SetUserVoiceNameToStreamFile(_connectionServer, "aaa", "bbb");
             Assert.IsFalse(res.Success, "Invalid user objectID should fail");
 
             res = UserBase.SetUserVoiceNameToStreamFile(_connectionServer, "", "aaa");
@@ -408,12 +408,10 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void AddUser_Failure()
         {
-            WebCallResult res;
-
-            res = UserBase.AddUser(null, "", "", "", null);
+            WebCallResult res = UserBase.AddUser(null, "", "", "", null);
             Assert.IsFalse(res.Success, "AddUser should fail if the ConnectionServer parameter is null");
 
             res = UserBase.AddUser(_connectionServer, "", "aaa", "123", null);
@@ -429,12 +427,10 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// DELETE user static method failure paths
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void DeleteUser_Failure()
         {
-            WebCallResult res;
-
-            res = UserBase.DeleteUser(_connectionServer, "aaa");
+            WebCallResult res = UserBase.DeleteUser(_connectionServer, "aaa");
             Assert.IsFalse(res.Success, "Invalid ObjectId should fail");
 
             res = UserBase.DeleteUser(_connectionServer, "");
@@ -446,11 +442,9 @@ namespace ConnectionCUPIFunctionsTest
         }
 
 
-        [TestMethod()]
+        [TestMethod]
         public void StaticUserMessageFailures()
         {
-            WebCallResult res;
-
             //CreateMessageLocalWav
             MessageAddress oRecipient = new MessageAddress();
             oRecipient.AddressType = MessageAddressType.BCC;
@@ -460,8 +454,8 @@ namespace ConnectionCUPIFunctionsTest
             oRecipient3.AddressType = MessageAddressType.CC;
 
 
-            res = UserMessage.CreateMessageLocalWav(null, "userobjectID", "subject", "dummy.wav", false,
-                                                    false, false, false, false, false, null, false, oRecipient, oRecipient2, oRecipient3);
+            WebCallResult res = UserMessage.CreateMessageLocalWav(null, "userobjectID", "subject", "dummy.wav", false,
+                                                                  false, false, false, false, false, null, false, oRecipient, oRecipient2, oRecipient3);
             Assert.IsFalse(res.Success, "Call to CreateMessageLocalWav with null ConnectionServer did not fail.");
 
             res = UserMessage.CreateMessageLocalWav(_connectionServer, "", "subject", "dummy.wav", false,
@@ -533,7 +527,6 @@ namespace ConnectionCUPIFunctionsTest
             res = UserMessage.GetMessageAttachmentCount(_connectionServer, "", "bogus", out iCount);
             Assert.IsFalse(res.Success, "Call to static GetMessageAttachmentCount did not fail with empty objectId");
 
-            UserMessage oMessage;
             List<UserMessage> oMessages;
             //GetMessages
             res = UserMessage.GetMessages(null, "bogus", out oMessages);
@@ -573,10 +566,10 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Call to static GetMessages did not fail with invalid objectId11");
 
 
-            Console.WriteLine(UserMessage.ConvertFromMillisecondsToTimeDate(1000, true).ToString());
+            Console.WriteLine(UserMessage.ConvertFromMillisecondsToTimeDate(1000).ToString());
             Console.WriteLine(UserMessage.ConvertFromMillisecondsToTimeDate(1000, false).ToString());
 
-            Console.WriteLine(UserMessage.ConvertFromTimeDateToMilliseconds(DateTime.Now, true));
+            Console.WriteLine(UserMessage.ConvertFromTimeDateToMilliseconds(DateTime.Now));
             Console.WriteLine(UserMessage.ConvertFromTimeDateToMilliseconds(DateTime.Now, false));
 
             //UpdateUserMessage
@@ -596,18 +589,11 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Large test that edits/reads/adds many items for users
         /// </summary>
-        [TestMethod()]
-        public void EditUser()
+        [TestMethod]
+        public void EditUser_TopLevel()
         {
-            WebCallResult res;
-
-            //fetch voice name - this should fail
-            res = _tempUser.GetVoiceName("temp.wav");
-            Assert.IsFalse(res.Success, "Newly created user should have no voice name, fetch should fail");
-
             //update a user property
-            _tempUser.ClearPendingChanges();
-            res = _tempUser.Update();
+            WebCallResult res = _tempUser.Update();
             Assert.IsFalse(res.Success, "Updating a user with no pending changes should fail");
 
             //fill in the user with some items not populated on a newly created user.
@@ -628,28 +614,62 @@ namespace ConnectionCUPIFunctionsTest
             _tempUser.Address = "123 Maple way";
             _tempUser.EnhancedSecurityAlias = "testing";
 
+
             res = _tempUser.Update();
             Assert.IsTrue(res.Success, "Failed to update user object:" + res.ToString());
 
-            //reset the PIN and Password
-            res = _tempUser.ResetPin("234098234");
-            Assert.IsTrue(res.Success, "Reset PIN failed:" + res.ToString());
+            _tempUser.ClearPendingChanges();
 
-            res = _tempUser.ResetPassword("asdfasdfui09au8dsf");
-            Assert.IsTrue(res.Success, "Reset password failed:" + res.ToString());
+            _tempUser.ExitAction = 44;
+            _tempUser.ExitTargetConversation = ConversationNames.PHInterview.ToString();
+            _tempUser.ExitTargetHandlerObjectId = _tempUser.ObjectId;
 
-            //update the voice name
-            res = _tempUser.SetVoiceName("Dummy.wav", true);
-            Assert.IsTrue(res.Success, "Failed updating the voice name:" + res.ToString());
+            res = _tempUser.Update();
+            Assert.IsFalse(res.Success, "Setting exit action to an illegal action did not fail");
 
-            //failure case for an instance method of voice name update
-            res = _tempUser.SetVoiceNameToStreamFile("blah");
-            Assert.IsFalse(res.Success, "Invalid voice name file should fail");
+            _tempUser.ClearPendingChanges();
 
-            //get the voice name
-            res = _tempUser.GetVoiceName("Temp.wav");
-            Assert.IsTrue(res.Success, "Failed to fetch the newly added user voice name:" + res.ToString());
+            _tempUser.ExitAction = (int)ActionTypes.GoTo;
+            _tempUser.ExitTargetConversation = ConversationNames.PHInterview.ToString();
+            _tempUser.ExitTargetHandlerObjectId = _tempUser.ObjectId;
+            res = _tempUser.Update();
+            Assert.IsFalse(res.Success, "Setting exit action to phInterview and an illegal objectId did not fail");
 
+            _tempUser.ClearPendingChanges();
+
+            _tempUser.ExitAction = (int)ActionTypes.GoTo;
+            _tempUser.ExitTargetConversation = ConversationNames.PHGreeting.ToString();
+            _tempUser.ExitTargetHandlerObjectId = _tempUser.PrimaryCallHandler().ObjectId;
+            res = _tempUser.Update();
+
+            Assert.IsTrue(res.Success,"Updating exit conversation to valid values failed:"+res);
+        }
+
+
+         [TestMethod]
+         public void EditUser_VoiceName()
+         {
+             //fetch voice name - this should fail
+             WebCallResult res = _tempUser.GetVoiceName("temp.wav");
+             Assert.IsFalse(res.Success, "Newly created user should have no voice name, fetch should fail");
+
+             //update the voice name
+             res = _tempUser.SetVoiceName("Dummy.wav", true);
+             Assert.IsTrue(res.Success, "Failed updating the voice name:" + res.ToString());
+
+             //failure case for an instance method of voice name update
+
+             res = _tempUser.SetVoiceNameToStreamFile("blah");
+             Assert.IsFalse(res.Success, "Invalid voice name file should fail");
+
+             //get the voice name
+             res = _tempUser.GetVoiceName("Temp.wav");
+             Assert.IsTrue(res.Success, "Failed to fetch the newly added user voice name:" + res.ToString());
+         }
+
+        [TestMethod]
+        public void EditUser_NotificationDevices()
+        {
             //iterate the notificaitond Devices
             foreach (NotificationDevice oDevice in _tempUser.NotificationDevices())
             {
@@ -657,12 +677,25 @@ namespace ConnectionCUPIFunctionsTest
                 Console.WriteLine(oDevice.DumpAllProps());
             }
 
+            //add a new Phone notification device - first we need to grab any valid media switch ObjectId to use for 
+            //creating the device - this will get used for both the Phone and Pager device add/removes
+            List<PhoneSystem> oPhoneSystems;
+            WebCallResult res = PhoneSystem.GetPhoneSystems(_connectionServer, out oPhoneSystems);
+            Assert.IsTrue(res.Success, "Failed fetching phone systems:" + res.ToString());
+            Assert.IsNotNull(oPhoneSystems, "Null phone system list returned");
+            Assert.IsTrue(oPhoneSystems.Count > 0, "Empty list of phone systems returned");
+
+            res = NotificationDevice.AddPhoneDevice(_connectionServer, _tempUser.ObjectId, "NewPhoneDevice", oPhoneSystems.First().ObjectId, "12345",
+                                             NotificationEventTypes.NewUrgentVoiceMail.ToString(), true);
+            Assert.IsTrue(res.Success, "Failed to add new Phone notification device:" + res.ToString());
+            Assert.IsTrue(res.ReturnedObjectId.Length > 0, "Empty objectID returned for new Phone device creation");
+
             //force a refetch of data
             Console.WriteLine(_tempUser.NotificationDevices(true).ToString());
 
             //GET the HomePhone notification device, edit and save it
             NotificationDevice oNotificationDevice;
-            _tempUser.GetNotificationDevice("Home Phone", out oNotificationDevice);
+            res = _tempUser.GetNotificationDevice("Home Phone", out oNotificationDevice);
             Assert.IsTrue(res.Success, "Failed to fetch HomePhone notificaiton device:" + res.ToString());
 
             oNotificationDevice.ClearPendingChanges();
@@ -696,37 +729,10 @@ namespace ConnectionCUPIFunctionsTest
             oNotificationDevice.StaticText = "static text";
             oNotificationDevice.FailDeviceObjectId = oNotificationDevice.ObjectId;
             res = oNotificationDevice.Update();
-            Assert.IsTrue(res.Success, "Failed updating notification device:" + res.ToString());
+            Assert.IsFalse(res.Success, "Setting failed path for notification did not fail when set to self:" + res.ToString());
 
             res = oNotificationDevice.Delete();
-           // Assert.IsTrue(res.Success, "Failed removing newly added SMTP notification device:" + res.ToString());
-
-            //add an MWI
-
-            //fail case 1
-            res = UserBase.AddMwi(null, _tempUser.ObjectId, "112341324123", "testMWI device");
-            Assert.IsFalse(res.Success, "AddMwi should fail if Comserver instance is passed as null");
-
-            //fail case 2
-            res = UserBase.AddMwi(_connectionServer, _tempUser.ObjectId, "", "testMWI device");
-            Assert.IsFalse(res.Success, "AddMwi should fail if MWI extension is passed as blank");
-
-            //good case
-            res = UserBase.AddMwi(_connectionServer, _tempUser.ObjectId, "112341324123", "MWI2");
-            Assert.IsTrue(res.Success, "Failed to add MWI manually:" + res.ToString());
-
-            //add a new Phone notification device - first we need to grab any valid media switch ObjectId to use for 
-            //creating the device - this will get used for both the Phone and Pager device add/removes
-            List<PhoneSystem> oPhoneSystems;
-            res = PhoneSystem.GetPhoneSystems(_connectionServer, out oPhoneSystems);
-            Assert.IsTrue(res.Success, "Failed fetching phone systems:" + res.ToString());
-            Assert.IsNotNull(oPhoneSystems, "Null phone system list returned");
-            Assert.IsTrue(oPhoneSystems.Count > 0, "Empty list of phone systems returned");
-
-            res = NotificationDevice.AddPhoneDevice(_connectionServer, _tempUser.ObjectId, "NewPhoneDevice", oPhoneSystems.First().ObjectId, "12345",
-                                             NotificationEventTypes.NewUrgentVoiceMail.ToString(), true);
-            Assert.IsTrue(res.Success, "Failed to add new Phone notification device:" + res.ToString());
-            Assert.IsTrue(res.ReturnedObjectId.Length > 0, "Empty objectID returned for new Phone device creation");
+            Assert.IsTrue(res.Success, "Failed removing newly added SMTP notification device:" + res.ToString());
 
             //update phone notification device - be sure to ask for an updated list to be created since we just added a device and the user
             //already can have a cached list around.
@@ -739,7 +745,7 @@ namespace ConnectionCUPIFunctionsTest
 
             //delete the newly added notifiication device
             res = oNotificationDevice.Delete();
-           // Assert.IsTrue(res.Success, "Failed removing newly added Phone notification device:" + res.ToString());
+            Assert.IsTrue(res.Success, "Failed removing newly added Phone notification device:" + res.ToString());
 
             //add a new Pager notification device
             res = NotificationDevice.AddPagerDevice(_connectionServer, _tempUser.ObjectId, "NewPagerDevice", oPhoneSystems.First().ObjectId,
@@ -755,9 +761,14 @@ namespace ConnectionCUPIFunctionsTest
             //error case - invalid notification device name
             res = _tempUser.GetNotificationDevice("blah", out oNotificationDevice);
             Assert.IsFalse(res.Success, "Invalid notification device name should result in an error");
+        }
 
+
+        [TestMethod]
+        public void EditUser_AlternateExtensions()
+        {
             //Add an alternate extension
-            res = AlternateExtension.AddAlternateExtension(_connectionServer, _tempUser.ObjectId, 1, _tempUser.DtmfAccessId + "1");
+            WebCallResult res = AlternateExtension.AddAlternateExtension(_connectionServer, _tempUser.ObjectId, 1, _tempUser.DtmfAccessId + "1");
             Assert.IsTrue(res.Success, "Failed adding alternate extension to user:" + res.ToString());
 
             //Iterate the alternate extensiosn
@@ -789,7 +800,7 @@ namespace ConnectionCUPIFunctionsTest
 
             //delete it
             res = oAltExt.Delete();
-           // Assert.IsTrue(res.Success, "Failed to delete alternate extension:" + res.ToString());
+            Assert.IsTrue(res.Success, "Failed to delete alternate extension:" + res.ToString());
 
             //add alternate extension through alternate route via static method with return via out param
 
@@ -814,7 +825,7 @@ namespace ConnectionCUPIFunctionsTest
 
             //AddAlternateExtension
             res = AlternateExtension.AddAlternateExtension(null, "bogus", 1, "1234");
-            Assert.IsFalse(res.Success,"Adding alternate extension with static AddAlternateExtension did not fail with null Connection server");
+            Assert.IsFalse(res.Success, "Adding alternate extension with static AddAlternateExtension did not fail with null Connection server");
 
             res = AlternateExtension.AddAlternateExtension(_connectionServer, "bogus", 1, "1234");
             Assert.IsFalse(res.Success, "Adding alternate extension with static AddAlternateExtension did not fail with invalid objectId");
@@ -849,8 +860,8 @@ namespace ConnectionCUPIFunctionsTest
             List<AlternateExtension> oAltExts;
             res = AlternateExtension.GetAlternateExtensions(null, "bogus", out oAltExts);
             Assert.IsFalse(res.Success, "Getting alternate extensions with static GetAlternateExtensions did not fail with null Connection server");
-            
-           
+
+
             res = AlternateExtension.GetAlternateExtensions(_connectionServer, "", out oAltExts);
             Assert.IsFalse(res.Success, "Getting alternate extensions with static GetAlternateExtensions did not fail with empty objectId");
 
@@ -861,31 +872,41 @@ namespace ConnectionCUPIFunctionsTest
             res = AlternateExtension.UpdateAlternateExtension(_connectionServer, "bogus", "bogus", null);
             Assert.IsFalse(res.Success, "updating alternate extensions with static UpdateAlternateExtension did not fail with empty property list");
 
+        }
+
+        [TestMethod]
+        public void EditUser_Passwords()
+        {
             //Reset the user's password
-            res = _tempUser.ResetPassword("ASDF234232sdf", false, false, false, true);
-            Assert.IsTrue(res.Success, "Resetting user password failed:"+res.ToString());
+            WebCallResult res = _tempUser.ResetPassword("ASDF234232sdf", false, false, false, true);
+            Assert.IsTrue(res.Success, "Resetting user password failed:" + res.ToString());
 
             //Reset the user's PIN
-            res = _tempUser.ResetPin("2349808", false, false, false, true,true);
+            res = _tempUser.ResetPin("2349808", false, false, false, true, true);
             Assert.IsTrue(res.Success, "Resetting user PIN failed:" + res.ToString());
 
             //reset the pin failure
             res = UserBase.ResetUserPin(null, _tempUser.ObjectId, "1323424323");
             Assert.IsFalse(res.Success, "Resetting user PIN with null ConnectionServer should fail");
+
+            //reset the PIN and Password
+            res = _tempUser.ResetPin("234098234");
+            Assert.IsTrue(res.Success, "Reset PIN failed:" + res.ToString());
+
+            res = _tempUser.ResetPassword("asdfasdfui09au8dsf");
+            Assert.IsTrue(res.Success, "Reset password failed:" + res.ToString());
+
         }
 
 
-        
 
 
         /// <summary>
         /// Create, delete, change messages in the temp user's mailbox before they're deleted
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void UserMessageTests()
         {
-            WebCallResult res;
-            
             if (_tempUser == null)
             {
                 Assert.Fail("Temp user not created, cannot run tests.");
@@ -895,9 +916,9 @@ namespace ConnectionCUPIFunctionsTest
             MessageAddress oRecipient = new MessageAddress();
             oRecipient.AddressType = MessageAddressType.TO;
             oRecipient.SmtpAddress = _tempUser.SmtpAddress;
-            res = UserMessage.CreateMessageLocalWav(_connectionServer, _tempUser.ObjectId, "test subject", "dummy.wav", false,
-                                                    false, false, false, false, false, new CallerId{CallerNumber = "1234"}, 
-                                                    true, oRecipient);
+            WebCallResult res = UserMessage.CreateMessageLocalWav(_connectionServer, _tempUser.ObjectId, "test subject", "dummy.wav", false,
+                                                                  false, false, false, false, false, new CallerId{CallerNumber = "1234"}, 
+                                                                  true, oRecipient);
             Assert.IsTrue(res.Success, "Failed to create new message from WAV file:" + res);
 
             //do other tests
@@ -923,14 +944,14 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 UserMessage oNewMessage = new UserMessage(null, _tempUser.ObjectId);
-                Assert.Fail("Creating new UserMessage object with null Connection server did not fail");
+                Assert.Fail("Creating new UserMessage object with null Connection server did not fail:" + oNewMessage);
             }
             catch {}
 
             try
             {
                 UserMessage oNewMessage = new UserMessage(_connectionServer, "");
-                Assert.Fail("Creating new UserMessage object with and empty user ObjectID did not fail");
+                Assert.Fail("Creating new UserMessage object with and empty user ObjectID did not fail:"+oNewMessage);
             }
             catch { }
 
@@ -945,7 +966,7 @@ namespace ConnectionCUPIFunctionsTest
             oMessage = oMessages[0];
 
             //some static helper methods
-            Console.WriteLine(UserMessage.ConvertFromTimeDateToMilliseconds(DateTime.Now, true));
+            Console.WriteLine(UserMessage.ConvertFromTimeDateToMilliseconds(DateTime.Now));
             Console.WriteLine(UserMessage.ConvertFromTimeDateToMilliseconds(DateTime.Now, false));
 
             //update failure
@@ -980,7 +1001,7 @@ namespace ConnectionCUPIFunctionsTest
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Failed to delete temporary wav file:" + filename);
+                Console.WriteLine("Failed to delete temporary wav file:" + filename+", error="+ex);
             }
 
             //forward it to mailbox
@@ -1051,20 +1072,31 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Fetch, create and delete MWI devices in the temp user's account before they're deleted
         /// </summary>
-        /// <param name="pUserObjectId"></param>
-        /// <param name="pMediaSwitchObjectId"></param>
-        [TestMethod()]
+        [TestMethod]
         public void MwiTests()
         {
-
             if (_tempUser == null)
             {
                 Assert.Fail("Temp user not created, cannot run tests");
             }
 
+            //add an MWI
+
+            //fail case 1
+            WebCallResult res = UserBase.AddMwi(null, _tempUser.ObjectId, "112341324123", "testMWI device");
+            Assert.IsFalse(res.Success, "AddMwi should fail if Comserver instance is passed as null");
+
+            //fail case 2
+            res = UserBase.AddMwi(_connectionServer, _tempUser.ObjectId, "", "testMWI device");
+            Assert.IsFalse(res.Success, "AddMwi should fail if MWI extension is passed as blank");
+
+            //good case
+            res = UserBase.AddMwi(_connectionServer, _tempUser.ObjectId, "112341324123", "MWI2");
+            Assert.IsTrue(res.Success, "Failed to add MWI manually:" + res.ToString());
+
             //static method calls - create, fetch then delete an MWI device
 
-            WebCallResult res = Mwi.AddMwi(_connectionServer, _tempUser.ObjectId, "display name", _tempUser.MediaSwitchObjectId, 
+            res = Mwi.AddMwi(_connectionServer, _tempUser.ObjectId, "display name", _tempUser.MediaSwitchObjectId, 
                 "1234321", false);
             Assert.IsTrue(res.Success,"Failed to create MWI device for user:"+res);
 
@@ -1092,8 +1124,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(oMwis.Count >= 2, "Mwi count is not at least 2 after adding device, instead its"+oMwis.Count);
 
             res = Mwi.DeleteMwiDevice(_connectionServer, _tempUser.ObjectId, oMwiDevice.ObjectId);
-            //Assert.IsTrue(res.Success, "Failed to delete MWI device for user:" + res);
-
+            Assert.IsTrue(res.Success, "Failed to delete MWI device for user:" + res);
 
             //static call failures
             //AddMwi

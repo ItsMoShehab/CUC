@@ -189,9 +189,9 @@ namespace Cisco.UnityConnection.RestFunctions
     public enum ConversationNames
     {
         Ad,
-        PhTransfer,
-        PhGreeting,
-        PhInterview,
+        PHTransfer,
+        PHGreeting,
+        PHInterview,
         BroadcastMessageAdministrator,
         GreetingsAdministrator,
         SubSignIn,

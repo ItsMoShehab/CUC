@@ -101,7 +101,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise transfer options
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void TransferOption_Test
             ()
         {
@@ -156,7 +156,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise transfer options failure cases 
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void UpdateTransferOptionEnabledStatus_Failure()
         {
             WebCallResult res;
@@ -186,7 +186,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise transfer options failure cases 
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void UpdateTransferOption_Failure()
         {
             WebCallResult res;
@@ -203,7 +203,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise transfer options failure cases 
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetTransferOptions_Failure()
         {
             WebCallResult res;
@@ -220,7 +220,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise transfer options failure cases 
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetTransferOption_Failure()
         {
             WebCallResult res;

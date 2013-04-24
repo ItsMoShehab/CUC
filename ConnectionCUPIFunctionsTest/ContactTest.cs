@@ -58,7 +58,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure()
         {
@@ -68,7 +68,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// throw an exception if an invalid objectId is passed
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void ClassCreationFailure2()
         {
@@ -78,7 +78,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Throw an exception if an invalid alias is passed
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void ClassCreationFailure3()
         {

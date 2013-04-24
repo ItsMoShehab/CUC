@@ -12,14 +12,19 @@ namespace ConnectionCUPIFunctionsTest
     ///This is a test class for CallHandlerTest and is intended
     ///to contain all CallHandlerTest Unit Tests
     ///</summary>
-    [TestClass()]
+    [TestClass]
     public class CallHandlerTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
         #region Fields and Properties
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
         private static ConnectionServer _connectionServer;
+
+        private static CallHandler _tempHandler;
 
         /// <summary>
         ///Gets or sets the test context which provides
@@ -53,6 +58,30 @@ namespace ConnectionCUPIFunctionsTest
                 throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
             }
 
+            //grab the first template - should always be one and it doesn't matter which
+            List<CallHandlerTemplate> oTemplates;
+            WebCallResult res =CallHandlerTemplate.GetCallHandlerTemplates(_connectionServer, out oTemplates);
+            if (res.Success == false || oTemplates==null || oTemplates.Count == 0)
+            {
+                Assert.Fail("Could not fetch call handler templates:"+res);    
+            }
+            
+            //create new handler with GUID in the name to ensure uniqueness
+            String strName = "TempHandler_" + Guid.NewGuid().ToString().Replace("-", "");
+
+            res = CallHandler.AddCallHandler(_connectionServer, oTemplates[0].ObjectId, strName, "", null, out _tempHandler);
+            Assert.IsTrue(res.Success, "Failed creating temporary callhandler:" + res.ToString());
+        }
+
+
+        [ClassCleanup]
+        public static void MyClassCleanup()
+        {
+            if (_tempHandler != null)
+            {
+                WebCallResult res = _tempHandler.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete temporary call handler on cleanup.");
+            }
         }
 
         #endregion
@@ -63,22 +92,24 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure()
         {
             CallHandler oTestHandler = new CallHandler(null);
+            Console.WriteLine(oTestHandler);
         }
 
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void CallHandlerTemplate_ClassCreationFailure()
         {
             CallHandlerTemplate oTestTemplate = new CallHandlerTemplate(null, "aaa");
+            Console.WriteLine(oTestTemplate);
         }
 
 
@@ -91,17 +122,16 @@ namespace ConnectionCUPIFunctionsTest
         /// GET first 3 handler in directory using static method call, iterate over them and use the ToString and DumpAllProps
         /// methods on them each.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetCallHandlers_Test()
         {
-            WebCallResult res;
             List<CallHandler> oHandlerList;
             CallHandler oHoldHandler=null;
 
             //limit the fetch to the first 3 handlers to be sure this passes even on a default install
             string[] pClauses = { "rowsPerPage=3" };
 
-            res = CallHandler.GetCallHandlers(_connectionServer, out oHandlerList, pClauses);
+            WebCallResult res = CallHandler.GetCallHandlers(_connectionServer, out oHandlerList, pClauses);
 
             Assert.IsTrue(res.Success, "Fetching of top three call handlers failed: " + res.ToString());
             Assert.AreEqual(oHandlerList.Count, 3, "Fetching of the top three call handlers returned a different number of handlers: " + res.ToString());
@@ -134,66 +164,125 @@ namespace ConnectionCUPIFunctionsTest
         /// Connection server we need to consolidate edits like this into a routine where we're working with a temporary handler that we clean
         /// up afterwards.
         /// </summary>
-        [TestMethod()]
-        public void AddEditDeleteCallHandler_Test()
+        [TestMethod]
+        public void AddEditDeleteCallHandler_TopLevelTest()
         {
-            WebCallResult res;
-
-            //create new list with GUID in the name to ensure uniqueness
-            String strHandlerName = "TempHandler_" + Guid.NewGuid().ToString();
-
-            CallHandler oHandler;
-            Greeting oGreeting;
-            GreetingStreamFile oStream;
-            List<GreetingStreamFile> oStreams;
-
-            //get first call handler template
-            List<CallHandlerTemplate> oTemplates;
-            res = CallHandlerTemplate.GetCallHandlerTemplates(_connectionServer, out oTemplates);
-            Assert.IsTrue(res.Success, "Failed to fetch call handler templates:" + res.ToString());
-            Assert.IsNotNull(oTemplates, "NULL instance of template list returned");
-            Assert.IsTrue(oTemplates.Count > 0, "Zero templates returned");
-
-            //Just grab the first template - doesn't really matter here.
-            res = CallHandler.AddCallHandler(_connectionServer, oTemplates[0].ObjectId, strHandlerName, "", null, out oHandler);
-            Assert.IsTrue(res.Success,"Failed to create new call handler");
-            Assert.AreNotEqual(oHandler, null,"Call handler object returned from new creation is null");
-
             //call update with no edits - this should fail
-            res = oHandler.Update();
+            WebCallResult res = _tempHandler.Update();
             Assert.IsFalse(res.Success, "Call to update with no pending changes should fail");
 
             //Edit the handler's name
-            oHandler.DisplayName = strHandlerName + "x";
-            oHandler.PrependDigits = "123";
-            
-            res = oHandler.Update();
+            _tempHandler.DisplayName = _tempHandler.DisplayName + "x";
+            _tempHandler.PrependDigits = "123";
+
+            res = _tempHandler.Update();
             Assert.IsTrue(res.Success, "Call to update call handler failed:" + res.ToString());
 
+            _tempHandler.DtmfAccessId = "____";
+            res = _tempHandler.Update();
+            Assert.IsFalse(res.Success,"Setting call handler to illegal primary extension did not fail:"+res);
+
+            _tempHandler.ClearPendingChanges();
+
+            _tempHandler.AfterMessageAction = 33;
+            _tempHandler.AfterMessageTargetConversation = ConversationNames.PHGreeting.ToString();
+            _tempHandler.AfterMessageTargetHandlerObjectId = _tempHandler.ObjectId;
+            res = _tempHandler.Update();
+
+            Assert.IsFalse(res.Success,"Setting after message action on handler to invalid action number did not fail");
+
+            _tempHandler.ClearPendingChanges();
+
+            _tempHandler.AfterMessageAction = (int)ActionTypes.GoTo;
+            _tempHandler.AfterMessageTargetConversation = ConversationNames.PHTransfer.ToString();
+            _tempHandler.AfterMessageTargetHandlerObjectId = _tempHandler.ObjectId;
+            res = _tempHandler.Update();
+
+            Assert.IsTrue(res.Success,"Failed setting after message action to loop back to self:"+res);
+        }
+
+        [TestMethod]
+        public void AddEditDeleteCallHandler_VoiceNameTests()
+        {
             //try to download voice name- this should fail
-            res = oHandler.GetVoiceName(@"c:\temp.wav");
+            WebCallResult res = _tempHandler.GetVoiceName(@"c:\temp.wav");
             Assert.IsFalse(res.Success, "Empty voice name fetch should return false for newly created handler");
 
             //try and upload a bogus WAV file which should fail - the exe will be in the output folder when running unit
             //tests and makes a handy file that will fail to convert or upload
-            res = oHandler.SetVoiceName("wavcopy.exe", true);
+            res = _tempHandler.SetVoiceName("wavcopy.exe", true);
             Assert.IsFalse(res.Success, "Invalid WAV file should fail to convert");
 
             //upload a voice name to the handler
-            res = oHandler.SetVoiceName("Dummy.wav", true);
+            res = _tempHandler.SetVoiceName("Dummy.wav", true);
             Assert.IsTrue(res.Success, "Updating voice name on new call handler failed: " + res.ToString());
 
             //download the wav file we just uploaded
-            res = oHandler.GetVoiceName("DummyDownload.wav");
+            res = _tempHandler.GetVoiceName("DummyDownload.wav");
             Assert.IsTrue(res.Success, "Downloading voice name for call handler failed:" + res.ToString());
+        }
 
-            res=oHandler.GetGreeting("Alternate",out oGreeting);
-            Assert.IsTrue(res.Success,"Failed to get alternate greeting");
+
+        [TestMethod]
+        public void AddEditDeleteCallHandler_TransferOptionTests()
+        {
+            List<TransferOption> oTransferOptions = _tempHandler.GetTransferOptions();
+            Assert.IsTrue(oTransferOptions.Count == 3, "Transfer option collection not returned from call handler properly.");
+
+            TransferOption oTransferOption = oTransferOptions[0];
+            
+            WebCallResult res = oTransferOption.Update();
+            Assert.IsFalse(res.Success,"Update for transfer rule with no pending changes should fail");
+
+            oTransferOption.TransferAnnounce = true;
+            oTransferOption.TransferConfirm = true;
+            oTransferOption.Extension = "123";
+            res = oTransferOption.Update();
+            Assert.IsTrue(res.Success,"Failed to update transfer rule");
+
+            oTransferOption.UsePrimaryExtension = true;
+            oTransferOption.Action = 99;
+            res = oTransferOption.Update();
+            Assert.IsFalse(res.Success,"Setting transfer option to invalid action did not fail");
+        }
+
+        [TestMethod]
+        public void AddEditDeleteCallHandler_MenuOptionTests()
+        {
+            List<MenuEntry> oMenuEntries = _tempHandler.GetMenuEntries();
+            Assert.IsTrue(oMenuEntries.Count == 12, "Menu entries not returned from call handler properly.");
+
+            MenuEntry oMenuEntry = oMenuEntries[2];
+
+            WebCallResult res = oMenuEntry.Update();
+            Assert.IsFalse(res.Success,"Calling update of menu entry with no pending changes did not fail");
+
+            oMenuEntry.Action = 99;
+            res = oMenuEntry.Update();
+            Assert.IsFalse(res.Success, "Setting menu entry to invalid action value did not fail");
+
+            oMenuEntry.Action = (int) ActionTypes.GoTo;
+            oMenuEntry.Locked = true;
+            oMenuEntry.TargetConversation = ConversationNames.PHGreeting.ToString();
+            oMenuEntry.TargetHandlerObjectId = oMenuEntry.CallHandlerObjectId;
+
+            res = oMenuEntry.Update();
+            Assert.IsTrue(res.Success,"Failed to update menu entry to PHGreeting back to self");
+        }
+
+        [TestMethod]
+        public void AddEditDeleteCallHandler_GreetingOptionTests()
+        {
+            Greeting oGreeting;
+            GreetingStreamFile oStream;
+
+            WebCallResult res = _tempHandler.GetGreeting("Alternate", out oGreeting);
+            Assert.IsTrue(res.Success, "Failed to get alternate greeting");
 
             //update the greeting propert and upload a wav file to it
             oGreeting.PlayWhat = (int)PlayWhatTypes.RecordedGreeting;
             oGreeting.TimeExpiresSetNull();
-            
+
             res = oGreeting.Update();
             Assert.IsTrue(res.Success, "Failed updating 'playWhat' for alternate greeting rule:" + res.ToString());
 
@@ -204,39 +293,39 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success, "Failed updating the greeting wav file for the alternate greeting:" + res.ToString());
 
             //use static greeting stream to set wav file instead
-            res = GreetingStreamFile.SetGreetingWavFile(_connectionServer, oHandler.ObjectId, "Alternate", 1033, "Dummy.wav", true);
+            res = GreetingStreamFile.SetGreetingWavFile(_connectionServer, _tempHandler.ObjectId, "Alternate", 1033, "Dummy.wav", true);
             Assert.IsTrue(res.Success, "Updating voice name on new call handler failed: " + res.ToString());
 
             //upload the wav file again, this time using an instance of the GreetingStreamFile object
-            res=GreetingStreamFile.GetGreetingStreamFile(_connectionServer, oHandler.ObjectId, "Alternate", 1033,out oStream);
-            Assert.IsTrue(res.Success,"Failed to create GreetingStreamFile object");
+            res = GreetingStreamFile.GetGreetingStreamFile(_connectionServer, _tempHandler.ObjectId, "Alternate", 1033, out oStream);
+            Assert.IsTrue(res.Success, "Failed to create GreetingStreamFile object");
 
-            res=oStream.SetGreetingWavFile("Dummy.wav", true);
-            Assert.IsTrue(res.Success,"Failed to upload WAV file via GreetingStreamFile instance");
+            res = oStream.SetGreetingWavFile("Dummy.wav", true);
+            Assert.IsTrue(res.Success, "Failed to upload WAV file via GreetingStreamFile instance");
 
             //check some failure resuls for GreetingStreamFile static calls while we're here since we know this greeting exists.
-            res = GreetingStreamFile.GetGreetingWavFile(null, "temp.wav", oHandler.ObjectId, "Alternate", 1033);
+            res = GreetingStreamFile.GetGreetingWavFile(null, "temp.wav", _tempHandler.ObjectId, "Alternate", 1033);
             Assert.IsFalse(res.Success, "Null connection server param should fail");
 
             res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", "", "Alternate", 1033);
             Assert.IsFalse(res.Success, "Empty call handler object ID param should fail");
 
-            res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", oHandler.ObjectId, "Bogus", 1033);
+            res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", _tempHandler.ObjectId, "Bogus", 1033);
             Assert.IsFalse(res.Success, "Invalid greeting type name should fail");
 
-            res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", oHandler.ObjectId, "Alternate", 10);
+            res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", _tempHandler.ObjectId, "Alternate", 10);
             Assert.IsFalse(res.Success, "Invalid language code should fail");
 
-            res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", oHandler.ObjectId, "Alternate", 1033);
+            res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", _tempHandler.ObjectId, "Alternate", 1033);
             Assert.IsTrue(res.Success, "Uploading WAV file to greeting via static GreetingStreamFile call failed");
 
             //get list of all greeting stream files
-            oStreams = oGreeting.GetGreetingStreamFiles();
+            List<GreetingStreamFile> oStreams = oGreeting.GetGreetingStreamFiles();
             Assert.IsNotNull(oStreams, "Null list of greeting streams returned from greeting streams fetch");
             Assert.IsTrue(oStreams.Count > 0, "Empty list of greeting streams returned");
 
             //create a new greeting and fetch the stream files we just uploaded for it
-            oGreeting = new Greeting(_connectionServer, oHandler.ObjectId,"Alternate");
+            oGreeting = new Greeting(_connectionServer, _tempHandler.ObjectId, "Alternate");
             Assert.IsNotNull(oGreeting, "Failed to create new greeting object");
 
             //fetch the stream back out
@@ -247,19 +336,8 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success, "Failed updating greeting eneabled status for one day");
 
             //exercise the "auto fill" greeting, menu entry and transfer option interfaces
-            List<Greeting> oGreetings = oHandler.GetGreetings();
+            List<Greeting> oGreetings = _tempHandler.GetGreetings();
             Assert.IsTrue(oGreetings.Count > 5, "Greetings collection not returned from call handler properly.");
-
-            List<MenuEntry> oMenuEntries = oHandler.GetMenuEntries();
-            Assert.IsTrue(oMenuEntries.Count == 12, "Menu entries not returned from call handler properly.");
-
-            List<TransferOption> oTransferOption = oHandler.GetTransferOptions();
-            Assert.IsTrue(oTransferOption.Count == 3, "Transfer option collection not returned from call handler properly.");
-
-            //delete the handler
-            res = oHandler.Delete();
-            Assert.IsTrue(res.Success, "Removal of new handler at end of test failed: " + res.ToString());
-
         }
 
 
@@ -267,11 +345,10 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise property list adds and dumps - property list does not need it's own test class, everything it can do 
         /// is done right here.  Add each of the types its supports and dump the list out using the ToString override.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void ExercisePropertyList()
          {
-             ConnectionPropertyList oList;
-             oList=new ConnectionPropertyList("propname","propvalue");
+            ConnectionPropertyList oList = new ConnectionPropertyList("propname","propvalue");
 
             oList.Add("integer",1);
             oList.Add("string","stringvalue");
@@ -288,14 +365,12 @@ namespace ConnectionCUPIFunctionsTest
         /// test it here - make sure it handles an invalid conneciton server passed in and can get the list back out and hit the 
         /// ToString override for it - that about covers it.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void CallHandlerTemplate_Test()
          {
-             WebCallResult res;
+            List<CallHandlerTemplate> oTemplates;
 
-             List<CallHandlerTemplate> oTemplates;
-
-            res = CallHandlerTemplate.GetCallHandlerTemplates(null, out oTemplates);
+            WebCallResult res = CallHandlerTemplate.GetCallHandlerTemplates(null, out oTemplates);
             Assert.IsFalse(res.Success,"Null ConnectionServer parameter should fail");
 
             res = CallHandlerTemplate.GetCallHandlerTemplates(_connectionServer, out oTemplates);
@@ -315,6 +390,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 oNewTemplate = new CallHandlerTemplate(_connectionServer, oTemplates[0].ObjectId);
+                Console.WriteLine(oNewTemplate);
             }
             catch (Exception ex)
             {
@@ -324,6 +400,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 oNewTemplate = new CallHandlerTemplate(_connectionServer, "",oTemplates[0].DisplayName);
+                Console.WriteLine(oNewTemplate);
             }
             catch (Exception ex)
             {
@@ -333,6 +410,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 oNewTemplate = new CallHandlerTemplate(_connectionServer, "");
+                Console.WriteLine(oNewTemplate);
             }
             catch (Exception ex)
             {
@@ -365,13 +443,12 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetCallHandlers_Failure()
         {
-            WebCallResult res;
             List<CallHandler> oHandlerList;
 
-            res = CallHandler.GetCallHandlers(null, out oHandlerList, null);
+            WebCallResult res = CallHandler.GetCallHandlers(null, out oHandlerList, null);
             Assert.IsFalse(res.Success, "GetHandler should fail with null ConnectionServer passed to it");
 
         }
@@ -380,16 +457,15 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetCallHandler_Failure()
         {
-            WebCallResult res;
             CallHandler oHandler;
 
-            res = CallHandler.GetCallHandler(out oHandler, null);
+            WebCallResult res = CallHandler.GetCallHandler(out oHandler, null);
             Assert.IsFalse(res.Success, "GetCallHandler should fail if the ConnectionServer is null");
 
-            res = CallHandler.GetCallHandler(out oHandler, _connectionServer, "", "");
+            res = CallHandler.GetCallHandler(out oHandler, _connectionServer);
             Assert.IsFalse(res.Success, "GetCallHandler should fail if the ObjectId and display name are both blank");
         }
 
@@ -397,12 +473,10 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void AddCallHandler_Failure()
         {
-            WebCallResult res;
-
-            res = CallHandler.AddCallHandler(null, "", "", "", null);
+            WebCallResult res = CallHandler.AddCallHandler(null, "", "", "", null);
             Assert.IsFalse(res.Success, "AddCallHandler should fail if the ConnectionServer parameter is null");
 
             res = CallHandler.AddCallHandler(_connectionServer, "", "aaa", "123", null);
@@ -420,12 +494,10 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void DeleteCallHandler_Failure()
         {
-            WebCallResult res;
-
-            res = CallHandler.DeleteCallHandler(null, "");
+            WebCallResult res = CallHandler.DeleteCallHandler(null, "");
             Assert.IsFalse(res.Success, "DeleteCallHandler should fail if the ConnectionServer parameter is null");
 
             res = CallHandler.DeleteCallHandler(_connectionServer, "");
@@ -436,13 +508,12 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void UpdateCallHandler_Failure()
         {
-            WebCallResult res;
             ConnectionPropertyList oPropList = new ConnectionPropertyList();
 
-            res = CallHandler.UpdateCallHandler(null, "", oPropList);
+            WebCallResult res = CallHandler.UpdateCallHandler(null, "", oPropList);
             Assert.IsFalse(res.Success, "UpdateCallHandler should fail if the ConnectionServer parameter is null");
 
             res = CallHandler.UpdateCallHandler(_connectionServer, "", oPropList);
@@ -455,16 +526,14 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetCallHandlerVoiceName_Failure()
         {
-            WebCallResult res;
-
             //use the same string for the alias and display name here
-            String strWavName = @"c:\";
+            const string strWavName = @"c:\";
 
             //invalid local WAV file name
-            res = CallHandler.GetCallHandlerVoiceName(null, "aaa", "");
+            WebCallResult res = CallHandler.GetCallHandlerVoiceName(null, "aaa", "");
             Assert.IsFalse(res.Success, "GetCallHandlerVoiceName did not fail for null Conneciton server");
 
             //empty target file path
@@ -482,16 +551,14 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void SetCallHandlerVoiceName_Failure()
         {
-            WebCallResult res;
-
             //use the same string for the alias and display name here
-            String strWavName = @"c:\";
+            const string strWavName = @"c:\";
 
             //invalid Connection server
-            res = CallHandler.SetCallHandlerVoiceName(null, "", "");
+            WebCallResult res = CallHandler.SetCallHandlerVoiceName(null, "", "");
             Assert.IsFalse(res.Success, "SetCallHandlerVoiceName did not fail with null Connection server passed.");
 
             //invalid target path
@@ -508,12 +575,11 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// exercise failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetCallHandlerTemplate_Failure()
         {
-            WebCallResult res;
             List<CallHandlerTemplate> oTemplates;
-            res = CallHandlerTemplate.GetCallHandlerTemplates(null, out oTemplates);
+            WebCallResult res = CallHandlerTemplate.GetCallHandlerTemplates(null, out oTemplates);
             Assert.IsFalse(res.Success, "Passing null connection server should fail.");
 
 
@@ -522,6 +588,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 oTemplate = new CallHandlerTemplate(_connectionServer, "");
+                Console.WriteLine(oTemplate);
             }
             catch (Exception ex)
             {
@@ -531,6 +598,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 oTemplate = new CallHandlerTemplate(_connectionServer, "blah");
+                Console.WriteLine(oTemplate);
                 Assert.Fail("Creating call handler template via NEW with invalid objectId did not fail");
             }
             catch{}
@@ -538,6 +606,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 oTemplate = new CallHandlerTemplate(_connectionServer, "","blah");
+                Console.WriteLine(oTemplate);
                 Assert.Fail("Creating call handler template via NEW with invalid name did not fail");
             }
             catch { }
