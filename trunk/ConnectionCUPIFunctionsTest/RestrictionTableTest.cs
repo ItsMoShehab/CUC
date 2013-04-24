@@ -59,21 +59,21 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void RestrictionTableClassCreationFailure()
         {
             RestrictionTable oTest = new RestrictionTable(null);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void RestrictionTableClassCreationFailureClassCreationFailure2()
         {
             RestrictionTable oTest = new RestrictionTable(_connectionServer,"bogus");
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void RestrictionTableClassCreationFailureClassCreationFailure3()
         {
@@ -83,21 +83,21 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void RestrictionPatternClassCreationFailure()
         {
             RestrictionPattern oTest = new RestrictionPattern(null,"bogus","bogus");
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void RestrictionPatternClassCreationFailureClassCreationFailure2()
         {
             RestrictionPattern oTest = new RestrictionPattern(_connectionServer, "", "bogus");
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void RestrictionPatternClassCreationFailureClassCreationFailure3()
         {

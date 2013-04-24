@@ -59,14 +59,14 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure()
         {
             RtpCodecDef oTemp = new RtpCodecDef(null);
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void ClassCreationFailure2()
         {

@@ -60,21 +60,21 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure()
         {
             PortGroupServer oTemp = new PortGroupServer(null,"PortGroupId","objectID");
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure2()
         {
             PortGroupServer oTemp = new PortGroupServer(_connectionServer, "");
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void ClassCreationFailure3()
         {

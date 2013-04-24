@@ -8,45 +8,37 @@ using System.Collections.Generic;
 
 namespace ConnectionCUPIFunctionsTest
 {
-
-
     /// <summary>
     ///This is a test class for DistributionListTest and is intended
     ///to contain all DistributionListTest Unit Tests
     ///</summary>
-    [TestClass()]
+    [TestClass]
     public class DistributionListTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
+        #region Fields and Properties
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
         private static ConnectionServer _connectionServer;
 
-        private TestContext testContextInstance;
+        private static DistributionList _tempList;
 
         /// <summary>
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
         ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
+        public TestContext TestContext { get; set; }
+
+        #endregion
+
 
         #region Additional test attributes
 
-        // 
-        //You can use the following additional attributes as you write your tests:
-        //
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -63,65 +55,66 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start DistributionList test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start DistributionListTest test:" + ex.Message);
+            }
+
+            //create new list with GUID in the name to ensure uniqueness
+            String strName = "TempList_" + Guid.NewGuid().ToString().Replace("-", "");
+
+            WebCallResult res = DistributionList.AddDistributionList(_connectionServer, strName, strName,"", null, out _tempList);
+            Assert.IsTrue(res.Success, "Failed creating temporary distribution list:" + res.ToString());
+        }
+
+
+        [ClassCleanup]
+        public static void MyClassCleanup()
+        {
+            if (_tempList != null)
+            {
+                WebCallResult res = _tempList.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete temporary distribution list on cleanup.");
             }
         }
 
-        //
-        //Use ClassCleanup to run code after all tests in a class have run
-        //[ClassCleanup()]
-        //public static void MyClassCleanup()
-        //{
-        //}
-        //
-        //Use TestInitialize to run code before running each test
-        //[TestInitialize()]
-        //public void MyTestInitialize()
-        //{
-        //}
-        //
-        //Use TestCleanup to run code after each test has run
-        //[TestCleanup()]
-        //public void MyTestCleanup()
-        //{
-        //}
-        //
         #endregion
+
+
+        #region Class Construction Failures
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreation_Failure()
         {
 
             DistributionList oTestList = new DistributionList(null);
-
+            Console.WriteLine(oTestList);
         }
+
+        #endregion
 
         /// <summary>
         ///A test for GetDistributionListVoiceName - this exercises the GetDistribitonList as well since it fetches the 
         /// AllVoiceMailUsers list which should always have a voice name.
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetDistributionListVoiceName_Test()
         {
-            WebCallResult res;
-
             //use the same string for the alias and display name here
             String strWavName = "TempWAV_" + Guid.NewGuid().ToString();
 
             //create new list with GUID in the name to ensure uniqueness
             DistributionList oList;
 
-            res = DistributionList.GetDistributionList(out oList, _connectionServer, "", "allvoicemailusers");
+            WebCallResult res = DistributionList.GetDistributionList(out oList, _connectionServer, "", "allvoicemailusers");
 
             Assert.IsTrue(res.Success, "Fetch of AllVoiceMailUsers list failed:" + res.ToString());
             Assert.AreNotEqual(oList, null, "Fetch of AllVoiceMailUsers list failed returning an empty list");
 
             //first, get from static method without voice name
-            res = DistributionList.GetDistributionListVoiceName(_connectionServer, strWavName, oList.ObjectId, "");
+            res = DistributionList.GetDistributionListVoiceName(_connectionServer, strWavName, oList.ObjectId);
             Assert.IsTrue(res.Success, "Static method fetch of voice name for allVoiceMailUsers failed:" + res.ToString());
             Assert.IsTrue(File.Exists(strWavName), "Static method voice name fetch did not produce a wav file as expected.");
 
@@ -144,32 +137,29 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Test common failure scenarios distribution list functions
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetDistributionListTest_Failure()
         {
-            WebCallResult res;
-
             //create new list with GUID in the name to ensure uniqueness
             DistributionList oList;
 
             //null connection server object
-            res = DistributionList.GetDistributionList(out oList, null, "", "allvoicemailusers");
+            WebCallResult res = DistributionList.GetDistributionList(out oList, null, "", "allvoicemailusers");
             Assert.IsFalse(res.Success, "Null Connection server on GetDistributionList did not fail.");
 
             //invalid alias/objectId pair
-            res = DistributionList.GetDistributionList(out oList, _connectionServer, "", "");
+            res = DistributionList.GetDistributionList(out oList, _connectionServer);
             Assert.IsFalse(res.Success, "Blank alias/objectID params on GetDistributionList did not fail");
         }
 
         /// <summary>
         /// exercise GetDistributionLists failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetDistributionLists_Failure()
         {
-            WebCallResult res;
             List<DistributionList> oList;
-            res = DistributionList.GetDistributionLists(null,out oList , null);
+            WebCallResult res = DistributionList.GetDistributionLists(null,out oList , null);
 
             Assert.IsFalse(res.Success,"GetDistributionLists failed to catch null ConnectionServer object");
         }
@@ -177,12 +167,10 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Exercise AddDistributionList failure points.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void AddDistributionList_Failure()
         {
-            WebCallResult res;
-
-            res = DistributionList.AddDistributionList(null, "aaa", "aaa", "123", null);
+            WebCallResult res = DistributionList.AddDistributionList(null, "aaa", "aaa", "123", null);
             Assert.IsFalse(res.Success, "AddDistributionList failed to catch null ConnectionServer object");
 
 
@@ -193,14 +181,12 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Exercise GetDistributionListMember failure points.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetDistributionListMember_Failure()
         {
-            WebCallResult res;
-
             List<DistributionListMember> oListMember;
 
-            res = DistributionListMember.GetDistributionListMembers(null,"",out oListMember);
+            WebCallResult res = DistributionListMember.GetDistributionListMembers(null,"",out oListMember);
             Assert.IsFalse(res.Success,"Fetch of distribution list members should fail with null Connection Server object passed");
 
             res = DistributionListMember.GetDistributionListMembers(_connectionServer, "", out oListMember);
@@ -211,12 +197,10 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Exercise UpdateDistrubitonList failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void UpdateDistributionList_Failure()
         {
-            WebCallResult res;
-
-            res = DistributionList.UpdateDistributionList(null, "aaa", null);
+            WebCallResult res = DistributionList.UpdateDistributionList(null, "aaa", null);
             Assert.IsFalse(res.Success, "UpdateDistributionList failed to catch null ConnectionServer object");
 
 
@@ -228,12 +212,10 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Exercise DeleteDistributionList failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void DeleteDistributionList_Failure()
         {
-            WebCallResult res;
-
-            res = DistributionList.DeleteDistributionList(null, "aaa");
+            WebCallResult res = DistributionList.DeleteDistributionList(null, "aaa");
             Assert.IsFalse(res.Success, "DeleteDistributionList failed to catch null ConnectionServer object");
         }
 
@@ -241,16 +223,15 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Exercise GetDistributionList failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetDistributionList_Failure()
         {
-            WebCallResult res;
             DistributionList oList;
 
-            res = DistributionList.GetDistributionList(out oList,null);
+            WebCallResult res = DistributionList.GetDistributionList(out oList,null);
             Assert.IsFalse(res.Success, "GetDistributionList failed to catch null ConnectionServer object");
 
-            res = DistributionList.GetDistributionList(out oList, _connectionServer,"","");
+            res = DistributionList.GetDistributionList(out oList, _connectionServer);
             Assert.IsFalse(res.Success, "GetDistributionList failed to catch empty alias and ObjectId being passed");
 
             res = DistributionList.GetDistributionList(out oList, _connectionServer, "","bogus alias" );
@@ -263,16 +244,14 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Exercise GetDistributionListVoiceName failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetDistributionListVoiceNameTest_Failure()
         {
-            WebCallResult res;
-
             //use the same string for the alias and display name here
-            String strWavName = @"c:\";
+            const string strWavName = @"c:\";
 
             //invalid local WAV file name
-            res = DistributionList.GetDistributionListVoiceName(null, "aaa", "");
+            WebCallResult res = DistributionList.GetDistributionListVoiceName(null, "aaa", "");
             Assert.IsFalse(res.Success, "GetDistributionListVoiceName did not fail for null Conneciton server");
 
             //empty target file path
@@ -288,16 +267,14 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Exercise SetDistributionListVoiceName failure points
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         public void SetDistributionListVoiceNameTest_Failure()
         {
-            WebCallResult res;
-
             //use the same string for the alias and display name here
-            String strWavName = @"c:\";
+            const string strWavName = @"c:\";
 
             //invalid Connection server
-            res = DistributionList.SetDistributionListVoiceName(null, "", "");
+            WebCallResult res = DistributionList.SetDistributionListVoiceName(null, "", "");
             Assert.IsFalse(res.Success, "SetDistributionListVoiceName did not fail with null Connection server passed.");
 
             //invalid target path
@@ -315,81 +292,100 @@ namespace ConnectionCUPIFunctionsTest
         /// Connection server we need to consolidate edits like this into a routine where we're working with a temporary list that we clean
         /// up afterwards.
         /// </summary>
-        [TestMethod()]
-        public void AddEditDeleteDistributionList_Test()
+        [TestMethod]
+        public void DistributionList_TopLevel()
         {
-            WebCallResult res;
-
-            //use the same string for the alias and display name here
-            String strListName = "TempList_" + Guid.NewGuid().ToString();
-
-            //create new list with GUID in the name to ensure uniqueness
-            DistributionList oList;
-            res = DistributionList.AddDistributionList(_connectionServer, strListName, strListName, "", null, out oList);
-
-            Assert.AreEqual(res.Success, true);
-            Assert.AreNotEqual(oList, null);
-
             //call update with no edits - this should fail
-            res=oList.Update();
+            WebCallResult res = _tempList.Update();
             Assert.IsFalse(res.Success,"Call to update with no pending changes should fail");
 
             //Edit the list's name
-            oList.DisplayName = strListName + "x";
-            res = oList.Update();
+            _tempList.DisplayName = _tempList.DisplayName + "x";
+            res = _tempList.Update();
             Assert.IsTrue(res.Success, "Call to update distribution list failed:"+res.ToString());
 
+            _tempList.PartitionObjectId = "bogus";
+            res = _tempList.Update();
+            Assert.IsFalse(res.Success,"Setting invalid partition value did not fail:"+res);
+
+        }
+
+
+        [TestMethod]
+        public void DistributionList_VoiceName()
+        {
             //try to download voice name- this should fail
-            res = oList.GetVoiceName(@"c:\temp.wav");
-            Assert.IsFalse(res.Success,"Empty voice name fetch should return false for newly created list");
+            WebCallResult res = _tempList.GetVoiceName(@"c:\temp.wav");
+            Assert.IsFalse(res.Success, "Empty voice name fetch should return false for newly created list");
 
             //upload an invalid wav file
-            res = oList.SetVoiceName("wavcopy.exe", true);
+            res = _tempList.SetVoiceName("wavcopy.exe", true);
             Assert.IsFalse(res.Success, "Updating invalid voice wav file was not caught");
 
             //upload a voice name to the list
-            res = oList.SetVoiceName("Dummy.wav", true);
-            Assert.IsTrue(res.Success, "Updating voice name on new distribution list failed: "+res.ToString());
+            res = _tempList.SetVoiceName("Dummy.wav", true);
+            Assert.IsTrue(res.Success, "Updating voice name on new distribution list failed: " + res.ToString());
 
+            //upload real name
+            res = _tempList.SetVoiceName("temp.wav");
+            Assert.IsTrue(res.Success,"Failed uploading voice name:"+res);
+
+            string strFileName = Guid.NewGuid().ToString() + ".wav";
+            res = _tempList.GetVoiceName(strFileName);
+            Assert.IsTrue(res.Success,"Failed to donwload voice name just uploaded:"+res);
+            Assert.IsTrue(File.Exists(strFileName),"Voice name just downloaded does not exist on hard drive:"+strFileName);
+            
+            try
+            {
+                File.Delete(strFileName);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Failed to delete temporary file:"+ex);
+            }
+
+        }
+
+        [TestMethod]
+        public void DistributionList_MembershipEdit()
+        {
             //Add a user to it.
             UserBase oUser;
-            res = UserBase.GetUser(out oUser, _connectionServer, "", "operator");
-            Assert.IsTrue(res.Success, "Adding operator to new distribution list failed: "+res.ToString());
+            WebCallResult res = UserBase.GetUser(out oUser, _connectionServer, "", "operator");
+            Assert.IsTrue(res.Success, "Getting operator for new distribution list failed: " + res.ToString());
 
-            res = oList.AddMemberUser(oUser.ObjectId);
-            Assert.IsTrue(res.Success, "Adding operator user to new distribution list failed: "+res.ToString());
+            res = _tempList.AddMemberUser(oUser.ObjectId);
+            Assert.IsTrue(res.Success, "Adding operator user to new distribution list failed: " + res.ToString());
 
             //Add a list to it
             DistributionList oNewList;
             res = DistributionList.GetDistributionList(out oNewList, _connectionServer, "", "allvoicemailusers");
-            Assert.IsTrue(res.Success, "GET AllVoiceMail users list failed: "+res.ToString());
+            Assert.IsTrue(res.Success, "Get AllVoiceMail users list failed: " + res.ToString());
 
-            res = oList.AddMemberList(oNewList.ObjectId);
-            Assert.IsTrue(res.Success, "Adding AllUsersDistribution list as a member to the new list failed: "+res.ToString());
+            res = _tempList.AddMemberList(oNewList.ObjectId);
+            Assert.IsTrue(res.Success, "Adding AllUsersDistribution list as a member to the new list failed: " + res.ToString());
 
             //get count - make sure it equals 2
             List<DistributionListMember> oMemberList;
-            res = oList.GetMembersList(out oMemberList);
-            Assert.IsTrue(res.Success, "Getting membership list from new distribution list failed: "+res.ToString());
-            Assert.AreEqual(oMemberList.Count, 2,"Membership list fetch from new distribution list did not return 2 members as it should.");
+            res = _tempList.GetMembersList(out oMemberList);
+            Assert.IsTrue(res.Success, "Getting membership list from new distribution list failed: " + res.ToString());
+            Assert.AreEqual(oMemberList.Count, 2, "Membership list fetch from new distribution list did not return 2 members as it should.");
 
             //remove both members from it - also exercise the DistributionListMember toString and DumpAll here
             foreach (DistributionListMember oMember in oMemberList)
             {
                 Console.WriteLine(oMember.ToString());
                 Console.WriteLine(oMember.DumpAllProps());
-                res = oList.RemoveMember(oMember.ObjectId);
+                res = _tempList.RemoveMember(oMember.ObjectId);
 
-                Assert.IsTrue(res.Success,"Removal of member from new distribution list failed for:"+oMember.ToString());
+                Assert.IsTrue(res.Success, "Removal of member from new distribution list failed for:" + oMember);
             }
 
             //get count - make sure it equals 0
-            res = oList.GetMembersList(out oMemberList);
-            Assert.AreEqual(oMemberList.Count, 0,"After removal of members from the new distribution list the count of members reports more than 0.");
+            res = _tempList.GetMembersList(out oMemberList);
+            Assert.IsTrue(res.Success, "Failed getting members list:" + res);
+            Assert.AreEqual(oMemberList.Count, 0, "After removal of members from the new distribution list the count of members reports more than 0.");
 
-            //delete the list
-            res = oList.Delete();
-            Assert.IsTrue(res.Success, "Removal of new list at end of test failed: "+res.ToString());
 
         }
 
@@ -397,12 +393,12 @@ namespace ConnectionCUPIFunctionsTest
         /// A test for GetDistributionLists - fetches the first 3 found in the directory and lists them out.  Exercises the ToString and 
         /// DumpAllProps methods as well.
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         public void GetDistributionLists_Test()
         {
 
             ConnectionServer pConnectionServer = _connectionServer;
-            List<DistributionList> pDistributionLists = null;
+            List<DistributionList> pDistributionLists;
 
             //limit the fetch to the first 3 lists to be sure this passes even on a default install
             string[] pClauses = { "rowsPerPage=3" };

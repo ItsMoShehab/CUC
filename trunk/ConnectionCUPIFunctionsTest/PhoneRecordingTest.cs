@@ -59,21 +59,21 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure()
         {
             PhoneRecording oTemp = new PhoneRecording(null,"1234");
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure2()
         {
             PhoneRecording oTemp = new PhoneRecording(_connectionServer, "");
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void ClassCreationFailure3()
         {
@@ -86,7 +86,7 @@ namespace ConnectionCUPIFunctionsTest
         //project.
         //The phone will ring, answer it - you should hear a beep, record a brief message and then press # - it should be played
         //back to you and the call then terminates.
-        [TestMethod()]
+        [TestMethod]
         public void TestMethod1()
         {
             PhoneRecording oRecording=null;

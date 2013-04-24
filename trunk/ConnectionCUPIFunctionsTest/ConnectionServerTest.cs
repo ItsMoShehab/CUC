@@ -168,7 +168,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an ArgumentException is thrown if a blank server name is passed
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure()
         {
@@ -180,7 +180,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an Exception is thrown if 
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void ClassCreationFailureBadLogin()
         {
@@ -194,7 +194,7 @@ namespace ConnectionCUPIFunctionsTest
         ///A test for ParseVersionString - use a seperate instance of the ConnectionServer object for this so as not to 
         /// corrupt other tests.
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         public void ParseVersionString_Failure()
         {
             ConnectionServer oTempServer = new ConnectionServer();

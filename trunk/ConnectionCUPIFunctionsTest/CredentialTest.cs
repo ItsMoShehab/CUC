@@ -50,7 +50,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure_nullServer()
         {
@@ -60,7 +60,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an exception is thrown if an invalid ObjectId is presented
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void ClassCreationFailure_InvalidObjectId()
         {
@@ -70,7 +70,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an exception is thrown if an empty ObjectId is presented
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure_EmptyObjectId()
         {

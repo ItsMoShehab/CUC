@@ -96,14 +96,14 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreation_Failure()
         {
             PhoneSystem oTest = new PhoneSystem(null, "aaa");
         }
 
-        [TestMethod()]
+        [TestMethod]
         [ExpectedException(typeof(Exception))]
         public void ClassCreation_Failure2()
         {
@@ -113,7 +113,7 @@ namespace ConnectionCUPIFunctionsTest
         
         #endregion
 
-        [TestMethod()]
+        [TestMethod]
         public void PhoneSystem_StaticFailureTests()
         {
             WebCallResult res;
@@ -161,7 +161,7 @@ namespace ConnectionCUPIFunctionsTest
         /// <summary>
         ///A test for getting and listing PhoneSystems
         ///</summary>
-        [TestMethod()]
+        [TestMethod]
         public void PhoneSystem_GetTest()
         {
             WebCallResult res;
@@ -190,7 +190,7 @@ namespace ConnectionCUPIFunctionsTest
         }
 
 
-        [TestMethod()]
+        [TestMethod]
         public void PhoneSystem_AddUpdateDeleteTests()
         {
             WebCallResult res;
