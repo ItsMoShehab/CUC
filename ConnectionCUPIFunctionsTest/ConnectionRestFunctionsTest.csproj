@@ -64,6 +64,7 @@
     <Compile Include="PortGroupCodecTest.cs" />
     <Compile Include="PortGroupServerTest.cs" />
     <Compile Include="PortGroupTemplateTest.cs" />
+    <Compile Include="PostGreetingRecordingTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -73,6 +74,7 @@
     <Compile Include="RtpCodecDefTest.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SmppProviderTest.cs" />
+    <Compile Include="TenantTest.cs" />
     <Compile Include="TransferOptionTest.cs" />
     <Compile Include="TimeZoneTest.cs" />
     <Compile Include="MailboxInfoTest.cs" />

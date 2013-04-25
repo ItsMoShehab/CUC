@@ -892,6 +892,49 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
 
+        /// <summary>
+        /// Overloaded version of method that returns a copy of the schedule set as an out parameter
+        /// </summary>
+        /// <param name="pConnectionServer"></param>
+        /// <param name="pDisplayName"></param>
+        /// <param name="pOwnerLocationObjectId"></param>
+        /// <param name="pOwnerSubscriberObjectId"></param>
+        /// <param name="pStartTime"></param>
+        /// <param name="pEndTime"></param>
+        /// <param name="pActiveMonday"></param>
+        /// <param name="pActiveTuesday"></param>
+        /// <param name="pActiveWednesday"></param>
+        /// <param name="pActiveThursday"></param>
+        /// <param name="pActiveFriday"></param>
+        /// <param name="pActiveSaturday"></param>
+        /// <param name="pActiveSunday"></param>
+        /// <param name="pStartDate"></param>
+        /// <param name="pEndDate"></param>
+        /// <param name="pScheduleSet"></param>
+        /// <returns></returns>
+        public static WebCallResult AddQuickSchedule(ConnectionServer pConnectionServer, string pDisplayName,
+                                                     string pOwnerLocationObjectId, string pOwnerSubscriberObjectId,
+                                                     int pStartTime, int pEndTime, bool pActiveMonday,
+                                                     bool pActiveTuesday, bool pActiveWednesday,bool pActiveThursday, 
+                                                     bool pActiveFriday, bool pActiveSaturday,bool pActiveSunday,
+                                                     DateTime? pStartDate, DateTime? pEndDate, out ScheduleSet pScheduleSet)
+        {
+            pScheduleSet = null;
+            WebCallResult res = AddQuickSchedule(pConnectionServer, pDisplayName, pOwnerLocationObjectId,
+                                                 pOwnerSubscriberObjectId, pStartTime, pEndTime,
+                                                 pActiveMonday, pActiveThursday, pActiveWednesday, pActiveThursday,
+                                                 pActiveFriday, pActiveSaturday, pActiveSunday, pStartDate,pEndDate);
+
+            //if the create goes through, fetch the handler as an object and return it.
+            if (res.Success)
+            {
+                res = GetScheduleSet(out pScheduleSet, pConnectionServer, res.ReturnedObjectId);
+            }
+
+            return res;
+        }
+
+
         #endregion
     }
 }

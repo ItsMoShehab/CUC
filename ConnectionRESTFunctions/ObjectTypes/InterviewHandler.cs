@@ -554,7 +554,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
 
                 pPropList.Add("DisplayName", pDisplayName);
-                pPropList.Add("PartitionObjectId", "df1da090-0fb7-4f3a-a222-654c5920fbde");
+
                 //only pass one recipient
                 if (string.IsNullOrEmpty(pRecipientUserObjectId))
                 {
@@ -575,7 +575,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
                 strBody += "</InterviewHandler>";
 
-                res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/interviewhandlers",MethodType.POST,pConnectionServer,strBody);
+                res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/interviewhandlers",MethodType.POST,pConnectionServer,strBody,false);
 
                 //fetch the objectId of the newly created object off the return
                 if (res.Success)
@@ -639,7 +639,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 strBody += "</InterviewHandler>";
 
                 return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/interviewhandlers/" + pObjectId,
-                                                MethodType.PUT,pConnectionServer,strBody);
+                                                MethodType.PUT,pConnectionServer,strBody,false);
             }
 
 
@@ -983,10 +983,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
                 else
                 {
-                    res = new WebCallResult();
-                    res.Success = false;
-                    res.ErrorText = "No value for ObjectId or display name passed to GetInterviewHandler.";
-                    return res;
+                    return new WebCallResult
+                        {
+                            Success = false,
+                            ErrorText = "No value for ObjectId or display name passed to GetInterviewHandler."
+                        };
                 }
 
                 //issue the command to the CUPI interface

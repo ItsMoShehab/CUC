@@ -70,16 +70,17 @@ namespace ConnectionCUPIFunctionsTest
         public static void MyClassCleanup()
         {
             WebCallResult res;
-            if (_searchSpace != null)
-            {
-                res = _searchSpace.Delete();
-                Assert.IsTrue(res.Success, "Failed to delete temporary search space on cleanup.");
-            }
 
             if (_partition != null)
             {
                 res = _partition.Delete();
                 Assert.IsTrue(res.Success, "Failed to delete temporary partition on cleanup.");
+            }
+
+            if (_searchSpace != null)
+            {
+                res = _searchSpace.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete temporary search space on cleanup.");
             }
         }
 
@@ -325,20 +326,21 @@ namespace ConnectionCUPIFunctionsTest
             res = _searchSpace.DeleteSearchSpaceMember(oPartitions[0].ObjectId);
             Assert.IsTrue(res.Success, "Removing partition as search space member failed:" + res);
 
-            res = SearchSpace.UpdateSearchSpace(_connectionServer, _searchSpace.ObjectId, "NewName"+Guid.NewGuid()+ToString(), "NewDescription");
+            res = SearchSpace.UpdateSearchSpace(_connectionServer, _searchSpace.ObjectId, "NewName"+Guid.NewGuid(), "NewDescription");
             Assert.IsTrue(res.Success, "Update of SearchSpace via static method failed:" + res);
 
             //static method failures
             //empty name
-            res = SearchSpace.AddSearchSpace(_connectionServer, out _searchSpace, "");
+            SearchSpace oSearchSpace;
+            res = SearchSpace.AddSearchSpace(_connectionServer, out oSearchSpace, "");
             Assert.IsFalse(res.Success, "Static method for add SearchSpace did not fail with empty name");
 
             //null ConnectionServer 
-            res = SearchSpace.AddSearchSpace(null, out _searchSpace, "name");
+            res = SearchSpace.AddSearchSpace(null, out oSearchSpace, "name");
             Assert.IsFalse(res.Success, "Static method for add SearchSpace did not fail with null ConnectionServer");
 
             //invalid locaiton
-            res = SearchSpace.AddSearchSpace(_connectionServer, out _searchSpace, "name", "description", "boguslocation");
+            res = SearchSpace.AddSearchSpace(_connectionServer, out oSearchSpace, "name", "description", "boguslocation");
             Assert.IsFalse(res.Success, "Static method for add SearchSpace did not fail with invalid Location");
 
             res = SearchSpace.DeleteSearchSpace(null, "bogus");
@@ -382,7 +384,7 @@ namespace ConnectionCUPIFunctionsTest
 
 
         [TestMethod]
-        public void PartitionCreationDeletion()
+        public void PartitionUpdateTests()
         {
             _partition.Description = "Updated description";
             WebCallResult res = _partition.Update();
@@ -391,17 +393,19 @@ namespace ConnectionCUPIFunctionsTest
             res = Partition.UpdatePartition(_connectionServer, _partition.ObjectId, "NewName" + Guid.NewGuid().ToString(), "NewDescription");
             Assert.IsTrue(res.Success, "Update of partition via static method failed:" + res);
 
+
+            Partition oPartition;
             //static method failures
             //empty name
-            res = Partition.AddPartition(_connectionServer, out _partition, "");
+            res = Partition.AddPartition(_connectionServer, out oPartition, "");
             Assert.IsFalse(res.Success,"Static method for add partition did not fail with empty name");
 
             //null ConnectionServer 
-            res = Partition.AddPartition(null, out _partition, "name");
+            res = Partition.AddPartition(null, out oPartition, "name");
             Assert.IsFalse(res.Success, "Static method for add partition did not fail with null ConnectionServer");
 
             //invalid locaiton
-            res = Partition.AddPartition(_connectionServer, out _partition, "name", "description", "boguslocation");
+            res = Partition.AddPartition(_connectionServer, out oPartition, "name", "description", "boguslocation");
             Assert.IsFalse(res.Success, "Static method for add partition did not fail with invalid Location");
 
             res = Partition.DeletePartition(null, "bogus");
