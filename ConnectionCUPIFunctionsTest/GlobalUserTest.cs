@@ -10,6 +10,8 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class GlobalUserTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
 
@@ -29,7 +31,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -46,13 +48,15 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start GlobalUser test:" + ex.Message);
             }
 
         }
 
         #endregion
 
+
+        #region Construction tests
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
@@ -62,6 +66,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             GlobalUser oTest = new GlobalUser(null);
+            Console.WriteLine(oTest);
         }
 
         [TestMethod]
@@ -69,6 +74,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure2()
         {
             GlobalUser oTest = new GlobalUser(_connectionServer,"bogus");
+            Console.WriteLine(oTest);
         }
 
         [TestMethod]
@@ -76,11 +82,14 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure3()
         {
             GlobalUser oTest = new GlobalUser(_connectionServer,"","bogus");
+            Console.WriteLine(oTest);
         }
 
-        
+        #endregion
+
+
         [TestMethod]
-        public void TestMethod1()
+        public void GlobalUserFetchTests()
         {
             List<GlobalUser> oUsers;
             WebCallResult res = GlobalUser.GetUsers(_connectionServer, out oUsers);

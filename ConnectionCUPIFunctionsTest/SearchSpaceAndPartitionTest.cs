@@ -10,11 +10,18 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class SearchSpaceAndPartitionTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
         #region Fields and Properties
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
         private static ConnectionServer _connectionServer;
+
+        private static SearchSpace _searchSpace;
+
+        private static Partition _partition;
 
         /// <summary>
         ///Gets or sets the test context which provides
@@ -28,7 +35,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -45,9 +52,35 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start SearchSpaceAndPartition test:" + ex.Message);
             }
 
+            
+            string strName = "Temp_" + Guid.NewGuid().ToString();
+            WebCallResult res = SearchSpace.AddSearchSpace(_connectionServer, out _searchSpace, strName, "SearchSpace added by Unit Test");
+            Assert.IsTrue(res.Success, "Creation of new SearchSpace failed");
+
+            
+            strName = "Temp_" + Guid.NewGuid().ToString();
+            res = Partition.AddPartition(_connectionServer, out _partition, strName, "Partition added by Unit Test");
+            Assert.IsTrue(res.Success, "Creation of new partition failed");
+        }
+
+        [ClassCleanup]
+        public static void MyClassCleanup()
+        {
+            WebCallResult res;
+            if (_searchSpace != null)
+            {
+                res = _searchSpace.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete temporary search space on cleanup.");
+            }
+
+            if (_partition != null)
+            {
+                res = _partition.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete temporary partition on cleanup.");
+            }
         }
 
         #endregion
@@ -63,6 +96,7 @@ namespace ConnectionCUPIFunctionsTest
         public void PartitionClassCreationFailure()
         {
             Partition oTest = new Partition(null);
+            Console.WriteLine(oTest);
         }
 
         /// <summary>
@@ -73,6 +107,7 @@ namespace ConnectionCUPIFunctionsTest
         public void PartitionClassCreationFailure2()
         {
             Partition oTest = new Partition(_connectionServer,"bogus");
+            Console.WriteLine(oTest);
         }
 
         /// <summary>
@@ -83,6 +118,7 @@ namespace ConnectionCUPIFunctionsTest
         public void PartitionClassCreationFailure3()
         {
             Partition oTest = new Partition(_connectionServer,"","bogus");
+            Console.WriteLine(oTest);
         }
 
 
@@ -94,6 +130,7 @@ namespace ConnectionCUPIFunctionsTest
         public void SearchSpaceClassCreationFailure()
         {
             SearchSpace oTest = new SearchSpace(null);
+            Console.WriteLine(oTest);
         }
 
         /// <summary>
@@ -104,6 +141,7 @@ namespace ConnectionCUPIFunctionsTest
         public void SearchSpaceClassCreationFailure2()
         {
             SearchSpace oTest = new SearchSpace(_connectionServer,"bogus");
+            Console.WriteLine(oTest);
         }
         /// <summary>
         /// Make sure an Exception is thrown if an invalid name is passed
@@ -113,6 +151,7 @@ namespace ConnectionCUPIFunctionsTest
         public void SearchSpaceClassCreationFailure3()
         {
             SearchSpace oTest = new SearchSpace(_connectionServer,"","bogus");
+            Console.WriteLine(oTest);
         }
 
         #endregion
@@ -146,6 +185,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 oNewPartition = new Partition(_connectionServer, strObjectId);
+                Console.WriteLine(oNewPartition);
             }
             catch (Exception ex)
             {
@@ -156,6 +196,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 oNewPartition = new Partition(_connectionServer, "",strName);
+                Console.WriteLine(oNewPartition);
             }
             catch (Exception ex)
             {
@@ -167,16 +208,24 @@ namespace ConnectionCUPIFunctionsTest
             {
                 oNewPartition = new Partition(_connectionServer, "", "bogus");
                 Assert.Fail("Creating new partition object with bogus Name did not fail");
+                Console.WriteLine(oNewPartition);
             }
-            catch{}
+            catch (Exception)
+            {
+                Console.WriteLine("Expected failure on creation");
+            }
 
             //get partition by bogus objectId
             try
             {
                 oNewPartition = new Partition(_connectionServer, "bogus");
                 Assert.Fail("Creating new partition object with bogus ObjectId did not fail");
+                Console.WriteLine(oNewPartition);
             }
-            catch { }
+            catch (Exception)
+            {
+                Console.WriteLine("Expected failure on creation");
+            }
 
         }
 
@@ -212,6 +261,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 oNewSearchSpace = new SearchSpace(_connectionServer, strObjectId);
+                Console.WriteLine(oNewSearchSpace);
             }
             catch (Exception ex)
             {
@@ -222,6 +272,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 oNewSearchSpace = new SearchSpace(_connectionServer, "", strName);
+                Console.WriteLine(oNewSearchSpace);
             }
             catch (Exception ex)
             {
@@ -233,29 +284,32 @@ namespace ConnectionCUPIFunctionsTest
             {
                 oNewSearchSpace = new SearchSpace(_connectionServer, "", "bogus");
                 Assert.Fail("Creating new SearchSpace object with bogus Name did not fail");
+                Console.WriteLine(oNewSearchSpace);
             }
-            catch { }
+            catch (Exception)
+            {
+                Console.WriteLine("Expected failure on creation failure");
+            }
 
             //get SearchSpace by bogus objectId
             try
             {
                 oNewSearchSpace = new SearchSpace(_connectionServer, "bogus");
                 Assert.Fail("Creating new SearchSpace object with bogus ObjectId did not fail");
+                Console.WriteLine(oNewSearchSpace);
             }
-            catch { }
+            catch (Exception)
+            {
+                Console.WriteLine("Expected error on creation failure");
+            }
         }
 
 
         [TestMethod]
-        public void SearchSpaceCreationDeletion()
+        public void SearchSpaceUpdateTests()
         {
-            SearchSpace oSearchSpace;
-            string strName = "UnitTest_" + Guid.NewGuid().ToString();
-            WebCallResult res = SearchSpace.AddSearchSpace(_connectionServer, out oSearchSpace, strName, "SearchSpace added by Unit Test");
-            Assert.IsTrue(res.Success, "Creation of new SearchSpace failed");
-
-            oSearchSpace.Description = "Updated description";
-            res = oSearchSpace.Update();
+            _searchSpace.Description = "Updated description";
+            WebCallResult res = _searchSpace.Update();
             Assert.IsTrue(res.Success, "Update of SearchSpace description failed:" + res);
 
             //search space member functions
@@ -264,30 +318,27 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success, "Fetching of partitions failed:" + res);
             Assert.IsTrue(oPartitions.Count>0,"No partitions returned in search");
 
-            res= oSearchSpace.AddSearchSpaceMember(oPartitions[0].ObjectId,99);
+            res = _searchSpace.AddSearchSpaceMember(oPartitions[0].ObjectId, 99);
             Assert.IsTrue(res.Success, "Adding partition as search space member failed:" + res);
-            Assert.IsTrue(oSearchSpace.GetSearchSpaceMembers().Count==1, "Search space member count not accurate after partition add:" + res);
+            Assert.IsTrue(_searchSpace.GetSearchSpaceMembers().Count == 1, "Search space member count not accurate after partition add:" + res);
 
-            res = oSearchSpace.DeleteSearchSpaceMember(oPartitions[0].ObjectId);
+            res = _searchSpace.DeleteSearchSpaceMember(oPartitions[0].ObjectId);
             Assert.IsTrue(res.Success, "Removing partition as search space member failed:" + res);
 
-            res = SearchSpace.UpdateSearchSpace(_connectionServer, oSearchSpace.ObjectId, "NewName", "NewDescription");
+            res = SearchSpace.UpdateSearchSpace(_connectionServer, _searchSpace.ObjectId, "NewName"+Guid.NewGuid()+ToString(), "NewDescription");
             Assert.IsTrue(res.Success, "Update of SearchSpace via static method failed:" + res);
-
-            res = oSearchSpace.Delete();
-            Assert.IsTrue(res.Success, "Deletion of SearchSpace failed:" + res);
 
             //static method failures
             //empty name
-            res = SearchSpace.AddSearchSpace(_connectionServer, out oSearchSpace, "");
+            res = SearchSpace.AddSearchSpace(_connectionServer, out _searchSpace, "");
             Assert.IsFalse(res.Success, "Static method for add SearchSpace did not fail with empty name");
 
             //null ConnectionServer 
-            res = SearchSpace.AddSearchSpace(null, out oSearchSpace, "name");
+            res = SearchSpace.AddSearchSpace(null, out _searchSpace, "name");
             Assert.IsFalse(res.Success, "Static method for add SearchSpace did not fail with null ConnectionServer");
 
             //invalid locaiton
-            res = SearchSpace.AddSearchSpace(_connectionServer, out oSearchSpace, "name", "description", "boguslocation");
+            res = SearchSpace.AddSearchSpace(_connectionServer, out _searchSpace, "name", "description", "boguslocation");
             Assert.IsFalse(res.Success, "Static method for add SearchSpace did not fail with invalid Location");
 
             res = SearchSpace.DeleteSearchSpace(null, "bogus");
@@ -333,32 +384,24 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void PartitionCreationDeletion()
         {
-            Partition oPartition;
-            string strName = "UnitTest_"+ Guid.NewGuid().ToString();
-            WebCallResult res = Partition.AddPartition(_connectionServer, out oPartition, strName,"Partition added by Unit Test");
-            Assert.IsTrue(res.Success,"Creation of new partition failed");
-
-            oPartition.Description = "Updated description";
-            res = oPartition.Update();
+            _partition.Description = "Updated description";
+            WebCallResult res = _partition.Update();
             Assert.IsTrue(res.Success, "Update of partition description failed:" + res);
 
-            res = Partition.UpdatePartition(_connectionServer, oPartition.ObjectId, "NewName"+Guid.NewGuid().ToString(), "NewDescription");
+            res = Partition.UpdatePartition(_connectionServer, _partition.ObjectId, "NewName" + Guid.NewGuid().ToString(), "NewDescription");
             Assert.IsTrue(res.Success, "Update of partition via static method failed:" + res);
-
-            res = oPartition.Delete();
-            Assert.IsTrue(res.Success,"Deletion of partition failed:"+res);
 
             //static method failures
             //empty name
-            res = Partition.AddPartition(_connectionServer, out oPartition, "");
+            res = Partition.AddPartition(_connectionServer, out _partition, "");
             Assert.IsFalse(res.Success,"Static method for add partition did not fail with empty name");
 
             //null ConnectionServer 
-            res = Partition.AddPartition(null, out oPartition, "name");
+            res = Partition.AddPartition(null, out _partition, "name");
             Assert.IsFalse(res.Success, "Static method for add partition did not fail with null ConnectionServer");
 
             //invalid locaiton
-            res = Partition.AddPartition(_connectionServer, out oPartition, "name","description", "boguslocation");
+            res = Partition.AddPartition(_connectionServer, out _partition, "name", "description", "boguslocation");
             Assert.IsFalse(res.Success, "Static method for add partition did not fail with invalid Location");
 
             res = Partition.DeletePartition(null, "bogus");

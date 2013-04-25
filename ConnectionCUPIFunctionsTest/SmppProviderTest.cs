@@ -7,15 +7,17 @@ using System;
 
 namespace ConnectionCUPIFunctionsTest
 {
-    
-    
     /// <summary>
     ///This is a test class for SmppProviderTest and is intended
     ///to contain all SmppProviderTest Unit Tests
     ///</summary>
-    [TestClass()]
+    [TestClass]
     public class SmppProviderTest
     {
+
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
         #region Fields and Properties
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
@@ -33,11 +35,8 @@ namespace ConnectionCUPIFunctionsTest
 
         #region Additional test attributes
 
-        // 
-        //You can use the following additional attributes as you write your tests:
-        //
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -59,6 +58,34 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         #endregion
+        
+
+        #region Constructor Tests
+
+        /// <summary>
+        /// Make sure an Exception is thrown if the objectId for an SMPP provider is not found
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(Exception))]
+        public void ClassCreation_Failure()
+        {
+            SmppProvider oTest = new SmppProvider(_connectionServer, "aaa");
+            Console.WriteLine(oTest);
+        }
+
+
+        /// <summary>
+        /// Make sure an ArgumentException is thrown if an empty objectID is passed in
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void ClassCreation_Failure2()
+        {
+            SmppProvider oTest = new SmppProvider(null, "");
+            Console.WriteLine(oTest);
+        }
+
+        #endregion
 
 
         /// <summary>
@@ -67,10 +94,9 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void SmppProvider_Test()
         {
-            WebCallResult res;
             List<SmppProvider> oProviders;
 
-            res = SmppProvider.GetSmppProviders(null, out oProviders);
+            WebCallResult res = SmppProvider.GetSmppProviders(null, out oProviders);
             Assert.IsFalse(res.Success, "Null Connection server param should fail");
 
             res = SmppProvider.GetSmppProviders(_connectionServer, out oProviders);
@@ -87,36 +113,12 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 SmppProvider oNewProvider = new SmppProvider(_connectionServer, strObjectId);
+                Console.WriteLine(oNewProvider);
             }
             catch (Exception ex)
             {
                 Assert.Fail("Unable to fetch SMPP provider by valid ObjectId:"+ex);
             }
         }
-
-
-
-        /// <summary>
-        /// Make sure an Exception is thrown if the objectId for an SMPP provider is not found
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(Exception))]
-        public void ClassCreation_Failure()
-        {
-            SmppProvider oTest = new SmppProvider(_connectionServer, "aaa");
-        }
-
-
-        /// <summary>
-        /// Make sure an ArgumentException is thrown if an empty objectID is passed in
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreation_Failure2()
-        {
-            SmppProvider oTest = new SmppProvider(null, "");
-        }
-
-
     }
 }

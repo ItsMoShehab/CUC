@@ -9,32 +9,28 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class TimeZoneTest
     {
-        private TestContext testContextInstance;
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
+        #region Fields and Properties
+
         private static ConnectionServer _connectionServer;
+        
         private TimeZones _timeZones;
 
         /// <summary>
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
         ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
+        public TestContext TestContext { get; set; }
+
+        #endregion
+
 
         #region Additional test attributes
-        // 
-        //You can use the following additional attributes as you write your tests:
-        //
+
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -51,12 +47,14 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start TimeZone test:" + ex.Message);
             }
 
         }
         #endregion
 
+
+        #region Constructor Tests
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
@@ -66,6 +64,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             TimeZones oTest = new TimeZones(null);
+            Console.WriteLine(oTest);
         }
 
         [TestMethod]
@@ -73,7 +72,10 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure2()
         {
             TimeZones oTest = new TimeZones(new ConnectionServer());
+            Console.WriteLine(oTest);
         }
+
+        #endregion
 
 
         [TestMethod]

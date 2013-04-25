@@ -10,6 +10,8 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class CosTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
 
@@ -23,6 +25,7 @@ namespace ConnectionCUPIFunctionsTest
         ///</summary>
         public TestContext TestContext { get; set; }
 
+        private static ClassOfService _tempCos;
 
         #endregion
 
@@ -30,7 +33,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -47,9 +50,25 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start Class of Service test:" + ex.Message);
             }
 
+            //create new handler with GUID in the name to ensure uniqueness
+            String strName = "TempCOS_" + Guid.NewGuid().ToString().Replace("-", "");
+
+            WebCallResult res = ClassOfService.AddClassOfService(_connectionServer, strName, null, out _tempCos);
+            Assert.IsTrue(res.Success, "Failed creating temporary class of service:" + res.ToString());
+        }
+
+
+        [ClassCleanup]
+        public static void MyClassCleanup()
+        {
+            if (_tempCos != null)
+            {
+                WebCallResult res = _tempCos.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete temporary COS on cleanup.");
+            }
         }
 
         #endregion
@@ -65,51 +84,43 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             ClassOfService oTemp = new ClassOfService(null);
+            Console.WriteLine(oTemp);
         }
 
         [ExpectedException(typeof(Exception))]
         public void ClassCreationFailure2()
         {
             ClassOfService oTemp = new ClassOfService(null,"bogus");
+            Console.WriteLine(oTemp);
         }
 
 
         #endregion
 
         [TestMethod]
-        public void TestMethod1()
+        public void Test_CosFetchTests()
         {
             List<ClassOfService> oCoses;
             WebCallResult res = ClassOfService.GetClassesOfService(_connectionServer, out oCoses);
             Assert.IsTrue(res.Success,"Failed to fetch COSes:"+res);
-
-            foreach (var oTempCos in oCoses)
-            {
-                Console.WriteLine(oTempCos.ToString());
-                Console.WriteLine(oTempCos.DumpAllProps());
-            }
+            Assert.IsNotNull(oCoses,"Empty list returned for classes of service on fetch");
+            Assert.IsTrue(oCoses.Count>0,"no classes of service returned on fetch");
 
             ClassOfService oCos;
-            res = ClassOfService.AddClassOfService(_connectionServer, "TestCOS"+Guid.NewGuid(), null,out oCos);
-            Assert.IsTrue(res.Success,"Failed to create new COS:"+res);
 
-            res = oCos.Update();
-            Assert.IsFalse(res.Success,"Calling update to COS instance with no pending changes did not fail");
+            res = ClassOfService.GetClassOfService(out oCos, _connectionServer, oCoses[0].ObjectId);
+            Assert.IsTrue(res.Success,"Failed to fetch full COS from ObjectId:"+res);
 
-            oCos.CanRecordName = true;
-            oCos.MaxPrivateDlists = 92;
-            res = oCos.Update();
-            Assert.IsTrue(res.Success,"COS failed to update:"+res);
+            Console.WriteLine(oCos.ToString());
+            Console.WriteLine(oCos.DumpAllProps());
 
-            oCos.ClearPendingChanges();
-
-            oCos.FaxRestrictionTable();
+            Assert.IsFalse(string.IsNullOrEmpty(oCos.FaxRestrictionTable().ObjectId),"No fax restriction table found for COS");
             oCos.FaxRestrictionTable(true);
 
-            oCos.OutcallRestrictionTable();
+            Assert.IsFalse(string.IsNullOrEmpty(oCos.OutcallRestrictionTable().ObjectId), "No outcall restriction table found for COS");
             oCos.OutcallRestrictionTable(true);
 
-            oCos.TransferRestrictionTable();
+            Assert.IsFalse(string.IsNullOrEmpty(oCos.TransferRestrictionTable().ObjectId), "No transfer restriction table found for COS");
             oCos.TransferRestrictionTable(true);
 
             res = oCos.RefetchClassOfServiceData();
@@ -117,9 +128,28 @@ namespace ConnectionCUPIFunctionsTest
 
             ClassOfService oCos2;
             res = ClassOfService.GetClassOfService(out oCos2, _connectionServer, "", oCos.DisplayName);
+            Assert.IsTrue(res.Success,"Faled to fetch COS by display name");
 
-            res = oCos.Delete();
-            Assert.IsTrue(res.Success,"Failed to delete COS:"+res);
+        }
+
+        [TestMethod]
+        public void Test_CosUpdateTests()
+        {
+            WebCallResult res = _tempCos.Update();
+            Assert.IsFalse(res.Success, "Calling update to COS instance with no pending changes did not fail");
+
+            _tempCos.CanRecordName = true;
+            _tempCos.MaxPrivateDlists = 92;
+            res = _tempCos.Update();
+            Assert.IsTrue(res.Success, "COS failed to update:" + res);
+
+            _tempCos.FaxRestrictionObjectId = "bogus";
+            res = _tempCos.Update();
+            Assert.IsFalse(res.Success,"Setting COS fax restriction table to bogus value did not return an error");
+
+            res = _tempCos.RefetchClassOfServiceData();
+            Assert.IsTrue(res.Success,"Refetch of data for COS failed:"+res);
+            Assert.IsTrue(_tempCos.MaxPrivateDlists==92,"Max list value pulled on refetch does not matched what was set:"+res);
         }
 
 
@@ -128,12 +158,14 @@ namespace ConnectionCUPIFunctionsTest
         {
             //AddClassOfService
             WebCallResult res = ClassOfService.AddClassOfService(null, "display", null);
+            Assert.IsFalse(res.Success, "Static call to AddClassOfSerice did not fail with: null ConnectionServer");
+
             res = ClassOfService.AddClassOfService(_connectionServer, "", null);
-            Assert.IsFalse(res.Success,"Static call to AddClassOfSerice did not fail with: null ConnectionServer");
+            Assert.IsFalse(res.Success,"Static call to AddClassOfSerice did not fail with: empty objectId");
             
             //DeleteClassOfService
             res = ClassOfService.DeleteClassOfService(null, "bogus");
-            Assert.IsFalse(res.Success, "Static call to DeleteClassOfService did not fail with: null ConnectionServer");
+            Assert.IsFalse(res.Success, "Static call to DeleteClassOfService did not fail with: null connectionServer");
 
             res = ClassOfService.DeleteClassOfService(_connectionServer, "bogus");
             Assert.IsFalse(res.Success, "Static call to DeleteClassOfService did not fail with: invalid objectid");
@@ -149,7 +181,7 @@ namespace ConnectionCUPIFunctionsTest
             res = ClassOfService.GetClassOfService(out oCos, _connectionServer, "bogus", "bogus");
             Assert.IsFalse(res.Success, "Static call to GetClassOfService did not fail with: invalid ObjectId");
             
-            res = ClassOfService.GetClassOfService(out oCos, _connectionServer, "");
+            res = ClassOfService.GetClassOfService(out oCos, _connectionServer);
             Assert.IsFalse(res.Success, "Static call to GetClassOfService did not fail with: empty objectId and Name");
 
             //GetClassesOfService

@@ -10,6 +10,8 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class RestrictionTableTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
 
@@ -29,7 +31,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -46,7 +48,7 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start RestrictionTable test:" + ex.Message);
             }
 
         }
@@ -64,6 +66,7 @@ namespace ConnectionCUPIFunctionsTest
         public void RestrictionTableClassCreationFailure()
         {
             RestrictionTable oTest = new RestrictionTable(null);
+            Console.WriteLine(oTest);
         }
 
         [TestMethod]
@@ -71,6 +74,7 @@ namespace ConnectionCUPIFunctionsTest
         public void RestrictionTableClassCreationFailureClassCreationFailure2()
         {
             RestrictionTable oTest = new RestrictionTable(_connectionServer,"bogus");
+            Console.WriteLine(oTest);
         }
 
         [TestMethod]
@@ -78,6 +82,7 @@ namespace ConnectionCUPIFunctionsTest
         public void RestrictionTableClassCreationFailureClassCreationFailure3()
         {
             RestrictionTable oTest = new RestrictionTable(_connectionServer, "", "bogus");
+            Console.WriteLine(oTest);
         }
 
         /// <summary>
@@ -88,6 +93,7 @@ namespace ConnectionCUPIFunctionsTest
         public void RestrictionPatternClassCreationFailure()
         {
             RestrictionPattern oTest = new RestrictionPattern(null,"bogus","bogus");
+            Console.WriteLine(oTest);
         }
 
         [TestMethod]
@@ -95,6 +101,7 @@ namespace ConnectionCUPIFunctionsTest
         public void RestrictionPatternClassCreationFailureClassCreationFailure2()
         {
             RestrictionPattern oTest = new RestrictionPattern(_connectionServer, "", "bogus");
+            Console.WriteLine(oTest);
         }
 
         [TestMethod]
@@ -102,6 +109,7 @@ namespace ConnectionCUPIFunctionsTest
         public void RestrictionPatternClassCreationFailureClassCreationFailure3()
         {
             RestrictionPattern oTest = new RestrictionPattern(_connectionServer, "bogus", "bogus");
+            Console.WriteLine(oTest);
         }
 
         #endregion
@@ -144,6 +152,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 oNewTable = new RestrictionTable(_connectionServer, strTableObjectId);
+                Console.WriteLine(oNewTable);
             }
             catch (Exception ex)
             {
@@ -153,6 +162,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 oNewTable = new RestrictionTable(_connectionServer, "", strTableName);
+                Console.WriteLine(oNewTable);
             }
             catch (Exception ex)
             {
@@ -162,6 +172,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 RestrictionPattern oNewPattern = new RestrictionPattern(_connectionServer,strTableObjectId, strPatternObjectId);
+                Console.WriteLine(oNewPattern);
             }
             catch (Exception ex)
             {

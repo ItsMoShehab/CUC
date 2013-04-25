@@ -10,6 +10,8 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class PolicyTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
 
@@ -29,7 +31,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -46,13 +48,14 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start Policy test:" + ex.Message);
             }
-
         }
 
         #endregion
 
+
+        #region Constructor Tests
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
@@ -62,6 +65,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             Policy oTest = new Policy(null);
+            Console.WriteLine(oTest);
         }
 
         /// <summary>
@@ -72,8 +76,10 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure2()
         {
             Policy oTest = new Policy(_connectionServer,"bogus");
+            Console.WriteLine(oTest);
         }
 
+        #endregion
 
         [TestMethod]
         public void TestMethod1()
@@ -114,10 +120,9 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success, "Failed to fetch policies by user ObjectId");
             Assert.IsTrue(oNewPolicies.Count > 0, "Failed to find policies by user ObjectId");
 
-            Policy oNewPolicy;
             try
             {
-                oNewPolicy = new Policy(_connectionServer, oPolicies[0].ObjectId);
+                new Policy(_connectionServer, oPolicies[0].ObjectId);
             }
             catch (Exception ex)
             {
@@ -126,10 +131,13 @@ namespace ConnectionCUPIFunctionsTest
 
             try
             {
-                oNewPolicy = new Policy(_connectionServer, "bogus");
+                new Policy(_connectionServer, "bogus");
                 Assert.Fail("Creating a new policy object with an invalid objectId did not throw an exception");
             }
-            catch{}
+            catch (Exception ex)
+            {
+                Console.WriteLine("expected failure creating new policy object:"+ex);
+            }
 
         }
     }

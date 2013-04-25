@@ -261,7 +261,8 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         //can't edit creation time.
-        public DateTime CreationTime { get; set; }
+        [JsonProperty]
+        public DateTime CreationTime { get; private set; }
 
         private string _department;
         public string Department
@@ -389,6 +390,9 @@ namespace Cisco.UnityConnection.RestFunctions
                     _locationObjectId = value;
             }
         }
+
+        [JsonProperty]
+        public string MailboxStoreName { get; private set; }
 
         private string _mediaSwitchObjectId;
         /// <summary>
@@ -2281,6 +2285,18 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
+        private bool _autoAdvanceMsgs;
+        public bool AutoAdvanceMsgs
+        {
+            get { return _autoAdvanceMsgs; }
+            set
+            {
+                _changedPropList.Add("AutoAdvanceMsgs", value);
+                _autoAdvanceMsgs = value;
+            }
+        }
+
+
         private string _billingId;
         public string BillingId
         {
@@ -2571,6 +2587,17 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
+
+        private bool _enableMessageBookmark;
+        public bool EnableMessageBookmark
+        {
+            get { return _enableMessageBookmark; }
+            set
+            {
+                _changedPropList.Add("EnableMessageBookmark", value);
+                _enableMessageBookmark = value;
+            }
+        }
      
 
         private bool _enablePersonalRules;
@@ -2600,6 +2627,18 @@ namespace Cisco.UnityConnection.RestFunctions
                 _enableMessageLocator = value;
             }
         }
+
+        private bool _enableSaveDraft;
+        public bool EnableSaveDraft
+        {
+            get { return _enableSaveDraft; }
+            set
+            {
+                _changedPropList.Add("EnableSaveDraft", value);
+                _enableSaveDraft = value;
+            }
+        }
+
 
         private bool _enableVisualMessageLocator;
         public bool EnableVisualMessageLocator
@@ -2907,20 +2946,27 @@ namespace Cisco.UnityConnection.RestFunctions
         /// The pkid of associated end user in the sleeping SeaDragon database.
         /// Cannot be set or edited.
         /// </summary>
-        public string LdapCcmPkid { get; set; }
+        [JsonProperty]
+        public string LdapCcmPkid { get; private set; }
         
         /// <summary>
         /// The userid of associated end user in the sleeping SeaDragon database.
         /// Cannot be set or edited
         /// </summary>
-        public string LdapCcmUserId { get; set; }
-        public int LdapType { get; set; }
+        [JsonProperty]
+        public string LdapCcmUserId { get; private set; }
+
+        [JsonProperty]
+        public int LdapType { get; private set; }
+
+       
 
         /// <summary>
         /// The distinguished name of the mailbox.
         /// Cannot be set or edited
         /// </summary>
-        public string MailboxDn { get; set; }
+        [JsonProperty]
+        public string MailboxDn { get; private set; }
 
         private string _manager;
         public string Manager
@@ -3012,7 +3058,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// The date and time when the personal address book was last imported from a groupware package into the personal groups for a user.
         /// Cannot be set or edited
         /// </summary>
-        public string PabLastImported { get; set; }
+        [JsonProperty]
+        public string PabLastImported { get; private set; }
 
         private int _pcaAddressBookRowsPerPage;
         public int PcaAddressBookRowsPerPage
@@ -3122,6 +3169,17 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
+        private bool _retainUrgentMessageFlag;
+        public bool RetainUrgentMessageFlag
+        {
+            get { return _retainUrgentMessageFlag; }
+            set
+            {
+                _changedPropList.Add("RetainUrgentMessageFlag", value);
+                _retainUrgentMessageFlag = value;
+            }
+        }
+
         private bool _ringPrimaryPhoneFirst;
         /// <summary>
         /// A flag indicating whether a subscriber's primary phone should be rung before trying other destinations in a personal group
@@ -3220,6 +3278,17 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
+        private bool _sayAniAfter;
+        public bool SayAniAfter
+        {
+            get { return _sayAniAfter; }
+            set
+            {
+                _changedPropList.Add("SayAniAfter", value);
+                _sayAniAfter = value;
+            }
+        }
+
         private bool _sayCopiedNames;
         public bool SayCopiedNames
         {
@@ -3241,6 +3310,64 @@ namespace Cisco.UnityConnection.RestFunctions
                 _sayDistributionList = value;
             }
         }
+
+        private bool _sayMessageLength;
+        public bool SayMessageLength
+        {
+            get { return _sayMessageLength; }
+            set
+            {
+                _changedPropList.Add("SayMessageLength", value);
+                _sayMessageLength = value;
+            }
+        }
+
+        private bool _sayMessageLengthAfter;
+        public bool SayMessageLengthAfter
+        {
+            get { return _sayMessageLengthAfter; }
+            set
+            {
+                _changedPropList.Add("SayMessageLengthAfter", value);
+                _sayMessageLengthAfter = value;
+            }
+        }
+
+
+        private bool _saySenderAfter;
+        public bool SaySenderAfter
+        {
+            get { return _saySenderAfter; }
+            set
+            {
+                _changedPropList.Add("SaySenderAfter", value);
+                _saySenderAfter = value;
+            }
+        }
+
+        private bool _sayMsgNumberAfter;
+        public bool SayMsgNumberAfter
+        {
+            get { return _sayMsgNumberAfter; }
+            set
+            {
+                _changedPropList.Add("SayMsgNumberAfter", value);
+                _sayMsgNumberAfter = value;
+            }
+        }
+
+
+        private bool _saySenderExtensionAfter;
+        public bool SaySenderExtensionAfter
+        {
+            get { return _saySenderExtensionAfter; }
+            set
+            {
+                _changedPropList.Add("SaySenderExtensionAfter", value);
+                _saySenderExtensionAfter = value;
+            }
+        }
+
 
         private bool _sayMsgNumber;
         public bool SayMsgNumber
@@ -3296,6 +3423,18 @@ namespace Cisco.UnityConnection.RestFunctions
                 _sayTimestampBefore = value;
             }
         }
+
+        private bool _sayTotalDraftMsg;
+        public bool SayTotalDraftMsg
+        {
+            get { return _sayTotalDraftMsg; }
+            set
+            {
+                _changedPropList.Add("SayTotalDraftMsg", value);
+                _sayTotalDraftMsg = value;
+            }
+        }
+
 
         private bool _sayTotalNew;
         public bool SayTotalNew

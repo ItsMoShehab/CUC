@@ -10,6 +10,8 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class PortGroupTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
 
@@ -29,7 +31,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -47,7 +49,7 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start PortGroup test:" + ex.Message);
             }
 
         }
@@ -65,6 +67,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             PortGroup oPorts = new PortGroup(null);
+            Console.WriteLine(oPorts);
         }
 
 
@@ -76,6 +79,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure2()
         {
             PortGroup oPorts = new PortGroup(new ConnectionServer(), "blah");
+            Console.WriteLine(oPorts);
         }
 
         /// <summary>
@@ -86,17 +90,18 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure3()
         {
             PortGroup oPorts = new PortGroup(_connectionServer, "blah");
+            Console.WriteLine(oPorts);
         }
 
         #endregion
+
 
         [TestMethod]
         public void StaticMethodFailures()
         {
             List<PortGroup> oPortGroups;
-            WebCallResult res;
 
-            res = PortGroup.GetPortGroups(null, out oPortGroups);
+            WebCallResult res = PortGroup.GetPortGroups(null, out oPortGroups);
             Assert.IsFalse(res.Success, "Fetching port groups with null Connection server should fail.");
 
             res = PortGroup.GetPortGroups(new ConnectionServer(), out oPortGroups);
@@ -126,6 +131,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 PortGroup oNewGroup = new PortGroup(_connectionServer, strPortGroupObjectId);
+                Console.WriteLine(oNewGroup);
             }
             catch (Exception ex)
             {
@@ -135,6 +141,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 PortGroup oNewGroup = new PortGroup(_connectionServer, "",strPortGroupDisplayName);
+                Console.WriteLine(oNewGroup);
             }
             catch (Exception ex)
             {
@@ -143,10 +150,13 @@ namespace ConnectionCUPIFunctionsTest
 
             try
             {
-                PortGroup oNewGroup = new PortGroup(_connectionServer, "","bogus");
-                Assert.Fail("PortGroup creation with invalid display name of PortGroup did not fail");
+                PortGroup oNewGroup = new PortGroup(_connectionServer, "", "bogus");
+                Assert.Fail("PortGroup creation with invalid display name of PortGroup did not fail:" + oNewGroup);
             }
-            catch {}
+            catch (Exception)
+            {
+                Console.WriteLine("Expected creation error with invalid objectID");
+            }
 
         }
     }

@@ -8,6 +8,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ConnectionCUPIFunctionsTest
 {
+    // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+    // ReSharper disable HeuristicUnreachableCode
+
     [TestClass]
     public class PortGroupServerTest
     {
@@ -30,7 +33,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -47,7 +50,7 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start PortGroupServer test:" + ex.Message);
             }
 
         }
@@ -65,6 +68,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             PortGroupServer oTemp = new PortGroupServer(null,"PortGroupId","objectID");
+            Console.WriteLine(oTemp);
         }
 
         [TestMethod]
@@ -72,6 +76,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure2()
         {
             PortGroupServer oTemp = new PortGroupServer(_connectionServer, "");
+            Console.WriteLine(oTemp);
         }
 
         [TestMethod]
@@ -79,6 +84,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure3()
         {
             PortGroupServer oTemp = new PortGroupServer(_connectionServer, "bogus","bogus");
+            Console.WriteLine(oTemp);
         }
 
         #endregion
@@ -96,8 +102,8 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Static call to GetPortGroupTemplates did not fail with: empty objectId");
 
             res = PortGroupServer.GetPortGroupServers(_connectionServer, "bogus", out oList);
+            Assert.IsTrue(res.Success,"Fetching port group servers with invalid objectId should not fail");
             Assert.IsTrue(oList.Count==0, "Static call to GetPortGroupTemplates did not fail with: invalid objectId");
-
 
             res = PortGroupServer.AddPortGroupServer(null, "",100, "10.20.30.40");
             Assert.IsFalse(res.Success,"Static call to did not fail");

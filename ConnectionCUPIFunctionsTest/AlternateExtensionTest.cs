@@ -49,7 +49,7 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start AlternateExtension test:" + ex.Message);
             }
 
             //get the operator to work with as our user

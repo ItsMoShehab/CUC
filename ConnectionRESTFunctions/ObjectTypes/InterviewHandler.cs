@@ -11,6 +11,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -458,6 +459,7 @@ namespace Cisco.UnityConnection.RestFunctions
             /// <param name="pDisplayName">
             /// Display Name of the new interview handler - must be unique.
             /// </param>
+            /// <param name="pRecipientDistributionListObjectId"></param>
             /// <param name="pPropList">
             /// List ConnectionProperty pairs that identify a handlers property name and a new value for that property to apply to the handler being created.
             /// This is passed in as a ConnectionPropertyList instance which contains 1 or more ConnectionProperty instances.  Can be passed as null here.
@@ -465,17 +467,21 @@ namespace Cisco.UnityConnection.RestFunctions
             /// <param name="pInterviewHandler">
             /// An instance of the InterviewHandler class will be created for the newly added handler and passed back on this parameter
             /// </param>
+            /// <param name="pRecipientUserObjectId"></param>
             /// <returns>
             /// Instance of the WebCallResult class.
             /// </returns>
             public static WebCallResult AddInterviewHandler(ConnectionServer pConnectionServer,
                                                              string pDisplayName,
+                                                             string pRecipientUserObjectId,
+                                                             string pRecipientDistributionListObjectId,
                                                              ConnectionPropertyList pPropList,
                                                              out InterviewHandler pInterviewHandler)
             {
                 pInterviewHandler = null;
 
-                WebCallResult res = AddInterviewHandler(pConnectionServer, pDisplayName, pPropList);
+                WebCallResult res = AddInterviewHandler(pConnectionServer, pDisplayName,pRecipientUserObjectId,
+                    pRecipientDistributionListObjectId, pPropList);
 
                 //if the call went through then the ObjectId will be returned in the URI form.
                 if (res.Success)
@@ -504,15 +510,19 @@ namespace Cisco.UnityConnection.RestFunctions
             /// <param name="pDisplayName">
             /// Display Name of the new interview handler - must be unique.
             /// </param>
+            /// <param name="pRecipientDistributionListObjectId"></param>
             /// <param name="pPropList">
             /// List ConnectionProperty pairs that identify a handlers property name and a new value for that property to apply to the handler being created.
             /// This is passed in as a ConnectionPropertyList instance which contains 1 or more ConnectionProperty instances.  Can be passed as null here.
             /// </param>
+            /// <param name="pRecipientUserObjectId"></param>
             /// <returns>
             /// Instance of the WebCallResult class.
             /// </returns>
             public static WebCallResult AddInterviewHandler(ConnectionServer pConnectionServer,
                                                         string pDisplayName,
+                                                        string pRecipientUserObjectId,
+                                                        string pRecipientDistributionListObjectId,
                                                         ConnectionPropertyList pPropList)
             {
                 WebCallResult res = new WebCallResult();
@@ -530,6 +540,13 @@ namespace Cisco.UnityConnection.RestFunctions
                     return res;
                 }
 
+                if (string.IsNullOrEmpty(pRecipientDistributionListObjectId) &
+                    string.IsNullOrEmpty(pRecipientUserObjectId))
+                {
+                    res.ErrorText = "Empty recipient objectIDs passed in AddInterviewHandler";
+                    return res;
+                }
+
                 //create an empty property list if it's passed as null since we use it below
                 if (pPropList == null)
                 {
@@ -537,7 +554,17 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
 
                 pPropList.Add("DisplayName", pDisplayName);
-
+                pPropList.Add("PartitionObjectId", "df1da090-0fb7-4f3a-a222-654c5920fbde");
+                //only pass one recipient
+                if (string.IsNullOrEmpty(pRecipientUserObjectId))
+                {
+                    pPropList.Add("RecipientDistributionListObjectId",pRecipientDistributionListObjectId);
+                }
+                else
+                {
+                    pPropList.Add("RecipientSubscriberObjectId", pRecipientUserObjectId);    
+                }
+                
                 string strBody = "<InterviewHandler>";
 
                 foreach (var oPair in pPropList)
@@ -641,6 +668,238 @@ namespace Cisco.UnityConnection.RestFunctions
                                                 MethodType.DELETE,pConnectionServer, "");
             }
 
+
+            /// <summary>
+            /// Fetches the WAV file for a handler's voice name and stores it on the Windows file system at the file location specified.  If the handler does 
+            /// not have a voice name recorded, the WebcallResult structure returns false in the success proeprty and notes the handler has no voice name in 
+            /// the error text.
+            /// </summary>
+            /// <param name="pConnectionServer">
+            /// Reference to the ConnectionServer object that points to the home server where the handler is homed.
+            /// </param>
+            /// <param name="pTargetLocalFilePath">
+            /// Full path to the location to store the WAV file of the handler's voice name at on the local file system.  If a file already exists in the 
+            /// location, it will be deleted.
+            /// </param>
+            /// <param name="pObjectId">
+            /// The ObjectId of the handler.  
+            /// </param>
+            /// <param name="pConnectionWavFileName">
+            /// The the Connection stream file name is already known it can be passed in here and the handler lookup does not need to take place.
+            /// </param>
+            /// <returns>
+            /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+            /// </returns>
+            public static WebCallResult GetInterviewHandlerVoiceName(ConnectionServer pConnectionServer, string pTargetLocalFilePath, string pObjectId,
+                string pConnectionWavFileName = "")
+            {
+                WebCallResult res = new WebCallResult();
+                res.Success = false;
+
+                if (pConnectionServer == null)
+                {
+                    res.ErrorText = "Null ConnectionServer referenced passed to GetInterviewHandlerVoiceName";
+                    return res;
+                }
+
+                //check and make sure a legit folder is referenced in the target path
+                if (String.IsNullOrEmpty(pTargetLocalFilePath) || (Directory.GetParent(pTargetLocalFilePath).Exists == false))
+                {
+                    res.ErrorText = "Invalid local file path passed to GetInterviewHandlerVoiceName: " + pTargetLocalFilePath;
+                    return res;
+                }
+
+                //if the WAV file name itself is passed in that's all we need, otherwise we need to go do a CallHandler fetch with the ObjectId 
+                //and pull the VoiceName wav file name from there (if it's present).
+                //fetch the call handler info which has the VoiceName property on it
+                if (string.IsNullOrEmpty(pConnectionWavFileName))
+                {
+                    InterviewHandler oInterviewHandler;
+
+                    try
+                    {
+                        oInterviewHandler = new InterviewHandler(pConnectionServer, pObjectId);
+                    }
+                    catch (Exception ex)
+                    {
+                        res.ErrorText = string.Format("Error fetching call handler in GetInterviewHandlerVoiceName with objectID{0}\n{1}", 
+                            pObjectId, ex.Message);
+                        return res;
+                    }
+
+                    //the property will be null if no voice name is recorded for the handler.
+                    if (string.IsNullOrEmpty(oInterviewHandler.VoiceName))
+                    {
+                        res = new WebCallResult();
+                        res.Success = false;
+                        res.ErrorText = "No voice named recorded for interview handler.";
+                        return res;
+                    }
+
+                    pConnectionWavFileName = oInterviewHandler.VoiceName;
+                }
+                //fetch the WAV file
+                res = HTTPFunctions.DownloadWavFile(pConnectionServer.ServerName,
+                                                    pConnectionServer.LoginName,
+                                                    pConnectionServer.LoginPw,
+                                                    pTargetLocalFilePath,
+                                                    pConnectionWavFileName);
+
+                return res;
+            }
+
+
+            /// <summary>
+            /// Uploads a WAV file indicated as a voice name for the target interview handler referenced by the pObjectID value.
+            /// </summary>
+            /// <param name="pConnectionServer">
+            /// Reference to the ConnectionServer object that points to the home server where the interview handler is homed.
+            /// </param>
+            /// <param name="pSourceLocalFilePath">
+            /// Full path on the local file system pointing to a WAV file to be uploaded as a voice name for the handler referenced.
+            /// </param>
+            /// <param name="pObjectId">
+            /// ObjectId of the call handler to upload the voice name WAV file for.
+            /// </param>
+            /// <param name="pConvertToPcmFirst">
+            /// If passed as TRUE the routine will attempt to convert the target WAV file into raw PCM first before uploading it to the Connection
+            /// server.  A failure to convert will be considered a failed upload attempt and false is returned.  This value defaults to FALSE meaning
+            /// the file will attempt to be uploaded as is.
+            /// </param>
+            /// <returns>
+            /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+            /// </returns>
+            public static WebCallResult SetInterviewHandlerVoiceName(ConnectionServer pConnectionServer, string pSourceLocalFilePath, string pObjectId,
+                bool pConvertToPcmFirst = false)
+            {
+                string strConvertedWavFilePath = "";
+                WebCallResult res = new WebCallResult();
+                res.Success = false;
+
+                if (pConnectionServer == null)
+                {
+                    res.ErrorText = "Null ConnectionServer referenced passed to SetInterviewHandlerVoiceName";
+                    return res;
+                }
+
+                //check and make sure a legit folder is referenced in the target path
+                if (String.IsNullOrEmpty(pSourceLocalFilePath) || (File.Exists(pSourceLocalFilePath) == false))
+                {
+                    res = new WebCallResult();
+                    res.Success = false;
+                    res.ErrorText = "Invalid local file path passed to SetInterviewHandlerVoiceName: " + pSourceLocalFilePath;
+                    return res;
+                }
+
+                //if the user wants to try and rip the WAV file into PCM 16/8/1 first before uploading the file, do that conversion here
+                if (pConvertToPcmFirst)
+                {
+                    strConvertedWavFilePath = pConnectionServer.ConvertWavFileToPcm(pSourceLocalFilePath);
+
+                    if (string.IsNullOrEmpty(strConvertedWavFilePath))
+                    {
+                        res.ErrorText = "Failed converting WAV file into PCM format in SetInterviewHandlerVoiceName.";
+                        return res;
+                    }
+
+                    if (File.Exists(strConvertedWavFilePath) == false)
+                    {
+                        res.ErrorText = "Converted PCM WAV file path not found in SetInterviewHandlerVoiceName: " + strConvertedWavFilePath;
+                        return res;
+                    }
+
+                    //point the wav file we'll be uploading to the newly converted G711 WAV format file.
+                    pSourceLocalFilePath = strConvertedWavFilePath;
+
+                }
+
+                //use the 8.5 and later voice name formatting here which simplifies things a great deal.
+                string strResourcePath = string.Format(@"{0}handlers/interviewhandlers/{1}/voicename", pConnectionServer.BaseUrl, pObjectId);
+
+                //upload the WAV file to the server.
+                res = HTTPFunctions.UploadWavFile(strResourcePath, pConnectionServer.LoginName, pConnectionServer.LoginPw, pSourceLocalFilePath);
+
+                //if we converted a file to G711 in the process clean up after ourselves here. Only delete it if the upload was good - otherwise
+                //keep it around as it may be useful for diagnostic purposes.
+                if (res.Success && !string.IsNullOrEmpty(strConvertedWavFilePath) && File.Exists(strConvertedWavFilePath))
+                {
+                    try
+                    {
+                        File.Delete(strConvertedWavFilePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        //this is not a show stopper error - just report it back but still return success if that's what we got back from the 
+                        //wav upload routine.
+                        res.ErrorText = "(warning) failed to delete temporary PCM wav file in SetInterviewHandlerVoiceName:" + ex.Message;
+                    }
+                }
+                return res;
+            }
+
+
+            /// <summary>
+            /// If you have a recording stream already recorded and in the stream files table on the Connection server (for instance
+            /// you are using the telephone as a media device) you can assign a recording stream file directly to a voice name using this 
+            /// method instead of uploading a WAV file from the local hard drive.
+            /// </summary>
+            /// <param name="pConnectionServer" type="ConnectionServer">
+            ///   The Connection server that houses the voice name to be updated      
+            /// </param>
+            /// <param name="pObjectId">
+            /// ObjectId of the handler to apply the stream file to the voice name for.
+            /// </param>
+            /// <param name="pStreamFileResourceName" type="string">
+            ///  the unique identifier (usually GUID.wav type construction) for the recording stream to be assigned.
+            /// </param>
+            /// <returns>
+            /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+            /// </returns>
+            public static WebCallResult SetInterviewHandlerVoiceNameToStreamFile(ConnectionServer pConnectionServer, string pObjectId,
+                                                         string pStreamFileResourceName)
+            {
+                WebCallResult res = new WebCallResult();
+
+                if (pConnectionServer == null)
+                {
+                    res.ErrorText = "Null ConnectionServer referenced passed to SetInterviewHandlerVoiceNameToStreamFile";
+                    return res;
+                }
+
+                if (string.IsNullOrEmpty(pObjectId))
+                {
+                    res.ErrorText = "Empty ObjectId passed to SetInterviewHandlerVoiceNameToStreamFile";
+                    return res;
+                }
+
+                //check and make sure a legit folder is referenced in the target path
+                if (String.IsNullOrEmpty(pStreamFileResourceName))
+                {
+                    res = new WebCallResult();
+                    res.Success = false;
+                    res.ErrorText = "Invalid stream file resource id passed to SetInterviewHandlerVoiceNameToStreamFile";
+                    return res;
+                }
+
+                //construct the full URL to call for uploading the voice name file
+                string strUrl = string.Format(@"{0}handlers/interviewhandlers/{1}/voicename", pConnectionServer.BaseUrl, pObjectId);
+
+                Dictionary<string, string> oParams = new Dictionary<string, string>();
+                Dictionary<string, object> oOutput;
+
+                oParams.Add("op", "RECORD");
+                oParams.Add("ResourceType", "STREAM");
+                oParams.Add("resourceId", pStreamFileResourceName);
+                oParams.Add("lastResult", "0");
+                oParams.Add("speed", "100");
+                oParams.Add("volume", "100");
+                oParams.Add("startPosition", "0");
+
+                res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.PUT, pConnectionServer.LoginName,
+                                                     pConnectionServer.LoginPw, oParams, out oOutput);
+
+                return res;
+            }
 
             #endregion
 
@@ -818,6 +1077,62 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 return InterviewQuestion.GetInterviewQuestions(HomeServer, ObjectId, out pInterviewQuestions);
             }
+
+            /// <summary>
+            /// Uploads a WAV file indicated as a voice name for the target handler
+            /// </summary>
+            /// <param name="pSourceLocalFilePath">
+            /// Full path on the local file system pointing to a WAV file to be uploaded as a voice name for the handler referenced.
+            /// </param>
+            /// <param name="pConvertToPcmFirst">
+            /// If passed as TRUE the routine will attempt to convert the target WAV file into raw PCM first before uploading it to the Connection
+            /// server.  A failure to convert will be considered a failed upload attempt and false is returned.  This value defaults to FALSE meaning
+            /// the file will attempt to be uploaded as is.
+            /// </param>
+            /// <returns>
+            /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+            /// </returns>
+            public WebCallResult SetVoiceName(string pSourceLocalFilePath, bool pConvertToPcmFirst = false)
+            {
+                //just call the static method with the information from the instance
+                return SetInterviewHandlerVoiceName(HomeServer, pSourceLocalFilePath, ObjectId, pConvertToPcmFirst);
+            }
+
+
+            /// <summary>
+            /// If you have a recording stream already recorded and in the stream files table on the Connection server (for instance
+            /// you are using the telephone as a media device) you can assign a recording stream file directly to a voice name using this 
+            /// method instead of uploading a WAV file from the local hard drive.
+            /// </summary>
+            /// <param name="pStreamFileResourceName" type="string">
+            ///  the unique identifier (usually GUID.wav type construction) for the recording stream to be assigned.
+            /// </param>
+            /// <returns>
+            /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+            /// </returns>
+            public WebCallResult SetVoiceNameToStreamFile(string pStreamFileResourceName)
+            {
+                return SetInterviewHandlerVoiceNameToStreamFile(HomeServer, ObjectId, pStreamFileResourceName);
+            }
+
+            /// <summary>
+            /// Fetches the WAV file for a handler's voice name and stores it on the Windows file system at the file location specified.  If the handler does 
+            /// not have a voice name recorded, the WebcallResult structure returns false in the success proeprty and notes the handler has no voice name in 
+            /// the error text.
+            /// </summary>
+            /// <param name="pTargetLocalFilePath">
+            /// Full path to the location to store the WAV file of the handler's voice name at on the local file system.  If a file already exists in the 
+            /// location, it will be deleted.
+            /// </param>
+            /// <returns>
+            /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+            /// </returns>
+            public WebCallResult GetVoiceName(string pTargetLocalFilePath)
+            {
+                //just call the static method with the info from the instance of this object
+                return GetInterviewHandlerVoiceName(HomeServer, pTargetLocalFilePath, ObjectId, VoiceName);
+            }
+
 
             #endregion
 

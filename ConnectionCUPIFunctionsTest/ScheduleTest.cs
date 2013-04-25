@@ -10,6 +10,8 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class ScheduleTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
 
@@ -17,6 +19,7 @@ namespace ConnectionCUPIFunctionsTest
         //routine below.
         private static ConnectionServer _connectionServer;
 
+        private static Schedule _tempSchedule;
         /// <summary>
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
@@ -29,7 +32,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -46,9 +49,24 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start Schedule test:" + ex.Message);
             }
 
+            
+
+            WebCallResult res = Schedule.AddSchedule(_connectionServer, "Temp_" + Guid.NewGuid().ToString(),
+                                                     _connectionServer.PrimaryLocationObjectId, "", false, out _tempSchedule);
+            Assert.IsTrue(res.Success, "Failed to create new system schedule:" + res);
+        }
+
+        [ClassCleanup]
+        public static void MyClassCleanup()
+        {
+            if (_tempSchedule != null)
+            {
+                WebCallResult res = _tempSchedule.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete temporary schedule on cleanup.");
+            }
         }
 
         #endregion
@@ -64,6 +82,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             Schedule oTest = new Schedule(null);
+            Console.WriteLine(oTest);
         }
         
         
@@ -75,6 +94,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure2()
         {
             Schedule oTest = new Schedule(new ConnectionServer(),"blah");
+            Console.WriteLine(oTest);
         }
 
 
@@ -86,6 +106,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure3()
         {
             Schedule oTest = new Schedule(_connectionServer,"blah");
+            Console.WriteLine(oTest);
         }
 
 
@@ -97,6 +118,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure4()
         {
             ScheduleDetail oDetail = new ScheduleDetail(_connectionServer,"blah","blah");
+            Console.WriteLine(oDetail);
         }
 
         /// <summary>
@@ -107,6 +129,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure5()
         {
             ScheduleDetail oTest = new ScheduleDetail(null);
+            Console.WriteLine(oTest);
         }
 
         #endregion
@@ -155,10 +178,14 @@ namespace ConnectionCUPIFunctionsTest
 
             try
             {
-                oNewSchedule = new Schedule(_connectionServer,"","blah");
-                Assert.IsTrue(false,"Creating schedule class with invalid schedule name should throw an exception");
+                oNewSchedule = new Schedule(_connectionServer, "", "blah");
+                Assert.IsTrue(false, "Creating schedule class with invalid schedule name should throw an exception");
+                Console.WriteLine(oNewSchedule);
             }
-            catch{}
+            catch (Exception)
+            {
+                Console.WriteLine("Expected error for creation failure");
+            }
 
             res = Schedule.GetSchedule(out oNewSchedule, _connectionServer, "", "bogus");
             Assert.IsFalse(res.Success,"Fetching schedule by invalid name did not fail");
@@ -167,17 +194,16 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void StaticScheduleTests()
         {
-            WebCallResult res;
             Schedule oSchedule;
 
             //getSchedule
-            res = Schedule.GetSchedule(out oSchedule, null, "");
+            WebCallResult res = Schedule.GetSchedule(out oSchedule, null);
             Assert.IsFalse(res.Success,"Static call to get schedule with null ConnectionServer did not fail");
 
             res = Schedule.GetSchedule(out oSchedule, null, "bogus");
             Assert.IsFalse(res.Success, "Static call to get schedule with null ConnectionServer did not fail");
 
-            res = Schedule.GetSchedule(out oSchedule, _connectionServer, "","");
+            res = Schedule.GetSchedule(out oSchedule, _connectionServer);
             Assert.IsFalse(res.Success, "Static call to get schedule with empty objectId and name did not fail");
 
             res = Schedule.GetSchedule(out oSchedule, null, "", "bogus");
@@ -243,32 +269,23 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void AddRemoveScheduleTest()
         {
-            WebCallResult res;
-            Schedule oSchedule;
-
-            res = Schedule.AddSchedule(_connectionServer, "test_" + Guid.NewGuid().ToString(),
-                                       _connectionServer.PrimaryLocationObjectId, "", false,out oSchedule);
-            Assert.IsTrue(res.Success,"Failed to create new system schedule:"+res);
-
-            res = oSchedule.AddScheduleDetail("test subject", 0, 100, true, true, true, true, true, false, false,
+            WebCallResult res = _tempSchedule.AddScheduleDetail("test subject", 0, 100, true, true, true, true, true, false, false,
                                                      DateTime.Now, DateTime.Now.AddDays(1));
             Assert.IsTrue(res.Success, "Failed to create new schedule detail and add it to the new schedule:" + res);
 
-            Console.WriteLine(oSchedule.ToString());
-            oSchedule.RefetchScheduleData();
+            Console.WriteLine(_tempSchedule.ToString());
+            _tempSchedule.RefetchScheduleData();
 
 
-            foreach (var oDetail in oSchedule.ScheduleDetails())
+            foreach (var oDetail in _tempSchedule.ScheduleDetails())
             {
                 Console.WriteLine(oDetail.ToString());
                 Console.WriteLine(oDetail.DumpAllProps());
             }
 
-            res = oSchedule.Delete();
-            Assert.IsTrue(res.Success,"Failed to delete system schedule:"+res);
-
             //create a holiday
-            res = Schedule.AddSchedule(_connectionServer, "test_" + Guid.NewGuid().ToString(),
+            Schedule oSchedule;
+            res = Schedule.AddSchedule(_connectionServer, "temp_" + Guid.NewGuid().ToString(),
                                        _connectionServer.PrimaryLocationObjectId, "", true, out oSchedule);
             Assert.IsTrue(res.Success, "Failed to create new holiday system schedule:" + res);
 
@@ -329,6 +346,7 @@ namespace ConnectionCUPIFunctionsTest
             {
                 ScheduleDetail oScheduleDetail = new ScheduleDetail(_connectionServer, strScheduleObjectId,
                                                                     strScheduleDetailObjectId);
+                Console.WriteLine(oScheduleDetail);
             }
             catch (Exception ex)
             {

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Text;
-using System.Threading;
 using Cisco.UnityConnection.RestFunctions;
-using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ConnectionCUPIFunctionsTest
@@ -10,6 +8,8 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class StringExtensionTests
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
 
@@ -20,7 +20,6 @@ namespace ConnectionCUPIFunctionsTest
         public TestContext TestContext { get; set; }
 
         #endregion
-
 
 
         [TestMethod]
@@ -63,10 +62,10 @@ namespace ConnectionCUPIFunctionsTest
             oDate = "bogus".ToDate();
             Assert.IsTrue(oDate == DateTime.MinValue, "String extension failed to return min date on 'bogus' as date");
 
-            strTemp = "1/20/2010".ConvertToDateFormat("G");
+            strTemp = "1/20/2010".ConvertToDateFormat();
             Assert.IsFalse(string.IsNullOrEmpty(strTemp),"Failed to convert date string into general date format");
 
-            strTemp = "bogus".ConvertToDateFormat("G");
+            strTemp = "bogus".ConvertToDateFormat();
             Assert.IsTrue(strTemp.Equals("bogus"), "Invalid date format did not return string passed in for ConvertToDateFormat");
 
             strTemp = "1234".ToAscii();
