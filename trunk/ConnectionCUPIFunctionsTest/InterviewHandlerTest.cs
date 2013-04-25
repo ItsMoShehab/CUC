@@ -58,32 +58,27 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success, "Failed fetching user as recipient for creating temporary interview handler:" + res);
 
             //create new handler with GUID in the name to ensure uniqueness
-            //String strName = "TempHandler_" + Guid.NewGuid().ToString().Replace("-", "");
-            List<InterviewHandler> oHandlers;
-            res = InterviewHandler.GetInterviewHandlers(_connectionServer, out oHandlers, 1, 1);
-            Assert.IsTrue(res.Success,"Failed to fetch interview handlers at test init");
-            Assert.IsTrue(oHandlers.Count>0,"No interview handlers found in system");
-            _tempHandler = oHandlers[0];
+            String strName = "TempHandler_" + Guid.NewGuid().ToString().Replace("-", "");
 
-            //res = InterviewHandler.AddInterviewHandler(_connectionServer, strName,oUsers[0].ObjectId,"",  null, out _tempHandler);
-            //Assert.IsTrue(res.Success, "Failed creating temporary interview handler:" + res.ToString());
+            res = InterviewHandler.AddInterviewHandler(_connectionServer, strName,oUsers[0].ObjectId,"",  null, out _tempHandler);
+            Assert.IsTrue(res.Success, "Failed creating temporary interview handler:" + res.ToString());
         }
 
 
         [ClassCleanup]
         public static void MyClassCleanup()
         {
-            //if (_tempHandler != null)
-            //{
-            //    WebCallResult res = _tempHandler.Delete();
-            //    Assert.IsTrue(res.Success, "Failed to delete temporary interview handler on cleanup.");
-            //}
+            if (_tempHandler != null)
+            {
+                WebCallResult res = _tempHandler.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete temporary interview handler on cleanup.");
+            }
         }
 
         #endregion
 
 
-        #region Class Construction Failures
+        #region Interview Handler Class Construction Failures
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
@@ -106,7 +101,7 @@ namespace ConnectionCUPIFunctionsTest
 
         [TestMethod]
         [ExpectedException(typeof(Exception))]
-        public void ClassCreationFailure_Name()
+        public void ClassCreationFailure_InvalidName()
         {
             InterviewHandler oTestInterviewer = new InterviewHandler(_connectionServer, "","blah");
             Console.WriteLine(oTestInterviewer);
@@ -114,6 +109,44 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
+
+        #region Interview Question Class Construction Errors
+        [TestMethod]
+        [ExpectedException(typeof(Exception))]
+        public void Question_ClassCreationFailure_InvalidObjectId()
+        {
+            var oTest = new InterviewQuestion (_connectionServer, "bogus",1);
+            Console.WriteLine(oTest);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Exception))]
+        public void Question_ClassCreationFailure_InvalidQuestionNumber()
+        {
+            var oTest = new InterviewQuestion(_connectionServer, _tempHandler.ObjectId, 999);
+            Console.WriteLine(oTest);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void Question_ClassCreationFailure_NullConnection()
+        {
+            var oTest = new InterviewQuestion(null, "bogus", 1);
+            Console.WriteLine(oTest);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void Question_ClassCreationFailure_EmptyObjectId()
+        {
+            var oTest = new InterviewQuestion(_connectionServer, "", 1);
+            Console.WriteLine(oTest);
+        }
+
+        #endregion
+
+
+        #region Interview Handler Tests
 
         [TestMethod]
         public void StaticMethodFailures()
@@ -227,7 +260,6 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void InterviewHandlers_VoiceName()
         {
-            return;
             //try to download voice name- this should fail
             WebCallResult res = _tempHandler.GetVoiceName(@"c:\temp.wav");
             Assert.IsFalse(res.Success, "Empty voice name fetch should return false for newly created handler");
@@ -245,6 +277,55 @@ namespace ConnectionCUPIFunctionsTest
             res = _tempHandler.GetVoiceName("DummyDownload.wav");
             Assert.IsTrue(res.Success, "Downloading voice name for call handler failed:" + res.ToString());
         }
+
+        [TestMethod]
+        public void InterviewHandlers_VoiceNameStaticFailures()
+        {
+            WebCallResult res = InterviewHandler.GetInterviewHandlerVoiceName(null, "c:\\test.wav", "objectId");
+            Assert.IsFalse(res.Success,"Fetching interview handler voice name did not fail with null connection server");
+
+            res = InterviewHandler.GetInterviewHandlerVoiceName(_connectionServer, "c:\\test.wav", "");
+            Assert.IsFalse(res.Success, "Fetching interview handler voice name did not fail with empty objectid");
+
+            res = InterviewHandler.GetInterviewHandlerVoiceName(_connectionServer, "c:\\test.wav", "bogus");
+            Assert.IsFalse(res.Success, "Fetching interview handler voice name did not fail with invalid objecti");
+
+            res = InterviewHandler.GetInterviewHandlerVoiceName(_connectionServer, "", "bogus");
+            Assert.IsFalse(res.Success, "Fetching interview handler voice name did not fail with empty path");
+
+            res = InterviewHandler.SetInterviewHandlerVoiceName(null, "c:\\test.wav", "objectid", true);
+            Assert.IsFalse(res.Success, "Setting interview handler voice name did not fail with null connection server");
+
+            res = InterviewHandler.SetInterviewHandlerVoiceName(_connectionServer, "c:\\test.wav", "objectid", true);
+            Assert.IsFalse(res.Success, "Setting interview handler voice name did not fail with invalid objectid");
+
+            res = InterviewHandler.SetInterviewHandlerVoiceName(_connectionServer, "c:\\test.wav", "", true);
+            Assert.IsFalse(res.Success, "Setting interview handler voice name did not fail with empty objectid");
+
+            res = InterviewHandler.SetInterviewHandlerVoiceName(_connectionServer, "c:\\bogus.wav", _tempHandler.ObjectId, true);
+            Assert.IsFalse(res.Success, "Setting interview handler voice name did not fail with invalid wav file path");
+
+            res = InterviewHandler.SetInterviewHandlerVoiceName(_connectionServer, "wavcopy.exe", _tempHandler.ObjectId, true);
+            Assert.IsFalse(res.Success, "Setting interview handler voice name did not fail with non wav file reference");
+
+
+            res = InterviewHandler.SetInterviewHandlerVoiceNameToStreamFile(null, "objectid", "streamid");
+            Assert.IsFalse(res.Success, "Setting interview handler voice name to stream file did not fail with null connection server");
+
+            res = InterviewHandler.SetInterviewHandlerVoiceNameToStreamFile(_connectionServer, "", "streamid");
+            Assert.IsFalse(res.Success, "Setting interview handler voice name to stream file did not fail with empty objectid");
+
+            res = InterviewHandler.SetInterviewHandlerVoiceNameToStreamFile(_connectionServer, "objectid", "streamid");
+            Assert.IsFalse(res.Success, "Setting interview handler voice name to stream file did not fail with invalid objectid");
+
+            res = InterviewHandler.SetInterviewHandlerVoiceNameToStreamFile(_connectionServer, _tempHandler.ObjectId, "streamid");
+            Assert.IsFalse(res.Success, "Setting interview handler voice name to stream file did not fail with invalid stream id");
+
+            res = InterviewHandler.SetInterviewHandlerVoiceNameToStreamFile(_connectionServer, _tempHandler.ObjectId, "");
+            Assert.IsFalse(res.Success, "Setting interview handler voice name to stream file did not fail with empty stream id");
+
+        }
+
 
         [TestMethod]
         public void InterviewHandlers_Questions()
@@ -274,6 +355,18 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
+        public void AddInterviewHandler_Failure()
+        {
+            InterviewHandler oHandler;
+            WebCallResult res = InterviewHandler.AddInterviewHandler(_connectionServer, "test" + Guid.NewGuid(), "",
+                                                                     "bogus", null, out oHandler);
+            Assert.IsFalse(res.Success,"Passing invalid recipient objectId did not result in failure on create");
+        }
+
+        /// <summary>
+        /// exercise failure points
+        /// </summary>
+        [TestMethod]
         public void GetInterviewHandler_Failure()
         {
             InterviewHandler oHandler;
@@ -283,19 +376,166 @@ namespace ConnectionCUPIFunctionsTest
 
             res = InterviewHandler.GetInterviewHandler(out oHandler, _connectionServer);
             Assert.IsFalse(res.Success, "GetInterviewHandler should fail if the ObjectId and display name are both blank");
+
+            List<InterviewHandler> oList;
+            res = InterviewHandler.GetInterviewHandlers(_connectionServer, out oList,1,1);
+            Assert.IsTrue(res.Success,"Failed to fetch list of interviewers:"+res);
+            Assert.IsTrue(oList.Count>0,"No interviewers returned from list fetch");
         }
 
         [TestMethod]
         public void InterviewHandler_UpdateTests()
         {
-            return;
             WebCallResult res = _tempHandler.Update();
             Assert.IsFalse(res.Success,"Updating interview handler with no pending changes did not fail");
 
-            _tempHandler.DisplayName = "Updated Display Name";
+            _tempHandler.DisplayName = "Updated"+Guid.NewGuid();
+            res = _tempHandler.Update();
+            Assert.IsTrue(res.Success,"Failed to update interview handler display name:"+res);
+
+            _tempHandler.AfterMessageAction = (int)ActionTypes.GoTo;
+            _tempHandler.AfterMessageTargetConversation = ConversationNames.PHInterview.ToString();
+            _tempHandler.AfterMessageTargetHandlerObjectId = _tempHandler.ObjectId;
+            res = _tempHandler.Update();
+            Assert.IsTrue(res.Success,"Failed to update interview handler after message action");
+
+            _tempHandler.RecipientSubscriberObjectId = "bogus";
+            res = _tempHandler.Update();
+            Assert.IsFalse(res.Success,"Setting recipient subscriber to invalid string did not return an error");
+
+            res =_tempHandler.SetVoiceNameToStreamFile("bogus");
+            Assert.IsFalse(res.Success,"Setting voice name to invalid streamId did not fail");
+        }
+
+        #endregion
+
+
+        #region Interview Question Tests
+
+        [TestMethod]
+        public void InterviewQuestion_FetchTest()
+        {
+            List<InterviewQuestion> oQuestions;
+            var res= InterviewQuestion.GetInterviewQuestions(_connectionServer, _tempHandler.ObjectId, out oQuestions);
+            Assert.IsTrue(res.Success,"Failed to fetch interview questions:"+res);
+            Assert.IsTrue(oQuestions.Count>0,"No questions returned from fetch");
+
+            InterviewQuestion oQuestion;
+            res = InterviewQuestion.GetInterviewQuestion(out oQuestion, _connectionServer, _tempHandler.ObjectId, 1);
+            Assert.IsTrue(res.Success,"Failed to fetch question #1:"+res);
+
+            Console.WriteLine(oQuestion.ToString());
+            oQuestion.DumpAllProps();
+
+            res =oQuestion.Update(false, 11, "testing");
+            Assert.IsTrue(res.Success,"Updating question failed:"+res);
+
+            res = InterviewQuestion.GetInterviewQuestion(out oQuestion, _connectionServer, _tempHandler.ObjectId, 999);
+            Assert.IsFalse(res.Success, "Fetching invalid question number did not fail");
+
             
 
+        }
+
+        [TestMethod]
+        public void InterviewQuestion_RecordedStreamTests()
+        {
+            //TODO
+        }
+
+
+        [TestMethod]
+        public void InterviewQuestion_StaticFailureTest()
+        {
+            //GetInterviewHandlerQuestionRecording
+            var res = InterviewQuestion.GetInterviewHandlerQuestionRecording(null, "c:\\test.wav", "objectid", 1);
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.GetInterviewHandlerQuestionRecording(_connectionServer, "c:\\test.wav", "objectid", 1);
+            Assert.IsFalse(res.Success,"");
+
+            res = InterviewQuestion.GetInterviewHandlerQuestionRecording(_connectionServer, "", "objectid", 1);
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.GetInterviewHandlerQuestionRecording(_connectionServer, "c:\\bogus\\bogus\\temp.wav", "objectid", 1);
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.GetInterviewHandlerQuestionRecording(_connectionServer, "c:\\test.wav", "", 1);
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.GetInterviewHandlerQuestionRecording(_connectionServer, "c:\\test.wav", _tempHandler.ObjectId, 999);
+            Assert.IsFalse(res.Success, "");
+
+            //GetInterviewQuestion
+            InterviewQuestion oQuestion;
+            res = InterviewQuestion.GetInterviewQuestion(out oQuestion, null, "objectid", 1);
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.GetInterviewQuestion(out oQuestion, _connectionServer, "objectid", 1);
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.GetInterviewQuestion(out oQuestion, _connectionServer, "", 1);
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.GetInterviewQuestion(out oQuestion, _connectionServer, _tempHandler.ObjectId, 999);
+            Assert.IsFalse(res.Success, "");
+
+            //GetInterviewQuestions
+            List<InterviewQuestion> oQuestions;
+            res = InterviewQuestion.GetInterviewQuestions(null, "objectid", out oQuestions);
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.GetInterviewQuestions(_connectionServer, "", out oQuestions);
+            Assert.IsFalse(res.Success, "");
+
+
+            //SetInterviewHandlerQuestionRecording
+            res = InterviewQuestion.SetInterviewHandlerQuestionRecording(null, "c:\\temp.wav", "objectid", 1, true);
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.SetInterviewHandlerQuestionRecording(_connectionServer, "bogus.wav", "objectid", 1, true);
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.SetInterviewHandlerQuestionRecording(_connectionServer, "bogus.wav", "", 1, true);
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.SetInterviewHandlerQuestionRecording(_connectionServer, "Dummy.wav", _tempHandler.ObjectId,999, true);
+            Assert.IsFalse(res.Success, "");
+
+            //SetInterviewHandlerQuestionRecordingToStreamFile
+            res = InterviewQuestion.SetInterviewHandlerQuestionRecordingToStreamFile(null, "objectid", 1, "streamid");
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.SetInterviewHandlerQuestionRecordingToStreamFile(_connectionServer, "objectid", 1, "streamid");
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.SetInterviewHandlerQuestionRecordingToStreamFile(_connectionServer, "", 1, "streamid");
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.SetInterviewHandlerQuestionRecordingToStreamFile(_connectionServer, _tempHandler.ObjectId, 1, "");
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.SetInterviewHandlerQuestionRecordingToStreamFile(_connectionServer, _tempHandler.ObjectId, 1, "streamId");
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.SetInterviewHandlerQuestionRecordingToStreamFile(_connectionServer, _tempHandler.ObjectId, 999, "streamId");
+            Assert.IsFalse(res.Success, "");
+
+            //UpdateInterviewHandlerQuestion
+            res = InterviewQuestion.UpdateInterviewHandlerQuestion(null, "objectid", 1, true, 1, "test");
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.UpdateInterviewHandlerQuestion(_connectionServer, "objectid", 1, true, 1, "test");
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.UpdateInterviewHandlerQuestion(_connectionServer, "", 1, true, 1, "test");
+            Assert.IsFalse(res.Success, "");
+
+            res = InterviewQuestion.UpdateInterviewHandlerQuestion(_connectionServer, _tempHandler.ObjectId, 999, true, 1, "test");
+            Assert.IsFalse(res.Success, "");
 
         }
+
+        #endregion
     }
 }

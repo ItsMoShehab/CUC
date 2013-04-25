@@ -34,8 +34,12 @@ namespace Cisco.UnityConnection.RestFunctions
 
         //greeting stream files are fetched on the fly if referenced
         private List<PostGreetingRecordingStreamFile> _greetingStreamFiles;
-        public List<PostGreetingRecordingStreamFile> GetGreetingStreamFiles()
+        public List<PostGreetingRecordingStreamFile> GetGreetingStreamFiles(bool pForceDataRefetch=false)
         {
+            if (pForceDataRefetch)
+            {
+                _greetingStreamFiles = null;
+            }
             //fetch greeting options only if they are referenced
             if (_greetingStreamFiles == null)
             {
@@ -48,7 +52,7 @@ namespace Cisco.UnityConnection.RestFunctions
         #endregion
 
 
-       #region Constructors
+        #region Constructors
 
         //constructor
         public PostGreetingRecording(ConnectionServer pConnectionServer, string pObjectId="", string pDisplayName="")
@@ -176,6 +180,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
         /// <summary>
         /// Fetch the ObjectId of a post greeting recording by it's name.  Empty string returned if not match is found.
+        /// Have to hack this for now since the DisplayName is not indexed for this table and so you cannot query against it via
+        /// REST.  
         /// </summary>
         /// <param name="pName">
         /// Name of the post greeting recording to find
@@ -185,26 +191,21 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         private string GetObjectIdFromName(string pName)
         {
-            string strUrl = HomeServer.BaseUrl + string.Format("postgreetingrecordings/?query=(DisplayName is {0})", pName);
+            List<PostGreetingRecording> oGreetings;
+            WebCallResult res = GetPostGreetingRecordings(HomeServer, out oGreetings);
 
-            //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
-
-            if (res.Success == false || res.TotalObjectCount == 0)
+            if (res.Success == false || oGreetings.Count==0)
             {
                 return "";
             }
 
-            List<PostGreetingRecording> oRecordings = HTTPFunctions.GetObjectsFromJson<PostGreetingRecording>(res.ResponseText);
-
-            foreach (var oRecording in oRecordings)
+            foreach (PostGreetingRecording oGreeting in oGreetings)
             {
-                if (oRecording.DisplayName.Equals(pName, StringComparison.InvariantCultureIgnoreCase))
+                if (oGreeting.DisplayName.Equals(pName, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return oRecording.ObjectId;
+                    return oGreeting.ObjectId;
                 }
             }
-
             return "";
         }
         
@@ -282,7 +283,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #endregion
-
 
 
         #region Static Methods
@@ -482,7 +482,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             string strBody = "<PostGreetingRecording>";
 
-            strBody += string.Format("<{0}>{1}</{0}>", "Name", pDisplayName);
+            strBody += string.Format("<{0}>{1}</{0}>", "DisplayName", pDisplayName);
 
             strBody += "</PostGreetingRecording>";
 
@@ -532,7 +532,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "postgreetingrecording/" + pPostGreetingRecordingObjectId,
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "postgreetingrecordings/" + pPostGreetingRecordingObjectId,
                                             MethodType.DELETE, pConnectionServer, "");
         }
 
