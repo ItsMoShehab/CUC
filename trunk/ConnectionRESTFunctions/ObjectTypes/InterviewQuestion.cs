@@ -16,6 +16,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string StreamText { get; set; }
         public bool IsActive { get; set; }
         public string InterviewHandlerObjectId { get; set; }
+        public string VoiceFile { get; set; }
 
         //reference to the ConnectionServer object used to create this handlers instance.
         internal ConnectionServer HomeServer { get; private set; }

@@ -7,15 +7,18 @@ using System;
 
 namespace ConnectionCUPIFunctionsTest
 {
-
-
     /// <summary>
     ///This is a test class for MenuEntryTest and is intended
     ///to contain all MenuEntryTest Unit Tests
     ///</summary>
-    [TestClass()]
+    [TestClass]
     public class MenuEntryTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
+        #region Fields and Properties
+
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
         private static ConnectionServer _connectionServer;
@@ -23,15 +26,19 @@ namespace ConnectionCUPIFunctionsTest
         //call handler to use for testing
         private static CallHandler _callHandler;
 
-        private TestContext testContextInstance;
+        /// <summary>
+        ///Gets or sets the test context which provides
+        ///information about and functionality for the current test run.
+        ///</summary>
+        public TestContext TestContext { get; set; }
+
+        #endregion
 
 
         #region Additional test attributes
-        // 
-        //You can use the following additional attributes as you write your tests:
-        //
+
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -48,92 +55,39 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start MenuEntryTests test:" + ex.Message);
             }
 
-            //get the opening greeting call handler so it can be used for various menu entry tests.
-            WebCallResult res = CallHandler.GetCallHandler(out _callHandler, _connectionServer, "", "Opening Greeting");
-            if (res.Success == false | _callHandler == null)
+            //grab the first template - should always be one and it doesn't matter which
+            List<CallHandlerTemplate> oTemplates;
+            WebCallResult res = CallHandlerTemplate.GetCallHandlerTemplates(_connectionServer, out oTemplates);
+            if (res.Success == false || oTemplates == null || oTemplates.Count == 0)
             {
-                throw new Exception("Unable to get opening greeting call handler for use in testing");
+                Assert.Fail("Could not fetch call handler templates:" + res);
             }
 
+            //create new handler with GUID in the name to ensure uniqueness
+            String strName = "TempHandler_" + Guid.NewGuid().ToString().Replace("-", "");
 
+            res = CallHandler.AddCallHandler(_connectionServer, oTemplates[0].ObjectId, strName, "", null, out _callHandler);
+            Assert.IsTrue(res.Success, "Failed creating temporary callhandler:" + res.ToString());
         }
 
-        //Use ClassCleanup to run code after all tests in a class have run
-        //[ClassCleanup()]
-        //public static void MyClassCleanup()
-        //{
-        //}
-        //
-        //Use TestInitialize to run code before running each test
-        //[TestInitialize()]
-        //public void MyTestInitialize()
-        //{
-        //}
-        //
-        //Use TestCleanup to run code after each test has run
-        //[TestCleanup()]
-        //public void MyTestCleanup()
-        //{
-        //}
-        //
+
+        [ClassCleanup]
+        public static void MyClassCleanup()
+        {
+            if (_callHandler != null)
+            {
+                WebCallResult res = _callHandler.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete temporary call handler on cleanup.");
+            }
+        }
+
         #endregion
 
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
 
-
-        /// <summary>
-        /// exercise menu entry functions
-        /// </summary>
-        [TestMethod]
-        public void MenuEntry_Test()
-        {
-            WebCallResult res;
-
-            //update menu entry
-            MenuEntry oMenu;
-
-            //first test getting a bogus menu entry
-            res = _callHandler.GetMenuEntry("a", out oMenu);
-            Assert.IsFalse(res.Success, "GetMenuEntry should fail with an invalid key name");
-
-            res = _callHandler.GetMenuEntry("1", out oMenu);
-            Assert.IsTrue(res.Success, "Failed fetching the '1' menu key");
-
-            oMenu.ClearPendingChanges();
-
-            //an update with an empty change list should fail
-            res = oMenu.Update();
-            Assert.IsFalse(res.Success, "Update of a menu entry with no pending changes should fail");
-
-            oMenu.Locked = true;
-            res = oMenu.Update();
-            Assert.IsTrue(res.Success, "Failed updating menu entry");
-
-            //Iterate over all the menu entries and dump their contents
-            foreach (MenuEntry oMenus in _callHandler.GetMenuEntries())
-            {
-                Console.WriteLine(oMenus.ToString());
-                Console.WriteLine(oMenus.DumpAllProps());
-            }
-        }
-
+        #region Constructor Tests
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
@@ -142,7 +96,8 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(ArgumentException))]
         public void CallHandlerMenuEntry_ClassCreationFailure()
         {
-            MenuEntry oTestTemplate = new MenuEntry(null, "aaaa");
+            MenuEntry oTest = new MenuEntry(null, "aaaa");
+            Console.WriteLine(oTest);
         }
 
         /// <summary>
@@ -152,7 +107,61 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(ArgumentException))]
         public void CallHandlerMenuEntry_ClassCreationFailure2()
         {
-            MenuEntry oTestTemplate = new MenuEntry(_connectionServer, "");
+            MenuEntry oTest = new MenuEntry(_connectionServer, "");
+            Console.WriteLine(oTest);
+        }
+
+        #endregion
+
+
+        /// <summary>
+        /// exercise menu entry functions
+        /// </summary>
+        [TestMethod]
+        public void MenuEntry_FetchTest()
+        {
+            //update menu entry
+            MenuEntry oMenu;
+
+            //first test getting a bogus menu entry
+            WebCallResult res = _callHandler.GetMenuEntry("a", out oMenu);
+            Assert.IsFalse(res.Success, "GetMenuEntry should fail with an invalid key name");
+
+            res = _callHandler.GetMenuEntry("1", out oMenu);
+            Assert.IsTrue(res.Success, "Failed fetching the '1' menu key");
+
+            var oEntries = _callHandler.GetMenuEntries();
+            Assert.IsNotNull(oEntries,"Null menu entries list returned");
+            Assert.IsTrue(oEntries.Count==12,"12 menu entries not returned from fetch");
+
+            Console.WriteLine(oEntries[0].ToString());
+            Console.WriteLine(oEntries[0].DumpAllProps());
+        }
+
+        [TestMethod]
+        public void MenuEntry_UpdateTests()
+        {
+            MenuEntry oMenu;
+            WebCallResult res = _callHandler.GetMenuEntry("1", out oMenu);
+            Assert.IsTrue(res.Success, "Failed fetching the '1' menu key");
+
+            //an update with an empty change list should fail
+            res = oMenu.Update();
+            Assert.IsFalse(res.Success, "Update of a menu entry with no pending changes should fail");
+
+            oMenu.Locked = true;
+            res = oMenu.Update();
+            Assert.IsTrue(res.Success, "Failed updating menu entry");
+
+            oMenu.TargetConversation = "Bogus";
+            res = oMenu.Update();
+            Assert.IsFalse(res.Success, "Update of a menu entry with invalid conversation should fail");
+
+            oMenu.TargetConversation = ConversationNames.PHTransfer.ToString();
+            oMenu.TargetHandlerObjectId = _callHandler.ObjectId;
+            oMenu.Action = (int) ActionTypes.GoTo;
+            res = oMenu.Update();
+            Assert.IsTrue(res.Success,"Failed to update menu entry to point back to host call handler");
         }
 
 
@@ -162,10 +171,8 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void UpdateMenuEntry_Failure()
         {
-            WebCallResult res;
-
             //manual update failure calls
-            res = MenuEntry.UpdateMenuEntry(null, _callHandler.ObjectId, "1", null);
+            WebCallResult res = MenuEntry.UpdateMenuEntry(null, _callHandler.ObjectId, "1", null);
             Assert.IsFalse(res.Success, "Null ConnectionServer parameter should fail");
 
             res = MenuEntry.UpdateMenuEntry(_connectionServer, "", "1", null);
@@ -185,13 +192,11 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetMenuEntry_Failure()
         {
-            WebCallResult res;
-
             //update menu entry
             MenuEntry oMenu;
             List<MenuEntry> oMenuEntries;
 
-            res = MenuEntry.GetMenuEntry(null, _callHandler.ObjectId, "1", out oMenu);
+            WebCallResult res = MenuEntry.GetMenuEntry(null, _callHandler.ObjectId, "1", out oMenu);
             Assert.IsFalse(res.Success, "");
 
             res = MenuEntry.GetMenuEntry(_connectionServer, "aaa", "1", out oMenu);

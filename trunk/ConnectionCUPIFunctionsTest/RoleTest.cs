@@ -10,6 +10,8 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class RoleTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
 
@@ -29,7 +31,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -46,13 +48,15 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start Role test:" + ex.Message);
             }
 
         }
 
         #endregion
 
+
+        #region Constructor Tests
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
@@ -62,6 +66,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             Role oTest = new Role(null);
+            Console.WriteLine(oTest);
         }
 
         
@@ -73,6 +78,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure2()
         {
             Role oTest = new Role(_connectionServer,"bogus");
+            Console.WriteLine(oTest);
         }
 
         /// <summary>
@@ -83,7 +89,10 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure3()
         {
             Role oTest = new Role(_connectionServer,"","bogus");
+            Console.WriteLine(oTest);
         }
+
+        #endregion
 
 
         [TestMethod]
@@ -114,13 +123,12 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 Role oNewRole = new Role(_connectionServer, strObjectId);
+                Console.WriteLine(oNewRole);
             }
             catch (Exception ex)
             {
                 Assert.IsTrue(false, "Class construction with valid objectId failed:" + ex);
             }
-
-
         }
     }
 }

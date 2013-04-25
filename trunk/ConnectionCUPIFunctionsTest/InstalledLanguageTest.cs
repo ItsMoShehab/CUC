@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
@@ -28,7 +27,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -45,7 +44,7 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start InstalledLanguage test:" + ex.Message);
             }
 
         }

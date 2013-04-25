@@ -9,6 +9,8 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class PhoneRecordingTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
 
@@ -30,7 +32,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -48,13 +50,15 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start PhoneRecording test:" + ex.Message);
             }
 
         }
 
         #endregion
 
+
+        #region Constructor Tests
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
@@ -64,6 +68,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             PhoneRecording oTemp = new PhoneRecording(null,"1234");
+            Console.WriteLine(oTemp);
         }
 
         [TestMethod]
@@ -71,6 +76,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure2()
         {
             PhoneRecording oTemp = new PhoneRecording(_connectionServer, "");
+            Console.WriteLine(oTemp);
         }
 
         [TestMethod]
@@ -78,7 +84,10 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure3()
         {
             PhoneRecording oTemp = new PhoneRecording(_connectionServer, "xyz");
+            Console.WriteLine(oTemp);
         }
+
+        #endregion
 
 
         //By default this is not included in the automated run of tests.  Uncomment the "TestMethod()" line and it will be 
@@ -87,26 +96,26 @@ namespace ConnectionCUPIFunctionsTest
         //The phone will ring, answer it - you should hear a beep, record a brief message and then press # - it should be played
         //back to you and the call then terminates.
         [TestMethod]
-        public void TestMethod1()
+        public void TestMethods()
         {
             PhoneRecording oRecording=null;
 
             try
             {
-                oRecording = new PhoneRecording(_connectionServer, _extensionToDial,4);
+                oRecording = new PhoneRecording(_connectionServer, _extensionToDial);
             }
             catch (Exception ex)
             {
-                Assert.Fail(string.Format("Phone connection failed to extension:{0}, error={1}",_extensionToDial,ex));
+                Assert.Fail("Phone connection failed to extension:{0}, error={1}",_extensionToDial,ex);
             }
 
-            WebCallResult res = oRecording.PlayMessageFile("");
+            WebCallResult res = oRecording.PlayMessageFile();
             Assert.IsFalse(res.Success, "Playing a message back with no message ID and no stream recorded did not fail");
 
             res = oRecording.PlayMessageFile("bogus");
             Assert.IsFalse(res.Success, "Playing a message back with invalid message ID did not fail");
 
-            res = oRecording.PlayStreamFile("");
+            res = oRecording.PlayStreamFile();
             Assert.IsFalse(res.Success, "Call to play stream file back before something is recorded did not fail.");
 
             res = oRecording.PlayStreamFile("bogus");
@@ -117,10 +126,10 @@ namespace ConnectionCUPIFunctionsTest
             res = oRecording.RecordStreamFile();
             Assert.IsTrue(res.Success,"Recording of stream failed:"+res);
 
-            res = oRecording.PlayStreamFile("");
+            res = oRecording.PlayStreamFile();
             Assert.IsTrue(res.Success,"Failed to play recording stream back:"+res);
 
-            res = oRecording.PlayMessageFile("");
+            res = oRecording.PlayMessageFile();
             Assert.IsFalse(res.Success,"Playing a message back with no message ID did not fail");
 
             Console.WriteLine(oRecording.ToString());

@@ -10,6 +10,9 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class PortTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
         #region Fields and Properties
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
@@ -28,7 +31,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -45,7 +48,7 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start Port test:" + ex.Message);
             }
 
         }
@@ -62,6 +65,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             Port oPort = new Port(null);
+            Console.WriteLine(oPort);
         }
 
         /// <summary>
@@ -72,6 +76,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure2()
         {
             Port oPort = new Port(new ConnectionServer(),"blah");
+            Console.WriteLine(oPort);
         }
 
         /// <summary>
@@ -82,6 +87,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure3()
         {
             Port oPort = new Port(_connectionServer,"blah");
+            Console.WriteLine(oPort);
         }
 
         #endregion
@@ -90,10 +96,8 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void StaticMethodFailures()
         {
-            WebCallResult res;
-
             Port oPort;
-            res = Port.GetPort(out oPort, null, "objectId");
+            WebCallResult res = Port.GetPort(out oPort, null, "objectId");
             Assert.IsFalse(res.Success,"Static call to GetPort did not fail with null Connection server");
 
             res = Port.GetPort(out oPort, _connectionServer, "");
@@ -152,6 +156,7 @@ namespace ConnectionCUPIFunctionsTest
                 try
                 {
                     Port oNewPort = new Port(_connectionServer, strObjectId);
+                    Console.WriteLine(oNewPort);
                 }
                 catch (Exception ex)
                 {

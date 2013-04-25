@@ -7,15 +7,17 @@ using System;
 
 namespace ConnectionCUPIFunctionsTest
 {
-
-
     /// <summary>
     ///This is a test class for TransferOptionTest and is intended
     ///to contain all TransferOptionTest Unit Tests
     ///</summary>
-    [TestClass()]
+    [TestClass]
     public class TransferOptionTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
+        #region Fields and Properties 
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
@@ -24,15 +26,19 @@ namespace ConnectionCUPIFunctionsTest
         //class level call handler for use with testing - gets filled in with the opening greeting call handler data
         private static CallHandler _callHandler;
 
-        private TestContext testContextInstance;
+        /// <summary>
+        ///Gets or sets the test context which provides
+        ///information about and functionality for the current test run.
+        ///</summary>
+        public TestContext TestContext { get; set; }
+
+        #endregion
+
 
         #region Additional test attributes
 
-        // 
-        //You can use the following additional attributes as you write your tests:
-        //
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -49,7 +55,7 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start TransferOption test:" + ex.Message);
             }
 
             //get call handler to do real tests
@@ -62,55 +68,19 @@ namespace ConnectionCUPIFunctionsTest
 
         }
 
-        //Use ClassCleanup to run code after all tests in a class have run
-        //[ClassCleanup()]
-        //public static void MyClassCleanup()
-        //{
-        //}
-        //
-        //Use TestInitialize to run code before running each test
-        //[TestInitialize()]
-        //public void MyTestInitialize()
-        //{
-        //}
-        //
-        //Use TestCleanup to run code after each test has run
-        //[TestCleanup()]
-        //public void MyTestCleanup()
-        //{
-        //}
-        //
         #endregion
 
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
-
+       
         /// <summary>
         /// exercise transfer options
         /// </summary>
         [TestMethod]
-        public void TransferOption_Test
-            ()
+        public void TransferOption_Test()
         {
-            WebCallResult res;
-
             TransferOption oTransfer;
 
             //first, test getting a bogus transfer option
-            res = _callHandler.GetTransferOption("bogus", out oTransfer);
+            WebCallResult res = _callHandler.GetTransferOption("bogus", out oTransfer);
             Assert.IsFalse(res.Success, "GetTransferOption should fail with invalid transfer option name");
 
             //now get the off hours transfer rule and enable it for a month.
@@ -159,10 +129,8 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void UpdateTransferOptionEnabledStatus_Failure()
         {
-            WebCallResult res;
-
             //hit some invalid calls for updating the enabled status for transfer options
-            res = TransferOption.UpdateTransferOptionEnabledStatus(null, _callHandler.ObjectId, "Alternate", true);
+            WebCallResult res = TransferOption.UpdateTransferOptionEnabledStatus(null, _callHandler.ObjectId, "Alternate", true);
             Assert.IsFalse(res.Success, "Null ConnectionServer parameter should fail");
 
             res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, "aaa", "Alternate", true);
@@ -189,10 +157,8 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void UpdateTransferOption_Failure()
         {
-            WebCallResult res;
-
             //check manually editing properties on transfer options failure cases
-            res = TransferOption.UpdateTransferOption(null, _callHandler.ObjectId, "Alternate", null);
+            WebCallResult res = TransferOption.UpdateTransferOption(null, _callHandler.ObjectId, "Alternate", null);
             Assert.IsFalse(res.Success, "Updating transfer options with null ConnectionServer param should fail");
 
             res = TransferOption.UpdateTransferOption(_connectionServer, _callHandler.ObjectId, "Alternate", null);
@@ -206,10 +172,9 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetTransferOptions_Failure()
         {
-            WebCallResult res;
             List<TransferOption> oTransferOptions;
 
-            res = TransferOption.GetTransferOptions(null, _callHandler.ObjectId, out oTransferOptions);
+            WebCallResult res = TransferOption.GetTransferOptions(null, _callHandler.ObjectId, out oTransferOptions);
             Assert.IsFalse(res.Success, "Null Connection server parameter should fail");
 
             res = TransferOption.GetTransferOptions(_connectionServer, "aaa", out oTransferOptions);
@@ -223,11 +188,9 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetTransferOption_Failure()
         {
-            WebCallResult res;
-
             TransferOption oTransfer;
 
-            res = TransferOption.GetTransferOption(_connectionServer, _callHandler.ObjectId, "", out oTransfer);
+            WebCallResult res = TransferOption.GetTransferOption(_connectionServer, _callHandler.ObjectId, "", out oTransfer);
             Assert.IsFalse(res.Success, "Empty transfer option type should fail");
 
             res = TransferOption.GetTransferOption(_connectionServer, _callHandler.ObjectId, "Bogus", out oTransfer);

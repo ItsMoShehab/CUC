@@ -7,15 +7,17 @@ using System;
 
 namespace ConnectionCUPIFunctionsTest
 {
-
-
     /// <summary>
     ///This is a test class for GreetingTest and is intended
     ///to contain all GreetingTest Unit Tests
     ///</summary>
-    [TestClass()]
+    [TestClass]
     public class GreetingTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
+        #region Fields and Properties
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
@@ -24,14 +26,19 @@ namespace ConnectionCUPIFunctionsTest
         //class wide call handler to use for various greeting tests - this will get filled with the opening greeting call handler.
         private static CallHandler _callHandler;
 
-        private TestContext testContextInstance;
+        /// <summary>
+        ///Gets or sets the test context which provides
+        ///information about and functionality for the current test run.
+        ///</summary>
+        public TestContext TestContext { get; set; }
+
+        #endregion
+
 
         #region Additional test attributes
-        // 
-        //You can use the following additional attributes as you write your tests:
-        //
+
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -48,7 +55,7 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start Greeting test:" + ex.Message);
             }
 
             //get a call handler to use for various tests in this class - the opening greeting should always be there
@@ -59,41 +66,8 @@ namespace ConnectionCUPIFunctionsTest
             }
         }
 
-        //Use ClassCleanup to run code after all tests in a class have run
-        //[ClassCleanup()]
-        //public static void MyClassCleanup()
-        //{
-        //}
-        //
-        //Use TestInitialize to run code before running each test
-        //[TestInitialize()]
-        //public void MyTestInitialize()
-        //{
-        //}
-        //
-        //Use TestCleanup to run code after each test has run
-        //[TestCleanup()]
-        //public void MyTestCleanup()
-        //{
-        //}
-        //
         #endregion
 
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
 
         /// <summary>
         /// exercise greeting rules
@@ -101,11 +75,9 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void Greeting_Test()
         {
-            WebCallResult res;
-
             Greeting oGreeting;
 
-            res = CallHandler.GetCallHandler(out _callHandler, _connectionServer, "", "opening greeting");
+            WebCallResult res = CallHandler.GetCallHandler(out _callHandler, _connectionServer, "", "opening greeting");
             Assert.IsTrue(res.Success, "Failed to get opening greeting call handler");
             Assert.IsNotNull(_callHandler, "Null handler returned from search");
 
@@ -137,24 +109,21 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GreetingStream_Test()
         {
-            WebCallResult res;
-
             Greeting oGreeting;
 
             //get the alternate greeting rule and set it to play a new greeting we upload
-            res = _callHandler.GetGreeting("Standard", out oGreeting);
+            WebCallResult res = _callHandler.GetGreeting("Standard", out oGreeting);
             Assert.IsTrue(res.Success, "Failed fetching greeting rule:" + res.ToString());
             Assert.IsNotNull(oGreeting, "Null greeting returned from greeting fetch");
 
 
             GreetingStreamFile oStream;
-            List<GreetingStreamFile> oStreams;
 
             //get specific greeting stream file back out
             res = oGreeting.GetGreetingStreamFile(11, out oStream);
             Assert.IsFalse(res.Success, "Invalid language code should fail");
 
-            oStreams = oGreeting.GetGreetingStreamFiles();
+            List<GreetingStreamFile> oStreams = oGreeting.GetGreetingStreamFiles();
             Assert.IsNotNull(oStreams, "Null list of stream files returned");
             Assert.IsTrue(oStreams.Count > 0, "Empty list of stream files returned.");
 
@@ -221,11 +190,10 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetGreetings_Failure()
         {
-            WebCallResult res;
             List<Greeting> oGreetings;
 
             //Static calls for GetGreetings
-            res = Greeting.GetGreetings(null, _callHandler.ObjectId, out oGreetings);
+            WebCallResult res = Greeting.GetGreetings(null, _callHandler.ObjectId, out oGreetings);
             Assert.IsFalse(res.Success, "Null ConnecitonObject param should fail");
 
             res = Greeting.GetGreetings(_connectionServer, "", out oGreetings);
@@ -248,10 +216,8 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void UpdateGreeting_Failure()
         {
-            WebCallResult res;
-
             //static calls for updateGreeting
-            res = Greeting.UpdateGreeting(_connectionServer, _callHandler.ObjectId, "Alternate", null);
+            WebCallResult res = Greeting.UpdateGreeting(_connectionServer, _callHandler.ObjectId, "Alternate", null);
             Assert.IsFalse(res.Success, "Empty parameter list param should fail");
 
             res = Greeting.UpdateGreeting(null, _callHandler.ObjectId, "Alternate", null);
@@ -273,10 +239,8 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void SetGreetingWavFile_Failure()
         {
-            WebCallResult res;
-
             //SetGreetingWavFile
-            res = Greeting.SetGreetingWavFile(null, "Dummy.wav", _callHandler.ObjectId, "Alternate", 1033, true);
+            WebCallResult res = Greeting.SetGreetingWavFile(null, "Dummy.wav", _callHandler.ObjectId, "Alternate", 1033, true);
             Assert.IsFalse(res.Success, "Null ConnecitonObject param should fail");
 
             res = Greeting.SetGreetingWavFile(_connectionServer, "bogus.wav", _callHandler.ObjectId, "Alternate", 1033, true);
@@ -303,9 +267,8 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void UpdateGreetingEnabledStatus_Failure()
         {
-            WebCallResult res;
             //greeting enabled status
-            res = Greeting.UpdateGreetingEnabledStatus(null, _callHandler.ObjectId, "Alternate", true, DateTime.Now.AddDays(1));
+            WebCallResult res = Greeting.UpdateGreetingEnabledStatus(null, _callHandler.ObjectId, "Alternate", true, DateTime.Now.AddDays(1));
             Assert.IsFalse(res.Success, "Null ConnecitonObject param should fail");
 
             res = Greeting.UpdateGreetingEnabledStatus(_connectionServer, "", "Alternate", true, DateTime.Now.AddDays(1));
@@ -338,11 +301,10 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetGreeting_Failure()
         {
-            WebCallResult res;
             Greeting oGreeting;
 
             //static function call for GetGreeting
-            res = Greeting.GetGreeting(null, _callHandler.ObjectId, "Alternate", out oGreeting);
+            WebCallResult res = Greeting.GetGreeting(null, _callHandler.ObjectId, "Alternate", out oGreeting);
             Assert.IsFalse(res.Success, "Null Connection server object param should fail");
 
             res = Greeting.GetGreeting(_connectionServer, "", "Alternate", out oGreeting);

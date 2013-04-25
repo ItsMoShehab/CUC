@@ -13,9 +13,13 @@ namespace ConnectionCUPIFunctionsTest
     ///This is a test class for NotificationDeviceTest and is intended
     ///to contain all NotificationDeviceTest Unit Tests
     ///</summary>
-    [TestClass()]
+    [TestClass]
     public class NotificationDeviceTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
+        #region Fields and Properties
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
@@ -24,15 +28,19 @@ namespace ConnectionCUPIFunctionsTest
         //class wide user reference for testing - gets filled in with operator user details
         private static UserBase _user;
 
-        private TestContext testContextInstance;
+        /// <summary>
+        ///Gets or sets the test context which provides
+        ///information about and functionality for the current test run.
+        ///</summary>
+        public TestContext TestContext { get; set; }
+
+        #endregion
+
 
         #region Additional test attributes
 
-        // 
-        //You can use the following additional attributes as you write your tests:
-        //
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -49,7 +57,7 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start NotificationDevice test:" + ex.Message);
             }
 
             //get the operator to work with here
@@ -65,41 +73,10 @@ namespace ConnectionCUPIFunctionsTest
 
         }
 
-        //Use ClassCleanup to run code after all tests in a class have run
-        //[ClassCleanup()]
-        //public static void MyClassCleanup()
-        //{
-        //}
-        //
-        //Use TestInitialize to run code before running each test
-        //[TestInitialize()]
-        //public void MyTestInitialize()
-        //{
-        //}
-        //
-        //Use TestCleanup to run code after each test has run
-        //[TestCleanup()]
-        //public void MyTestCleanup()
-        //{
-        //}
-        //
         #endregion
 
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
+
+        #region Constructor Tests
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
@@ -109,14 +86,16 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             NotificationDevice oTemp = new NotificationDevice(null, "aaa");
+            Console.WriteLine(oTemp);
         }
 
-        [TestMethod]
-        public void NotificationDevice_Test()
-        {
-            List<NotificationDevice> oDevices;
+        #endregion
 
-            oDevices = _user.NotificationDevices(true);
+
+        [TestMethod]
+        public void NotificationDevice_FetchTests()
+        {
+            List<NotificationDevice> oDevices = _user.NotificationDevices(true);
             Assert.IsNotNull(oDevices, "Failted to get devices from user");
             Assert.IsNotNull(oDevices, "Null device list returned from user");
 
@@ -134,17 +113,17 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetNotificationDevices_Failure()
         {
-            WebCallResult res;
             List<NotificationDevice> oDevices;
 
             //get Notification Device list failure points.
-            res = NotificationDevice.GetNotificationDevices(null, _user.ObjectId, out oDevices);
+            WebCallResult res = NotificationDevice.GetNotificationDevices(null, _user.ObjectId, out oDevices);
             Assert.IsFalse(res.Success, "Null Connection server object should fail");
 
             res = NotificationDevice.GetNotificationDevices(_connectionServer, "", out oDevices);
             Assert.IsFalse(res.Success, "Empty UserObjectID should fail.");
 
             res = NotificationDevice.GetNotificationDevices(_connectionServer, "aaa", out oDevices);
+            Assert.IsTrue(res.Success,"Fetching notification devices with invalid name should not fail.");
             Assert.IsFalse(oDevices == null, "Invalid UserObjectID fetch returned null devices list.");
             Assert.IsTrue(oDevices.Count == 0, "Invalid UserObjectID fetch returned one or more devices.");
         }
@@ -155,11 +134,9 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void DeleteNotificationDevices_Failure()
         {
-            WebCallResult res;
-
             //failure paths for delete device calls
-            res = NotificationDevice.DeleteNotificationDevice(null, _user.ObjectId, "aaa",
-                                                  NotificationDeviceTypes.Sms);
+            WebCallResult res = NotificationDevice.DeleteNotificationDevice(null, _user.ObjectId, "aaa",
+                                                                            NotificationDeviceTypes.Sms);
             Assert.IsFalse(res.Success, "Null Connection Server object should fail");
 
             res = NotificationDevice.DeleteNotificationDevice(_connectionServer, "", "aaa",
@@ -182,13 +159,12 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void UpdateNotificationDevices_Failure()
         {
-            WebCallResult res;
             //failure paths for update calls
             ConnectionPropertyList oProps = new ConnectionPropertyList();
             oProps.Add("item", "value");
 
-            res = NotificationDevice.UpdateNotificationDevice(null, _user.ObjectId, "aaa",
-                                                              NotificationDeviceTypes.Pager, oProps);
+            WebCallResult res = NotificationDevice.UpdateNotificationDevice(null, _user.ObjectId, "aaa",
+                                                                            NotificationDeviceTypes.Pager, oProps);
             Assert.IsFalse(res.Success, "Null Connection Server object should fail");
 
             res = NotificationDevice.UpdateNotificationDevice(_connectionServer, "", "aaa",
@@ -215,12 +191,11 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void AddNotificationDevice_Failure()
         {
-            WebCallResult res;
             //since we can't add an SMS device without a provider (which we can't dummy up) just hit the failure routes here and call
             //it good.
-            res = NotificationDevice.AddSmsDevice(null, _user.ObjectId, "SMSDevice", "aaa",
-                                      "recipient@test.com", "Sender@test.com",
-                                      NotificationEventTypes.NewVoiceMail.ToString(), true);
+            WebCallResult res = NotificationDevice.AddSmsDevice(null, _user.ObjectId, "SMSDevice", "aaa",
+                                                                "recipient@test.com", "Sender@test.com",
+                                                                NotificationEventTypes.NewVoiceMail.ToString(), true);
             Assert.IsFalse(res.Success, "Null Connection server param should fail");
 
             res = NotificationDevice.AddSmsDevice(_connectionServer, "", "SMSDevice", "aaa",
@@ -261,12 +236,11 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetNotificationDevice_Failure()
         {
-            WebCallResult res;
             NotificationDevice oDevice;
             List<NotificationDevice> oDevices;
 
             //get the notificaiton devices for the operator
-            res = NotificationDevice.GetNotificationDevices(_connectionServer, _user.ObjectId, out oDevices);
+            WebCallResult res = NotificationDevice.GetNotificationDevices(_connectionServer, _user.ObjectId, out oDevices);
             Assert.IsTrue(res.Success, "Failed to fetch notification devices for operator:"+res);
 
             //fetch the single device returned as the first in the list from the last test

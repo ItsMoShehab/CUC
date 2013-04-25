@@ -10,12 +10,16 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class ScheduleSetTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
         #region Fields and Properties
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
         private static ConnectionServer _connectionServer;
 
+        private static ScheduleSet _tempScheduleSet;
         /// <summary>
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
@@ -28,7 +32,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -45,13 +49,31 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start ScheduleSetTest test:" + ex.Message);
             }
 
+            WebCallResult res = ScheduleSet.AddQuickSchedule(_connectionServer, "temp_" + Guid.NewGuid().ToString(),
+                                                             _connectionServer.PrimaryLocationObjectId, "", 0, 200, true,
+                                                             true, true, true, true, false, false);
+            Assert.IsTrue(res.Success, "Failed to create new quick schedule:" + res);
+            res = ScheduleSet.GetScheduleSet(out _tempScheduleSet, _connectionServer, res.ReturnedObjectId);
+            Assert.IsTrue(res.Success, "Failed to find new quick schedule:" + res);
+        }
+
+        [ClassCleanup]
+        public static void MyClassCleanup()
+        {
+            if (_tempScheduleSet != null)
+            {
+                WebCallResult res = _tempScheduleSet.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete temporary schedule set on cleanup.");
+            }
         }
 
         #endregion
 
+
+        #region Constructor Tests
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
@@ -61,6 +83,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             ScheduleSet oTest = new ScheduleSet(null);
+            Console.WriteLine(oTest);
         }
 
         [TestMethod]
@@ -68,6 +91,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure2()
         {
             ScheduleSet oTest = new ScheduleSet(_connectionServer,"bogus");
+            Console.WriteLine(oTest);
         }
 
         [TestMethod]
@@ -75,11 +99,14 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure3()
         {
             ScheduleSet oTest = new ScheduleSet(_connectionServer,"","bogus");
+            Console.WriteLine(oTest);
         }
+
+        #endregion
 
 
         [TestMethod]
-        public void TestMethod1()
+        public void ScheduleSetFetchTests()
         {
             List<ScheduleSet> oSets;
             WebCallResult res = ScheduleSet.GetSchedulesSets(_connectionServer, out oSets);
@@ -107,6 +134,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 oNewSet = new ScheduleSet(_connectionServer, strObjectId);
+                Console.WriteLine(oNewSet);
             }
             catch (Exception ex)
             {
@@ -116,6 +144,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 oNewSet = new ScheduleSet(_connectionServer, "", strName);
+                Console.WriteLine(oNewSet);
             }
             catch (Exception ex)
             {
@@ -125,31 +154,17 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         [TestMethod]
-        public void AddRemoveScheduleSetTests()
+        public void AddRemoveMemberTests()
         {
-            ScheduleSet oNewSet;
-            WebCallResult res = ScheduleSet.AddQuickSchedule(_connectionServer, "spanky_" + Guid.NewGuid().ToString(),
-                                                             _connectionServer.PrimaryLocationObjectId, "", 0, 200, true,
-                                                             true, true, true, true, false, false);
-            Assert.IsTrue(res.Success,"Failed to create new quick schedule:"+res);
+            WebCallResult res = _tempScheduleSet.AddScheduleSetMember("bogus");
+            Assert.IsFalse(res.Success,"Adding scheduleSetMemeber with invalid ObjectId did not fail");
 
-            res =ScheduleSet.GetScheduleSet(out oNewSet, _connectionServer, res.ReturnedObjectId);
-            Assert.IsTrue(res.Success,"Failed to fetch newly created scheduleset:"+res);
-
-            //res =oNewSet.AddScheduleSetMember("bogus");
-            //Assert.IsFalse(res.Success,"Adding scheduleSetMemeber with invalid ObjectId did not fail");
-
-            //res = oNewSet.AddScheduleSetMember("");
-            //Assert.IsFalse(res.Success, "Adding scheduleSetMemeber with empty ObjectId did not fail");
-
-
-            res = oNewSet.Delete();
-            Assert.IsTrue(res.Success, "Failed to delete newly created scheduleset:" + res);
-
+            res = _tempScheduleSet.AddScheduleSetMember("");
+            Assert.IsFalse(res.Success, "Adding scheduleSetMemeber with empty ObjectId did not fail");
         }
 
         [TestMethod]
-        public void StatidMethodFailures()
+        public void StaticMethodFailures()
         {
             //get schedule sets
             List<ScheduleSet> oSets;
@@ -162,10 +177,10 @@ namespace ConnectionCUPIFunctionsTest
             res = ScheduleSet.GetScheduleSet(out oTempSet, null, "", "bogus");
             Assert.IsFalse(res.Success,"Calling GetScheduleSet with null ConnecitonServer did not fail.");
 
-            res = ScheduleSet.GetScheduleSet(out oTempSet, _connectionServer, "", "");
+            res = ScheduleSet.GetScheduleSet(out oTempSet, _connectionServer);
             Assert.IsFalse(res.Success, "Calling GetScheduleSet with empty name and ObjectId did not fail.");
 
-            res = ScheduleSet.GetScheduleSet(out oTempSet, _connectionServer, "bougs", "");
+            res = ScheduleSet.GetScheduleSet(out oTempSet, _connectionServer, "bougs");
             Assert.IsFalse(res.Success, "Calling GetScheduleSet with invalid objectID did not fail.");
 
             res = ScheduleSet.GetScheduleSet(out oTempSet, _connectionServer, "", "bogus");

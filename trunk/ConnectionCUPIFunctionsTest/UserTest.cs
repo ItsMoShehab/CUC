@@ -57,7 +57,7 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start User test:" + ex.Message);
             }
 
             //create new list with GUID in the name to ensure uniqueness

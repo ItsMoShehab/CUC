@@ -7,6 +7,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ConnectionCUPIFunctionsTest
 {
+    // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+    // ReSharper disable HeuristicUnreachableCode
+
      [TestClass]
     public class PortGroupTemplateTest
     {
@@ -29,7 +32,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -46,7 +49,7 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start PortGroupTemplate test:" + ex.Message);
             }
 
         }
@@ -64,6 +67,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             PortGroupTemplate oTemp = new PortGroupTemplate(null);
+            Console.WriteLine(oTemp);
         }
 
          /// <summary>
@@ -74,6 +78,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure2()
         {
             PortGroupTemplate oTemp = new PortGroupTemplate(_connectionServer,"bogus");
+            Console.WriteLine(oTemp);
         }
 
         #endregion
@@ -112,10 +117,11 @@ namespace ConnectionCUPIFunctionsTest
              try
              {
                  PortGroupTemplate oTest = new PortGroupTemplate(_connectionServer, strObjectId);
+                 Console.WriteLine(oTest);
              }
              catch (Exception ex)
              {
-                 Assert.Fail("Failed creating PortGroupTemplate from ObjectId:"+strObjectId);
+                 Assert.Fail("Failed creating PortGroupTemplate from ObjectId:"+strObjectId+", error="+ex);
              }
              
              res = PortGroupTemplate.GetPortGroupTemplateObjectId(_connectionServer, TelephonyIntegrationMethodEnum.SCCP, out strObjectId);
@@ -126,7 +132,6 @@ namespace ConnectionCUPIFunctionsTest
 
              res = PortGroupTemplate.GetPortGroupTemplateObjectId(_connectionServer, TelephonyIntegrationMethodEnum.PIMG, out strObjectId);
              Assert.IsTrue(res.Success, "Static call to GetPortGroupTemplateObjectId for PIMG failed:" + res);
-
 
          }
 

@@ -7,7 +7,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ConnectionCUPIFunctionsTest
 {
-    [TestClass()]
+    // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+    // ReSharper disable HeuristicUnreachableCode
+
+    [TestClass]
     public class PortGroupCodecTest
     {
         #region Fields and Properties
@@ -28,7 +31,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -45,7 +48,7 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start PortGroupCodec test:" + ex.Message);
             }
 
         }
@@ -63,6 +66,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             PortGroupCodec oPort = new PortGroupCodec(null,"PortGroupId");
+            Console.WriteLine(oPort);
         }
 
         /// <summary>
@@ -73,6 +77,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure2()
         {
             PortGroupCodec oPort = new PortGroupCodec(_connectionServer, "");
+            Console.WriteLine(oPort);
         }
 
         /// <summary>
@@ -83,18 +88,18 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure3()
         {
             PortGroupCodec oPort = new PortGroupCodec(_connectionServer, "bogus","bogus");
+            Console.WriteLine(oPort);
         }
 
 
         #endregion
 
-        [TestMethod]
-        public void TestMethods()
-        {
-            WebCallResult res;
 
+        [TestMethod]
+        public void PortGroupCodecFetchTests()
+        {
             List<PortGroup> oPortGroups;
-            res = PortGroup.GetPortGroups(_connectionServer, out oPortGroups);
+            WebCallResult res = PortGroup.GetPortGroups(_connectionServer, out oPortGroups);
             Assert.IsTrue(res.Success, "Failed to fetch port groups:" + res);
             Assert.IsTrue(oPortGroups.Count>0,"No port groups found on Connection server:"+res);
 
@@ -114,6 +119,7 @@ namespace ConnectionCUPIFunctionsTest
             {
                 PortGroupCodec oTest = new PortGroupCodec(_connectionServer, oPortGroup.ObjectId,
                                                           oPortGroupCodec.ObjectId);
+                Console.WriteLine(oTest);
             }
             catch (Exception ex)
             {
@@ -126,10 +132,8 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void StaticMethodFailures()
         {
-            WebCallResult res;
-
             PortGroupCodec oPortGroupCodec;
-            res = PortGroupCodec.AddPortGroupCodec(null, "portgroupid", "rtpobjectid", 20, 1,out oPortGroupCodec);
+            WebCallResult res = PortGroupCodec.AddPortGroupCodec(null, "portgroupid", "rtpobjectid", 20, 1,out oPortGroupCodec);
             Assert.IsFalse(res.Success,"Static call to AddPortGroupCodec did not fail with null connection server ");
 
             res = PortGroupCodec.AddPortGroupCodec(_connectionServer, "", "rtpobjectid", 20, 1);

@@ -39,7 +39,7 @@ namespace LoadEachObjectTypeTest
 
             try
             {
-                _server = new ConnectionServer("192.168.0.184", "CCMAdministrator", "ecsbulab");
+                _server = new ConnectionServer("192.168.0.185", "CCMAdministrator", "ecsbulab");
             }
             catch (Exception ex)
             {

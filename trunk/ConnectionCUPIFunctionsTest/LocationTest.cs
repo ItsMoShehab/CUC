@@ -10,6 +10,8 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class LocationTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
 
@@ -29,7 +31,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -46,7 +48,7 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start Location test:" + ex.Message);
             }
 
         }
@@ -54,6 +56,7 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Constructor Tests
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
@@ -61,7 +64,8 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure()
         {
-            Location oTestHandler = new Location(null);
+            Location oTestLocation = new Location(null);
+            Console.WriteLine(oTestLocation);
         }
 
         /// <summary>
@@ -71,7 +75,8 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(Exception))]
         public void ClassCreationFailure2()
         {
-            Location oTestHandler = new Location(_connectionServer,"bogus");
+            Location oTestLocation = new Location(_connectionServer, "bogus");
+            Console.WriteLine(oTestLocation);
         }
 
         /// <summary>
@@ -81,12 +86,15 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(Exception))]
         public void ClassCreationFailure3()
         {
-            Location oTestHandler = new Location(_connectionServer, "", "bogus");
+            Location oTestLocation = new Location(_connectionServer, "", "bogus");
+            Console.WriteLine(oTestLocation);
         }
+
+        #endregion
 
 
         [TestMethod]
-        public void TestMethod1()
+        public void LocationFetchTests()
         {
             List<Location> oLocations;
             WebCallResult res = Location.GetLocations(_connectionServer, out oLocations);
@@ -108,14 +116,14 @@ namespace ConnectionCUPIFunctionsTest
             Location oNewLocation;
             res = Location.GetLocation(out oNewLocation, _connectionServer, strObjectId);
             Assert.IsTrue(res.Success,"Failed to fetch location with valid ObjectId:"+res);
-
+            
             res = Location.GetLocation(out oNewLocation, _connectionServer, "",strDisplayName);
             Assert.IsTrue(res.Success, "Failed to fetch location with valid display name:" + res);
 
             res = Location.GetLocation(out oNewLocation, null, "", strDisplayName);
             Assert.IsFalse(res.Success, "Call to GetLocation did not fail with null ConnectionServer");
 
-            res = Location.GetLocation(out oNewLocation, _connectionServer, "", "");
+            res = Location.GetLocation(out oNewLocation, _connectionServer, "");
             Assert.IsFalse(res.Success, "Call to GetLocation did not fail with empty name and objectId parameters");
 
 

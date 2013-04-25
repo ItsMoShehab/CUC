@@ -11,9 +11,11 @@ namespace ConnectionCUPIFunctionsTest
     ///This is a test class for PhoneSystemTest and is intended
     ///to contain all PhoneSystemTest Unit Tests
     ///</summary>
-    [TestClass()]
+    [TestClass]
     public class PhoneSystemTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
 
@@ -21,34 +23,22 @@ namespace ConnectionCUPIFunctionsTest
         //routine below.
         private static ConnectionServer _connectionServer;
 
-        private TestContext testContextInstance;
-
         /// <summary>
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
         ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
+        public TestContext TestContext { get; set; }
 
+        private static PhoneSystem _phoneSystem;
+
+        private static PortGroup _portGroup;
         #endregion
 
 
         #region Additional test attributes
 
-        // 
-        //You can use the following additional attributes as you write your tests:
-        //
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -67,27 +57,34 @@ namespace ConnectionCUPIFunctionsTest
             {
                 throw new Exception("Unable to attach to Connection server to start DistributionList test:" + ex.Message);
             }
+
+
+            WebCallResult res = PhoneSystem.AddPhoneSystem(_connectionServer, "UnitTest_" + Guid.NewGuid(), out _phoneSystem);
+            Assert.IsTrue(res.Success, "Creating new temporary phone system failed:" + res);
+
+            
+            res = PortGroup.AddPortGroup(_connectionServer, "UnitTest_" + Guid.NewGuid(), _phoneSystem.ObjectId,
+                                         _connectionServer.ServerName, TelephonyIntegrationMethodEnum.SIP, "", out _portGroup);
+            Assert.IsTrue(res.Success, "Creating new temporary port group failed:" + res);
         }
 
-        //
-        //Use ClassCleanup to run code after all tests in a class have run
-        //[ClassCleanup()]
-        //public static void MyClassCleanup()
-        //{
-        //}
-        //
-        //Use TestInitialize to run code before running each test
-        //[TestInitialize()]
-        //public void MyTestInitialize()
-        //{
-        //}
-        //
-        //Use TestCleanup to run code after each test has run
-        //[TestCleanup()]
-        //public void MyTestCleanup()
-        //{
-        //}
-        //
+        [ClassCleanup]
+        public static void MyClassCleanup()
+        {
+            WebCallResult res;
+            if (_portGroup != null)
+            {
+                res = _portGroup.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete temporary port group on cleanup.");
+            }
+
+            if (_phoneSystem != null)
+            {
+                res = _phoneSystem.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete temporary phone system on cleanup.");
+            }
+        }
+
         #endregion
 
 
@@ -101,6 +98,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreation_Failure()
         {
             PhoneSystem oTest = new PhoneSystem(null, "aaa");
+            Console.WriteLine(oTest);
         }
 
         [TestMethod]
@@ -108,17 +106,17 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreation_Failure2()
         {
             PhoneSystem oTest = new PhoneSystem(_connectionServer, "aaa");
+            Console.WriteLine(oTest);
         }
 
         
         #endregion
 
+
         [TestMethod]
         public void PhoneSystem_StaticFailureTests()
         {
-            WebCallResult res;
-
-            res = PhoneSystem.AddPhoneSystem(null, "bogus");
+            WebCallResult res = PhoneSystem.AddPhoneSystem(null, "bogus");
             Assert.IsFalse(res.Success, "Static call to AddPhoneSystem with null ConnectionServer did not fail");
 
             res = PhoneSystem.AddPhoneSystem(_connectionServer, "");
@@ -131,7 +129,7 @@ namespace ConnectionCUPIFunctionsTest
             res = PhoneSystem.GetPhoneSystem(out oPhoneSystem, _connectionServer, "bogus");
             Assert.IsFalse(res.Success, "Static call to GetPhoneSystem with invalid ObjectId did not fail");
 
-            res = PhoneSystem.GetPhoneSystem(out oPhoneSystem, _connectionServer, "","");
+            res = PhoneSystem.GetPhoneSystem(out oPhoneSystem, _connectionServer, "");
             Assert.IsFalse(res.Success, "Static call to GetPhoneSystem with invalid empty objectId and name did not fail");
 
             res = PhoneSystem.GetPhoneSystem(out oPhoneSystem, _connectionServer, "","bogus");
@@ -154,6 +152,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Static call to GetPhoneSystemAssociations with null ConnectionServer did not fail");
 
             res = PhoneSystem.GetPhoneSystemAssociations(_connectionServer, "objectid", out oList);
+            Assert.IsTrue(res.Success,"Fetching phone system associations with invalid objectid should not fail:"+res);
             Assert.IsTrue(oList.Count==0, "Static call to GetPhoneSystemAssociations with invalid ObjectId did not return empty list");
         }
 
@@ -164,10 +163,9 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void PhoneSystem_GetTest()
         {
-            WebCallResult res;
             List<PhoneSystem> oSystems;
 
-            res = PhoneSystem.GetPhoneSystems(null, out oSystems);
+            WebCallResult res = PhoneSystem.GetPhoneSystems(null, out oSystems);
             Assert.IsFalse(res.Success,"Null Connection server param should fail");
 
             res = PhoneSystem.GetPhoneSystems(_connectionServer, out oSystems);
@@ -191,83 +189,68 @@ namespace ConnectionCUPIFunctionsTest
 
 
         [TestMethod]
-        public void PhoneSystem_AddUpdateDeleteTests()
+        public void PhoneSystem_TopLevelUpdates()
         {
-            WebCallResult res;
-
-            //Creates
-            PhoneSystem oPhoneSystem;
-            res = PhoneSystem.AddPhoneSystem(_connectionServer, "UnitTest_" + Guid.NewGuid(), out oPhoneSystem);
-            Assert.IsTrue(res.Success,"Creating new temporary phone system failed:"+res);
-
-            PortGroup oPortGroup;
-            res = PortGroup.AddPortGroup(_connectionServer, "UnitTest_" + Guid.NewGuid(), oPhoneSystem.ObjectId,
-                                         _connectionServer.ServerName,TelephonyIntegrationMethodEnum.SIP, "", out oPortGroup);
-            Assert.IsTrue(res.Success, "Creating new temporary port group failed:" + res);
-
             ConnectionPropertyList oProps = new ConnectionPropertyList();
             oProps.Add("CapMwi",true);
-            res = Port.AddPort(_connectionServer, oPortGroup.ObjectId, 2, oProps);
+            WebCallResult res = Port.AddPort(_connectionServer, _portGroup.ObjectId, 2, oProps);
             Assert.IsTrue(res.Success,"Failed to create ports for port group:"+res);
 
-            List<Port> oPorts;
-            res =Port.GetPorts(_connectionServer, out oPorts, oPortGroup.ObjectId);
-            Assert.IsTrue(res.Success, "Failed to fetch ports for port group:" + res);
-            Assert.IsTrue(oPorts.Count==2,"Two ports added to port group but number returned on fetch ="+oPorts.Count);
-
-            //Updates
-            res = oPhoneSystem.Update();
+            res = _phoneSystem.Update();
             Assert.IsFalse(res.Success,"Update of PhoneSystem with no pending changes did not fail:"+res);
 
-            oPhoneSystem.DisplayName = "Updated_" + Guid.NewGuid();
-            oPhoneSystem.RestrictDialUnconditional = true;
-            res = oPhoneSystem.Update();
+            _phoneSystem.DisplayName = "Updated_" + Guid.NewGuid();
+            _phoneSystem.RestrictDialUnconditional = true;
+            res = _phoneSystem.Update();
             Assert.IsTrue(res.Success,"Failed to update phone system:"+res);
+        }
 
-            res = oPortGroup.Update();
-            Assert.IsFalse(res.Success,"Update of port group with no pending changes did not fail:"+res);
+        [TestMethod]
+        public void PhoneSystem_PortGroupTests()
+        {
+            WebCallResult res = _portGroup.Update();
+            Assert.IsFalse(res.Success, "Update of port group with no pending changes did not fail:" + res);
 
-            oPortGroup.DisplayName = "Updated_" + Guid.NewGuid();
-            res = oPortGroup.Update();
+            _portGroup.DisplayName = "Updated_" + Guid.NewGuid();
+            res = _portGroup.Update();
             Assert.IsTrue(res.Success, "Failed to update port group:" + res);
+        }
+
+
+        [TestMethod]
+        public void PhoneSystem_PortTests()
+        {
+            List<Port> oPorts;
+            WebCallResult res = Port.GetPorts(_connectionServer, out oPorts, _portGroup.ObjectId);
+            Assert.IsTrue(res.Success, "Failed to fetch ports for port group:" + res);
+            Assert.IsTrue(oPorts.Count == 2, "Two ports added to port group but number returned on fetch =" + oPorts.Count);
 
             res = oPorts[0].Update();
             Assert.IsFalse(res.Success, "Updating port with no pending changes did not fail:" + res);
-            
+
             oPorts[0].CapMWI = true;
             res = oPorts[0].Update();
-            Assert.IsTrue(res.Success,"Failed updating port:"+res);
+            Assert.IsTrue(res.Success, "Failed updating port:" + res);
 
-            //remove codecs
-            List<PortGroupCodec> oPortGroupCodecs;
-            res = PortGroupCodec.GetPortGroupCodecs(_connectionServer, oPortGroup.ObjectId, out oPortGroupCodecs);
-            Assert.IsTrue(res.Success,"Failed to fetch port group codecs:"+res);
-
-            foreach (var oCodec in oPortGroupCodecs)
+            foreach (var oPort in oPorts)
             {
-                res = oCodec.Delete();
-                Assert.IsTrue(res.Success,"Failed to delete port group codec:"+res);
+                res = oPort.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete port:" + res);
             }
+        }
 
-            //add codec in
-            List<RtpCodecDef> oCodecs;
-            res = RtpCodecDef.GetRtpCodecDefs(_connectionServer, out oCodecs);
-            Assert.IsTrue(res.Success,"Failed to fetch RtpCodec Definitions from server:"+res);
-            Assert.IsTrue(oCodecs.Count>0,"No codecs fetched from server:"+res);
-
-            PortGroupCodec oPortGroupCodec;
-            res = PortGroupCodec.AddPortGroupCodec(_connectionServer, oPortGroup.ObjectId, oCodecs[0].ObjectId, 20, 1,out oPortGroupCodec);
-            Assert.IsTrue(res.Success,"Failed to add RtpCode to port group:"+res);
-
+        [TestMethod]
+        public void PhoneSystem_ServerTests()
+        {
             //check servers
             List<PortGroupServer> oPortGroupServers;
-            res = PortGroupServer.GetPortGroupServers(_connectionServer, oPortGroup.ObjectId, out oPortGroupServers);
-            Assert.IsTrue(res.Success,"Failed to fetch port group servers from port group:"+res);
-            Assert.IsTrue(oPortGroupServers.Count>0,"No port group servers found in port group:"+res);
+            WebCallResult res = PortGroupServer.GetPortGroupServers(_connectionServer, _portGroup.ObjectId, out oPortGroupServers);
+            Assert.IsTrue(res.Success, "Failed to fetch port group servers from port group:" + res);
+            Assert.IsTrue(oPortGroupServers.Count > 0, "No port group servers found in port group:" + res);
 
             //add servers
             PortGroupServer oPortGroupServer;
-            res = PortGroupServer.AddPortGroupServer(_connectionServer, oPortGroup.ObjectId,101,_connectionServer.ServerName, "",out oPortGroupServer);
+            res = PortGroupServer.AddPortGroupServer(_connectionServer, _portGroup.ObjectId, 101, _connectionServer.ServerName, "", out oPortGroupServer);
             Assert.IsTrue(res.Success, "Failed to add new port group server to port group servers from port group:" + res);
 
             Console.WriteLine(oPortGroupServer.ToString());
@@ -275,25 +258,39 @@ namespace ConnectionCUPIFunctionsTest
 
             oPortGroupServer.Port = 1234;
             res = oPortGroupServer.Update();
-            Assert.IsTrue(res.Success,"Failed to update port group server:"+res);
+            Assert.IsTrue(res.Success, "Failed to update port group server:" + res);
 
             //Deletes
             res = oPortGroupServer.Delete();
             Assert.IsTrue(res.Success, "Failed to delete port group server:" + res);
-    
-            foreach (var oPort in oPorts)
-            {
-                res = oPort.Delete();
-                Assert.IsTrue(res.Success,"Failed to delete port:"+res);
-            }
 
-            res = oPortGroup.Delete();
-            Assert.IsTrue(res.Success, "Deleting temporary port group failed:" + res);
-
-            res = oPhoneSystem.Delete();
-            Assert.IsTrue(res.Success, "Deleting temporary phone system failed:" + res);
         }
 
+        [TestMethod]
+        public void PhoneSystem_CodecTests()
+        {
+            //remove codecs
+            List<PortGroupCodec> oPortGroupCodecs;
+            WebCallResult res = PortGroupCodec.GetPortGroupCodecs(_connectionServer, _portGroup.ObjectId, out oPortGroupCodecs);
+            Assert.IsTrue(res.Success, "Failed to fetch port group codecs:" + res);
+
+            foreach (var oCodec in oPortGroupCodecs)
+            {
+                res = oCodec.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete port group codec:" + res);
+            }
+
+            //add codec in
+            List<RtpCodecDef> oCodecs;
+            res = RtpCodecDef.GetRtpCodecDefs(_connectionServer, out oCodecs);
+            Assert.IsTrue(res.Success, "Failed to fetch RtpCodec Definitions from server:" + res);
+            Assert.IsTrue(oCodecs.Count > 0, "No codecs fetched from server:" + res);
+
+            PortGroupCodec oPortGroupCodec;
+            res = PortGroupCodec.AddPortGroupCodec(_connectionServer, _portGroup.ObjectId, oCodecs[0].ObjectId, 20, 1, out oPortGroupCodec);
+            Assert.IsTrue(res.Success, "Failed to add RtpCode to port group:" + res);
+
+        }
 
     }
 }

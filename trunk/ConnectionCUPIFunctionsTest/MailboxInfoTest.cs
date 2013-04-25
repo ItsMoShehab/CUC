@@ -10,34 +10,30 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class MailboxInfoTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
+        #region Fields and Properties
+
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
         private static ConnectionServer _connectionServer;
-
-        private TestContext _testContextInstance;
 
         /// <summary>
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
         ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return _testContextInstance;
-            }
-            set
-            {
-                _testContextInstance = value;
-            }
-        }
+        public TestContext TestContext { get; set; }
+
+        #endregion
+
 
         #region Additional test attributes
-        
+
         //You can use the following additional attributes as you write your tests:
         //
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -54,13 +50,15 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start MailboxInfo test:" + ex.Message);
             }
 
         }
 
         #endregion
 
+
+        #region Constructor Tests
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
@@ -70,6 +68,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             MailboxInfo otest = new MailboxInfo(null,"");
+            Console.WriteLine(otest);
         }
 
         /// <summary>
@@ -80,6 +79,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure2()
         {
             MailboxInfo otest = new MailboxInfo(_connectionServer, "");
+            Console.WriteLine(otest);
         }
 
         /// <summary>
@@ -90,7 +90,10 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure3()
         {
             MailboxInfo otest = new MailboxInfo(new ConnectionServer(), "blah");
+            Console.WriteLine(otest);
         }
+
+        #endregion
 
 
         [TestMethod]

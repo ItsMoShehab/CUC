@@ -1,36 +1,20 @@
 ﻿using Cisco.UnityConnection.RestFunctions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
 namespace ConnectionCUPIFunctionsTest
 {
-    
-    
     /// <summary>
     ///This is a test class for HTTPFunctionsTest and is intended
     ///to contain all HTTPFunctionsTest Unit Tests
     ///</summary>
-    [TestClass()]
-    public class HTTPFunctionsTest
+    [TestClass]
+    public class HttpFunctionsTest
     {
-
-        private TestContext testContextInstance;
-
         /// <summary>
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
         ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
+        public TestContext TestContext { get; set; }
 
         #region Additional test attributes
         // 
@@ -68,12 +52,10 @@ namespace ConnectionCUPIFunctionsTest
         /// Note that "Dummy.wav" does exist in the output folder the test is being run from.
         ///</summary>
         [TestMethod]
-        public void UploadWAVFile_Failure()
+        public void UploadWavFile_Failure()
                 {
-                    WebCallResult res;
-
-                    res = HTTPFunctions.UploadWavFile("bogusresourcepath", "BogusLogin", "BogusPassword", "Dummy.wav");
-            Assert.IsFalse(res.Success,"Invalid resource path should fail");
+                    WebCallResult res = HTTPFunctions.UploadWavFile("bogusresourcepath", "BogusLogin", "BogusPassword", "Dummy.wav");
+                    Assert.IsFalse(res.Success,"Invalid resource path should fail");
 
                     res = HTTPFunctions.UploadWavFile("", "BogusLogin", "BogusPassword", "Dummy.wav");
                     Assert.IsFalse(res.Success, "Empty resource path should fail");

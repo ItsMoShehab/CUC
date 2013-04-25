@@ -10,6 +10,8 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class ContactTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
 
@@ -23,6 +25,7 @@ namespace ConnectionCUPIFunctionsTest
         ///</summary>
         public TestContext TestContext { get; set; }
 
+        private static Contact _tempContact;
 
         #endregion
 
@@ -30,7 +33,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -47,13 +50,31 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start contact test:" + ex.Message);
             }
 
+            //create new handler with GUID in the name to ensure uniqueness
+            String strName = "TempHandler_" + Guid.NewGuid().ToString().Replace("-", "");
+
+            WebCallResult res = Contact.AddContact(_connectionServer, "systemcontacttemplate", strName, "", "", strName, null, out _tempContact);
+            Assert.IsTrue(res.Success, "Failed creating temporary contact:" + res.ToString());
+        }
+
+
+        [ClassCleanup]
+        public static void MyClassCleanup()
+        {
+            if (_tempContact != null)
+            {
+                WebCallResult res = _tempContact.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete temporary contact on cleanup.");
+            }
         }
 
         #endregion
 
+
+        #region Construction Failure Tests
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
@@ -63,6 +84,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             Contact oTemp = new Contact(null);
+            Console.WriteLine(oTemp);
         }
 
         /// <summary>
@@ -73,6 +95,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure2()
         {
             Contact oTemp = new Contact(_connectionServer,"bogus");
+            Console.WriteLine(oTemp);
         }
 
         /// <summary>
@@ -83,7 +106,10 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure3()
         {
             Contact oTemp = new Contact(_connectionServer,"","bogus");
+            Console.WriteLine(oTemp);
         }
+
+        #endregion
 
 
         /// <summary>
@@ -93,63 +119,53 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void ContactAddUpdateDeleteTests()
         {
-            Contact oContact;
             
-            //create new list with GUID in the name to ensure uniqueness
-            String strAlias = "TempContact_" + Guid.NewGuid().ToString().Replace("-", "");
-
-            WebCallResult res = Contact.AddContact(_connectionServer, "systemcontacttemplate", "Test Contact", "Test", "Contact", strAlias, null, out oContact);
-            Assert.IsTrue(res.Success, "Failed creating temporary contact:" + res.ToString());
-
-            res = oContact.Update();
+            WebCallResult res = _tempContact.Update();
             Assert.IsFalse(res.Success,"Calling update on contact without any pending changes did not return an error");
 
-            //Voice name tests
-            res = oContact.GetVoiceName("temp.wav");
-            Assert.IsFalse(res.Success,"Newly created contact should have no voice name but the fetch call did not fail");
-
-            res = oContact.SetVoiceName("Dummy.wav", true);
-            Assert.IsTrue(res.Success,"Updating contact voice name failed:"+res.ToString());
-
-            res = oContact.RefetchContactData();
-            Assert.IsTrue(res.Success,"Failed to refetch contact:"+res);
-
-            res = oContact.GetVoiceName("temp.wav");
-            Assert.IsTrue(res.Success, "Failed to fetch voice name from contact after updating it:"+res);
-
-            res = Contact.GetContact(out oContact, _connectionServer, "", oContact.Alias);
-            Assert.IsTrue(res.Success, "Failed to refetch contact with alias:"+res);
-
-            res =oContact.SetVoiceNameToStreamFile("");
-            Assert.IsFalse(res.Success,"Call to set voice name to streamFile with empty stream file name did not fail");
-
             //update tests
-            oContact.DisplayName = "Updated display name";
-            oContact.FirstName = "UpdateFirst";
-            oContact.LastName = "UpdatedLast";
-            oContact.AltFirstName = "altFirst";
-            oContact.AltLastName = "altLast";
-            oContact.AutoCreateCallHandler = false;
-            oContact.ListInDirectory = true;
-            oContact.TransferType = 1;
-            oContact.TransferRings = 4;
-            oContact.TransferEnabled = false;
-            oContact.TransferExtension = "";
+            _tempContact.DisplayName = "Updated display name";
+            _tempContact.FirstName = "UpdateFirst";
+            _tempContact.LastName = "UpdatedLast";
+            _tempContact.AltFirstName = "altFirst";
+            _tempContact.AltLastName = "altLast";
+            _tempContact.AutoCreateCallHandler = false;
+            _tempContact.ListInDirectory = true;
+            _tempContact.TransferType = 1;
+            _tempContact.TransferRings = 4;
+            _tempContact.TransferEnabled = false;
+            _tempContact.TransferExtension = "";
 
-            
-            res = oContact.Update();
+            res = _tempContact.Update();
             Assert.IsTrue(res.Success,"Updating contact failed:"+res);
 
-
-
-            //Do the fetch tests now that we know we have at least one contact
-            ContactFetchTests();
-
-            res = oContact.Delete();
-            Assert.IsTrue(res.Success, "Failed deleting temporary contact:" + res.ToString());
-
+            _tempContact.PartitionObjectId = "bogus";
+            res = _tempContact.Update();
+            Assert.IsFalse(res.Success,"Setting partition to invalid value did not return error:"+res);
         }
 
+         [TestMethod]
+         public void ContactVoiceNameTests()
+         {
+             //Voice name tests
+             WebCallResult res = _tempContact.GetVoiceName("temp.wav");
+             Assert.IsFalse(res.Success, "Newly created contact should have no voice name but the fetch call did not fail");
+
+             res = _tempContact.SetVoiceName("Dummy.wav", true);
+             Assert.IsTrue(res.Success, "Updating contact voice name failed:" + res.ToString());
+
+             res = _tempContact.RefetchContactData();
+             Assert.IsTrue(res.Success, "Failed to refetch contact:" + res);
+
+             res = _tempContact.GetVoiceName("temp.wav");
+             Assert.IsTrue(res.Success, "Failed to fetch voice name from contact after updating it:" + res);
+
+             res = Contact.GetContact(out _tempContact, _connectionServer, "", _tempContact.Alias);
+             Assert.IsTrue(res.Success, "Failed to refetch contact with alias:" + res);
+
+             res = _tempContact.SetVoiceNameToStreamFile("");
+             Assert.IsFalse(res.Success, "Call to set voice name to streamFile with empty stream file name did not fail");
+         }
 
 
         [TestMethod]
@@ -207,7 +223,7 @@ namespace ConnectionCUPIFunctionsTest
 
 
             //SetContactVoiceName
-            res = Contact.SetContactVoiceName(null, "bogus", "bogus", false);
+            res = Contact.SetContactVoiceName(null, "bogus", "bogus");
             Assert.IsFalse(res.Success, "Static call to SetContactVoiceName did not return failure for null ConnectionServer");
             
             res = Contact.SetContactVoiceName(_connectionServer, "bogus", "", true);
@@ -259,7 +275,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Static call to UpdateContact did not return failure for invalid objectId");
         }
 
-
+         [TestMethod]
         private void ContactFetchTests()
         {
             List<Contact> oContacts;

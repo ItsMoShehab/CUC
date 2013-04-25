@@ -10,6 +10,9 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class VmsServerTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
         #region Fields and Properties
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
@@ -29,7 +32,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -46,7 +49,7 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start VmsServer test:" + ex.Message);
             }
 
         }
@@ -64,6 +67,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             VmsServer oTemp = new VmsServer(null);
+            Console.WriteLine(oTemp);
         }
 
         [TestMethod]
@@ -71,6 +75,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure2()
         {
             VmsServer oTemp = new VmsServer(_connectionServer, "bogus");
+            Console.WriteLine(oTemp);
         }
 
         #endregion
@@ -106,6 +111,7 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 VmsServer oVmsServer = new VmsServer(_connectionServer, strObjectId);
+                Console.WriteLine(oVmsServer);
             }
             catch (Exception ex)
             {

@@ -10,13 +10,23 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class NotificationTemplateTest
     {
-        
-            //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
+        #region Fields and Properties
+
+        //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
         private static ConnectionServer _connectionServer;
 
-        //class wide user reference for testing - gets filled in with operator user details
-        private static UserBase _user;
+        /// <summary>
+        ///Gets or sets the test context which provides
+        ///information about and functionality for the current test run.
+        ///</summary>
+        public TestContext TestContext { get; set; }
+
+        #endregion
+
 
         #region Additional test attributes
 
@@ -24,7 +34,7 @@ namespace ConnectionCUPIFunctionsTest
         //You can use the following additional attributes as you write your tests:
         //
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -41,30 +51,14 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start CallHandler test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start NotificationTemplate test:" + ex.Message);
             }
-
-            //get the operator to work with here
-            try
-            {
-                _user = new UserBase(_connectionServer, "", "operator");
-            }
-
-            catch (Exception ex)
-            {
-                throw new Exception("Unable to get operator user for testing:"+ex.Message);
-            }
-
         }
 
         #endregion
 
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext { get; set; }
 
+        #region Constructor Tests
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
@@ -74,6 +68,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             NotificationTemplate oTemp = new NotificationTemplate(null, "aaa");
+            Console.WriteLine(oTemp);
         }
 
         /// <summary>
@@ -84,7 +79,10 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure2()
         {
             NotificationTemplate oTemp = new NotificationTemplate(_connectionServer, "aaa");
+            Console.WriteLine(oTemp);
         }
+
+        #endregion
 
         /// <summary>
         /// Testing notification template failure scenarios
@@ -92,11 +90,10 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetNotificationTemplate_Failure()
         {
-            WebCallResult res;
             List<NotificationTemplate> oDevices;
 
             //get Notification Device list failure points.
-            res = NotificationTemplate.GetNotificationTemplates(null, out oDevices);
+            WebCallResult res = NotificationTemplate.GetNotificationTemplates(null, out oDevices);
             Assert.IsFalse(res.Success, "Null Connection server object should fail");
         }
 
@@ -106,11 +103,10 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetNotificationTemplate_Fetches()
         {
-            WebCallResult res;
             List<NotificationTemplate> oDevices;
 
             //get Notification Device list failure points.
-            res = NotificationTemplate.GetNotificationTemplates(_connectionServer, out oDevices);
+            WebCallResult res = NotificationTemplate.GetNotificationTemplates(_connectionServer, out oDevices);
             Assert.IsTrue(res.Success, "Failed to fetch HTTP notification devices from server");
             Assert.IsTrue(oDevices.Count>0,"No HTTP notification templates found on server");
 
@@ -119,6 +115,7 @@ namespace ConnectionCUPIFunctionsTest
             {
                 NotificationTemplate oNewTemplate = new NotificationTemplate(_connectionServer,
                                                                              oDevices[0].NotificationTemplateId);
+                Console.WriteLine(oNewTemplate);
             }
             catch (Exception ex)
             {
@@ -128,15 +125,13 @@ namespace ConnectionCUPIFunctionsTest
             //create new empty device
             try
             {
-                NotificationTemplate oNewTemplate = new NotificationTemplate(_connectionServer,"");
+                NotificationTemplate oNewTemplate = new NotificationTemplate(_connectionServer);
+                Console.WriteLine(oNewTemplate);
             }
             catch (Exception ex)
             {
                 Assert.Fail("Failed to create new NotificationTemplate instance off NEW keyword with no ObjectId:" + ex);
             }
-
-
-
 
             foreach (var oDevice in oDevices)
             {
