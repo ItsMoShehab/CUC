@@ -33,7 +33,7 @@ namespace CUPIVerySimple
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
-                connectionServer = new ConnectionServer("192.168.0.185", "CCMAdministrator", "ecsbulab");
+                connectionServer = new ConnectionServer("lindborgload2", "CCMAdministrator", "ecsbulab");
             }
 
             catch (Exception ex)
@@ -59,13 +59,31 @@ namespace CUPIVerySimple
 
             //fetch user with alias of "jlindborg" - we will be sending the message from his 
             //mailbox.
-            UserFull oUserTestDude=null;
+            UserFull oUserTestDude;
 
             res = UserBase.GetUser(out oUserTestDude, connectionServer, "", "jlindborg");
             if (res.Success == false)
             {
                 Console.WriteLine(res);
             }
+
+            InterviewHandler oIntHandler;
+            res = InterviewHandler.AddInterviewHandler(connectionServer, "new display name", oUserTestDude.ObjectId, "", null, out oIntHandler);
+            if (res.Success==false) Console.WriteLine(res);
+
+            res =oIntHandler.SetVoiceName("c:\\clean.wav");
+            if (res.Success == false) Console.WriteLine(res);
+
+            InterviewQuestion oQuestion;
+            res = InterviewQuestion.GetInterviewQuestion(out oQuestion, connectionServer, oIntHandler.ObjectId, 1);
+            if (res.Success == false) Console.WriteLine(res);
+
+            res = oQuestion.SetQuestionRecording("c:\\clean.wav");
+            if (res.Success == false) Console.WriteLine(res);
+
+            res =oIntHandler.Delete();
+            if (res.Success == false) Console.WriteLine(res);
+
 
             List<UserMessage> oUserMessages;
             res = UserMessage.GetMessages(connectionServer, oUserTestDude.ObjectId, out oUserMessages);
@@ -75,11 +93,6 @@ namespace CUPIVerySimple
                 Console.WriteLine(res);
                 return;
             }
-
-
-            InterviewHandler oIntHandler;
-            res = InterviewHandler.AddInterviewHandler(connectionServer, "new display name",oUserTestDude.ObjectId,"", null, out oIntHandler);
-            Console.WriteLine(res);
 
 
             ////****
