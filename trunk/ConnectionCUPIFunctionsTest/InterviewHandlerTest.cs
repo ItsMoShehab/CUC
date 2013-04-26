@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Cisco.UnityConnection.RestFunctions;
@@ -440,7 +441,37 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void InterviewQuestion_RecordedStreamTests()
         {
-            //TODO
+            List<InterviewQuestion>oQuestions= _tempHandler.GetInterviewQuestions(true);
+            Assert.IsNotNull(oQuestions,"Null questions list created");
+            Assert.IsTrue(oQuestions.Count>0,"No questions returned from fetch");
+
+            //fetch just a single question instead of all of them
+            InterviewQuestion oQuestion;
+            WebCallResult res = InterviewQuestion.GetInterviewQuestion(out oQuestion, _connectionServer,
+                                                                       _tempHandler.ObjectId, 1);
+            Assert.IsTrue(res.Success,"Failed to fetch single interview question:"+res);
+
+            string strFileName = Path.GetTempFileName().Replace(".tmp", ".wav");
+            res = oQuestion.GetQuestionRecording(strFileName);
+            Assert.IsFalse(res.Success,"Fetching recording that does not exist should return an error");
+
+            res = oQuestion.SetQuestionRecording("Dummy.wav", true);
+            Assert.IsTrue(res.Success,"Uplading greeting recording failed:"+res);
+
+            res = oQuestion.GetQuestionRecording(strFileName);
+            Assert.IsTrue(res.Success, "Fetching recording that was just uploaded failed:"+res);
+            Assert.IsTrue(File.Exists(strFileName),"Wav file for download did not get created on hard drive:"+strFileName);
+
+            try
+            {
+                File.Delete(strFileName);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Failed to delete temporary wav download file:"+ex);
+            }
+
+
         }
 
 

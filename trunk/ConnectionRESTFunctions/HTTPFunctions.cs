@@ -2032,20 +2032,13 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
 
-
         /// <summary>
         /// This routine will generate a temporary WAV file name on Connecton and uplaod the local WAV file to that location.  If it completes the Connection stream file name
         /// will be returned and can be assigned as the stream file property for a voice name, greeting or interview handler question.  Note that these wav files can NOT be used
         /// for messages (regular or dispatch).
         /// </summary>
-        /// <param name="pServerName">
-        /// Name or IP address of the Connection server we are uploading the WAV file to.
-        /// </param>
-        /// <param name="pLogin">
-        /// CUPI login name for the Connection server
-        /// </param>
-        /// <param name="pPassword">
-        /// CUPI login password for the Connection server.
+        /// <param name="pConnectionServer">
+        /// Instance of the ConnectionServer class
         /// </param>
         /// <param name="pLocalWavFilePath">
         /// Full path on the local file system for the WAV file to uplaod.
@@ -2058,10 +2051,20 @@ namespace Cisco.UnityConnection.RestFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
         /// associiated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        public static WebCallResult UploadWavFileToStreamLibrary(string pServerName, string pLogin, string pPassword, string pLocalWavFilePath, out string pConnectionStreamFileName)
+        public static WebCallResult UploadWavFileToStreamLibrary(ConnectionServer pConnectionServer, string pLocalWavFilePath, out string pConnectionStreamFileName)
         {
+            pConnectionStreamFileName = "";
+            if (pConnectionServer == null)
+            {
+                return new WebCallResult
+                    {
+                        Success = false,
+                        ErrorText = "Null ConnectionServer passed to UploadWavFileToStreamLibrayr"
+                    };
+            }
+
             //first, get a temporary stream file name from Connection to use
-            WebCallResult res = GetTemporaryStreamFileName(pServerName,pLogin,pPassword,out pConnectionStreamFileName);
+            WebCallResult res = GetTemporaryStreamFileName(pConnectionServer,out pConnectionStreamFileName);
             
             if (res.Success==false)
             {
@@ -2069,9 +2072,9 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //now we need to upload the local WAV file to the slot we just allocated.
-            string strUrl = string.Format("https://{0}:8443/vmrest/voicefiles/{1}", pServerName,pConnectionStreamFileName);
+            string strUrl = string.Format("{0}voicefiles/{1}", pConnectionServer.BaseUrl,pConnectionStreamFileName);
 
-            res = UploadWavFile(strUrl, pLogin, pPassword, pLocalWavFilePath);
+            res = UploadWavFile(strUrl, pConnectionServer.LoginName, pConnectionServer.LoginPw, pLocalWavFilePath);
 
             return res;
         }
@@ -2082,14 +2085,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// name returned can be used to upload the WAV file to the Connection server and is also used as the file name reference for the object in question 
         /// (i.e. the greeting's stream file name property).
         /// </summary>
-        /// <param name="pServerName">
-        /// Connection server name to request the temporary stream file on.
-        /// </param>
-        /// <param name="pLogin">
-        /// CUPI login for the Conneciton server.
-        /// </param>
-        /// <param name="pPassword">
-        /// CUPI login password for the Connection server.
+        /// <param name="pConnectionServer">
+        /// Instance of the ConnectionServer Class
         /// </param>
         /// <param name="pTempFileName">
         /// The temporary stream file name generated on the Connection server - this will stick around for a few hours if a wav file hasn't been uploaded to it
@@ -2098,13 +2095,13 @@ namespace Cisco.UnityConnection.RestFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
         /// associiated with the call so the calling party can easily log details in the event of a failure.
         /// <returns></returns>
-        private static WebCallResult GetTemporaryStreamFileName(string pServerName, string pLogin, string pPassword,out string pTempFileName)
+        private static WebCallResult GetTemporaryStreamFileName(ConnectionServer pConnectionServer,out string pTempFileName)
         {
             pTempFileName = "";
 
-            string strUrl = string.Format("https://{0}:8443/vmrest/voicefiles", pServerName);
+            string strUrl = string.Format("{0}voicefiles", pConnectionServer.BaseUrl);
             
-            WebCallResult res = GetCupiResponse(strUrl, MethodType.POST, pLogin, pPassword, "");
+            WebCallResult res = GetCupiResponse(strUrl, MethodType.POST, pConnectionServer.LoginName, pConnectionServer.LoginPw, "");
 
             if (res.Success==false)
             {

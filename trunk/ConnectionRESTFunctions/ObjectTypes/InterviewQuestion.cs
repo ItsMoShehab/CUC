@@ -399,16 +399,31 @@ namespace Cisco.UnityConnection.RestFunctions
                 pSourceLocalFilePath = strConvertedWavFilePath;
             }
 
-            //string strResourcePath = string.Format(@"{0}handlers/interviewhandlers/{1}/interviewquestions/{2}/audio", pConnectionServer.BaseUrl,
+            //string strResourcePath = string.Format(@"{0}handlers/interviewhandlers/{1}/interviewquestions/{2}", pConnectionServer.BaseUrl,
             //    pObjectId, pQuestionNumber);
 
-            string strResourcePath = string.Format(@"{0}handlers/interviewhandlers/{1}/interviewquestionstreamfiles/{2}/audio", 
-                pConnectionServer.BaseUrl,pObjectId, pQuestionNumber);
 
+            //need to do this via the older "two part" method - upload the file, get the ID back and then do another 
+            //update of the object to save the stream file name
+            string strStreamFileName;
+            res = HTTPFunctions.UploadWavFileToStreamLibrary(pConnectionServer,pSourceLocalFilePath, out strStreamFileName);
 
+            if (res.Success == false)
+            {
+                return res;
+            }
+
+            string strBody = "<InterviewQuestion>";
+            strBody += string.Format("<{0}>{1}</{0}>", "VoiceFile", strStreamFileName);
+            strBody += "</InterviewQuestion>";
+
+            string strUri = string.Format("{0}handlers/interviewhandlers/{1}/interviewquestions/{2}",
+                                          pConnectionServer.BaseUrl, pObjectId, pQuestionNumber);
+
+            res= HTTPFunctions.GetCupiResponse(strUri, MethodType.PUT, pConnectionServer, strBody, false);
 
             //upload the WAV file to the server.
-            res = HTTPFunctions.UploadWavFile(strResourcePath, pConnectionServer.LoginName, pConnectionServer.LoginPw, pSourceLocalFilePath);
+            //res = HTTPFunctions.UploadWavFile(strResourcePath, pConnectionServer.LoginName, pConnectionServer.LoginPw, pSourceLocalFilePath);
 
             //if we converted a file to G711 in the process clean up after ourselves here. Only delete it if the upload was good - otherwise
             //keep it around as it may be useful for diagnostic purposes.
@@ -476,7 +491,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //construct the full URL to call for uploading the voice name file
-            string strUrl = string.Format(@"{0}handlers/interviewhandlers/{1}/interviewquestions/{2}/audio", pConnectionServer.BaseUrl, 
+            string strUrl = string.Format(@"{0}handlers/interviewhandlers/{1}/interviewquestions/{2}", pConnectionServer.BaseUrl, 
                 pObjectId, pQuestionNumber);
 
             Dictionary<string, string> oParams = new Dictionary<string, string>();
