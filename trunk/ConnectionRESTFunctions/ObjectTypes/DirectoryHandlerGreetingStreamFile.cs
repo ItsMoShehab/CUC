@@ -342,18 +342,17 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
-
             pGreetingStreamFiles = null;
-
-            if (string.IsNullOrEmpty(pDirectoryHandlerObjectId))
-            {
-                res.ErrorText = "Empty DirectoryHandlerObjectId passed to GetGreetingStreamFiles";
-                return res;
-            }
 
             if (pConnectionServer == null)
             {
-                res.ErrorText = "Null Connection server object passed to GetGreetingStreamFiles";
+                res.ErrorText = "Null ConnectionServer passed to GetGreetingStreamFiles";
+                return res;
+            }
+            
+            if (string.IsNullOrEmpty(pDirectoryHandlerObjectId))
+            {
+                res.ErrorText = "Empty DirectoryHandlerObjectId passed to GetGreetingStreamFiles";
                 return res;
             }
 
@@ -370,7 +369,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
             //if this is empty that does not mean an error - return true here along with an empty list.
-            if (string.IsNullOrEmpty(res.ResponseText))
+            if (string.IsNullOrEmpty(res.ResponseText) || res.ResponseText.Equals("null"))
             {
                 pGreetingStreamFiles = new List<DirectoryHandlerGreetingStreamFile>();
                 return res;
@@ -484,6 +483,20 @@ namespace Cisco.UnityConnection.RestFunctions
             if (pConnectionServer == null)
             {
                 res.ErrorText = "Null ConnectionServer referenced passed to GetGreetingWavFile";
+                return res;
+            }
+
+            //check and make sure a legit folder is referenced in the target path
+            if (String.IsNullOrEmpty(pTargetLocalFilePath) ||
+                (Directory.GetParent(pTargetLocalFilePath).Exists == false))
+            {
+                res.ErrorText = "Invalid local file path passed to GetGreetingWavFile: " + pTargetLocalFilePath;
+                return res;
+            }
+
+            if (string.IsNullOrEmpty(pDirectoryHandlerObjectId))
+            {
+                res.ErrorText = "Empty Directory handler ObjectId passed to GetGreetingWavFile";
                 return res;
             }
 

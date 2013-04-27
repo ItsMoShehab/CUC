@@ -309,6 +309,26 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
+        /// Gets the list of all schedule sets and resturns them as a generic list of ScheduleSet objects. 
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// The Connection server object that references the server the schedulesets should be pulled from
+        /// </param>
+        /// <param name="pScheduleSetObjectId">
+        /// The schedule set to look for schedules for.
+        ///  </param>
+        /// <param name="pScheduleSetsMembers">
+        /// Out parameter that is used to return the list of Schedule ObjectIds associated with the schedule set
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public WebCallResult GetSchedulesSetsMembers(out List<ScheduleSetMember> pScheduleSetsMembers)
+        {
+            return GetSchedulesSetsMembers(HomeServer, ObjectId, out pScheduleSetsMembers);
+        }
+
+        /// <summary>
         /// Delete a schedule set
         /// </summary>
         public WebCallResult Delete()

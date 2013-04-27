@@ -151,6 +151,9 @@ namespace ConnectionCUPIFunctionsTest
                 Assert.Fail("Failed to fetch schedule set by valid name:"+ex);
             }
 
+            //fetch the schedule set members
+            
+
         }
 
         [TestMethod]
@@ -161,6 +164,22 @@ namespace ConnectionCUPIFunctionsTest
 
             res = _tempScheduleSet.AddScheduleSetMember("");
             Assert.IsFalse(res.Success, "Adding scheduleSetMemeber with empty ObjectId did not fail");
+
+            List<ScheduleSetMember> oMembers;
+            res = _tempScheduleSet.GetSchedulesSetsMembers(out oMembers);
+            Assert.IsTrue(res.Success,"Failed fetching schedule set members:"+res);
+            Assert.IsTrue(oMembers.Count>0,"No members returned from fetch");
+
+            ScheduleSetMember oMember;
+            try
+            {
+                oMember = new ScheduleSetMember(_tempScheduleSet.ObjectId);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Could not create new schedule set member from Id:"+ex);
+            }
+
         }
 
         [TestMethod]

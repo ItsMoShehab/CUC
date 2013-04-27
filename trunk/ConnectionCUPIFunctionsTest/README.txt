@@ -9,7 +9,7 @@
    be included in the automated run.  You will need to configure the "ExtensionToDial" property in the setting and then answer that phone and record a message for these 
    tests to pass and, of course, you will need a configured phone system and a registered phone to work with.
 
-NOTE: Be aware that these unit tests are NOT done with mocks or stubs, these will be created/deleting objects - if they fail they may leave users, handlers etc... in your directory.
+NOTE: Be aware that these unit tests are NOT done with mocks or stubs, these will be created/deleting objects.  These are designed to be run on test servers, not production environments.
 
 NOTE: Be aware that the tests are written against a Connection 10.0 server - earlier versions will have less functionality in the REST APIs and some tests will fail.  This is expected.
 

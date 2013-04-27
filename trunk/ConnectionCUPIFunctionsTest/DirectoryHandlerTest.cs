@@ -94,7 +94,7 @@ namespace ConnectionCUPIFunctionsTest
         /// For Directory handlers there should always be one in a valid Connection installation
         /// </summary>
         [TestMethod]
-        public void GetDirectoryHandlers_Test()
+        public void GetDirectoryHandlers_FetchTest()
         {
             List<DirectoryHandler> oHandlerList;
             DirectoryHandler oNewHandler;
@@ -126,7 +126,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
-        public void GetDirectoryHandlers_Failure()
+        public void GetDirectoryHandlers_StaticCallFailure()
         {
             List<DirectoryHandler> oHandlerList;
 
@@ -139,7 +139,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
-        public void GetDirectoryHandler_Failure()
+        public void GetDirectoryHandler_StaticFailure()
         {
             DirectoryHandler oHandler;
 
@@ -166,7 +166,7 @@ namespace ConnectionCUPIFunctionsTest
         }
 
          [TestMethod]
-        public void DirectoryHandler_CustomStream()
+        public void DirectoryHandler_CustomStreamTests()
          {
              WebCallResult res = _tempHandler.SetGreetingWavFile("temp.wav",1033,true);
              Assert.IsTrue(res.Success,"Failed to upload custom directory handler greeting:"+res);
@@ -184,6 +184,9 @@ namespace ConnectionCUPIFunctionsTest
                  Assert.Fail("Fetching greeting streams after uploading one failed to return any");
              }
 
+             Console.WriteLine(oStreamFiles[0].ToString());
+             Console.WriteLine(oStreamFiles[0].DumpAllProps());
+
              string strFileName = Guid.NewGuid().ToString() + ".wav";
              res = oStreamFiles[0].GetGreetingWavFile(strFileName);
              Assert.IsTrue(res.Success,"Failed to download stream file as WAV:"+res);
@@ -199,6 +202,88 @@ namespace ConnectionCUPIFunctionsTest
                  Assert.Fail("Temporary file failed to delete:"+ex);
              }
 
+             res = oStreamFiles[0].SetGreetingWavFile("Dummy.wav", true);
+             Assert.IsTrue(res.Success,"Failed to set greeting via DirectoryHandlerGreetingStreamFile instance method:"+res);
          }
+
+        [TestMethod]
+        public void DirectoryHandlerGreetingStream_StaticFailures()
+        {
+            WebCallResult res;
+
+            //GetGreetingStreamFile
+            DirectoryHandlerGreetingStreamFile oStream;
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFile(null, "objectid", 1033, out oStream);
+            Assert.IsFalse(res.Success,"");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFile(_connectionServer, "objectid", 1033, out oStream);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFile(_connectionServer, "", 1033, out oStream);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFile(_connectionServer, _tempHandler.ObjectId, 9999, out oStream);
+            Assert.IsFalse(res.Success, "");
+
+            //GetGreetingStreamFiles
+            List<DirectoryHandlerGreetingStreamFile> oStreams;
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFiles(null, "objectid", out oStreams);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFiles(_connectionServer, "objectid", out oStreams);
+            Assert.IsTrue(res.Success, "Fetching greeting stream files with an invalid objectId shouldn't fail:"+res);
+            Assert.IsTrue(oStreams.Count==0,"Fetching streams with an invalid objectId should return an empty list");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFiles(_connectionServer, "", out oStreams);
+            Assert.IsFalse(res.Success, "");
+
+            //GetGreetingWavFile
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(null, "c:\\temp.wav", "streamname.wav");
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", "streamname.wav");
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "", "streamname.wav");
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", "");
+            Assert.IsFalse(res.Success, "");
+
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(null, "c:\\temp.wav", "objectId",1033);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", "objectId",1033);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "", "objectId",1033);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", "",1033);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", _tempHandler.ObjectId, 9999);
+            Assert.IsFalse(res.Success, "");
+
+
+            //SetGreetingWavFile
+            res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(null, "objectid", 1033, "bogus.wav", true);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_connectionServer, "objectid", 1033, "bogus.wav", true);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_connectionServer, "", 1033, "bogus.wav", true);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_connectionServer, "objectid", 1033, "", true);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_connectionServer, _tempHandler.ObjectId, 9999, "Dummy.wav", true);
+            Assert.IsFalse(res.Success, "");
+
+        }
+
     }
 }

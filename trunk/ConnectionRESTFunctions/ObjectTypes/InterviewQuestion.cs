@@ -684,6 +684,18 @@ namespace Cisco.UnityConnection.RestFunctions
                 pMaxResponseLength, pStreamText);
         }
 
+        /// <summary>
+        /// Pull the data from the Connection server for this object again - if changes have been made external this will 
+        /// "refresh" the object
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResult class.
+        /// </returns>
+        public WebCallResult RefetchInterviewHandlerData()
+        {
+            return GetInterviewQuestion(this.InterviewHandlerObjectId,QuestionNumber);
+        }
+
         #endregion
 
 

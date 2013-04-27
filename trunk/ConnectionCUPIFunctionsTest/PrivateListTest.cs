@@ -300,7 +300,7 @@ namespace ConnectionCUPIFunctionsTest
 
 
          [TestMethod]
-        private void TestPrivateListMembers()
+        public void TestPrivateListMembers()
         {
             List<PrivateListMember> oMembers;
             WebCallResult res = _tempPrivateList.GetMembersList(out oMembers);
@@ -308,11 +308,8 @@ namespace ConnectionCUPIFunctionsTest
 
             Assert.IsTrue(oMembers.Count>0,"No members in the private list passed to TestPrivateListMembers");
 
-            foreach (var oMember in oMembers)
-            {
-                Console.WriteLine(oMember.ToString());
-                Console.WriteLine(oMember.DumpAllProps());
-            }
+            Console.WriteLine(oMembers[0].ToString());
+            Console.WriteLine(oMembers[0].DumpAllProps());
 
             res = PrivateListMember.GetPrivateListMembers(null, _tempPrivateList.ObjectId, _tempPrivateList.UserObjectId, out oMembers);
             Assert.IsFalse(res.Success,"Getting private list members via static method did not fail with null Connection server");

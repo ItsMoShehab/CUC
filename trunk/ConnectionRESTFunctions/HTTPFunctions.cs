@@ -532,12 +532,12 @@ namespace Cisco.UnityConnection.RestFunctions
                     if (pIsJson)
                     {
                         request.ContentType = @"application/json";
-                        request.Accept = @"application/json";
+                        request.Accept = "application/json, */*";
                     }
                     else
                     {
                         request.ContentType = @"application/xml";
-                        request.Accept = @"application/xml";
+                        request.Accept = "application/xml, */*";
                     }
 
                     //not all requests have a body - add it only if it's passed in as non empty
@@ -2101,7 +2101,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             string strUrl = string.Format("{0}voicefiles", pConnectionServer.BaseUrl);
             
-            WebCallResult res = GetCupiResponse(strUrl, MethodType.POST, pConnectionServer.LoginName, pConnectionServer.LoginPw, "");
+            WebCallResult res = GetCupiResponse(strUrl, MethodType.POST, pConnectionServer.LoginName, pConnectionServer.LoginPw, "",
+                pConnectionServer.LastSessionCookie,false);
 
             if (res.Success==false)
             {
