@@ -359,14 +359,36 @@ namespace ConnectionCUPIFunctionsTest
 
          }
 
-    
+
+        [TestMethod]
+        public void CallHandlerTemplate_AddDeleteTest()
+        {
+            List<CallHandlerTemplate> oTemplates;
+            WebCallResult res = CallHandlerTemplate.GetCallHandlerTemplates(_connectionServer, out oTemplates);
+            Assert.IsTrue(res.Success, "Failed to get call handler templates");
+            Assert.IsNotNull(oTemplates, "Null call handler template returned");
+            Assert.IsTrue(oTemplates.Count > 0, "Empty list of templates returned");
+
+            string strName = "Temp_" + Guid.NewGuid().ToString();
+
+            CallHandlerTemplate oTemplate;
+            res = CallHandlerTemplate.AddCallHandlerTemplate(_connectionServer, oTemplates[0].ObjectId,
+                                                                           strName, null, out oTemplate);
+
+            Assert.IsTrue(res.Success,"Failed creating new call handler template:"+res);
+
+            res = oTemplate.Delete();
+            Assert.IsTrue(res.Success,"Failed deleting call handler template:"+res);
+        }
+
+
         /// <summary>
         /// exercise call handler templates - call handler templates is a pretty simple class and it only gets used by handlers so 
         /// test it here - make sure it handles an invalid conneciton server passed in and can get the list back out and hit the 
         /// ToString override for it - that about covers it.
         /// </summary>
         [TestMethod]
-        public void CallHandlerTemplate_Test()
+        public void CallHandlerTemplate_FetchTest()
          {
             List<CallHandlerTemplate> oTemplates;
 
@@ -379,11 +401,11 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(oTemplates.Count>0,"Empty list of templates returned");
 
             //exercise the toString method
-            foreach (CallHandlerTemplate oTemplate in oTemplates)
-            {
-                Console.WriteLine(oTemplate.ToString());
-                Console.WriteLine(oTemplate.DumpAllProps());
-            }
+            Console.WriteLine(oTemplates[0].ToString());
+            Console.WriteLine(oTemplates[0].DumpAllProps());
+
+            res = oTemplates[0].RefetchUserTemplateData();
+            Assert.IsTrue(res.Success,"Failed refetching template data:"+res);
 
             //exercise the NEW create methods
             CallHandlerTemplate oNewTemplate;

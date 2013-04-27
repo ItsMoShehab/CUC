@@ -458,6 +458,9 @@ namespace ConnectionCUPIFunctionsTest
             res = oQuestion.SetQuestionRecording("Dummy.wav", true);
             Assert.IsTrue(res.Success,"Uplading greeting recording failed:"+res);
 
+            res = oQuestion.RefetchInterviewHandlerData();
+            Assert.IsTrue(res.Success,"Refetching data for question failed:"+res);
+
             res = oQuestion.GetQuestionRecording(strFileName);
             Assert.IsTrue(res.Success, "Fetching recording that was just uploaded failed:"+res);
             Assert.IsTrue(File.Exists(strFileName),"Wav file for download did not get created on hard drive:"+strFileName);
@@ -544,9 +547,6 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "");
 
             res = InterviewQuestion.SetInterviewHandlerQuestionRecordingToStreamFile(_connectionServer, _tempHandler.ObjectId, 1, "");
-            Assert.IsFalse(res.Success, "");
-
-            res = InterviewQuestion.SetInterviewHandlerQuestionRecordingToStreamFile(_connectionServer, _tempHandler.ObjectId, 1, "streamId");
             Assert.IsFalse(res.Success, "");
 
             res = InterviewQuestion.SetInterviewHandlerQuestionRecordingToStreamFile(_connectionServer, _tempHandler.ObjectId, 999, "streamId");

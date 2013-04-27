@@ -912,21 +912,23 @@ namespace ConnectionCUPIFunctionsTest
                 Assert.Fail("Temp user not created, cannot run tests.");
             }
 
+            //do other tests
+            List<UserMessage> oMessages;
+
+            WebCallResult res = UserMessage.GetMessages(_connectionServer, _tempUser.ObjectId, out oMessages);
+            Assert.IsTrue(res.Success, "Failed fetching messages on new user");
+            Assert.IsTrue(oMessages.Count == 0, "Test user account is reporting more than 0 messages");
+
             //create a new message
             MessageAddress oRecipient = new MessageAddress();
             oRecipient.AddressType = MessageAddressType.TO;
             oRecipient.SmtpAddress = _tempUser.SmtpAddress;
-            WebCallResult res = UserMessage.CreateMessageLocalWav(_connectionServer, _tempUser.ObjectId, "test subject", "dummy.wav", false,
-                                                                  false, false, false, false, false, new CallerId{CallerNumber = "1234"}, 
-                                                                  true, oRecipient);
+            res = UserMessage.CreateMessageLocalWav(_connectionServer, _tempUser.ObjectId, "test subject", "dummy.wav", false,
+                                                   false, false, false, false, false, new CallerId{CallerNumber = "1234"}, 
+                                                   true, oRecipient);
             Assert.IsTrue(res.Success, "Failed to create new message from WAV file:" + res);
 
-            //do other tests
-            List<UserMessage> oMessages;
-
-            res = UserMessage.GetMessages(_connectionServer, _tempUser.ObjectId, out oMessages);
-            Assert.IsTrue(res.Success,"Failed fetching messages on new user");
-            Assert.IsTrue(oMessages.Count==0,"Test user account is reporting more than 0 messages");
+            
 
             UserMessage oMessage = new UserMessage(_connectionServer, _tempUser.ObjectId);
 

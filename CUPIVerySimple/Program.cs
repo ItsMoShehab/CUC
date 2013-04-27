@@ -33,7 +33,7 @@ namespace CUPIVerySimple
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
-                connectionServer = new ConnectionServer("lindborgload2", "CCMAdministrator", "ecsbulab");
+                connectionServer = new ConnectionServer("192.168.0.185", "CCMAdministrator", "ecsbulab");
             }
 
             catch (Exception ex)
@@ -57,6 +57,44 @@ namespace CUPIVerySimple
             //the WebCallResult is the structure returned on most calls into the CUPIFunctions library.
             WebCallResult res;
 
+//Fetch a single interviewer by name
+InterviewHandler oIntHandler;
+res = InterviewHandler.GetInterviewHandler(out oIntHandler, connectionServer, "", 
+    "test interviewer");
+            
+if (res.Success == false || oIntHandler == null)
+{
+    Console.WriteLine("Interviewer not found:"+res);
+    return;
+}
+
+List<InterviewQuestion> oQuestions = oIntHandler.GetInterviewQuestions();
+if (oQuestions == null || oQuestions.Count != 20)
+{
+    Console.WriteLine("Invalid question fetch");
+    return;
+}
+
+//edit the first question and then upload a wav file for it
+//Note the Update method takes params instead of the "dirty list" 
+//flag approach.
+res = oQuestions[0].Update(true, 10, "Say your phone number, including area code");
+if (res.Success == false)
+{
+    Console.WriteLine("Failed updating question:"+res);
+    return;
+}
+
+res = oQuestions[0].SetQuestionRecording("c:\\intro.wav", true);
+
+if (res.Success == false)
+{
+    Console.WriteLine("Failed uploading question recording:"+res);
+    return;
+}
+
+Console.WriteLine("Interview question updated");
+
             //fetch user with alias of "jlindborg" - we will be sending the message from his 
             //mailbox.
             UserFull oUserTestDude;
@@ -67,18 +105,18 @@ namespace CUPIVerySimple
                 Console.WriteLine(res);
             }
 
-            InterviewHandler oIntHandler;
-            res = InterviewHandler.AddInterviewHandler(connectionServer, "new display name", oUserTestDude.ObjectId, "", null, out oIntHandler);
-            if (res.Success==false) Console.WriteLine(res);
+            //InterviewHandler oIntHandler;
+            //res = InterviewHandler.AddInterviewHandler(connectionServer, "new display name", oUserTestDude.ObjectId, "", null, out oIntHandler);
+            //if (res.Success==false) Console.WriteLine(res);
 
-            res =oIntHandler.SetVoiceName("c:\\clean.wav");
+            res =oIntHandler.SetVoiceName("c:\\test.wav");
             if (res.Success == false) Console.WriteLine(res);
 
             InterviewQuestion oQuestion;
             res = InterviewQuestion.GetInterviewQuestion(out oQuestion, connectionServer, oIntHandler.ObjectId, 1);
             if (res.Success == false) Console.WriteLine(res);
 
-            res = oQuestion.SetQuestionRecording("c:\\clean.wav");
+            res = oQuestion.SetQuestionRecording("c:\\test.wav");
             if (res.Success == false) Console.WriteLine(res);
 
             res =oIntHandler.Delete();

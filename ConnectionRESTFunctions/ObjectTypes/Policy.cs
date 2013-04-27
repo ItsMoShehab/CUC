@@ -413,6 +413,15 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             pRoleNames=new List<string>();
             
+            if (pConnectionServer == null)
+            {
+                return new WebCallResult
+                    {
+                        Success = false,
+                        ErrorText = "Null Connecton server passed to GetRoleNamesForUser"
+                    };
+            }
+
             //fetch the list of policies the user has assigned to them (if any)
             List<Policy> oPolicies;
             WebCallResult res = GetPoliciesForUser(pConnectionServer, pUserObjectId, out oPolicies);

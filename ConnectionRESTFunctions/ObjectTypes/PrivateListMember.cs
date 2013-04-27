@@ -83,7 +83,7 @@ namespace Cisco.UnityConnection.RestFunctions
             out List<PrivateListMember> pMemberList,int pPageNumber=1, int pRowsPerPage=20)
         {
             WebCallResult res = new WebCallResult();
-            pMemberList = null;
+            pMemberList = new List<PrivateListMember>();
 
 
             if (pConnectionServer == null)
@@ -107,7 +107,6 @@ namespace Cisco.UnityConnection.RestFunctions
             //if this is empty that means an error in this case - should always be at least one template
             if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
-                pMemberList = new List<PrivateListMember>();
                 res.Success = false;
                 return res;
             }
@@ -116,7 +115,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (pMemberList == null)
             {
-                pMemberList = new List<PrivateListMember>();
                 return res;
             }
 

@@ -19,6 +19,8 @@ namespace ConnectionCUPIFunctionsTest
         //routine below.
         private static ConnectionServer _connectionServer;
 
+        private static UserFull _tempUser;
+
         /// <summary>
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
@@ -30,8 +32,6 @@ namespace ConnectionCUPIFunctionsTest
 
         #region Additional test attributes
 
-        //You can use the following additional attributes as you write your tests:
-        //
         //Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
@@ -53,6 +53,28 @@ namespace ConnectionCUPIFunctionsTest
                 throw new Exception("Unable to attach to Connection server to start MailboxInfo test:" + ex.Message);
             }
 
+            //create new list with GUID in the name to ensure uniqueness
+            String strUserAlias = "TempUser_" + Guid.NewGuid().ToString().Replace("-", "");
+
+            //generate a random number and tack it onto the end of some zeros so we're sure to avoid any legit numbers on the system.
+            Random random = new Random();
+            int iExtPostfix = random.Next(100000, 999999);
+            string strExtension = "000000" + iExtPostfix.ToString();
+
+            //use a bogus extension number that's legal but non dialable to avoid conflicts
+            WebCallResult res = UserBase.AddUser(_connectionServer, "voicemailusertemplate", strUserAlias, strExtension, null, out _tempUser);
+            Assert.IsTrue(res.Success, "Failed creating temporary user:" + res.ToString());
+        }
+
+
+        [ClassCleanup]
+        public static void MyClassCleanup()
+        {
+            if (_tempUser != null)
+            {
+                WebCallResult res = _tempUser.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete temporary user on cleanup.");
+            }
         }
 
         #endregion
@@ -97,19 +119,54 @@ namespace ConnectionCUPIFunctionsTest
 
 
         [TestMethod]
-        public void TestMethod1()
+        public void MailboxInfo_MessageInfoTests()
         {
-            List<UserBase> oUsers;
-            WebCallResult res = UserBase.GetUsers(_connectionServer, out oUsers);
-            Assert.IsTrue(res.Success,"Unable to fetch users from server:"+res);
-
-            Assert.IsTrue(oUsers.Count>0,"No users fetched");
-
-            MailboxInfo oInfo = new MailboxInfo(_connectionServer,oUsers[0].ObjectId);
+            MailboxInfo oInfo=null;
+            try
+            {
+                oInfo = new MailboxInfo(_connectionServer, _tempUser.ObjectId);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Failed creating new MailboxInfo object:"+ex);
+            }
 
             Console.WriteLine(oInfo.DumpAllProps());
-
             Console.WriteLine(oInfo.ToString());
+
+            int iInboxCount, iDeletedCount, iSentCount;
+            //check counts
+            WebCallResult res = oInfo.GetFolderMessageCounts(out iInboxCount, out iDeletedCount, out iSentCount);
+            Assert.IsTrue(res.Success,"Failed to fetch message folder counts off empty mailbox:"+res);
+            Assert.IsTrue(iInboxCount==0,"New mailbox reporting more than 0 inbox messages");
+
+            Assert.IsTrue(oInfo.CurrentSizeInBytes==0,"Newly created mailbox reporting non empty mailbox");
+            Assert.IsTrue(oInfo.IsMailboxMounted,"Newly created mailbox reporting it's not mounted");
+            Assert.IsTrue(oInfo.IsPrimary,"Newly created mailbox is not reproting itself as primary");
+            Assert.IsFalse(oInfo.IsReceiveQuotaExceeded,"Newly created mailbox is reporting over quota");
+
+            //leave message
+            MessageAddress oRecipient = new MessageAddress();
+            oRecipient.AddressType = MessageAddressType.TO;
+            oRecipient.SmtpAddress = _tempUser.SmtpAddress;
+            res = UserMessage.CreateMessageLocalWav(_connectionServer, _tempUser.ObjectId, "test subject", "dummy.wav", false,
+                                                   false, false, false, false, false, new CallerId { CallerNumber = "1234" },
+                                                   true, oRecipient);
+            Assert.IsTrue(res.Success, "Failed to create new message from WAV file:" + res);
+
+            //wait for message to be delivered
+            Thread.Sleep(5000);
+
+            //refetch mailbox info
+             res = oInfo.RefetchMailboxData();
+            Assert.IsTrue(res.Success,"Failed to refetch mailbox data:"+res);
+
+            //recheck counts
+            res = oInfo.GetFolderMessageCounts(out iInboxCount, out iDeletedCount, out iSentCount);
+            Assert.IsTrue(res.Success, "Failed to fetch message folder counts off mailbox with one message:" + res);
+            Assert.IsTrue(iInboxCount == 1, "Mailbox reporting with single message not reporting correct inbox count");
+
         }
+
     }
 }
