@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="ConnectionServer" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">192.168.0.194</Value>
+      <Value Profile="(Default)">192.168.0.185</Value>
     </Setting>
     <Setting Name="ConnectionLogin" Type="System.String" Scope="Application">
       <Value Profile="(Default)">CCMAdministrator</Value>
