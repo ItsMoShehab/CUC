@@ -132,6 +132,22 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             return strRet;
         }
+
+        /// <summary>
+        /// Simple helper function to convert the list of name/value pairs into strings in the form "name=value" as an 
+        /// array for easy inclusion into URI segements and such.
+        /// </summary>
+        /// <returns></returns>
+        public string[] ToArrayOfStrings()
+        {
+            List<string> oList = new List<string>();
+            foreach (var oPair in this)
+            {
+                oList.Add(string.Format("{0}={1}", oPair.PropertyName, oPair.PropertyValue));
+            }
+
+            return oList.ToArray();
+        }
     }
 
 

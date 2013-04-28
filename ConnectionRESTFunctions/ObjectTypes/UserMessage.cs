@@ -282,6 +282,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 origin = origin.ToLocalTime();
 
             return origin;
+
+            
         }
 
         /// <summary>
@@ -778,7 +780,7 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             WebCallResult res;
             pMessage = new List<UserMessage>();
-            List<KeyValuePair<string, string>> oParams = new List<KeyValuePair<string, string>>();
+            ConnectionPropertyList oParams = new ConnectionPropertyList();
 
             if (pConnectionServer==null)
             {
@@ -789,8 +791,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //add row limits
 
-            oParams.Add(new KeyValuePair<string, string>("pageNumber", pPageNumber.ToString()));
-            oParams.Add(new KeyValuePair<string, string>("rowsPerPage", pRowsPerPage.ToString()));
+            oParams.Add("pageNumber", pPageNumber.ToString());
+            oParams.Add("rowsPerPage", pRowsPerPage.ToString());
 
             //add sort order
             switch (pSortOrder)
@@ -799,89 +801,82 @@ namespace Cisco.UnityConnection.RestFunctions
                     //add nothing, this is the default
                     break;
                 case MessageSortOrder.OLDEST_FIRST:
-                    oParams.Add(new KeyValuePair<string, string>("sortkey", "arrivaltime"));
-                    oParams.Add(new KeyValuePair<string, string>("sortorder", "ascending"));
+                    oParams.Add("sortkey", "arrivaltime");
+                    oParams.Add("sortorder", "ascending");
                     break;
                 case MessageSortOrder.URGENT_FIRST:
-                    oParams.Add(new KeyValuePair<string, string>("sortkey", "priority"));
-                    oParams.Add(new KeyValuePair<string, string>("sortorder", "descending"));
+                    oParams.Add("sortkey", "priority");
+                    oParams.Add("sortorder", "descending");
                     break;
             }
 
             //add filtering flags
             if (pFilter.HasFlag(MessageFilter.Dispatch_True))
             {
-                oParams.Add(new KeyValuePair<string, string>("dispatch", "true"));
+                oParams.Add("dispatch", "true");
             }
             if (pFilter.HasFlag(MessageFilter.Dispatch_False))
             {
-                oParams.Add(new KeyValuePair<string, string>("dispatch", "false"));
+                oParams.Add("dispatch", "false");
             }
             if (pFilter.HasFlag(MessageFilter.Priority_Low))
             {
-                oParams.Add(new KeyValuePair<string, string>("priority", "low"));
+                oParams.Add("priority", "low");
             }
             if (pFilter.HasFlag(MessageFilter.Priority_Normal))
             {
-                oParams.Add(new KeyValuePair<string, string>("priority", "normal"));
+                oParams.Add("priority", "normal");
             }
             if (pFilter.HasFlag(MessageFilter.Priority_Urgent))
             {
-                oParams.Add(new KeyValuePair<string, string>("priority", "urgent"));
+                oParams.Add("priority", "urgent");
             }
             if (pFilter.HasFlag(MessageFilter.Read_False))
             {
-                oParams.Add(new KeyValuePair<string, string>("read", "false"));
+                oParams.Add("read", "false");
             }
             if (pFilter.HasFlag(MessageFilter.Read_True))
             {
-                oParams.Add(new KeyValuePair<string, string>("read", "true"));
+                oParams.Add("read", "true");
             }
             if (pFilter.HasFlag(MessageFilter.Type_Email))
             {
-                oParams.Add(new KeyValuePair<string, string>("type", "email"));
+                oParams.Add("type", "email");
             }
             if (pFilter.HasFlag(MessageFilter.Type_Fax))
             {
-                oParams.Add(new KeyValuePair<string, string>("type", "fax"));
+                oParams.Add("type", "fax");
             }
             if (pFilter.HasFlag(MessageFilter.Type_Receipt))
             {
-                oParams.Add(new KeyValuePair<string, string>("type", "receipt"));
+                oParams.Add("type", "receipt");
             }
             if (pFilter.HasFlag(MessageFilter.Type_Voice))
             {
-                oParams.Add(new KeyValuePair<string, string>("type", "voice"));
+                oParams.Add("type", "voice");
             }
 
-            StringBuilder strUrl = new StringBuilder(pConnectionServer.BaseUrl);
+            oParams.Add("userobjectid",pUserObjectId);
 
+            //construct the URL
+            string strUrl = pConnectionServer.BaseUrl;
             if (pFolder == MailboxFolder.DeletedItems)
             {
-                strUrl.Append("mailbox/folders/deleted/messages?userobjectid=");
+                strUrl+="mailbox/folders/deleted/messages";
             }
             else if (pFolder == MailboxFolder.Inbox)
             {
-                strUrl.Append("mailbox/folders/inbox/messages?userobjectid=");
+                strUrl+="mailbox/folders/inbox/messages";
             }
             else
             {
-                strUrl.Append("mailbox/folders/sent/messages?userobjectid=");
+                strUrl+="mailbox/folders/sent/messages";
             }
-
-            strUrl.Append(pUserObjectId);
-
-            //tack on all the params that apply here
-            foreach (KeyValuePair<string, string> oElement in oParams)
-            {
-                strUrl.Append("&");
-                strUrl.Append(oElement.Key);
-                strUrl.Append("=");
-                strUrl.Append(oElement.Value);
-            }
+            
+            strUrl = HTTPFunctions.AddClausesToUri(strUrl, oParams.ToArrayOfStrings());
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl.ToString(), MethodType.GET, pConnectionServer, "",false);
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "",false);
 
             if (res.Success == false)
             {
