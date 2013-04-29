@@ -20,6 +20,9 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class ConnectionTimeZone
     {
+
+        #region ConnectionTimeZone Properties
+
         public int TimeZoneId { get; set; }
         public string DisplayName { get; set; }
         public int Bias { get; set; }
@@ -33,6 +36,8 @@ namespace Cisco.UnityConnection.RestFunctions
         public int DaylightEndWeek { get; set; }
         public int DaylightEndHour { get; set; }
         public int LanguageCode { get; set; }
+
+        #endregion
 
         /// <summary>
         /// Returns a string with the text name and time zone Id of the timezone
@@ -50,17 +55,12 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class TimeZones
     {
-        
-        #region Fields and Properties 
 
-        private Dictionary<int, ConnectionTimeZone> _timeZones;
+        #region Constructors and Destructors
 
-        #endregion
-
-
-        #region Constructors
-
-        //constructor
+        /// <summary>
+        /// Constructor requeires ConnectionServer object to pull time zone details from.
+        /// </summary>
         public TimeZones(ConnectionServer pConnectionServer)
         {
             if (pConnectionServer == null)
@@ -68,17 +68,24 @@ namespace Cisco.UnityConnection.RestFunctions
                 throw new ArgumentException("Null ConnectionServer referenced pasted to TimeZones construtor");
             }
 
-            WebCallResult res= LoadTimeZones(pConnectionServer);
+            WebCallResult res = LoadTimeZones(pConnectionServer);
             if (res.Success == false)
             {
-                throw new Exception("Failed to fetch timezones in TimeZones constructor:"+res.ToString());
+                throw new Exception("Failed to fetch timezones in TimeZones constructor:" + res.ToString());
             }
         }
 
         #endregion
 
 
-        #region Methods
+        #region Fields and Properties 
+
+        private Dictionary<int, ConnectionTimeZone> _timeZones;
+
+        #endregion
+
+
+        #region Instance Methods
 
         /// <summary>
         /// Fetch all the timezones defined on the target Connection server and load them into a dictionary for fast fetching later.

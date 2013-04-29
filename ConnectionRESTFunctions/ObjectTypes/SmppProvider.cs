@@ -21,19 +21,15 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class SmppProvider
     {
-        #region Fields and Properties 
 
-        public string TextName { get; set; }
-        public string ObjectId { get; set; }
-        public bool IsEnabled { get; set; }
-
-        #endregion
+        #region Constructors and Destructors
 
 
-        #region Constructors
-
-        //constructor
-        public SmppProvider(ConnectionServer pConnectionServer, string pObjectId="")
+        /// <summary>
+        /// Constructor requires ConnectionServer where SNPP provider is homed.  Can optionally pass in an ObjectId to load that
+        /// SMPP provider data.
+        /// </summary>
+        public SmppProvider(ConnectionServer pConnectionServer, string pObjectId = "")
         {
             if (pConnectionServer == null)
             {
@@ -49,7 +45,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception("Failed to find SmppProvider in SmppConstructor:"+res.ToString());
+                throw new Exception("Failed to find SmppProvider in SmppConstructor:" + res.ToString());
             }
         }
 
@@ -63,7 +59,16 @@ namespace Cisco.UnityConnection.RestFunctions
         #endregion
 
 
-        #region Methods
+        #region SmppProvider Properties 
+
+        public string TextName { get; set; }
+        public string ObjectId { get; set; }
+        public bool IsEnabled { get; set; }
+
+        #endregion
+
+
+        #region Instance Methods
 
         /// <summary>
         /// Returns a string with the text name and objectID of the SMPP provider

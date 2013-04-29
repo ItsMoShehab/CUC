@@ -26,7 +26,7 @@ namespace Cisco.UnityConnection.RestFunctions
     public class TransferOption
     {
 
-        #region Constructor
+        #region Constructors and Destructors
 
         /// <summary>
         /// Generic constructor for Json parsing
@@ -41,22 +41,22 @@ namespace Cisco.UnityConnection.RestFunctions
             TimeExpires = DateTime.Parse("2200/1/1");
         }
 
-    /// <summary>
-    /// Creates a new instance of the TransferOption class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
-    /// updating data for this entry.  
-    /// If you pass the pTransferOptionType parameter the transfer option is automatically filled with data for that entry from the server.  
-    /// If no pTransferOptionType is passed an empty instance of the TransferOption class is returned (so you can fill it out on your own).
-    /// </summary>
-    /// <param name="pConnectionServer">
-    /// Instance of a ConnectonServer object which points to the home server for the transfer option being created.
-    /// </param>
-    /// <param name="pCallHandlerObjectId">
-    /// GUID identifying the Call Handler that owns the transfer option
-    /// </param>
-    /// <param name="pTransferOptionType">
-    /// The transfer rule to fetch (Standard, Alternate, OffHours)
-    /// </param>
-    public TransferOption(ConnectionServer pConnectionServer, string pCallHandlerObjectId, string pTransferOptionType = ""):this()
+        /// <summary>
+        /// Creates a new instance of the TransferOption class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
+        /// updating data for this entry.  
+        /// If you pass the pTransferOptionType parameter the transfer option is automatically filled with data for that entry from the server.  
+        /// If no pTransferOptionType is passed an empty instance of the TransferOption class is returned (so you can fill it out on your own).
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Instance of a ConnectonServer object which points to the home server for the transfer option being created.
+        /// </param>
+        /// <param name="pCallHandlerObjectId">
+        /// GUID identifying the Call Handler that owns the transfer option
+        /// </param>
+        /// <param name="pTransferOptionType">
+        /// The transfer rule to fetch (Standard, Alternate, OffHours)
+        /// </param>
+        public TransferOption(ConnectionServer pConnectionServer, string pCallHandlerObjectId, string pTransferOptionType = ""):this()
         {
             if (pConnectionServer == null)
             {
@@ -75,7 +75,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //for operations editing them.
             CallHandlerObjectId = pCallHandlerObjectId;
 
-           //if the user passed in a specific ObjectId then go load that transfer option up, otherwise just return an empty instance.
+            //if the user passed in a specific ObjectId then go load that transfer option up, otherwise just return an empty instance.
             if (pTransferOptionType.Length == 0) return;
 
             //if the TransferRule is passed in then fetch the data on the fly and fill out this instance
@@ -97,8 +97,13 @@ namespace Cisco.UnityConnection.RestFunctions
         //reference to the ConnectionServer object used to create this TransferOption instance.
         public ConnectionServer HomeServer { get; private set; }
 
-        //used to keep track of whic properties have been updated
+        //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
+
+        #endregion
+
+
+        #region TransferOption Properties
 
         private int _action;
         /// <summary>
@@ -371,8 +376,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Static Methods
 
-
-
         /// <summary>
         /// Fetches a transfer option object filled with all the properties for a specific entry identified with the ObjectId
         /// of the call handler that owns it and the transfer rule name (Standard, Alternate, OffHours) to fetch.
@@ -425,8 +428,6 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 res.ErrorText = "Failed to fetch transfer option in TransferOption:" + ex.Message;
             }
-
-
 
             return res;
         }

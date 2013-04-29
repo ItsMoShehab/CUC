@@ -25,15 +25,9 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class GlobalUser
     {
-        #region Fields and Properties
 
-        //reference to the ConnectionServer object used to create this user instance.
-        internal ConnectionServer HomeServer { get; private set; }
+        #region Constructors and Destructors
 
-        #endregion
-
-
-        #region Constructors
 
         /// <summary>
         /// Creates a new instance of the GlobalUser class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
@@ -70,7 +64,7 @@ namespace Cisco.UnityConnection.RestFunctions
             if (res.Success == false)
             {
                 throw new Exception(string.Format("User not found in GlobalUser constructor using Alias={0} and/or ObjectId={1}\n\rError={2}"
-                                                , pAlias, pObjectId,res.ErrorText));
+                                                , pAlias, pObjectId, res.ErrorText));
             }
         }
 
@@ -79,9 +73,17 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public GlobalUser()
         {
-            
+
         }
-       
+
+        #endregion
+
+
+        #region Fields and Properties
+
+        //reference to the ConnectionServer object used to create this object instance.
+        internal ConnectionServer HomeServer { get; private set; }
+
         #endregion
 
 

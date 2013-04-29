@@ -24,7 +24,215 @@ namespace Cisco.UnityConnection.RestFunctions
     public class UserTemplate
     {
 
+        #region Constructors and Destructors
+
+
+        /// <summary>
+        /// generic constructor used by JSON parser
+        /// </summary>
+        public UserTemplate()
+        {
+            _changedPropList = new ConnectionPropertyList();
+        }
+
+
+        /// <summary>
+        /// Basic constructor - requires Connection server object be passed in - optionally the ObjectId and/or alias
+        /// of the template to load can be passed in.  If neither are provided an empty version of the class is created.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Connection server where the user template is homed.
+        /// </param>
+        /// <param name="pObjectId">
+        /// Unique identifier for template
+        /// </param>
+        /// <param name="pAlias">
+        /// Alias of template - if both alias and objectId are provided the objectId is used.
+        /// </param>
+        public UserTemplate(ConnectionServer pConnectionServer, string pObjectId = "", string pAlias = "")
+            : this()
+        {
+            if (pConnectionServer == null)
+            {
+                throw new ArgumentException("Null ConnectionServer referenced pasted to UserTemplate construtor");
+            }
+
+            HomeServer = pConnectionServer;
+
+            if (pObjectId.Length == 0 & pAlias.Length == 0)
+            {
+                return;
+            }
+
+            WebCallResult res = this.GetUserTemplate(pObjectId, pAlias);
+
+            if (res.Success == false)
+            {
+                throw new Exception(string.Format("UserTemplate not found in UserTemplate constructor using Alias={0} and/or ObjectId={1}\n\rError={2}"
+                                                , pAlias, pObjectId, res.ErrorText));
+            }
+        }
+
+        #endregion
+
+
         #region Fields and Properties
+
+        //reference to the ConnectionServer object used to create this object instance.
+        public ConnectionServer HomeServer { get; private set; }
+
+        //used to keep track of which properties have been updated
+        private readonly ConnectionPropertyList _changedPropList;
+
+        private PhoneSystem _phoneSystem;
+        /// <summary>
+        /// Funtion to fetch the Phone system of a user and return it as a PhoneSystem object instance.
+        /// This has to be implemented as a function, not property, so they don't get "lazy fetched" when you bind a list 
+        /// of users to a grid, do a LINQ query on them or the like
+        /// </summary>
+        /// <returns>
+        /// Instance of the PhoneSystem object is passed back.  If there's a problem the instance will be NULL.
+        /// </returns>
+        public PhoneSystem PhoneSystem(bool pForceRefetchOfData = false)
+        {
+            if (pForceRefetchOfData)
+            {
+                _phoneSystem = null;
+            }
+            //fetch the primary call handler only if it's asked for.
+            if (_phoneSystem == null)
+            {
+                try
+                {
+                    _phoneSystem = new PhoneSystem(this.HomeServer, this.MediaSwitchObjectId);
+                }
+                catch { }
+            }
+
+            return _phoneSystem;
+        }
+
+
+        private List<NotificationDevice> _notificationDevices;
+        /// <summary>
+        /// Funtion to fetch all the notification devices of a user and return them as a list of NotificationDEvice objects.
+        /// This has to be implemented as a function, not property, so they don't get "lazy fetched" when you bind a list 
+        /// of users to a grid, do a LINQ query on them or the like
+        /// </summary>
+        /// <returns>
+        /// List of NotificationDevice objects - there should be at least 5 for every user, more if they have created additional
+        /// devices.
+        /// </returns>
+        public List<NotificationDevice> NotificationDevices(bool pForceRefetchOfData = false)
+        {
+            //if the user wants to force a refetch of data, null out the private cache of notification devices.
+            if (pForceRefetchOfData)
+            {
+                _notificationDevices = null;
+            }
+            //fetch notification device list only if it's asked for.
+            if (_notificationDevices == null)
+            {
+                GetNotificationDevices(out _notificationDevices);
+            }
+
+            return _notificationDevices;
+        }
+
+        private ClassOfService _cos;
+
+        /// <summary>
+        /// Funtion to fetch the COS instance this user is associated with.
+        /// This has to be implemented as a function, not property, so they don't get "lazy fetched" when you bind a list 
+        /// of users to a grid, do a LINQ query on them or the like
+        /// </summary>    
+        /// <returns>
+        /// instance of ClassOfService object for the COS this user is associated with.
+        /// </returns>
+        public ClassOfService Cos(bool pForceRefetchOfData = false)
+        {
+            if (pForceRefetchOfData)
+            {
+                _cos = null;
+            }
+
+            if (_cos == null)
+            {
+                _cos = new ClassOfService(this.HomeServer, this.CosObjectId);
+            }
+
+            return _cos;
+        }
+
+        private Credential _pin;
+        /// <summary>
+        /// Returns details of the PIN (phone password) settings - including if it's locked, time last changed, if it's set to must-change 
+        /// etc... this object does NOT allow for editing of credentials - use the ResetUserPassword method off the User object for that.
+        /// This is done as a method since if it's done as a property it'll attempt to fill it in from data pulled from Connection during
+        /// populate of a user's data.
+        /// </summary>
+        /// <returns>
+        /// instance of the credential object
+        /// </returns>
+        public Credential Pin()
+        {
+            if (_pin == null)
+            {
+                _pin = new Credential(this.HomeServer, this.ObjectId, CredentialType.Pin);
+            }
+
+            return _pin;
+        }
+
+        private Credential _password;
+        /// <summary>
+        /// Returns details of the Password (GUI password) settings - including if it's locked, time last changed, if it's set to must-change 
+        /// etc... this object does NOT allow for editing of credentials - use the ResetUserPassword method off the User object for that.
+        /// This is done as a method since if it's done as a property it'll attempt to fill it in from data pulled from Connection during
+        /// populate of a user's data.
+        /// </summary>
+        /// <returns>
+        /// instance of the credential object
+        /// </returns>
+        public Credential Password()
+        {
+            if (_password == null)
+            {
+                _password = new Credential(this.HomeServer, this.ObjectId, CredentialType.Password);
+            }
+
+            return _password;
+        }
+
+        private CallHandler _primaryCallHandler;
+        /// <summary>
+        /// Funtion to fetch the PrimaryCallHandler of a user and return it as a CallHandler object instance.
+        /// This has to be implemented as a function, not property, so they don't get "lazy fetched" when you bind a list 
+        /// of users to a grid, do a LINQ query on them or the like
+        /// </summary>
+        /// <returns>
+        /// Instance of the CallHandler object is passed back.  If there's a problem the instance will be NULL.
+        /// </returns>
+        public CallHandler PrimaryCallHandler(bool pForceRefetchOfData = false)
+        {
+            if (pForceRefetchOfData)
+            {
+                _primaryCallHandler = null;
+            }
+
+            //fetch the primary call handler only if it's asked for.
+            if (_primaryCallHandler == null)
+            {
+                GetPrimaryCallHandler(out _primaryCallHandler);
+            }
+
+            return _primaryCallHandler;
+        }
+       
+        #endregion
+
+
+        #region UserTemplate Properties
 
         private string _address;
         /// <summary>
@@ -131,8 +339,6 @@ namespace Cisco.UnityConnection.RestFunctions
                 _changedPropList.Add("PartitionObjectId", value);
             }
         }
-
-        
 
 
         private bool _addressAfterRecord;
@@ -1825,212 +2031,6 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 _changedPropList.Add("WarningQuota", value);
                 _warningQuota = value;
-            }
-        }
-
-
-        private CallHandler _primaryCallHandler;
-        /// <summary>
-        /// Funtion to fetch the PrimaryCallHandler of a user and return it as a CallHandler object instance.
-        /// This has to be implemented as a function, not property, so they don't get "lazy fetched" when you bind a list 
-        /// of users to a grid, do a LINQ query on them or the like
-        /// </summary>
-        /// <returns>
-        /// Instance of the CallHandler object is passed back.  If there's a problem the instance will be NULL.
-        /// </returns>
-        public CallHandler PrimaryCallHandler(bool pForceRefetchOfData = false)
-        {
-            if (pForceRefetchOfData)
-            {
-                _primaryCallHandler = null;
-            }
-
-            //fetch the primary call handler only if it's asked for.
-            if (_primaryCallHandler == null)
-            {
-                GetPrimaryCallHandler(out _primaryCallHandler);
-            }
-
-            return _primaryCallHandler;
-        }
-
-
-        private PhoneSystem _phoneSystem;
-        /// <summary>
-        /// Funtion to fetch the Phone system of a user and return it as a PhoneSystem object instance.
-        /// This has to be implemented as a function, not property, so they don't get "lazy fetched" when you bind a list 
-        /// of users to a grid, do a LINQ query on them or the like
-        /// </summary>
-        /// <returns>
-        /// Instance of the PhoneSystem object is passed back.  If there's a problem the instance will be NULL.
-        /// </returns>
-        public PhoneSystem PhoneSystem(bool pForceRefetchOfData = false)
-        {
-            if (pForceRefetchOfData)
-            {
-                _phoneSystem = null;
-            }
-            //fetch the primary call handler only if it's asked for.
-            if (_phoneSystem == null)
-            {
-                try
-                {
-                    _phoneSystem = new PhoneSystem(this.HomeServer, this.MediaSwitchObjectId);
-                }
-                catch {}
-            }
-
-            return _phoneSystem;
-        }
-
-
-        private List<NotificationDevice> _notificationDevices;
-        /// <summary>
-        /// Funtion to fetch all the notification devices of a user and return them as a list of NotificationDEvice objects.
-        /// This has to be implemented as a function, not property, so they don't get "lazy fetched" when you bind a list 
-        /// of users to a grid, do a LINQ query on them or the like
-        /// </summary>
-        /// <returns>
-        /// List of NotificationDevice objects - there should be at least 5 for every user, more if they have created additional
-        /// devices.
-        /// </returns>
-        public List<NotificationDevice> NotificationDevices(bool pForceRefetchOfData = false)
-        {
-            //if the user wants to force a refetch of data, null out the private cache of notification devices.
-            if (pForceRefetchOfData)
-            {
-                _notificationDevices = null;
-            }
-            //fetch notification device list only if it's asked for.
-            if (_notificationDevices == null)
-            {
-                GetNotificationDevices(out _notificationDevices);
-            }
-
-            return _notificationDevices;
-        }
-
-        private ClassOfService _cos;
-
-        /// <summary>
-        /// Funtion to fetch the COS instance this user is associated with.
-        /// This has to be implemented as a function, not property, so they don't get "lazy fetched" when you bind a list 
-        /// of users to a grid, do a LINQ query on them or the like
-        /// </summary>    
-        /// <returns>
-        /// instance of ClassOfService object for the COS this user is associated with.
-        /// </returns>
-        public ClassOfService Cos(bool pForceRefetchOfData = false)
-        {
-            if (pForceRefetchOfData)
-            {
-                _cos = null;
-            }
-
-            if (_cos == null)
-            {
-                _cos = new ClassOfService(this.HomeServer, this.CosObjectId);
-            }
-
-            return _cos;
-        }
-
-
-
-        private Credential _pin;
-
-        /// <summary>
-        /// Returns details of the PIN (phone password) settings - including if it's locked, time last changed, if it's set to must-change 
-        /// etc... this object does NOT allow for editing of credentials - use the ResetUserPassword method off the User object for that.
-        /// This is done as a method since if it's done as a property it'll attempt to fill it in from data pulled from Connection during
-        /// populate of a user's data.
-        /// </summary>
-        /// <returns>
-        /// instance of the credential object
-        /// </returns>
-        public Credential Pin()
-        {
-            if (_pin == null)
-            {
-                _pin = new Credential(this.HomeServer, this.ObjectId, CredentialType.Pin);
-            }
-
-            return _pin;
-        }
-
-        private Credential _password;
-
-        /// <summary>
-        /// Returns details of the Password (GUI password) settings - including if it's locked, time last changed, if it's set to must-change 
-        /// etc... this object does NOT allow for editing of credentials - use the ResetUserPassword method off the User object for that.
-        /// This is done as a method since if it's done as a property it'll attempt to fill it in from data pulled from Connection during
-        /// populate of a user's data.
-        /// </summary>
-        /// <returns>
-        /// instance of the credential object
-        /// </returns>
-        public Credential Password()
-        {
-            if (_password == null)
-            {
-                _password = new Credential(this.HomeServer, this.ObjectId, CredentialType.Password);
-            }
-
-            return _password;
-        }        
-        //reference to the ConnectionServer object used to create this user instance.
-        public ConnectionServer HomeServer { get; private set; }
-
-        //used to keep track of which properties have been updated
-        private readonly ConnectionPropertyList _changedPropList;
-
-        #endregion
-
-
-        #region Constructors
-
-        /// <summary>
-        /// generic constructor used by JSON parser
-        /// </summary>
-        public UserTemplate()
-        {
-            _changedPropList = new ConnectionPropertyList();
-        }
-
-
-        /// <summary>
-        /// Basic constructor - requires Connection server object be passed in - optionally the ObjectId and/or alias
-        /// of the template to load can be passed in.  If neither are provided an empty version of the class is created.
-        /// </summary>
-        /// <param name="pConnectionServer">
-        /// Connection server where the user template is homed.
-        /// </param>
-        /// <param name="pObjectId">
-        /// Unique identifier for template
-        /// </param>
-        /// <param name="pAlias">
-        /// Alias of template - if both alias and objectId are provided the objectId is used.
-        /// </param>
-        public UserTemplate(ConnectionServer pConnectionServer, string pObjectId="", string pAlias = ""):this()
-        {
-            if (pConnectionServer==null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced pasted to UserTemplate construtor");
-            }
-
-            HomeServer = pConnectionServer;
-            
-             if (pObjectId.Length == 0 & pAlias.Length == 0)
-            {
-                return;
-            }
-
-             WebCallResult res = this.GetUserTemplate(pObjectId, pAlias);
-            
-            if (res.Success == false)
-            {
-                throw new Exception(string.Format("UserTemplate not found in UserTemplate constructor using Alias={0} and/or ObjectId={1}\n\rError={2}"
-                                                , pAlias, pObjectId, res.ErrorText));
             }
         }
 

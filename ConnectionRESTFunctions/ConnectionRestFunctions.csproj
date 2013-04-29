@@ -74,6 +74,7 @@
     <Compile Include="ObjectTypes\PhoneSystem.cs" />
     <Compile Include="ObjectTypes\MenuEntry.cs" />
     <Compile Include="ObjectTypes\NotificationDevice.cs" />
+    <Compile Include="ObjectTypes\PhoneSystemAssociation.cs" />
     <Compile Include="ObjectTypes\Policy.cs" />
     <Compile Include="ObjectTypes\Port.cs" />
     <Compile Include="ObjectTypes\PortGroup.cs" />
@@ -94,6 +95,8 @@
     <Compile Include="ObjectTypes\ScheduleSetMember.cs" />
     <Compile Include="ObjectTypes\Cluster.cs" />
     <Compile Include="ObjectTypes\SearchSpace.cs" />
+    <Compile Include="ObjectTypes\SearchSpaceMember.cs" />
+    <Compile Include="ObjectTypes\Server.cs" />
     <Compile Include="ObjectTypes\SmppProvider.cs" />
     <Compile Include="ObjectTypes\Tenant.cs" />
     <Compile Include="ObjectTypes\TimeZones.cs" />

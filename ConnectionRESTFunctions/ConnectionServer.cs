@@ -169,7 +169,8 @@ namespace Cisco.UnityConnection.RestFunctions
         #endregion 
 
 
-        #region Constructors 
+        #region Constructors and Destructors
+ 
 
         /// <summary>
         /// default constructor - initalize everything to blank/0s

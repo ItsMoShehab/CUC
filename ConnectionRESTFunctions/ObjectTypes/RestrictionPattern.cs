@@ -23,20 +23,8 @@ namespace Cisco.UnityConnection.RestFunctions
     public class RestrictionPattern
     {
 
-        #region Fields and Properties
+        #region Constructors and Destructors
 
-        public ConnectionServer HomeServer { get; private set; }
-
-        public bool Blocked { get; set; }
-        public string NumberPattern { get; set; }
-        public string RestrictionTableObjectId { get; set; }
-        public string ObjectId { get; set; }
-        public int SequenceNumber { get; set; }
-
-        #endregion
-
-
-        #region Constructors
 
         /// <summary>
         /// Pass in the objectId of the restriction table to load, it's display name (which should be unique) or neither and the constructor
@@ -51,7 +39,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pObjectId">
         /// Optional ObjecTId of the restriction table to load.
         /// </param>
-        public RestrictionPattern(ConnectionServer pConnectionServer, string pRestrictionTableObjectId, string pObjectId="")
+        public RestrictionPattern(ConnectionServer pConnectionServer, string pRestrictionTableObjectId, string pObjectId = "")
         {
             if (pConnectionServer == null)
             {
@@ -82,7 +70,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 throw new Exception(string.Format("RestrictionPattern not found in RestrictionPattern constructor using ObjectId={0}\n\r{1}"
                                  , pObjectId, res.ErrorText));
             }
-            
+
         }
 
         /// <summary>
@@ -92,6 +80,24 @@ namespace Cisco.UnityConnection.RestFunctions
         {
         }
 
+
+        #endregion
+
+
+        #region Fields and Properties
+
+        public ConnectionServer HomeServer { get; private set; }
+
+        #endregion
+
+
+        #region RestrictionPattern Properties
+
+        public bool Blocked { get; set; }
+        public string NumberPattern { get; set; }
+        public string RestrictionTableObjectId { get; set; }
+        public string ObjectId { get; set; }
+        public int SequenceNumber { get; set; }
 
         #endregion
 

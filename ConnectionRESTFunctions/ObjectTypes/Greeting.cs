@@ -97,9 +97,13 @@ namespace Cisco.UnityConnection.RestFunctions
         //reference to the ConnectionServer object used to create this Greeting instance.
         public ConnectionServer HomeServer { get; private set; }
 
-        //used to keep track of whic properties have been updated
+        //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
 
+        #endregion
+
+
+        #region Greeting Properties
 
         private int _afterGreetingAction;
 
@@ -1083,7 +1087,6 @@ namespace Cisco.UnityConnection.RestFunctions
          }
 
         #endregion
-
 
     }
 }

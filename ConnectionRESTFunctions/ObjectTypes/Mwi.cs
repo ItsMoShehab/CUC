@@ -25,15 +25,80 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class Mwi
     {
+
+        #region Constructors and Destructors
+
+
+        /// <summary>
+        /// Generic constructor for JSON parser
+        /// </summary>
+        public Mwi()
+        {
+            //make an instanced of the changed prop list to keep track of updated properties on this object
+            _changedPropList = new ConnectionPropertyList();
+        }
+
+        /// <summary>
+        /// Creates a new instance of the Mwi class.  You must provide the ConnectionServer reference that the device lives on and an ObjectId
+        /// of the user that owns it.  You can optionally pass in the ObjectId of the device itself and it will load the data for that device, otherwise an
+        /// empty instance is returned.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// The Connection server that the device is homed on.
+        /// </param>
+        /// <param name="pUserObjectId">
+        /// The GUID that identifies the user that owns the device
+        /// </param>
+        /// <param name="pObjectId">
+        /// Optionally the ObjectId of the device itself - if passed in this will load the NotificationDevice object with data for that device from Connection.
+        /// </param>
+        public Mwi(ConnectionServer pConnectionServer, string pUserObjectId, string pObjectId = "")
+            : this()
+        {
+            if (pConnectionServer == null)
+            {
+                throw new ArgumentException("Null ConnectionServer reference passed to Mwi constructor");
+            }
+
+            if (string.IsNullOrEmpty(pUserObjectId))
+            {
+                throw new ArgumentException("Emtpy UserObjectID passed to Mwi constructor");
+            }
+
+            HomeServer = pConnectionServer;
+
+            UserObjectId = pUserObjectId;
+
+            //if the user passed in a specific ObjectId then go load that Mwi up, otherwise just return an empty instance.
+            if (pObjectId.Length == 0) return;
+
+            //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
+            WebCallResult res = GetMwi(pUserObjectId, pObjectId);
+
+            if (res.Success == false)
+            {
+                throw new Exception(string.Format("Mwi Device not found in NotificationDevice constructor using ObjectId={0}\n\r{1}"
+                                                 , pObjectId, res.ErrorText));
+            }
+
+        }
+
+
+        #endregion
+
         
-        #region Properties
+        #region Fields and Properties
         
         //reference to the ConnectionServer object used to create this notificationd evice instance.
         public ConnectionServer HomeServer { get; private set; }
 
-        //used to keep track of whic properties have been updated
+        //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
 
+        #endregion
+
+
+        #region Mwi Fields and Properties
 
         private bool _active;
         /// <summary>
@@ -179,65 +244,6 @@ namespace Cisco.UnityConnection.RestFunctions
         #endregion
 
 
-        #region Constructors
-
-        /// <summary>
-        /// Generic constructor for JSON parser
-        /// </summary>
-        public Mwi()
-        {
-            //make an instanced of the changed prop list to keep track of updated properties on this object
-            _changedPropList = new ConnectionPropertyList();
-        }
-
-        /// <summary>
-        /// Creates a new instance of the Mwi class.  You must provide the ConnectionServer reference that the device lives on and an ObjectId
-        /// of the user that owns it.  You can optionally pass in the ObjectId of the device itself and it will load the data for that device, otherwise an
-        /// empty instance is returned.
-        /// </summary>
-        /// <param name="pConnectionServer">
-        /// The Connection server that the device is homed on.
-        /// </param>
-        /// <param name="pUserObjectId">
-        /// The GUID that identifies the user that owns the device
-        /// </param>
-        /// <param name="pObjectId">
-        /// Optionally the ObjectId of the device itself - if passed in this will load the NotificationDevice object with data for that device from Connection.
-        /// </param>
-        public Mwi(ConnectionServer pConnectionServer, string pUserObjectId, string pObjectId=""):this()
-        {
-          	if (pConnectionServer==null)
-            {
-                throw new ArgumentException("Null ConnectionServer reference passed to Mwi constructor");
-            }
-
-            if (string.IsNullOrEmpty(pUserObjectId))
-            {
-                throw new ArgumentException("Emtpy UserObjectID passed to Mwi constructor");
-            }
-
-            HomeServer = pConnectionServer;
-
-            UserObjectId = pUserObjectId;
-
-            //if the user passed in a specific ObjectId then go load that handler up, otherwise just return an empty instance.
-            if (pObjectId.Length == 0) return;
-
-            //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
-            WebCallResult res = GetMwi(pUserObjectId,pObjectId);
-
-            if (res.Success == false)
-            {
-                throw new Exception(string.Format("Mwi Device not found in NotificationDevice constructor using ObjectId={0}\n\r{1}"
-                                                 ,pObjectId,res.ErrorText));
-            }
-
-        }
-
-
-        #endregion
-
-
         #region Static Methods
 
         /// <summary>
@@ -366,13 +372,27 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <summary>
         /// Add a new MWI device for a user
         /// </summary>
-        /// <param name="pConnectionServer"></param>
-        /// <param name="pUserObjectId"></param>
-        /// <param name="pDeviceDisplayName"></param>
-        /// <param name="pMediaSwitchObjectId"></param>
-        /// <param name="pMwiExtension"></param>
-        /// <param name="pActivated"></param>
-        /// <returns></returns>
+        /// <param name="pConnectionServer">
+        /// Connection server the user is homed on
+        /// </param>
+        /// <param name="pUserObjectId">
+        /// Unique identifier for user to add new MWI to
+        /// </param>
+        /// <param name="pDeviceDisplayName">
+        /// Display name for MWI device
+        /// </param>
+        /// <param name="pMediaSwitchObjectId">
+        /// Phone system the MWI will be associated with
+        /// </param>
+        /// <param name="pMwiExtension">
+        /// Extension number for the new MWI device to activate
+        /// </param>
+        /// <param name="pActivated">
+        /// Is the MWI active or not - you can add MWI devices that are not active that can be turned on later.
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResult class with details of the request/response from the server.
+        /// </returns>
         public static WebCallResult AddMwi(ConnectionServer pConnectionServer,
                                   string pUserObjectId,
                                   string pDeviceDisplayName,
@@ -558,7 +578,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the Mwi object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {

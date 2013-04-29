@@ -92,8 +92,13 @@ namespace Cisco.UnityConnection.RestFunctions
         //reference to the ConnectionServer object used to create this menu entry instance.
         public ConnectionServer HomeServer { get; private set; }
 
-        //used to keep track of whic properties have been updated
+        //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
+
+        #endregion
+
+
+        #region MenuEntry Properties
 
         private int _action;
         /// <summary>
@@ -527,6 +532,5 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #endregion
 
-        
     }
 }

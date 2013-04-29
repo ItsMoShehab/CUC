@@ -24,8 +24,70 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class CallHandlerTemplate
     {
+
+        #region Constructors and Destructors
+
+
+
+        /// <summary>
+        /// default constructor used by JSON parser
+        /// </summary>
+        public CallHandlerTemplate()
+        {
+            _changedPropList = new ConnectionPropertyList();
+        }
+
+        /// <summary>
+        /// Constructor requires ConnectionServer instance for where the template is homed on and will take the ObjectId or 
+        /// the display name of the template to load.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Connection server the template is homed on.
+        /// </param>
+        /// <param name="pObjectId">
+        /// ObjectID of the template to load - can be passed as blank if using name to lookup template.
+        /// </param>
+        /// <param name="pDisplayName">
+        /// display name to look for - it's possible to have multiple display names that conflict so the first match 
+        /// is returned in this case.
+        /// </param>
+        public CallHandlerTemplate(ConnectionServer pConnectionServer, string pObjectId, string pDisplayName = "")
+            : this()
+        {
+            if (pConnectionServer == null)
+            {
+                throw new ArgumentException("Null ConnectionServer referenced passed to CallHandlerTemplate construtor");
+            }
+
+            HomeServer = pConnectionServer;
+
+            if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pDisplayName))
+            {
+                return;
+            }
+
+            WebCallResult res = GetCallHandlerTemplate(pObjectId, pDisplayName);
+            if (res.Success == false)
+            {
+                throw new Exception("Failed to fetch handler template by alias or objectId:" + res);
+            }
+
+        }
+
+        #endregion
+
+
         #region Fields and Properties
 
+        //used to keep track of which properties have been updated
+        private readonly ConnectionPropertyList _changedPropList;
+
+        public ConnectionServer HomeServer { get; private set; }
+
+        #endregion
+
+
+        #region Call Handler Template Properties
 
         private int _afterMessageAction;
         /// <summary>
@@ -387,56 +449,11 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        //used to keep track of whic properties have been updated
-        private readonly ConnectionPropertyList _changedPropList;
-
-        public ConnectionServer HomeServer { get; private set; }
+    
 
         #endregion
 
-
-        #region Constructors
-
-
-        /// <summary>
-        /// default constructor used by JSON parser
-        /// </summary>
-        public CallHandlerTemplate()
-        {
-            _changedPropList = new ConnectionPropertyList();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pConnectionServer"></param>
-        /// <param name="pObjectId"></param>
-        /// <param name="pDisplayName"></param>
-        public CallHandlerTemplate(ConnectionServer pConnectionServer, string pObjectId, string pDisplayName=""):this()
-        {
-            if (pConnectionServer==null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced passed to CallHandlerTemplate construtor");
-            }
-
-            HomeServer = pConnectionServer;
-
-            if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pDisplayName))
-            {
-                return;
-            }
-
-            WebCallResult res = GetCallHandlerTemplate(pObjectId, pDisplayName);
-            if (res.Success == false)
-            {
-                throw new Exception("Failed to fetch handler template by alias or objectId:"+res);
-            }
-
-        }
-
-        #endregion
-
-
+        
         #region Static Methods
 
         /// <summary>
@@ -908,7 +925,7 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// If the call handler object has andy pending updates that have not yet be comitted, this will clear them out.
+        /// If the object has andy pending updates that have not yet be comitted, this will clear them out.
         /// </summary>
         public void ClearPendingChanges()
         {
@@ -943,15 +960,15 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-         /// DELETE a handler template from the Connection directory.
-         /// </summary>
-         /// <returns>
-         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
-         /// </returns>
-         public WebCallResult Delete()
-         {
-             return DeleteCallHandlerTemplate(HomeServer, ObjectId);
-         }
+        /// DELETE a handler template from the Connection directory.
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public WebCallResult Delete()
+        {
+            return DeleteCallHandlerTemplate(HomeServer, ObjectId);
+        }
 
         #endregion
 

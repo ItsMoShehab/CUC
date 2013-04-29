@@ -38,7 +38,8 @@ namespace Cisco.UnityConnection.RestFunctions
         #endregion
 
 
-        #region Constructors
+        #region Constructors and Destructors
+
 
         /// <summary>
         /// Constructor for the PhoneRecording class - this sets up the phone connection, dials the phone and waits for it to 

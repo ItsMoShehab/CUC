@@ -131,7 +131,8 @@ namespace Cisco.UnityConnection.RestFunctions
         #endregion
 
 
-        #region Constructors
+        #region Constructors and Destructors
+
 
         // Default construtor - attach the VAlidateRemoteCertificate to the validation check so we don't get errors on self signed certificates 
         //when attaching to Connection servers.

@@ -22,24 +22,23 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class PortGroupCodec
     {
-        #region Fields and Properties
 
-        public string ObjectId { get; set; }
-        public string MediaPortGroupObjectId { get; set; }
-        public string RtpCodecDefObjectId { get; set; }
-        public string RtpCodecDefDisplayName { get; set; }
-        public int PreferredPacketSizeMs { get; set; }
-        public int Preference { get; set; }
+        #region Constructors and Destructors
 
 
-        public ConnectionServer HomeServer;
-
-        #endregion
-
-        
-        #region Constructors
-
-        //constructor
+        /// <summary>
+        /// Constructor requires ConnectionServer where the port group is homed - the PortGroup ID that the codec is homed on.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// ConnectionServer that the port group is homed on.
+        /// </param>
+        /// <param name="pPortGroupObjectId">
+        /// Port group that the portgroup codec is associated with
+        /// </param>
+        /// <param name="pObjectId">
+        /// Unique identifier for the port group codec - if passed the class will be loaded with that PortGroupCodec
+        /// object.
+        /// </param>
         public PortGroupCodec(ConnectionServer pConnectionServer, string pPortGroupObjectId, string pObjectId = "")
         {
             if (pConnectionServer == null)
@@ -59,8 +58,8 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 return;
             }
-            
-            WebCallResult res= GetPortGroupCodec(pObjectId);
+
+            WebCallResult res = GetPortGroupCodec(pObjectId);
             if (res.Success == false)
             {
                 throw new Exception(string.Format("Failed to fetch PortGroupCodec by ObjectId={0}", pObjectId));
@@ -72,12 +71,31 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public PortGroupCodec()
         {
-            
+
         }
 
         #endregion
 
+        
+        #region Fields and Properties
+        
+        public ConnectionServer HomeServer;
 
+        #endregion
+
+
+        #region PortGroupCodec Properties
+
+        public string ObjectId { get; set; }
+        public string MediaPortGroupObjectId { get; set; }
+        public string RtpCodecDefObjectId { get; set; }
+        public string RtpCodecDefDisplayName { get; set; }
+        public int PreferredPacketSizeMs { get; set; }
+        public int Preference { get; set; }
+
+        #endregion
+
+     
         #region Instance Methods
 
         /// <summary>
@@ -99,7 +117,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the PortGroupCodec object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {

@@ -20,19 +20,14 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class RtpCodecDef
     {
-       #region Fields and Properties 
 
-        public string ObjectId { get; set; }
-        public string DisplayName { get; set; }
-
-        public ConnectionServer HomeServer;
-
-        #endregion
+        #region Constructors and Destructors
 
 
-        #region Constructors
-
-        //constructor
+        /// <summary>
+        /// Constructor requires the ConnectionServer object where the RtpCodec is defined.  Optionally can pass the ObjectId string
+        /// and have that specific codec definition loaded.
+        /// </summary>
         public RtpCodecDef(ConnectionServer pConnectionServer, string pObjectId = "")
         {
             if (pConnectionServer == null)
@@ -46,8 +41,8 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 return;
             }
-            
-            WebCallResult res= GetRtpCodecDef(pObjectId);
+
+            WebCallResult res = GetRtpCodecDef(pObjectId);
             if (res.Success == false)
             {
                 throw new Exception(string.Format("Failed to fetch PortGroupTemplate by ObjectId={0}", pObjectId));
@@ -59,8 +54,23 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public RtpCodecDef()
         {
-            
+
         }
+
+        #endregion
+
+
+        #region Fields and Properties 
+
+        public ConnectionServer HomeServer;
+
+        #endregion
+
+
+        #region RtpCodecDef Properties
+
+        public string ObjectId { get; set; }
+        public string DisplayName { get; set; }
 
         #endregion
 

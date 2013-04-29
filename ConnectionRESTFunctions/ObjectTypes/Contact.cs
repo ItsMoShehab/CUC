@@ -25,7 +25,8 @@ namespace Cisco.UnityConnection.RestFunctions
     public class Contact
     {
         
-        #region Constructors
+        #region Constructors and Destructors
+
 
         /// <summary>
         /// Creates a new instance of the Contact class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
@@ -82,8 +83,13 @@ namespace Cisco.UnityConnection.RestFunctions
         //reference to the ConnectionServer object used to create this contact instance.
         public ConnectionServer HomeServer { get; private set; }
 
-        //used to keep track of whic properties have been updated
+        //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
+
+        #endregion
+
+
+        #region Contact Properties
 
         public DateTime CreationTime { get; set; }
         
@@ -1031,7 +1037,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
-        /// Allows one or more properties on a handler to be udpated (for instance display name, DTMFAccessID etc...).  The caller needs to construct a list
+        /// Allows one or more properties on a contact to be udpated (for instance display name etc...).  The caller needs to construct a list
         /// of property names and new values using the ConnectionPropertyList class's "Add" method.  At least one property pair needs to be passed in 
         /// but as many as are desired can be included in a single call.
         /// </summary>

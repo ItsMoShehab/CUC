@@ -24,38 +24,15 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class PostGreetingRecording
     {
-        #region Fields and Properties
 
-        public string DisplayName { get; set; }
-        public string ObjectId { get; set; }
-
-        //reference to the ConnectionServer object used to create this instance.
-        public ConnectionServer HomeServer { get; set; }
-
-        //greeting stream files are fetched on the fly if referenced
-        private List<PostGreetingRecordingStreamFile> _greetingStreamFiles;
-        public List<PostGreetingRecordingStreamFile> GetGreetingStreamFiles(bool pForceDataRefetch=false)
-        {
-            if (pForceDataRefetch)
-            {
-                _greetingStreamFiles = null;
-            }
-            //fetch greeting options only if they are referenced
-            if (_greetingStreamFiles == null)
-            {
-                GetGreetingStreamFiles(out _greetingStreamFiles);
-            }
-
-            return _greetingStreamFiles;
-        }
-
-        #endregion
+        #region Constructors and Destructors
 
 
-        #region Constructors
-
-        //constructor
-        public PostGreetingRecording(ConnectionServer pConnectionServer, string pObjectId="", string pDisplayName="")
+        /// <summary>
+        /// Constructor requires ConnectionServer where the PostGreetingRecording is homed.  You can optionally pass the objectId
+        /// or name of a post greeting recording to have it loaded automatically.
+        /// </summary>
+        public PostGreetingRecording(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
         {
             if (pConnectionServer == null)
             {
@@ -88,6 +65,40 @@ namespace Cisco.UnityConnection.RestFunctions
         #endregion
 
 
+        #region Fields and Properties
+
+        //reference to the ConnectionServer object used to create this instance.
+        public ConnectionServer HomeServer { get; set; }
+
+        //greeting stream files are fetched on the fly if referenced - implemented as a method instead of a prperty so the 
+        //values doesn't get bound when tying a list of objects to a grid control or the like.
+        private List<PostGreetingRecordingStreamFile> _greetingStreamFiles;
+        public List<PostGreetingRecordingStreamFile> GetGreetingStreamFiles(bool pForceDataRefetch = false)
+        {
+            if (pForceDataRefetch)
+            {
+                _greetingStreamFiles = null;
+            }
+            //fetch greeting options only if they are referenced
+            if (_greetingStreamFiles == null)
+            {
+                GetGreetingStreamFiles(out _greetingStreamFiles);
+            }
+
+            return _greetingStreamFiles;
+        }
+
+        #endregion
+
+
+        #region PostGreetingRecording Properties
+
+        public string DisplayName { get; set; }
+        public string ObjectId { get; set; }
+
+        #endregion
+
+
         #region Instance Methods
 
         /// <summary>
@@ -109,7 +120,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the PostGreetingRecording object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {
@@ -274,8 +285,7 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
 
-        //helper function to fetch all greeting stream files associated with this dir handler (if any).
-        //If there are no custom recorded greetings the pGreetingStreamFiles out param is returned as null.
+        //helper function to fetch all custom post greeting stream files devined on the server
         private WebCallResult GetGreetingStreamFiles(out List<PostGreetingRecordingStreamFile> pGreetingStreamFiles)
         {
             return PostGreetingRecordingStreamFile.GetGreetingStreamFiles(HomeServer, ObjectId, out pGreetingStreamFiles);
@@ -408,7 +418,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// The out param that the filled out instance of the PostGreetingRecording class is returned on.
         /// </param>
         /// <param name="pDisplayName">
-        /// Optional display name to search for call handler on.  If both the ObjectId and display name are passed, the objectID is used.
+        /// Optional display name to search for recording on.  If both the ObjectId and display name are passed, the objectID is used.
         /// The display name search is not case sensitive.
         /// </param>
         /// <returns>

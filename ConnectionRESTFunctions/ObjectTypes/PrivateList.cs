@@ -27,21 +27,8 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class PrivateList
     {
-        #region Fields and Properties 
+        #region Constructors and Destructors
 
-        //reference to the ConnectionServer object used to create this distribution list instance.
-        public ConnectionServer HomeServer { get; private set; }
-
-        //used to keep track of which properties have been updated
-        private readonly ConnectionPropertyList _changedPropList;
-
-        //owner of the private list
-        private readonly string _userOwnerObjectId;
-
-        #endregion
-
-
-        #region Constructors
 
         /// <summary>
         /// Creates a new instance of the PrivateList class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
@@ -64,7 +51,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// as blank and this value is greater than 0 then the constructor will attempt to fill in its properties with the data for that list number 
         /// if it can be found.  An exception will be thrown if it cannot be found.
         /// </param>
-        public PrivateList(ConnectionServer pConnectionServer, string pUserOwnerObjectId, string pObjectId="", int pNumericId = 0):this()
+        public PrivateList(ConnectionServer pConnectionServer, string pUserOwnerObjectId, string pObjectId = "", int pNumericId = 0)
+            : this()
         {
             if (pConnectionServer == null)
             {
@@ -80,7 +68,7 @@ namespace Cisco.UnityConnection.RestFunctions
             _userOwnerObjectId = pUserOwnerObjectId;
 
             //if the user passed in a specific ObjectId or display name then go load that list up, otherwise just return an empty instance.
-            if (string.IsNullOrEmpty(pObjectId) & pNumericId==0)  return;
+            if (string.IsNullOrEmpty(pObjectId) & pNumericId == 0) return;
 
             //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
             WebCallResult res = GetPrivateList(pObjectId, pNumericId);
@@ -102,6 +90,20 @@ namespace Cisco.UnityConnection.RestFunctions
             _changedPropList = new ConnectionPropertyList();
         }
 
+
+        #endregion
+
+
+        #region Fields and Properties 
+
+        //reference to the ConnectionServer object used to create this distribution list instance.
+        public ConnectionServer HomeServer { get; private set; }
+
+        //used to keep track of which properties have been updated
+        private readonly ConnectionPropertyList _changedPropList;
+
+        //owner of the private list
+        private readonly string _userOwnerObjectId;
 
         #endregion
 
@@ -355,8 +357,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pNumericId">
         /// Numeric id of the private list from 1 to 99.  Pass in 0 and the routine will create the list in the next available slot.
         /// </param>
-        /// <param name="oDistributionList">
-        /// Out parameter that returns an instance of a CallHandler object if the creation completes ok.  If the user fails the creation then this is 
+        /// <param name="pPrivateLists">
+        /// Out parameter that returns an instance of a PrivateList object if the creation completes ok.  If the user fails the creation then this is 
         /// returned as NULL.
         /// </param>
         /// <returns>
@@ -366,16 +368,16 @@ namespace Cisco.UnityConnection.RestFunctions
                                                     string pOwnerUserObjectId,
                                                     string pDisplayName,
                                                     int pNumericId,
-                                                    out PrivateList oDistributionList)
+                                                    out PrivateList pPrivateLists)
         {
-            oDistributionList = null;
+            pPrivateLists = null;
 
             WebCallResult res = AddPrivateList(pConnectionServer, pOwnerUserObjectId,pDisplayName, pNumericId);
 
             //if the create goes through, fetch the list as an object and return it all filled in.
             if (res.Success)
             {
-                res = GetPrivateList(out oDistributionList, pConnectionServer, pOwnerUserObjectId, res.ReturnedObjectId);
+                res = GetPrivateList(out pPrivateLists, pConnectionServer, pOwnerUserObjectId, res.ReturnedObjectId);
             }
 
             return res;
@@ -857,7 +859,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {
@@ -994,7 +996,7 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// DELETE a call handler from the Connection directory.
+        /// DELETE a private list from a user
         /// </summary>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -1094,7 +1096,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
-        /// If the call handler object has andy pending updates that have not yet be comitted, this will clear them out.
+        /// If the object has andy pending updates that have not yet be comitted, this will clear them out.
         /// </summary>
         public void ClearPendingChanges()
         {

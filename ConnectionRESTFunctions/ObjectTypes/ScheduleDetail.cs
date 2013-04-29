@@ -20,29 +20,6 @@ namespace Cisco.UnityConnection.RestFunctions
     public class ScheduleDetail
     {
 
-        #region Fields and Properties 
-        
-        //reference to the ConnectionServer object used to create this Alternate Extension instance.
-        public ConnectionServer HomeServer { get; private set; }
-
-        public string ObjectId { get; set; }
-        public string ScheduleObjectId { get; set; }
-        public bool IsActiveMonday { get; set; }
-        public bool IsActiveTuesday { get; set; }
-        public bool IsActiveWednesday { get; set; }
-        public bool IsActiveThursday { get; set; }
-        public bool IsActiveFriday { get; set; }
-        public bool IsActiveSaturday { get; set; }
-        public bool IsActiveSunday { get; set; }
-        public int StartTime { get; set; }
-        public int EndTime { get; set; }
-        public string StartDate { get; set; }
-        public string EndDate { get; set; }
-        public string Subject { get; set; }
-
-        #endregion
-
-
         #region Constructors and Destructors
 
         /// <summary>
@@ -61,14 +38,14 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pScheduleDetailObjectId">
         /// Optional schedule detail identifier 
         /// </param>
-        public ScheduleDetail (ConnectionServer pConnectionServer, string pScheduleObjectId="", string pScheduleDetailObjectId = "")
+        public ScheduleDetail(ConnectionServer pConnectionServer, string pScheduleObjectId = "", string pScheduleDetailObjectId = "")
         {
             if (pConnectionServer == null)
             {
                 throw new ArgumentException("Null Connection server passed to ScheduleDetail constructor");
             }
 
-            //if the user passed in a specific ObjectId or display name then go load that handler up, otherwise just return an empty instance.
+            //if the user passed in a specific ObjectId then go load that schedule up, otherwise just return an empty instance.
             if (string.IsNullOrEmpty(pScheduleObjectId) | string.IsNullOrEmpty(pScheduleDetailObjectId)) return;
 
             ObjectId = pScheduleDetailObjectId;
@@ -76,7 +53,7 @@ namespace Cisco.UnityConnection.RestFunctions
             HomeServer = pConnectionServer;
 
             //if the ObjectId or display name are passed in then fetch the data on the fly and fill out this instance
-            WebCallResult res = GetScheduleDetail(pScheduleObjectId,pScheduleDetailObjectId);
+            WebCallResult res = GetScheduleDetail(pScheduleObjectId, pScheduleDetailObjectId);
 
             if (res.Success == false)
             {
@@ -91,6 +68,34 @@ namespace Cisco.UnityConnection.RestFunctions
         public ScheduleDetail()
         {
         }
+
+        #endregion
+
+
+        #region Fields and Properties 
+        
+        //reference to the ConnectionServer object used to create this Alternate Extension instance.
+        public ConnectionServer HomeServer { get; private set; }
+
+        #endregion
+
+
+        #region ScheduleDetail Properties
+
+        public string ObjectId { get; set; }
+        public string ScheduleObjectId { get; set; }
+        public bool IsActiveMonday { get; set; }
+        public bool IsActiveTuesday { get; set; }
+        public bool IsActiveWednesday { get; set; }
+        public bool IsActiveThursday { get; set; }
+        public bool IsActiveFriday { get; set; }
+        public bool IsActiveSaturday { get; set; }
+        public bool IsActiveSunday { get; set; }
+        public int StartTime { get; set; }
+        public int EndTime { get; set; }
+        public string StartDate { get; set; }
+        public string EndDate { get; set; }
+        public string Subject { get; set; }
 
         #endregion
 

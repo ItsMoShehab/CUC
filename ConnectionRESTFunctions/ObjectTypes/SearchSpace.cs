@@ -17,22 +17,57 @@ using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
+    /// <summary>
+    /// Class that contains methods for finding, fetching, adding, updating and deleting search space object in Connection
+    /// </summary>
     public class SearchSpace
     {
-        
+
+        #region Constructors and Destructors
+
+
+        /// <summary>
+        /// Constructor requires ConnectionServer object where SearchSpace is homed.  Can optionally pass ObjectId or name
+        /// of search space to load data for.
+        /// </summary>
+        public SearchSpace(ConnectionServer pConnectionServer, string pObjectId = "", string pName = "")
+        {
+            if (pConnectionServer == null)
+            {
+                throw new ArgumentException("Null ConnectionServer referenced pasted to SearchSpace construtor");
+            }
+
+            HomeServer = pConnectionServer;
+
+            if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pName))
+            {
+                return;
+            }
+
+            WebCallResult res = GetSearchSpace(pObjectId, pName);
+
+            if (res.Success == false)
+            {
+                throw new Exception(string.Format("Unable to find search space by objectId={0}, name={1}. Error={2}", pObjectId, pName, res));
+            }
+        }
+
+        /// <summary>
+        /// General constructor for Json parsing library
+        /// </summary>
+        public SearchSpace()
+        {
+        }
+
+        #endregion
+
+
         #region Fields and Properties 
 
         //reference to the ConnectionServer object used to create this instance.
         public ConnectionServer HomeServer { get; private set; }
 
-        public string Description { get; set; }
-        public string Name { get; set; }
-        public string ObjectId { get; set; }
-        public string LocationObjectId { get; set; }
-        public DateTime TimeOwnershipChanged { get; set; }
-
-        private List<Partition> _partitions; 
-        
+        private List<Partition> _partitions;
         /// <summary>
         /// Lazy fetch method to return list of member partitions for the search space instance.  Impelmented as a method isntead of a property
         /// so it doesn't get triggered when a generic list of search space objects is bound to a grid or executed in LINQ function.
@@ -61,37 +96,13 @@ namespace Cisco.UnityConnection.RestFunctions
         #endregion
 
 
-        #region Constructors
+        #region SearchSpace Properties
 
-        //constructor
-        public SearchSpace(ConnectionServer pConnectionServer, string pObjectId="", string pName="")
-        {
-            if (pConnectionServer == null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced pasted to SearchSpace construtor");
-            }
-
-            HomeServer = pConnectionServer;
-
-            if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pName))
-            {
-                return;
-            }
-            
-            WebCallResult res = GetSearchSpace(pObjectId, pName);
-
-            if (res.Success == false)
-            {
-                throw new Exception(string.Format("Unable to find search space by objectId={0}, name={1}. Error={2}", pObjectId, pName, res));
-            }
-        }
-
-        /// <summary>
-        /// General constructor for Json parsing library
-        /// </summary>
-        public SearchSpace()
-        {
-        }
+        public string Description { get; set; }
+        public string Name { get; set; }
+        public string ObjectId { get; set; }
+        public string LocationObjectId { get; set; }
+        public DateTime TimeOwnershipChanged { get; set; }
 
         #endregion
 
@@ -108,7 +119,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
-        /// Dumps out all the properties associated with the instance of the call handler object in "name=value" format - each pair is on its
+        /// Dumps out all the properties associated with the instance of the SearchSpace object in "name=value" format - each pair is on its
         /// own line in the string returned.
         /// </summary>
         /// <param name="pPrefix">
@@ -116,7 +127,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {
@@ -435,33 +446,6 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             return res;
-
-            //create partition objects for each partition found in the members and add it to a generic list
-
-            //foreach (var oElement in res.XmlElement.Elements())
-            //{
-            //    foreach (var oSubElement in oElement.Elements())
-            //    {
-            //        if (oSubElement.Name.ToString().Equals("PartitionObjectId"))
-            //        {
-            //            try
-            //            {
-            //                Partition oNewPartition = new Partition(pConnectionServer, oSubElement.Value);
-            //                pPartitions.Add(oNewPartition);
-            //                break;
-            //            }
-            //            catch (Exception ex)
-            //            {
-            //                res.Success = false;
-            //                res.ErrorText = ex.ToString();
-            //                return res;
-            //            }
-            //        }
-            //    }
-            //}
-
-            //res.Success = true;
-            //return res;
         }
 
 
@@ -834,16 +818,7 @@ namespace Cisco.UnityConnection.RestFunctions
             return "";
         }
 
-        /// <summary>
-        /// Mapping class used to fetch partitions associated with a search space (if any)
-        /// </summary>
-        public class SearchSpaceMember
-        {
-            public string ObjectId { get; set; }
-            public string PartitionObjectId { get; set; }
-            public string SearchSpaceObjectId { get; set; }
-            public int SortOrder { get; set; }
-        }
+       
 
         #endregion
 

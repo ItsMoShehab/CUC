@@ -140,18 +140,9 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class UserBase
     {
-        #region Fields and Properties
 
-        //reference to the ConnectionServer object used to create this user instance.
-        public ConnectionServer HomeServer { get; private set; }
+        #region Constructors and Destructors
 
-        //used to keep track of whic properties have been updated
-        internal ConnectionPropertyList _changedPropList;
-
-        #endregion
-
-
-        #region Constructors
 
         /// <summary>
         /// Creates a new instance of the UserBase class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
@@ -191,7 +182,7 @@ namespace Cisco.UnityConnection.RestFunctions
             if (res.Success == false)
             {
                 throw new Exception(string.Format("User not found in UserBase constructor using Alias={0} and/or ObjectId={1}\n\rError={2}"
-                                                , pAlias, pObjectId,res.ErrorText));
+                                                , pAlias, pObjectId, res.ErrorText));
             }
         }
 
@@ -204,6 +195,17 @@ namespace Cisco.UnityConnection.RestFunctions
             _changedPropList = new ConnectionPropertyList();
         }
 
+
+        #endregion
+
+
+        #region Fields and Properties
+
+        //reference to the ConnectionServer object used to create this object instance.
+        public ConnectionServer HomeServer { get; private set; }
+
+        //used to keep track of which properties have been updated
+        internal ConnectionPropertyList _changedPropList;
 
         #endregion
 
@@ -2158,7 +2160,8 @@ namespace Cisco.UnityConnection.RestFunctions
     public class UserFull : UserBase
     {
 
-        #region Constructors
+        #region Constructors and Destructors
+
 
         /// <summary>
         /// Create an empty instance of the class - for testing purposes

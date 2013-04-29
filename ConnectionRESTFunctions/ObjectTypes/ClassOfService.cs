@@ -26,16 +26,70 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class ClassOfService
     {
+
+        #region Constructor
+
+        /// <summary>
+        /// Generic constructor for JSON parsing library
+        /// </summary>
+        public ClassOfService()
+        {
+            //make an instanced of the changed prop list to keep track of updated properties on this object
+            _changedPropList = new ConnectionPropertyList();
+        }
+
+        /// <summary>
+        /// Creates a new instance of the TransferOption class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
+        /// updating data for this entry.  
+        /// If you pass the pTransferOptionType parameter the transfer option is automatically filled with data for that entry from the server.  
+        /// If no pTransferOptionType is passed an empty instance of the TransferOption class is returned (so you can fill it out on your own).
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Instance of a ConnectonServer object which points to the home server for the transfer option being created.
+        /// </param>
+        /// <param name="pObjectId">ObjectId of the COS to load - can ba passed blank if using display name for lookup</param>
+        /// <param name="pDisplayName">Display name of COS to search for</param>
+        public ClassOfService(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+            : this()
+        {
+            if (pConnectionServer == null)
+            {
+                throw new ArgumentException("Null ConnectionServer passed to TransferOption constructor.");
+            }
+
+            HomeServer = pConnectionServer;
+
+            //if the user passed in a specific ObjectId or display name then go load that COS up, otherwise just return an empty instance.
+            if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pDisplayName))) return;
+
+            //if the ObjectId or display name are passed in then fetch the data on the fly and fill out this instance
+            WebCallResult res = GetClassOfService(pObjectId, pDisplayName);
+
+            if (res.Success == false)
+            {
+                throw new Exception(string.Format("COS not found in ClassOfService constructor using ObjectId={0} and DisplayName={1}\n\r{2}"
+                                 , pObjectId, pDisplayName, res.ErrorText));
+            }
+        }
+
+
+        #endregion
+
+
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this TransferOption instance.
         public ConnectionServer HomeServer { get; private set; }
 
-        //used to keep track of whic properties have been updated
+        //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
 
-        //COS properties from the REST interface
+        #endregion
 
+
+        #region Class of Service Properties
+
+        //COS properties from the REST interface
         private bool _accessFaxMail;
         public bool AccessFaxMail
         {
@@ -478,7 +532,7 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// The unique identifier of the LocationVMS object to which this system distribution list belongs.
+        /// The unique identifier of the LocationVMS object to which this COS list belongs.
         /// </summary>
         [JsonProperty]
         public String LocationObjectId { get; private set; }
@@ -493,7 +547,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
-        /// A flag indicating whether this distribution list can be deleted via an administrative application such as Cisco Unity Connection 
+        /// A flag indicating whether this COS can be deleted via an administrative application such as Cisco Unity Connection 
         /// Administration. It is used to prevent deletion of factory defaults
         /// </summary>
         private bool _undeletable;
@@ -611,54 +665,6 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             return _restrictionTableOutcall;
-        }
-
-
-        #endregion
-
-        
-        #region Constructor
-
-        /// <summary>
-        /// Generic constructor for JSON parsing library
-        /// </summary>
-        public ClassOfService()
-        {
-            //make an instanced of the changed prop list to keep track of updated properties on this object
-            _changedPropList = new ConnectionPropertyList();
-        }
-
-        /// <summary>
-        /// Creates a new instance of the TransferOption class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
-        /// updating data for this entry.  
-        /// If you pass the pTransferOptionType parameter the transfer option is automatically filled with data for that entry from the server.  
-        /// If no pTransferOptionType is passed an empty instance of the TransferOption class is returned (so you can fill it out on your own).
-        /// </summary>
-        /// <param name="pConnectionServer">
-        /// Instance of a ConnectonServer object which points to the home server for the transfer option being created.
-        /// </param>
-        /// <param name="pObjectId"></param>
-        /// <param name="pDisplayName"></param>
-        public ClassOfService(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = ""):this()
-        {
-            if (pConnectionServer == null)
-            {
-                throw new ArgumentException("Null ConnectionServer passed to TransferOption constructor.");
-            }
-
-            HomeServer = pConnectionServer;
-
-            //if the user passed in a specific ObjectId or display name then go load that COS up, otherwise just return an empty instance.
-            if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pDisplayName))) return;
-
-            //if the ObjectId or display name are passed in then fetch the data on the fly and fill out this instance
-            WebCallResult res = GetClassOfService(pObjectId, pDisplayName);
-
-            if (res.Success == false)
-            {
-                throw new Exception(string.Format("COS not found in ClassOfService constructor using ObjectId={0} and DisplayName={1}\n\r{2}"
-                                 , pObjectId, pDisplayName, res.ErrorText));
-            }
         }
 
 
@@ -782,7 +788,7 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// returns a single DistributionList object from an ObjectId string passed in or optionally an alias string.
+        /// returns a single ClassOfService object from an ObjectId string passed in or optionally an alias string.
         /// </summary>
         /// <param name="pConnectionServer">
         /// Connection server that the list is homed on.
@@ -791,10 +797,10 @@ namespace Cisco.UnityConnection.RestFunctions
         /// The ObjectId of the list to load
         /// </param>
         /// <param name="pClassOfService">
-        /// The out param that the filled out instance of the DistributionList class is returned on.
+        /// The out param that the filled out instance of the ClassOfService class is returned on.
         /// </param>
         /// <param name="pDisplayName">
-        /// Optional alias to search for distribution list on.  If both the ObjectId and alias are passed, the objectID is used.
+        /// Optional display name to search on.  If both the ObjectId and alias are passed, the objectID is used.
         /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -820,7 +826,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //create a new DistributionList instance passing the ObjectId (or alias) which fills out the data automatically
+            //create a new COS instance passing the ObjectId (or alias) which fills out the data automatically
             try
             {
                 pClassOfService = new ClassOfService(pConnectionServer, pObjectId, pDisplayName);
@@ -835,18 +841,16 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// Allows for the creation of a new distribution list on the Connection server directory.  The display name and alias must be provided 
-        /// but the extension can be blank.  Other distribution list properties and their values may be passed in via the ConnectonPropertyList 
-        /// structure.
+        /// Allows for the creation of a new COS on the Connection server directory.  The display name must be provided .
         /// </summary>
         /// <param name="pConnectionServer">
-        /// Reference to the ConnectionServer object that points to the home server where the call handler is being added.
+        /// Reference to the ConnectionServer object that points to the home server where the COS is being added.
         /// </param>
         /// <param name="pDisplayName">
         /// Display name to be used for the new list.
         /// </param>
         /// <param name="pPropList">
-        /// List ConnectionProperty pairs that identify a handlers property name and a new value for that property to apply to the list being created.
+        /// List ConnectionProperty pairs that identify a property name and a new value for that property to apply to the object being created.
         /// This is passed in as a ConnectionPropertyList instance which contains 1 or more ConnectionProperty instances.  Can be passed as null here.
         /// </param>
         /// <returns>
@@ -907,18 +911,17 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
-        /// Allows for the creation of a new distribution list on the Connection server directory.  The alias must be provided but the 
-        /// extension can be blank.  
+        /// Allows for the creation of a new COS on the Connection server directory.  The name must be provided
         /// </summary>
         /// <remarks>
-        /// This is an alternateive AddDistributionList that passes back a DistributionList object with the newly created list filled 
+        /// This is an alternateive AddClassOfService that passes back a ClassOfService object with the newly created list filled 
         /// out in it if the add goes through.
         /// </remarks>
         /// <param name="pConnectionServer">
         /// Reference to the ConnectionServer object that points to the home server where the list is being added.
         /// </param>
         /// <param name="pDisplayName">
-        /// Display name to be used for the new distribution list.  
+        /// Display name to be used for the new cos.  
         /// </param>
         /// <param name="pPropList">
         /// List ConnectionProperty pairs that identify a list's property name and a new value for that property to apply to the list being created.
@@ -1050,7 +1053,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {
@@ -1080,15 +1083,14 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// Fills the current instance of DirectoryHandler in with properties fetched from the server.  If both the display name and ObjectId
+        /// Fills the current instance of ClassOfService in with properties fetched from the server.  If both the display name and ObjectId
         /// parameters are provided, the ObjectId is used for the search.
         /// </summary>
         /// <param name="pObjectId">
-        /// Unique GUID of the interview handler to fetch - can be blank if the display name is passed in.
+        /// Unique GUID of the COS to fetch - can be blank if the display name is passed in.
         /// </param>
         /// <param name="pDisplayName">
-        /// Display name (required to be unique for all interview handlers) to search on an interview handler by.  Can be blank if the ObjectId 
-        /// parameter is provided.
+        /// Display name to search by.  Can be blank if the ObjectId parameter is provided.
         /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -1235,7 +1237,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
-        /// If the call handler object has andy pending updates that have not yet be comitted, this will clear them out.
+        /// If the object has andy pending updates that have not yet be comitted, this will clear them out.
         /// </summary>
         public void ClearPendingChanges()
         {

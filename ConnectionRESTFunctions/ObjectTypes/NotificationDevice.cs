@@ -26,13 +26,86 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class NotificationDevice
     {
-        #region Properties
+
+        #region Constructors and Destructors
+
+
+        /// <summary>
+        /// Generic constructor for JSON parser
+        /// </summary>
+        public NotificationDevice()
+        {
+            //make an instanced of the changed prop list to keep track of updated properties on this object
+            _changedPropList = new ConnectionPropertyList();
+        }
+
+        /// <summary>
+        /// Creates a new instance of the NotificationDevice class.  You must provide the ConnectionServer reference that the device lives on and an ObjectId
+        /// of the user that owns it.  You can optionally pass in the ObjectId of the device itself and it will load the data for that device, otherwise an
+        /// empty instance is returned.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// The Connection server that the device is homed on.
+        /// </param>
+        /// <param name="pUserObjectId">
+        /// The GUID that identifies the user that owns the device
+        /// </param>
+        /// <param name="pObjectId">
+        /// Optionally the ObjectId of the device itself - if passed in this will load the NotificationDevice object with data for that device from Connection.
+        /// </param>
+        /// <param name="pDisplayName">
+        /// Optional display name of the device - names must be unique across all devices so this can be used for fetching a specific notificaiton device
+        /// of any type.
+        /// </param>
+        public NotificationDevice(ConnectionServer pConnectionServer, string pUserObjectId, string pObjectId = "", string pDisplayName = "")
+            : this()
+        {
+            if (pConnectionServer == null)
+            {
+                throw new ArgumentException("Null ConnectionServer reference passed to NotificationDevice constructor");
+            }
+
+            if (string.IsNullOrEmpty(pUserObjectId))
+            {
+                if (Debugger.IsAttached) Debugger.Break();
+                //throw new ArgumentException("Empty user objectId passed to NotificationDevice constructor");
+            }
+
+            HomeServer = pConnectionServer;
+            UserObjectId = pUserObjectId;
+
+            if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pDisplayName))
+            {
+                return;
+            }
+
+            //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
+            WebCallResult res = GetNotificationDevice(pUserObjectId, pObjectId, pDisplayName);
+
+            if (res.Success == false)
+            {
+                throw new Exception(string.Format("Notification Device not found in NotificationDevice constructor using ObjectId={0} or " +
+                                                  "Display name={1}\n\r{2}", pObjectId, pDisplayName, res.ErrorText));
+            }
+
+        }
+
+
+        #endregion
+
+
+        #region Fields and Properties
         
         //reference to the ConnectionServer object used to create this notificationd evice instance.
         public ConnectionServer HomeServer { get; private set; }
 
-        //used to keep track of whic properties have been updated
+        //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
+
+        #endregion
+
+
+        #region NotificationDevice Properties
 
         private bool _active;
         /// <summary>
@@ -506,71 +579,6 @@ namespace Cisco.UnityConnection.RestFunctions
                 _waitConnect = value;
             }
         }
-
-        #endregion
-
-
-        #region Constructors
-
-        /// <summary>
-        /// Generic constructor for JSON parser
-        /// </summary>
-        public NotificationDevice()
-        {
-            //make an instanced of the changed prop list to keep track of updated properties on this object
-            _changedPropList = new ConnectionPropertyList();   
-        }
-
-        /// <summary>
-        /// Creates a new instance of the NotificationDevice class.  You must provide the ConnectionServer reference that the device lives on and an ObjectId
-        /// of the user that owns it.  You can optionally pass in the ObjectId of the device itself and it will load the data for that device, otherwise an
-        /// empty instance is returned.
-        /// </summary>
-        /// <param name="pConnectionServer">
-        /// The Connection server that the device is homed on.
-        /// </param>
-        /// <param name="pUserObjectId">
-        /// The GUID that identifies the user that owns the device
-        /// </param>
-        /// <param name="pObjectId">
-        /// Optionally the ObjectId of the device itself - if passed in this will load the NotificationDevice object with data for that device from Connection.
-        /// </param>
-        /// <param name="pDisplayName">
-        /// Optional display name of the device - names must be unique across all devices so this can be used for fetching a specific notificaiton device
-        /// of any type.
-        /// </param>
-        public NotificationDevice(ConnectionServer pConnectionServer, string pUserObjectId, string pObjectId="",string pDisplayName=""):this()
-        {
-          	if (pConnectionServer==null)
-            {
-                throw new ArgumentException("Null ConnectionServer reference passed to NotificationDevice constructor");
-            }
-
-            if (string.IsNullOrEmpty(pUserObjectId))
-            {
-                if (Debugger.IsAttached) Debugger.Break();
-                //throw new ArgumentException("Empty user objectId passed to NotificationDevice constructor");
-            }
-
-            HomeServer = pConnectionServer;
-            UserObjectId = pUserObjectId;
-
-            if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pDisplayName))
-            {
-                return;
-            }
-
-            //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
-            WebCallResult res = GetNotificationDevice(pUserObjectId,pObjectId, pDisplayName);
-
-            if (res.Success == false)
-            {
-                throw new Exception(string.Format("Notification Device not found in NotificationDevice constructor using ObjectId={0} or " +
-                                                  "Display name={1}\n\r{2}",pObjectId,pDisplayName, res.ErrorText));
-            }
-
-        }
-
 
         #endregion
 
@@ -1337,7 +1345,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the NotificationDevice object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {

@@ -16,8 +16,67 @@ using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
+    /// <summary>
+    /// Read only class that provides methods to fetch TUI or GUI credentials for users
+    /// </summary>
     public class Credential
     {
+
+        #region Constructors and Destructors
+
+
+        /// <summary>
+        /// Creates a new instance of the Credential class.  You must provide the ConnectionServer reference that the user lives on and an ObjectId
+        /// of the user that owns it.  
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// The Connection server that the Credential is homed on.
+        /// </param>
+        /// <param name="pUserObjectId">
+        /// The GUID that identifies the user that owns the credential
+        /// </param>
+        /// <param name="pCredentialType">
+        /// The credential type to fetch for the user (PIN or GUI Password)
+        ///  </param>
+        public Credential(ConnectionServer pConnectionServer, string pUserObjectId, CredentialType pCredentialType)
+        {
+            if (pConnectionServer == null)
+            {
+                throw new ArgumentException("Null ConnectionServer reference passed to Credential constructor");
+            }
+
+            if (string.IsNullOrEmpty(pUserObjectId))
+            {
+                throw new ArgumentException("Emtpy UserObjectID passed to Credential constructor");
+            }
+
+            HomeServer = pConnectionServer;
+
+            UserObjectId = pUserObjectId;
+
+            CredentialType = pCredentialType;
+
+            WebCallResult res = GetCredential(pUserObjectId, pCredentialType);
+
+            if (res.Success == false)
+            {
+                throw new Exception(string.Format("Credential not found in Credential constructor using UserObjectID={0}\n\r{1}"
+                                                 , pUserObjectId, res.ErrorText));
+            }
+
+        }
+
+        /// <summary>
+        /// generic constructor for JSON parsing library
+        /// </summary>
+        public Credential()
+        {
+
+        }
+
+        #endregion
+
+
         #region Fields and properties
 
         //reference to the ConnectionServer object used to create this credential instance.
@@ -46,60 +105,6 @@ namespace Cisco.UnityConnection.RestFunctions
         public bool Locked { get; set; }
         public DateTime TimeChanged { get; set; }
         public string UserObjectId { get; set; }
-
-        #endregion
-
-
-        #region Constructors
-
-        /// <summary>
-        /// Creates a new instance of the Credential class.  You must provide the ConnectionServer reference that the user lives on and an ObjectId
-        /// of the user that owns it.  
-        /// </summary>
-        /// <param name="pConnectionServer">
-        /// The Connection server that the Credential is homed on.
-        /// </param>
-        /// <param name="pUserObjectId">
-        /// The GUID that identifies the user that owns the credential
-        /// </param>
-        /// <param name="pCredentialType">
-        /// The credential type to fetch for the user (PIN or GUI Password)
-        ///  </param>
-        public Credential(ConnectionServer pConnectionServer, string pUserObjectId, CredentialType pCredentialType)
-        {
-          	if (pConnectionServer==null)
-            {
-                throw new ArgumentException("Null ConnectionServer reference passed to Credential constructor");
-            }
-
-            if (string.IsNullOrEmpty(pUserObjectId))
-            {
-                throw new ArgumentException("Emtpy UserObjectID passed to Credential constructor");
-            }
-
-            HomeServer = pConnectionServer;
-
-            UserObjectId = pUserObjectId;
-
-            CredentialType = pCredentialType;
-
-            WebCallResult res = GetCredential(pUserObjectId,pCredentialType);
-
-            if (res.Success == false)
-            {
-                throw new Exception(string.Format("Credential not found in Credential constructor using UserObjectID={0}\n\r{1}"
-                                                 ,pUserObjectId,res.ErrorText));
-            }
-
-        }
-
-        /// <summary>
-        /// generic constructor for JSON parsing library
-        /// </summary>
-        public Credential()
-        {
-            
-        }
 
         #endregion
 

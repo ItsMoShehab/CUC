@@ -19,29 +19,19 @@ using Newtonsoft.Json;
 namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
-    /// Class that provides methods for creating, featching and deleting policies in Connection.
+    /// Class that provides methods for featching policies in Connection.  No adding/updating/deleting of policies
+    /// is supported yet.
     /// </summary>
     public class Policy
     {
-        #region Fields and Properties 
 
-        public string ObjectId { get; set; }
-        public string UserObjectId { get; set; }
-        public string VmsObjectId { get; set; }
-        public string RoleObjectId { get; set; }
-        public DateTime DateCreated { get; set; }
-        public string TargetVmsObjectId { get; set; }
-        public string TargetHandlerObjectId { get; set; }
-
-        //reference to the ConnectionServer object used to create this instance.
-        public ConnectionServer HomeServer { get; private set; }
-
-        #endregion
+        #region Constructors and Destructors
 
 
-        #region Constructors
-
-        //constructor
+        /// <summary>
+        /// Constructor requires the ConnectionServer that the Policy object lives on and can optionally take an ObjectId for 
+        /// a policy to load up data for.
+        /// </summary>
         public Policy(ConnectionServer pConnectionServer, string pObjectId = "")
         {
             if (pConnectionServer == null)
@@ -55,11 +45,11 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 return;
             }
-            
-            WebCallResult res= GetPolicy(pObjectId);
+
+            WebCallResult res = GetPolicy(pObjectId);
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Failed to fetch policy by ObjectId={0}",pObjectId));
+                throw new Exception(string.Format("Failed to fetch policy by ObjectId={0}", pObjectId));
             }
         }
 
@@ -68,8 +58,30 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public Policy()
         {
-            
+
         }
+
+        #endregion
+
+
+        #region Fields and Properties 
+
+        //reference to the ConnectionServer object used to create this instance.
+        public ConnectionServer HomeServer { get; private set; }
+
+        #endregion
+
+
+        #region Policy Properties
+
+        public DateTime DateCreated { get; set; }
+        
+        public string ObjectId { get; set; }
+        public string RoleObjectId { get; set; }
+        public string TargetVmsObjectId { get; set; }
+        public string TargetHandlerObjectId { get; set; }
+        public string UserObjectId { get; set; }
+        public string VmsObjectId { get; set; }
 
         #endregion
 
@@ -87,7 +99,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
-        /// Dumps out all the properties associated with the instance of the call handler object in "name=value" format - each pair is on its
+        /// Dumps out all the properties associated with the instance of the policy object in "name=value" format - each pair is on its
         /// own line in the string returned.
         /// </summary>
         /// <param name="pPrefix">
@@ -95,7 +107,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the Policy object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {
@@ -144,116 +156,10 @@ namespace Cisco.UnityConnection.RestFunctions
             return res;
         }
 
-
-        /// DELETE not yet supported
-        /// <summary>
-        /// Remove policy definition from Connection
-        /// </summary>
-        /// <returns></returns>
-        //public WebCallResult DELETE()
-        //{
-        //    return DeletePolicy(this.HomeServer, this.ObjectId);
-        //}
-
         #endregion
 
 
         #region Static Methods
-
-
-        ///NOTE: ADD and DELETE are not yet supported for policies
-        /// <summary>
-        /// Allows for the creation of a new policy on the Connection server directory.  the UserObjectId and RoleObjectId are required for 
-        /// all policies, the targetVMSObjectId is required only for the Greetings Administrator role to identify the call handler the user 
-        /// is being added as an owner for.
-        /// </summary>
-        /// <param name="pConnectionServer">
-        /// Reference to the ConnectionServer object that points to the home server where the policy is being added.
-        /// </param>
-        /// <param name="pRoleObjectId">
-        /// The role to assign as part of the policy - required.
-        /// </param>
-        /// <param name="pUserObjectId">
-        /// The user the policy is being created for - required.
-        /// </param>
-        /// <param name="pTargetVmsObjectId">
-        /// Optional target VMS object id - the Greetings Adminsistrator role requires a call handler ObjectId here or an error will be thrown.
-        /// </param>
-        /// <returns>
-        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
-        /// </returns>
-        //public static WebCallResult AddPolicy(ConnectionServer pConnectionServer,
-        //                                            string pUserObjectId,
-        //                                            string pRoleObjectId,
-        //                                            string pTargetVmsObjectId = "")
-        //{
-        //    WebCallResult res = new WebCallResult();
-        //    res.Success = false;
-
-        //    if (pConnectionServer == null)
-        //    {
-        //        res.ErrorText = "Null ConnectionServer referenced passed to AddPolicy";
-        //        return res;
-        //    }
-
-        //    //make sure that something is passed in for the 2 required params - the extension is optional.
-        //    if (String.IsNullOrEmpty(pUserObjectId) || string.IsNullOrEmpty(pRoleObjectId))
-        //    {
-        //        res.ErrorText = "Empty value passed for one or more required parameters in AddPolicy on ConnectionServer.cs";
-        //        return res;
-        //    }
-
-        //    string strBody = "<Policy>";
-        //    strBody += string.Format("<{0}>{1}</{0}>", "UserObjectId", pUserObjectId);
-        //    strBody += string.Format("<{0}>{1}</{0}>", "RoleObjectId", pRoleObjectId);
-
-        //    if (!string.IsNullOrEmpty(pTargetVmsObjectId))
-        //    {
-        //        strBody += string.Format("<{0}>{1}</{0}>", "TargetVmsObjectId", pTargetVmsObjectId);
-        //    }
-
-        //    strBody += "</Policy>";
-
-        //    res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "policies", MethodType.POST,pConnectionServer,strBody);
-
-        //    //if the call went through then the ObjectId will be returned in the URI form.
-        //    if (res.Success)
-        //    {
-        //        if (res.ResponseText.Contains(@"/vmrest/policies/"))
-        //        {
-        //            res.ReturnedObjectId = res.ResponseText.Replace(@"/vmrest/policies/", "").Trim();
-        //        }
-        //    }
-
-        //    return res;
-        //}
-
-
-        /// NOT SUPPORTED YET
-        /// <summary>
-        /// DELETE a handler from the Connection directory.
-        /// </summary>
-        /// <param name="pConnectionServer">
-        /// Reference to the ConnectionServer object that points to the home server where the handler is homed.
-        /// </param>
-        /// <param name="pObjectId">
-        /// GUID to uniquely identify the handler in the directory.
-        /// </param>
-        /// <returns>
-        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
-        /// </returns>
-        //public static WebCallResult DeletePolicy(ConnectionServer pConnectionServer, string pObjectId)
-        //{
-        //    if (pConnectionServer == null)
-        //    {
-        //        WebCallResult res = new WebCallResult();
-        //        res.ErrorText = "Null ConnectionServer referenced passed to DeletePolicy";
-        //        return res;
-        //    }
-
-        //    return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "policies/" + pObjectId,MethodType.DELETE,pConnectionServer, "");
-        //}
-
 
         /// <summary>
         /// This function allows for a GET of policies from Connection via HTTP - it allows for passing any number of additional clauses  
@@ -267,12 +173,12 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Reference to the ConnectionServer object that points to the home server where the policies are being fetched from.
         /// </param>
         /// <param name="pPolicies">
-        /// The list of handlers returned from the CUPI call (if any) is returned as a generic list of CallHAndler class instances via this out param.  
-        /// If no handlers are  found NULL is returned for this parameter.
+        /// The list of policies returned from the CUPI call (if any) is returned as a generic list of Policy class instances via this out param.  
         /// </param>
         /// <param name="pClauses">
         /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
-        /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(UserObjectId is 0d84fee3-8680-4bd2-aa81-49e32921299b)"
+        /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and 
+        /// "query=(UserObjectId is 0d84fee3-8680-4bd2-aa81-49e32921299b)"
         /// in the same call.  Also if you have a sort and a query clause they must both reference the same column.
         /// </param>
         /// <returns>
@@ -338,12 +244,12 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Reference to the ConnectionServer object that points to the home server where the policies are being fetched from.
         /// </param>
         /// <param name="pPolicies">
-        /// The list of handlers returned from the CUPI call (if any) is returned as a generic list of CallHAndler class instances via this out param.  
-        /// If no handlers are  found NULL is returned for this parameter.
+        /// The list of Policies returned from the CUPI call (if any) is returned as a generic list of Policy class instances via this out param.  
         /// </param>
         /// <param name="pClauses">
         /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
-        /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(UserObjectId is 0d84fee3-8680-4bd2-aa81-49e32921299b)"
+        /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and 
+        /// "query=(UserObjectId is 0d84fee3-8680-4bd2-aa81-49e32921299b)"
         /// in the same call.  Also if you have a sort and a query clause they must both reference the same column.
         /// </param>
         /// <param name="pPageNumber">
@@ -377,8 +283,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// GUID of the user to fetch for.
         /// </param>
         /// <param name="pPolicies">
-        /// The list of handlers returned from the CUPI call (if any) is returned as a generic list of CallHAndler class instances via this out param.  
-        /// If no handlers are  found NULL is returned for this parameter.
+        /// The list of policies returned from the CUPI call (if any) is returned as a generic list of Policy class instances via this out param.  
         /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -468,8 +373,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// GUID of the role to fetch for.
         /// </param>
         /// <param name="pPolicies">
-        /// The list of handlers returned from the CUPI call (if any) is returned as a generic list of CallHAndler class instances via this out param.  
-        /// If no handlers are  found NULL is returned for this parameter.
+        /// The list of policies returned from the CUPI call (if any) is returned as a generic list of Policy instances via this out param.  
         /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.

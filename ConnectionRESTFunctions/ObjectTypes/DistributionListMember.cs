@@ -17,14 +17,6 @@ using System.Text;
 namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
-    /// For human readable output of distribution list member types
-    /// </summary>
-    public enum DistributionListMemberType
-    {
-      	LocalUser, GlobalUser, Contact, DistributionList
-    }
-
-    /// <summary>
     /// The DistribtuionListMember class contains all the properties associated with a distribution list member in Unity Connection that can be fetched via the 
     /// CUPI interface.  This class is used only to provide a full list of members on a public distribution list - the member information cannot be edited and you
     /// cannot fetch individual member - only the full list of members associated with a list can be created and returned. 
@@ -33,11 +25,19 @@ namespace Cisco.UnityConnection.RestFunctions
     public class DistributionListMember
     {
 
-        #region Properties
+        #region Fields and Properties
 
-        
+        /// <summary>
+        /// Not in CUPI's data, this is derived locally in the class for ease of filtering/presentation.
+        /// </summary>
+        public DistributionListMemberType MemberType { get; set; }
+
+        #endregion
+
+
+        #region DistributionListMember Properties
+
         public string Alias { get; set; }
-
         public bool AllowForeignMessage { get; set; }
         
         public string DisplayName { get; set; }
@@ -52,17 +52,10 @@ namespace Cisco.UnityConnection.RestFunctions
         public string MemberGlobalUserObjectId { get; set; }
         public string MemberGlobalUserDignetObjectId { get; set; }
         public string MemberUserObjectId { get;  set; }
-
         public string MemberLocationObjectId { get; set; }
-
-        /// <summary>
-        /// Not in CUPI's data, this is derived locally in the class for ease of filtering/presentation.
-        /// </summary>
-        public DistributionListMemberType MemberType { get; set; }
 
         public string ObjectId { get;  set; }
 
-        
         #endregion
 
 
@@ -181,7 +174,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {

@@ -24,7 +24,8 @@ namespace Cisco.UnityConnection.RestFunctions
     public class MailboxInfo
     {
 
-        #region Constructors
+        #region Constructors and Destructors
+
 
         /// <summary>
         /// Creates a new instance of the MailboxInfo class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching 
@@ -73,6 +74,11 @@ namespace Cisco.UnityConnection.RestFunctions
         //not returned from server, saved from constructor
         public string UserObjectId { get; private set; }
 
+        #endregion
+
+
+        #region MailboxInfo Properties
+
         //all the properties returned from Connection for the mailbox info
 
         public string DisplayName { get; set; }
@@ -88,7 +94,6 @@ namespace Cisco.UnityConnection.RestFunctions
         public long WarningQuota { get; set; }
         public long SendQuota { get; set; }
         public bool IsDeletedFolderEnabled { get; set; }
-
 
         #endregion
 

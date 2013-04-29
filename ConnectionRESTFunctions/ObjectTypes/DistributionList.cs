@@ -26,18 +26,8 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class DistributionList
     {
-        #region Fields and Properties
+        #region Constructors and Destructors
 
-        //reference to the ConnectionServer object used to create this distribution list instance.
-        public ConnectionServer HomeServer { get; private set; }
-
-        //used to keep track of which properties have been updated
-        private readonly ConnectionPropertyList _changedPropList;
-
-        #endregion
-
-
-        #region Constructors
 
 
         /// <summary>
@@ -56,7 +46,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pAlias">
         /// Optional alias search critiera - if both ObjectId and Alias are passed, ObjectId is used.  
         /// </param>
-        public DistributionList(ConnectionServer pConnectionServer, string pObjectId="",string pAlias=""):this()
+        public DistributionList(ConnectionServer pConnectionServer, string pObjectId = "", string pAlias = "")
+            : this()
         {
             if (pConnectionServer == null)
             {
@@ -66,15 +57,15 @@ namespace Cisco.UnityConnection.RestFunctions
             HomeServer = pConnectionServer;
 
             //if the user passed in a specific ObjectId or display name then go load that list up, otherwise just return an empty instance.
-            if ((pObjectId.Length == 0) & (pAlias.Length==0)) return;
+            if ((pObjectId.Length == 0) & (pAlias.Length == 0)) return;
 
             //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
-            WebCallResult res = GetDistributionList(pObjectId,pAlias);
+            WebCallResult res = GetDistributionList(pObjectId, pAlias);
 
             if (res.Success == false)
             {
                 throw new Exception(string.Format("Distribution List not found in DistributionList constructor using ObjectId={0} or DisplayName={1}\n\r{2}"
-                                 , pObjectId,pAlias, res.ErrorText));
+                                 , pObjectId, pAlias, res.ErrorText));
             }
         }
 
@@ -91,6 +82,17 @@ namespace Cisco.UnityConnection.RestFunctions
             //default starting state here - if a missing item is fetched a full data fetch is issues on the fly to fill it in.
             IsFullListData = false;
         }
+
+        #endregion
+
+
+        #region Fields and Properties
+
+        //reference to the ConnectionServer object used to create this distribution list instance.
+        public ConnectionServer HomeServer { get; private set; }
+
+        //used to keep track of which properties have been updated
+        private readonly ConnectionPropertyList _changedPropList;
 
         #endregion
 
@@ -173,7 +175,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        
+
         private string _displayName;
         public String DisplayName
         {
@@ -192,7 +194,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public String DtmfAccessId
         {
             get
-            {return _dtmfAccessId;}
+            { return _dtmfAccessId; }
             set
             {
                 _changedPropList.Add("DtmfAccessId", value);
@@ -209,7 +211,7 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             get
             {
-                if (IsFullListData==false)
+                if (IsFullListData == false)
                 {
                     //first - fetch the full list details for this guy then return the value
                     GetDistributionList(ObjectId);
@@ -304,7 +306,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get
             {
                 //if the list is "light" from a search result, fill in the missing properties with a seperate fetch.
-                if (IsFullListData==false)
+                if (IsFullListData == false)
                 {
                     GetDistributionList(ObjectId);
                 }

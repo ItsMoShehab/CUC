@@ -7,25 +7,15 @@ using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
+    /// <summary>
+    /// Class that provides methods to fetch and update questions associated with interview handlers (20 each).
+    /// Includes methods to upload WAV file as recorded media for questions.
+    /// </summary>
     public class InterviewQuestion
     {
 
-        #region Fields and Properties
+        #region Constructors and Destructors
 
-        public int QuestionNumber { get; set; }
-        public int MaxMsgLength { get; set; }
-        public string StreamText { get; set; }
-        public bool IsActive { get; set; }
-        public string InterviewHandlerObjectId { get; set; }
-        public string VoiceFile { get; set; }
-
-        //reference to the ConnectionServer object used to create this handlers instance.
-        internal ConnectionServer HomeServer { get; private set; }
-
-        #endregion
-
-
-        #region Constructors
 
         /// <summary>
         /// Empty constructor for JSON parser
@@ -34,28 +24,52 @@ namespace Cisco.UnityConnection.RestFunctions
         {
         }
 
-        public InterviewQuestion(ConnectionServer pHomeServer, string pInterviewHandlerObjectId, int pInterviewQuestionNumber)
+        /// <summary>
+        /// Constructor requires a Connection server and an ObjectId for an itnerview handler that the question is 
+        /// associated with to be passed in as well as which number the question is (1 through 20).
+        /// </summary>
+        public InterviewQuestion(ConnectionServer pConnectionServer, string pInterviewHandlerObjectId, int pInterviewQuestionNumber)
         {
-            if (pHomeServer == null)
+            if (pConnectionServer == null)
             {
                 throw new ArgumentException("Null ConnectionServer passed to InterviewQuestion constructor");
             }
 
-            HomeServer = pHomeServer;
+            HomeServer = pConnectionServer;
 
             if (string.IsNullOrEmpty(pInterviewHandlerObjectId))
             {
                 throw new ArgumentException("Empty interview handler objectId passed to InterviewQuestion constructor");
             }
 
-            var res= GetInterviewQuestion(pInterviewHandlerObjectId, pInterviewQuestionNumber);
+            var res = GetInterviewQuestion(pInterviewHandlerObjectId, pInterviewQuestionNumber);
 
             if (res.Success == false)
             {
-                throw new Exception("Failed fetching interview question:"+res);
+                throw new Exception("Failed fetching interview question:" + res);
             }
         }
 
+
+        #endregion
+
+
+        #region Fields and Properties
+
+        //reference to the ConnectionServer object used to create this handlers instance.
+        internal ConnectionServer HomeServer { get; private set; }
+
+        #endregion
+
+
+        #region Interview Question Properties
+
+        public int QuestionNumber { get; set; }
+        public int MaxMsgLength { get; set; }
+        public string StreamText { get; set; }
+        public bool IsActive { get; set; }
+        public string InterviewHandlerObjectId { get; set; }
+        public string VoiceFile { get; set; }
 
         #endregion
 
@@ -135,17 +149,32 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
-        /// 
+        /// Interview handler questions have only 3 properties that can be updated besides the recorded media which is handled via 
+        /// specific WAV or resourceId udpate methods.  If the question is active, the maximum length of a response the caller is 
+        /// allowed for the question and some text describing the question.  All those are presented as parameters to the update
+        /// method here.
         /// </summary>
-        /// <param name="pConnectionServer"></param>
-        /// <param name="pInterviewHandlerObjectId"></param>
-        /// <param name="pInterviewQuestionNumber"></param>
-        /// <param name="pActive"></param>
+        /// <param name="pConnectionServer">
+        /// Connection server the interviewer in question is homed on.
+        /// </param>
+        /// <param name="pInterviewHandlerObjectId">
+        /// Unique identifier for the interview handler this question is associated with.
+        /// </param>
+        /// <param name="pInterviewQuestionNumber">
+        /// questions are numbers 1 through 20.
+        /// </param>
+        /// <param name="pActive">
+        /// True is active, false is disabled
+        /// </param>
         /// <param name="pMaxResponseLength">
         /// Maximum length of recorded response for question (in seconds)
         /// </param>
-        /// <param name="pStreamText"></param>
-        /// <returns></returns>
+        /// <param name="pStreamText">
+        /// Text description of question - shown on web admin only.
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResult class with details of the request and response from the server.
+        /// </returns>
         public static WebCallResult UpdateInterviewHandlerQuestion(ConnectionServer pConnectionServer,
                                                                    string pInterviewHandlerObjectId,
                                                                    int pInterviewQuestionNumber, 
@@ -284,9 +313,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //if the WAV file name itself is passed in that's all we need, otherwise we need to go do a CallHandler fetch with the ObjectId 
+            //if the WAV file name itself is passed in that's all we need, otherwise we need to go do a fetch with the ObjectId 
             //and pull the VoiceName wav file name from there (if it's present).
-            //fetch the call handler info which has the VoiceName property on it
             if (string.IsNullOrEmpty(pConnectionWavFileName))
             {
                 InterviewHandler oInterviewHandler;
@@ -297,7 +325,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
                 catch (Exception ex)
                 {
-                    res.ErrorText = string.Format("Error fetching call handler in GetInterviewHandlerQuestionRecording with objectID{0}\n{1}",
+                    res.ErrorText = string.Format("Error fetching question in GetInterviewHandlerQuestionRecording with objectID{0}\n{1}",
                         pObjectId, ex.Message);
                     return res;
                 }
@@ -343,7 +371,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Full path on the local file system pointing to a WAV file to be uploaded as an interview handler question
         /// </param>
         /// <param name="pObjectId">
-        /// ObjectId of the call handler that owns the question to be updated
+        /// ObjectId of the interview handler that owns the question to be updated
         /// </param>
         /// <param name="pQuestionNumber">
         /// Interview question to update (1-20)
@@ -526,7 +554,7 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// Dumps out all the properties associated with the instance of the interview handler object in "name=value" format - each pair is on its
+        /// Dumps out all the properties associated with the instance of the object in "name=value" format - each pair is on its
         /// own line in the string returned.
         /// </summary>
         /// <param name="pPrefix">
@@ -534,7 +562,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {
@@ -551,15 +579,13 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// Fills the current instance of InterviewHandler in with properties fetched from the server.  If both the display name and ObjectId
-        /// parameters are provided, the ObjectId is used for the search.
+        /// Fills the current instance of InterviewHandlerQuestion in with properties fetched from the server.  
         /// </summary>
         /// <param name="pInterviewHandlerObjectId">
-        /// Unique GUID of the interview handler to fetch - can be blank if the display name is passed in.
+        /// Unique GUID of the interview handler this question is associatded with
         /// </param>
         /// <param name="pQuestionNumber">
-        /// Display name (required to be unique for all interview handlers) to search on an interview handler by.  Can be blank if the ObjectId 
-        /// parameter is provided.
+        /// 1-20
         /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -697,7 +723,6 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         #endregion
-
 
     }
 }

@@ -18,27 +18,17 @@ using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
+    /// <summary>
+    /// Class that contains methods for finding, fetching, creating and deleting tenant objects in Connection 10.0 
+    /// and later versions of Unity Connection.  Also includes helper methods for fetching sub object collections such 
+    /// as all handlers associated with a tenant and setting additional COS and schedule objects to an existing 
+    /// tenant.
+    /// </summary>
     public class Tenant
     {
-        #region Fields and Properties
 
-        public string ObjectId { get; set; }
-        public string Alias { get; set; }
-        public DateTime CreationDate { get; set; }
-        public string Description { get; set; }
-        public string SmtpDomain { get; set; }
-        public string AttributeObjectId { get; set; }
-        public int AttributeType { get; set; }
-        public string MailboxStoreObjectId { get; set; }
-        public string PhoneSystemObjectId { get; set; }
-        public string PartitionObjectId { get; set; }
-        
-        public ConnectionServer HomeServer { get; private set; }
+        #region Constructors and Destructors
 
-        #endregion
-
-
-        #region Constructors
 
         /// <summary>
         /// Creates a new instance of the Tenant class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
@@ -87,6 +77,29 @@ namespace Cisco.UnityConnection.RestFunctions
         {
         }
 
+        #endregion
+
+
+        #region Fields and Properties
+
+        public ConnectionServer HomeServer { get; private set; }
+
+        #endregion
+
+
+        #region Tenant Properties
+
+        public string ObjectId { get; set; }
+        public string Alias { get; set; }
+        public DateTime CreationDate { get; set; }
+        public string Description { get; set; }
+        public string SmtpDomain { get; set; }
+        public string AttributeObjectId { get; set; }
+        public int AttributeType { get; set; }
+        public string MailboxStoreObjectId { get; set; }
+        public string PhoneSystemObjectId { get; set; }
+        public string PartitionObjectId { get; set; }
+        
         #endregion
 
 
