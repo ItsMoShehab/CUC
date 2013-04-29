@@ -89,16 +89,35 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Tenant Properties
 
-        public string ObjectId { get; set; }
-        public string Alias { get; set; }
-        public DateTime CreationDate { get; set; }
-        public string Description { get; set; }
-        public string SmtpDomain { get; set; }
-        public string AttributeObjectId { get; set; }
-        public int AttributeType { get; set; }
-        public string MailboxStoreObjectId { get; set; }
-        public string PhoneSystemObjectId { get; set; }
-        public string PartitionObjectId { get; set; }
+        [JsonProperty]
+        public string ObjectId { get; private set; }
+
+        [JsonProperty]
+        public string Alias { get; private set; }
+
+        [JsonProperty]
+        public DateTime CreationDate { get; private set; }
+
+        [JsonProperty]
+        public string Description { get; private set; }
+
+        [JsonProperty]
+        public string SmtpDomain { get; private set; }
+
+        [JsonProperty]
+        public string AttributeObjectId { get; private set; }
+
+        [JsonProperty]
+        public int AttributeType { get; private set; }
+
+        [JsonProperty]
+        public string MailboxStoreObjectId { get; private set; }
+
+        [JsonProperty]
+        public string PhoneSystemObjectId { get; private set; }
+
+        [JsonProperty]
+        public string PartitionObjectId { get; private set; }
         
         #endregion
 
@@ -567,7 +586,7 @@ namespace Cisco.UnityConnection.RestFunctions
         //used for fetching list of COS IDs off tenant
         private class TenantCos
         {
-            public string CosURI { get; set; }
+            public string CosURI { get; private set; }
         }
 
         /// <summary>
@@ -667,7 +686,7 @@ namespace Cisco.UnityConnection.RestFunctions
         //used for getting list of phone systems off tenant.
         private class TenantPhoneSystem
         {
-            public string PhoneSystemURI { get; set; }
+            public string PhoneSystemURI { get; private set; }
         }
 
         /// <summary>
@@ -744,7 +763,7 @@ namespace Cisco.UnityConnection.RestFunctions
         //used for fetching list of schedules off tenant
         private class TenantScheduleSet
         {
-            public string ScheduleSetURI { get; set; }
+            public string ScheduleSetURI { get; private set; }
         }
 
         /// <summary>

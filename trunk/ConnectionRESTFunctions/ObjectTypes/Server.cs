@@ -11,6 +11,7 @@
 
 using System.Reflection;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
@@ -22,12 +23,23 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Server Properties
 
-        public string HostName { get; set; }
-        public int DatabaseReplication { get; set; }
-        public string Key { get; set; }
-        public string Ipv6Name { get; set; }
-        public string MacAddress { get; set; }
-        public string Description { get; set; }
+        [JsonProperty]
+        public string HostName {get; private set; }
+
+        [JsonProperty]
+        public int DatabaseReplication {get; private set; }
+
+        [JsonProperty]
+        public string Key {get; private set; }
+
+        [JsonProperty]
+        public string Ipv6Name {get; private set; }
+
+        [JsonProperty]
+        public string MacAddress {get; private set; }
+
+        [JsonProperty]
+        public string Description {get; private set; }
 
         #endregion
 

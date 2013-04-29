@@ -74,14 +74,26 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Policy Properties
 
-        public DateTime DateCreated { get; set; }
-        
-        public string ObjectId { get; set; }
-        public string RoleObjectId { get; set; }
-        public string TargetVmsObjectId { get; set; }
-        public string TargetHandlerObjectId { get; set; }
-        public string UserObjectId { get; set; }
-        public string VmsObjectId { get; set; }
+        [JsonProperty]
+        public DateTime DateCreated { get; private set; }
+
+        [JsonProperty]
+        public string ObjectId { get; private set; }
+
+        [JsonProperty]
+        public string RoleObjectId { get; private set; }
+
+        [JsonProperty]
+        public string TargetVmsObjectId { get; private set; }
+
+        [JsonProperty]
+        public string TargetHandlerObjectId { get; private set; }
+
+        [JsonProperty]
+        public string UserObjectId { get; private set; }
+
+        [JsonProperty]
+        public string VmsObjectId { get; private set; }
 
         #endregion
 

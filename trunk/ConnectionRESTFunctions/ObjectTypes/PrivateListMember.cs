@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
@@ -36,17 +37,32 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region PrivateListMember Properties
 
-        public string Alias { get; set; }
-        public string DisplayName { get; set; }
-        public string PersonalVoiceMailListObjectId { get; set; }
-        public string Extension { get; set; }
+        [JsonProperty]
+        public string Alias { get; private set; }
 
-        public string MemberContactObjectId { get; set; }
-        public string MemberDistributionListObjectId { get; set; }
-        public string MemberSubscriberObjectId { get; set; }
-        public string MemberPersonalVoiceMailListObjectId { get; set; }
+        [JsonProperty]
+        public string DisplayName { get; private set; }
 
-        public string ObjectId { get; set; }
+        [JsonProperty]
+        public string PersonalVoiceMailListObjectId { get; private set; }
+
+        [JsonProperty]
+        public string Extension { get; private set; }
+
+        [JsonProperty]
+        public string MemberContactObjectId { get; private set; }
+
+        [JsonProperty]
+        public string MemberDistributionListObjectId { get; private set; }
+
+        [JsonProperty]
+        public string MemberSubscriberObjectId { get; private set; }
+
+        [JsonProperty]
+        public string MemberPersonalVoiceMailListObjectId { get; private set; }
+
+        [JsonProperty]
+        public string ObjectId { get; private set; }
 
         #endregion
 

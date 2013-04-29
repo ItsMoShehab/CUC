@@ -90,67 +90,143 @@ namespace Cisco.UnityConnection.RestFunctions
 
         //The names of the properties must match exactly the tags in XML for them including case - the routine that deserializes data from XML into the 
         //objects requires this to match them up.
+        [JsonProperty]
+        public int AgcTargetDb { get; private set; }
 
-        public int AgcTargetDb { get; set; }
+        [JsonProperty]
+        public bool AllowCrossBoxLogin { get; private set; }
 
-        public bool AllowCrossBoxLogin { get; set; }
-        public bool AllowCrossBoxTransfer { get; set; }
+        [JsonProperty]
+        public bool AllowCrossBoxTransfer { get; private set; }
 
-        public int CrossBoxMaxRings { get; set; }
-        public int CrossBoxSendDelay { get; set; }
-        public int CrossBoxResponseTimeout { get; set; }
+        [JsonProperty]
+        public int CrossBoxMaxRings { get; private set; }
 
-        public string DefaultWaveFormatObjectId { get; set; }
-        public int DefaultLanguage { get; set; }
-        public int DefaultTTSLanguage { get; set; }
-        public string DefaultPartitionObjectId { get; set; }
-        public string DefaultSearchSpaceObjectId { get; set; }
-        public string DtmfAccessId { get; set; }
-        public string DisplayName { get; set; }
-        public int DestinationType { get; set; }
-        public string DtmfName { get; set; }
-        public string EncryptionKey { get; set; }
-        public string HostAddress { get; set; }
-        
-        public bool IncludeLocations { get; set; }
-        public bool IsPrimary { get; set; }
+        [JsonProperty]
+        public int CrossBoxSendDelay { get; private set; }
 
-        public int LastUSNAck { get; set; }
-        public int LastUSNSent { get; set; }
-        public int LastUSNReceived { get; set; }
+        [JsonProperty]
+        public int CrossBoxResponseTimeout { get; private set; }
 
-        public int KeypadMapId { get; set; }
+        [JsonProperty]
+        public string DefaultWaveFormatObjectId { get; private set; }
 
-        public int MaxGreetingLength { get; set; }
-        public int MaxContacts { get; set; }
+        [JsonProperty]
+        public int DefaultLanguage { get; private set; }
 
-        public string ObjectId { get; set; }
-        
-        public bool PushDirectory { get; set; }
-        public bool PullDirectory { get; set; }
-        
-        public int PushState { get; set; }
-        public int PullState { get; set; }
+        [JsonProperty]
+        public int DefaultTTSLanguage { get; private set; }
 
-        public int ReplicationSet { get; set; }
-        public int ReplicationSetIncoming { get; set; }
-        public int ReplicationSetOutgoing { get; set; }
+        [JsonProperty]
+        public string DefaultPartitionObjectId { get; private set; }
 
-        public string SkinnyLocalCACertificate { get; set; }
-        public string SkinnyLocalCAPrivateKey { get; set; }
-        public string SkinnyLocalCACertificateFileName { get; set; }
-        public string SmtpDomain { get; set; }
-        public string SmtpSmartHost { get; set; }
-        public int SmtpUnknownRecipientAction { get; set; }
-        public int Status { get; set; }
-        public string SystemVersion { get; set; }
-        public string SynchronizationUserObjectId { get; set; }
+        [JsonProperty]
+        public string DefaultSearchSpaceObjectId { get; private set; }
 
-        public int TimeZone { get; set; }
-        public int TransferNumberOfRings { get; set; }
-        public int TransferTimeout { get; set; }
+        [JsonProperty]
+        public string DtmfAccessId { get; private set; }
 
-        public bool UseSmartSmtpHost { get; set; }
+        [JsonProperty]
+        public string DisplayName { get; private set; }
+
+        [JsonProperty]
+        public int DestinationType { get; private set; }
+
+        [JsonProperty]
+        public string DtmfName { get; private set; }
+
+        [JsonProperty]
+        public string EncryptionKey { get; private set; }
+
+        [JsonProperty]
+        public string HostAddress { get; private set; }
+
+        [JsonProperty]
+        public bool IncludeLocations { get; private set; }
+
+        [JsonProperty]
+        public bool IsPrimary { get; private set; }
+
+        [JsonProperty]
+        public int LastUSNAck { get; private set; }
+
+        [JsonProperty]
+        public int LastUSNSent { get; private set; }
+
+        [JsonProperty]
+        public int LastUSNReceived { get; private set; }
+
+        [JsonProperty]
+        public int KeypadMapId { get; private set; }
+
+        [JsonProperty]
+        public int MaxGreetingLength { get; private set; }
+
+        [JsonProperty]
+        public int MaxContacts { get; private set; }
+
+        [JsonProperty]
+        public string ObjectId { get; private set; }
+
+        [JsonProperty]
+        public bool PushDirectory { get; private set; }
+
+        [JsonProperty]
+        public bool PullDirectory { get; private set; }
+
+        [JsonProperty]
+        public int PushState { get; private set; }
+
+        [JsonProperty]
+        public int PullState { get; private set; }
+
+        [JsonProperty]
+        public int ReplicationSet { get; private set; }
+
+        [JsonProperty]
+        public int ReplicationSetIncoming { get; private set; }
+
+        [JsonProperty]
+        public int ReplicationSetOutgoing { get; private set; }
+
+        [JsonProperty]
+        public string SkinnyLocalCACertificate { get; private set; }
+
+        [JsonProperty]
+        public string SkinnyLocalCAPrivateKey { get; private set; }
+
+        [JsonProperty]
+        public string SkinnyLocalCACertificateFileName { get; private set; }
+
+        [JsonProperty]
+        public string SmtpDomain { get; private set; }
+
+        [JsonProperty]
+        public string SmtpSmartHost { get; private set; }
+
+        [JsonProperty]
+        public int SmtpUnknownRecipientAction { get; private set; }
+
+        [JsonProperty]
+        public int Status { get; private set; }
+
+        [JsonProperty]
+        public string SystemVersion { get; private set; }
+
+        [JsonProperty]
+        public string SynchronizationUserObjectId { get; private set; }
+
+        [JsonProperty]
+        public int TimeZone { get; private set; }
+
+        [JsonProperty]
+        public int TransferNumberOfRings { get; private set; }
+
+        [JsonProperty]
+        public int TransferTimeout { get; private set; }
+
+        [JsonProperty]
+        public bool UseSmartSmtpHost { get; private set; }
 
         #endregion
 

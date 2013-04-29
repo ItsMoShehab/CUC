@@ -9,6 +9,8 @@
 
 #endregion
 
+using Newtonsoft.Json;
+
 namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
@@ -40,9 +42,14 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region ScheduleSetMember Properties
 
-        public string ScheduleSetObjectId { get; set; }
-        public string ScheduleObjectId { get; set; }
-        public bool Exclude { get; set; }
+        [JsonProperty]
+        public string ScheduleSetObjectId { get; private set; }
+
+        [JsonProperty]
+        public string ScheduleObjectId { get; private set; }
+
+        [JsonProperty]
+        public bool Exclude { get; private set; }
 
         #endregion
 

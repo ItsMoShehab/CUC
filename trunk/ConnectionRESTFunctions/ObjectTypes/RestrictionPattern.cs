@@ -93,11 +93,21 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region RestrictionPattern Properties
 
-        public bool Blocked { get; set; }
-        public string NumberPattern { get; set; }
-        public string RestrictionTableObjectId { get; set; }
-        public string ObjectId { get; set; }
-        public int SequenceNumber { get; set; }
+
+        [JsonProperty]
+        public bool Blocked { get; private set; }
+
+        [JsonProperty]
+        public string NumberPattern { get; private set; }
+
+        [JsonProperty]
+        public string RestrictionTableObjectId { get; private set; }
+
+        [JsonProperty]
+        public string ObjectId { get; private set; }
+
+        [JsonProperty]
+        public int SequenceNumber { get; private set; }
 
         #endregion
 

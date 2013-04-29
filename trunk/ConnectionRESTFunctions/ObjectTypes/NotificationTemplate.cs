@@ -76,8 +76,11 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region NotificationTemplate Properties
 
-        public string NotificationTemplateId { get; set; }
-        public string NotificationTemplateName { get; set; }
+        [JsonProperty]
+        public string NotificationTemplateId { get; private set; }
+
+        [JsonProperty]
+        public string NotificationTemplateName { get; private set; }
 
         #endregion
 

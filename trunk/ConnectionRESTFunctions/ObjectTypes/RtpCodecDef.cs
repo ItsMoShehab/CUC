@@ -69,8 +69,11 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region RtpCodecDef Properties
 
-        public string ObjectId { get; set; }
-        public string DisplayName { get; set; }
+        [JsonProperty]
+        public string ObjectId { get; private set; }
+
+        [JsonProperty]
+        public string DisplayName { get; private set; }
 
         #endregion
 

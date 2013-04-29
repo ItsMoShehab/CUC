@@ -98,11 +98,20 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region SearchSpace Properties
 
-        public string Description { get; set; }
-        public string Name { get; set; }
-        public string ObjectId { get; set; }
-        public string LocationObjectId { get; set; }
-        public DateTime TimeOwnershipChanged { get; set; }
+        [JsonProperty]
+        public string Description { get; private set;}
+
+        [JsonProperty]
+        public string Name { get; private set; }
+
+        [JsonProperty]
+        public string ObjectId { get; private set; }
+
+        [JsonProperty]
+        public string LocationObjectId { get; private set; }
+
+        [JsonProperty]
+        public DateTime TimeOwnershipChanged { get; private set; }
 
         #endregion
 

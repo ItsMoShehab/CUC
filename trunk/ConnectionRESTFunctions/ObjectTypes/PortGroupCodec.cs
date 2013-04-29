@@ -86,12 +86,23 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region PortGroupCodec Properties
 
-        public string ObjectId { get; set; }
-        public string MediaPortGroupObjectId { get; set; }
-        public string RtpCodecDefObjectId { get; set; }
-        public string RtpCodecDefDisplayName { get; set; }
-        public int PreferredPacketSizeMs { get; set; }
-        public int Preference { get; set; }
+        [JsonProperty]
+        public string ObjectId { get; private set; }
+
+        [JsonProperty]
+        public string MediaPortGroupObjectId { get; private set; }
+
+        [JsonProperty]
+        public string RtpCodecDefObjectId { get; private set; }
+
+        [JsonProperty]
+        public string RtpCodecDefDisplayName { get; private set; }
+
+        [JsonProperty]
+        public int PreferredPacketSizeMs { get; private set; }
+
+        [JsonProperty]
+        public int Preference { get; private set; }
 
         #endregion
 

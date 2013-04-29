@@ -27,8 +27,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Constructors and Destructors
 
-
-
         /// <summary>
         /// default constructor used by JSON parser
         /// </summary>

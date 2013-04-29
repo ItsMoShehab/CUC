@@ -91,52 +91,62 @@ namespace Cisco.UnityConnection.RestFunctions
 
         //The names of the properties must match exactly the tags in XML for them including case - the routine that deserializes data from XML into the 
         //objects requires this to match them up.
+        [JsonProperty]
+        public string Alias { get; private set; }
 
-        public string Alias { get; set; }
+        [JsonProperty]
+        public string DisplayName { get; private set; }
 
-        public string DisplayName { get; set; }
+        [JsonProperty]
+        public string AltFirstName { get; private set; }
 
-        public string AltFirstName { get; set; }
+        [JsonProperty]
+        public string AltLastName { get; private set; }
 
-        public string AltLastName { get; set; }
+        [JsonProperty]
+        public string City { get; private set; }
 
-        public string City { get; set; }
+        [JsonProperty]
+        public string Department { get; private set; }
 
-        public string Department { get; set; }
+        [JsonProperty]
+        public string DtmfAccessId { get; private set; }
 
-        /// <summary>
-        /// Primary extension of the user.
-        /// </summary>
-        public string DtmfAccessId { get; set; }
+        [JsonProperty]
+        public string DtmfNameFirstLast { get; private set; }
 
-        public string DtmfNameFirstLast { get; set; }
-        public string DtmfNameLastFirst { get; set; }
+        [JsonProperty]
+        public string DtmfNameLastFirst { get; private set; }
 
-        public string FirstName { get; set; }
+        [JsonProperty]
+        public string FirstName { get; private set; }
 
-        public string LastName { get; set; }
+        [JsonProperty]
+        public string LastName { get; private set; }
 
-        /// <summary>
-        /// A flag indicating whether Cisco Unity Connection should list the subscriber in the phone directory for outside callers.
-        /// This does not affect the ability of other users from finding them when addressing messages.
-        /// </summary>
-        public bool ListInDirectory { get; set; }
+        [JsonProperty]
+        public bool ListInDirectory { get; private set; }
 
-        public string LocationObjectId { get; set; }
+        [JsonProperty]
+        public string LocationObjectId { get; private set; }
 
-        public bool IsTemplate { get; set; }
+        [JsonProperty]
+        public bool IsTemplate { get; private set; }
 
         /// <summary>
         /// Unique identifier for the user 
         /// </summary>
-        public string ObjectId { get; set; }
+        [JsonProperty]
+        public string ObjectId { get; private set; }
 
         /// <summary>
         /// The unique identifier of the Partition to which the DtmfAccessId is assigned
         /// </summary>
-        public string PartitionObjectId { get; set; }
+        [JsonProperty]
+        public string PartitionObjectId { get; private set; }
 
-        public string XferString { get; set; }
+        [JsonProperty]
+        public string XferString { get; private set; }
 
         #endregion
 

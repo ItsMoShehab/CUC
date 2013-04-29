@@ -9,6 +9,8 @@
 
 #endregion
 
+using Newtonsoft.Json;
+
 namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
@@ -20,13 +22,26 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region PhoneSystemAssociation Properties
 
-        public string Alias { get; set; }
-        public string DisplayName { get; set; }
-        public string MediaSwitchDisplayName { get; set; }
-        public string MediaSwitchObjectId { get; set; }
-        public int numNoitificationDevice { get; set; }
-        public int numNotificationMWI { get; set; }
-        public int numPrimaryCallHandler { get; set; }
+        [JsonProperty]
+        public string Alias { get; private set; }
+
+        [JsonProperty]
+        public string DisplayName { get; private set; }
+
+        [JsonProperty]
+        public string MediaSwitchDisplayName { get; private set; }
+
+        [JsonProperty]
+        public string MediaSwitchObjectId { get; private set; }
+
+        [JsonProperty]
+        public int numNoitificationDevice { get; private set; }
+
+        [JsonProperty]
+        public int numNotificationMWI { get; private set; }
+
+        [JsonProperty]
+        public int numPrimaryCallHandler { get; private set; }
 
         #endregion
 

@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
@@ -23,19 +24,44 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region ConnectionTimeZone Properties
 
-        public int TimeZoneId { get; set; }
-        public string DisplayName { get; set; }
-        public int Bias { get; set; }
-        public int DaylightBias { get; set; }
-        public int DaylightStartMonth { get; set; }
-        public int DaylightStartDayOfWeek { get; set; }
-        public int DaylightStartWeek { get; set; }
-        public int DaylightStartHour { get; set; }
-        public int DaylightEndMonth { get; set; }
-        public int DaylightEndDayOfWeek { get; set; }
-        public int DaylightEndWeek { get; set; }
-        public int DaylightEndHour { get; set; }
-        public int LanguageCode { get; set; }
+        [JsonProperty]
+        public int TimeZoneId { get; private set; }
+
+        [JsonProperty]
+        public string DisplayName { get; private set; }
+
+        [JsonProperty]
+        public int Bias { get; private set; }
+
+        [JsonProperty]
+        public int DaylightBias { get; private set; }
+
+        [JsonProperty]
+        public int DaylightStartMonth { get; private set; }
+
+        [JsonProperty]
+        public int DaylightStartDayOfWeek { get; private set; }
+
+        [JsonProperty]
+        public int DaylightStartWeek { get; private set; }
+
+        [JsonProperty]
+        public int DaylightStartHour { get; private set; }
+
+        [JsonProperty]
+        public int DaylightEndMonth { get; private set; }
+
+        [JsonProperty]
+        public int DaylightEndDayOfWeek { get; private set; }
+
+        [JsonProperty]
+        public int DaylightEndWeek { get; private set; }
+
+        [JsonProperty]
+        public int DaylightEndHour { get; private set; }
+
+        [JsonProperty]
+        public int LanguageCode { get; private set; }
 
         #endregion
 
