@@ -16,27 +16,75 @@ using System.Collections.Generic;
 namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
-    /// Definitions of the langauge type enum value from the data dictionary
-    /// </summary>
-    public enum LanguageTypes {TUI, GUI, VUI, TTS }
-    
-    /// <summary>
     /// Class that allows for a static method to fetch the list of installed languages for all purposes in Connection and returning it as a generic
     /// list of installed languages.
     /// </summary>
     public class InstalledLanguage
     {
-        
+
+        #region Constructors and Destructors
+
+
+        /// <summary>
+        /// constructor takes a ConnectionServer as a parameter - passed as null when constructing lists internally
+        /// </summary>
+        /// <param name="pConnectionServer"></param>
+        public InstalledLanguage(ConnectionServer pConnectionServer = null)
+        {
+            if (pConnectionServer == null)
+            {
+                return;
+            }
+
+            HomeServer = pConnectionServer;
+
+            var res = GetInstalledLanguages();
+            if (res.Success == false)
+            {
+                throw new Exception("Failed to load installed languages:" + res);
+            }
+        }
+
+
+        /// <summary>
+        /// generic constructor for Json parsing libraries
+        /// </summary>
+        public InstalledLanguage()
+        {
+        }
+
+        #endregion
+
+
         #region Fields and Properties 
+
+        public ConnectionServer HomeServer { get; private set; }
+
+        public List<InstalledLanguage> InstalledLanguages { get; private set; }
+
+        #endregion
+
+
+        #region InstalledLanguage Properties
 
         public int LanguageType { get; set; }
         public int LanguageCode { get; set; }
         public bool Loaded { get; set; }
         public bool IsLicensed { get; set; }
 
-        public ConnectionServer HomeServer { get; private set; }
+        #endregion
 
-        public List<InstalledLanguage> InstalledLanguages { get; private set; }
+  
+        #region Methods
+
+        /// <summary>
+        /// Returns a string with all the details about the installed language class values.
+        /// </summary>
+        public override string ToString()
+        {
+            return string.Format("type:{0} [{1}], licensed:{2}, loaded:{3}, code:{4} [{5}]", LanguageType,LanguageTypeDescription(),
+                IsLicensed, Loaded, LanguageCode, LanguageDescription() );
+        }
 
         /// <summary>
         /// Fetch the language description from the static Language Helper class.
@@ -54,56 +102,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public string LanguageTypeDescription()
         {
-            return ((LanguageTypes) LanguageType).ToString();
+            return ((ConnectionLanguageTypes)LanguageType).ToString();
         }
-
-        #endregion
-
-
-        #region Constructors
-
-        /// <summary>
-        /// constructor takes a ConnectionServer as a parameter - passed as null when constructing lists internally
-        /// </summary>
-        /// <param name="pConnectionServer"></param>
-        public InstalledLanguage(ConnectionServer pConnectionServer=null)
-        {
-            if (pConnectionServer == null)
-            {
-                return;
-            }
-
-            HomeServer = pConnectionServer;
-
-            var res= GetInstalledLanguages();
-            if (res.Success == false)
-            {
-                throw new Exception("Failed to load installed languages:"+res);
-            }
-        }
-
-
-        /// <summary>
-        /// generic constructor for Json parsing libraries
-        /// </summary>
-        public InstalledLanguage()
-        {
-        }
-
-        #endregion
-
-
-        #region Methods
-
-        /// <summary>
-        /// Returns a string with all the details about the installed language class values.
-        /// </summary>
-        public override string ToString()
-        {
-            return string.Format("type:{0} [{1}], licensed:{2}, loaded:{3}, code:{4} [{5}]", LanguageType,LanguageTypeDescription(),
-                IsLicensed, Loaded, LanguageCode, LanguageDescription() );
-        }
-
 
         /// <summary>
         /// Gets the list of all installed languages and resturns them as a generic list of InstalledLangauge objects.  
@@ -156,13 +156,13 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pLanguageCode">
         /// Language code integer to check for (1033 US English for instance).
         /// </param>
-        /// <param name="pLanguageType">
+        /// <param name="pConnectionLanguageType">
         /// Language type (GUI/TUI/VUI/TTS)
         /// </param>
         /// <returns>
         /// True if the language is installed, false if not
         /// </returns>
-        public bool IsLanguageInstalled(int pLanguageCode, LanguageTypes pLanguageType = LanguageTypes.TUI)
+        public bool IsLanguageInstalled(int pLanguageCode, ConnectionLanguageTypes pConnectionLanguageType = ConnectionLanguageTypes.TUI)
         {
             if (InstalledLanguages == null)
             {
@@ -172,7 +172,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //look through all languages to see if one matches the code and type.
             foreach (var oLanguage in InstalledLanguages)
             {
-                if (oLanguage.LanguageCode == pLanguageCode & oLanguage.LanguageType == (int)pLanguageType)
+                if (oLanguage.LanguageCode == pLanguageCode & oLanguage.LanguageType == (int)pConnectionLanguageType)
                 {
                     return true;
                 }

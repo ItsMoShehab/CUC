@@ -71,13 +71,13 @@ namespace ConnectionCUPIFunctionsTest
                 Console.WriteLine(oLanguage.ToString());
             }
 
-            Assert.IsTrue(oLanguages.IsLanguageInstalled(1033, LanguageTypes.GUI), "1033 not installed for GUI");
+            Assert.IsTrue(oLanguages.IsLanguageInstalled(1033, ConnectionLanguageTypes.GUI), "1033 not installed for GUI");
 
-            Assert.IsTrue(oLanguages.IsLanguageInstalled(1033, LanguageTypes.TUI), "1033 not installed for TUI");
+            Assert.IsTrue(oLanguages.IsLanguageInstalled(1033, ConnectionLanguageTypes.TUI), "1033 not installed for TUI");
 
-            Assert.IsTrue(oLanguages.IsLanguageInstalled(1033, LanguageTypes.TTS), "1033 not installed for TTS");
+            Assert.IsTrue(oLanguages.IsLanguageInstalled(1033, ConnectionLanguageTypes.TTS), "1033 not installed for TTS");
 
-            Assert.IsFalse(oLanguages.IsLanguageInstalled(8888, LanguageTypes.TTS), "8888 listed as installed for TTS");
+            Assert.IsFalse(oLanguages.IsLanguageInstalled(8888, ConnectionLanguageTypes.TTS), "8888 listed as installed for TTS");
         }
     }
 }

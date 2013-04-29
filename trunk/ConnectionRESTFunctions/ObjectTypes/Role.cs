@@ -22,24 +22,14 @@ namespace Cisco.UnityConnection.RestFunctions
     public class Role
     {
 
-        #region Fields and Properties 
-
-        public string RoleDescription { get; set; }
-        public string RoleName { get; set; }
-        public string ObjectId { get; set; }
-        public bool IsEnabled { get; set; }
-        public bool ReadOnly { get; set; }
-
-        //reference to the ConnectionServer object used to create this instance.
-        public ConnectionServer HomeServer { get; private set; }
-
-        #endregion
+        #region Constructors and Destructors
 
 
-        #region Constructors
-
-        //constructor
-        public Role(ConnectionServer pConnectionServer, string pObjectId="", string pRoleName = "")
+        /// <summary>
+        /// Constructor requires ConnectionServer object where the role is defined.  Optionally you can pass the ObjectId or
+        /// name of the role to fetch data for that role specifically.
+        /// </summary>
+        public Role(ConnectionServer pConnectionServer, string pObjectId = "", string pRoleName = "")
         {
             if (pConnectionServer == null)
             {
@@ -52,11 +42,11 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 return;
             }
-            
-            WebCallResult res= GetRole(pObjectId,pRoleName);
+
+            WebCallResult res = GetRole(pObjectId, pRoleName);
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Failed to fetch role by ObjectId={0} or Name={1}",pObjectId,pRoleName));
+                throw new Exception(string.Format("Failed to fetch role by ObjectId={0} or Name={1}", pObjectId, pRoleName));
             }
         }
 
@@ -67,6 +57,25 @@ namespace Cisco.UnityConnection.RestFunctions
         {
         }
 
+        #endregion
+
+
+        #region Fields and Properties 
+
+        //reference to the ConnectionServer object used to create this instance.
+        public ConnectionServer HomeServer { get; private set; }
+
+        #endregion
+
+
+        #region Role Properties
+
+        public string RoleDescription { get; set; }
+        public string RoleName { get; set; }
+        public string ObjectId { get; set; }
+        public bool IsEnabled { get; set; }
+        public bool ReadOnly { get; set; }
+        
         #endregion
 
 

@@ -17,34 +17,16 @@ using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
-    /// <summary>
-    /// A schedule can be be in one of 3 states - active (on) inactive (off) or active for a holiday.
-    /// </summary>
-    public enum ScheduleState {INACTIVE, ACTIVE, HOLIDAY}
 
+    /// <summary>
+    /// Class that provides methods for finding, fetching, adding and deleting schedule sets.  Also contains the very handy 
+    /// AddQuickSchedule static method that can add a schedule set associated schedule and associated schedule details to make
+    /// a fully formed schedule set object and sub objects in one step for common scheduling needs.
+    /// </summary>
     public class ScheduleSet
     {
 
-        #region Fields and Properties
-        
-
-        //reference to the ConnectionServer object used to create this Alternate Extension instance.
-        public ConnectionServer HomeServer { get; private set; }
-
-        public string ObjectId { get; set; }
-        public string DisplayName { get; set; }
-        public string OwnerLocationObjectId { get; set; }
-        public bool Undeletable { get; set; }
-
-        //list of schedules associated with this schedule set.  Typically a schedule set will contain two schedules - one
-        //for regular schedule details and one for holidays - but it may not contain a holiday schedule and can technically
-        //contain more than one schedule (although the GUI admin does not allow for this).
-        private List<Schedule> _schedules;
-
-        #endregion
-
-
-        #region Constructors and Destructors 
+        #region Constructors and Destructors
 
         /// <summary>
         /// Schedule set constructor - optionally takes an ObjectId to fetch - if not provided just a blank instance of the class is produced - used for 
@@ -59,7 +41,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pDisplayName">
         /// Name of schedule set to find
         /// </param>
-        public ScheduleSet (ConnectionServer pConnectionServer, string pObjectId="", string pDisplayName="")
+        public ScheduleSet(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
         {
             if (pConnectionServer == null)
             {
@@ -78,7 +60,7 @@ namespace Cisco.UnityConnection.RestFunctions
             if (res.Success == false)
             {
                 throw new Exception(string.Format("Failed to find ScheduleSet using Objectid={0}, or displayname={1}, error={2}",
-                    pObjectId,pDisplayName, res));
+                    pObjectId, pDisplayName, res));
             }
 
         }
@@ -89,6 +71,29 @@ namespace Cisco.UnityConnection.RestFunctions
         public ScheduleSet()
         {
         }
+
+        #endregion
+
+
+        #region Fields and Properties
+
+        //reference to the ConnectionServer object used to create this Alternate Extension instance.
+        public ConnectionServer HomeServer { get; private set; }
+
+        //list of schedules associated with this schedule set.  Typically a schedule set will contain two schedules - one
+        //for regular schedule details and one for holidays - but it may not contain a holiday schedule and can technically
+        //contain more than one schedule (although the GUI admin does not allow for this).
+        private List<Schedule> _schedules;
+
+        #endregion
+
+
+        #region ScheduleSet Properties
+
+        public string ObjectId { get; set; }
+        public string DisplayName { get; set; }
+        public string OwnerLocationObjectId { get; set; }
+        public bool Undeletable { get; set; }
 
         #endregion
 
@@ -311,12 +316,6 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <summary>
         /// Gets the list of all schedule sets and resturns them as a generic list of ScheduleSet objects. 
         /// </summary>
-        /// <param name="pConnectionServer">
-        /// The Connection server object that references the server the schedulesets should be pulled from
-        /// </param>
-        /// <param name="pScheduleSetObjectId">
-        /// The schedule set to look for schedules for.
-        ///  </param>
         /// <param name="pScheduleSetsMembers">
         /// Out parameter that is used to return the list of Schedule ObjectIds associated with the schedule set
         /// </param>
@@ -713,7 +712,7 @@ namespace Cisco.UnityConnection.RestFunctions
         private static WebCallResult DeleteAllSchedulesAssociatedWithScheduleSet(ConnectionServer pConnectionServer, string pScheduleSetObjectId)
         {
             List<ScheduleSetMember> oMembers;
-            WebCallResult res = ScheduleSet.GetSchedulesSetsMembers(pConnectionServer, pScheduleSetObjectId,out oMembers);
+            WebCallResult res = GetSchedulesSetsMembers(pConnectionServer, pScheduleSetObjectId,out oMembers);
 
             if (res.Success == false)
             {
@@ -915,12 +914,29 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <summary>
         /// Overloaded version of method that returns a copy of the schedule set as an out parameter
         /// </summary>
-        /// <param name="pConnectionServer"></param>
-        /// <param name="pDisplayName"></param>
-        /// <param name="pOwnerLocationObjectId"></param>
-        /// <param name="pOwnerSubscriberObjectId"></param>
-        /// <param name="pStartTime"></param>
-        /// <param name="pEndTime"></param>
+        /// <param name="pConnectionServer">
+        /// Connection server to create the schedule items on.
+        /// </param>
+        /// <param name="pDisplayName">
+        /// Display name to assign to the schedule
+        /// </param>
+        /// <param name="pOwnerLocationObjectId">
+        /// Owner of the schedule - primary location object of a server means it's a "system schedule" and is visible in 
+        /// CUCA on the schedules page.
+        /// </param>
+        /// <param name="pOwnerSubscriberObjectId">
+        /// If the owner is a subscriber it's generally used as a notification device item.
+        /// </param>
+        /// <param name="pStartTime">
+        /// the start time (in minutes) for the active day or days.  the start time is stored as the number of minutes from 
+        /// midnight.  so a value of 480 would mean 8:00 am and 1020 would mean 5:00 pm.  in addition, a value of 0 for the 
+        /// start time indicates 12:00 am.
+        /// </param>
+        /// <param name="pEndTime">
+        /// the end time (in minutes) for the active day or days.  the end time is stored as the number of minutes from 
+        /// midnight. so a value of 480 would mean 8:00 am and 1020 would mean 5:00 pm. in addition, a value of 0 means 
+        /// "till the end of the day" (e.g.  11:59:59 pm in linux land).
+        /// </param>
         /// <param name="pActiveMonday"></param>
         /// <param name="pActiveTuesday"></param>
         /// <param name="pActiveWednesday"></param>
@@ -930,8 +946,13 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pActiveSunday"></param>
         /// <param name="pStartDate"></param>
         /// <param name="pEndDate"></param>
-        /// <param name="pScheduleSet"></param>
-        /// <returns></returns>
+        /// <param name="pScheduleSet">
+        /// Resulting schedule set created is returned on this out parameter
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class - if all goes through the ObjectId of the newly created ScheduleSet will
+        /// be returned in the ReturnedObjectId property.
+        /// </returns>
         public static WebCallResult AddQuickSchedule(ConnectionServer pConnectionServer, string pDisplayName,
                                                      string pOwnerLocationObjectId, string pOwnerSubscriberObjectId,
                                                      int pStartTime, int pEndTime, bool pActiveMonday,
@@ -945,12 +966,12 @@ namespace Cisco.UnityConnection.RestFunctions
                                                  pActiveMonday, pActiveThursday, pActiveWednesday, pActiveThursday,
                                                  pActiveFriday, pActiveSaturday, pActiveSunday, pStartDate,pEndDate);
 
-            //if the create goes through, fetch the handler as an object and return it.
+            //if the create goes through, fetch the ScheduleSet as an object and return it.
             if (res.Success)
             {
                 res = GetScheduleSet(out pScheduleSet, pConnectionServer, res.ReturnedObjectId);
             }
-
+            
             return res;
         }
 

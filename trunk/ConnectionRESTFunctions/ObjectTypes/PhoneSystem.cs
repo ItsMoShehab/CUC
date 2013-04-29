@@ -18,25 +18,6 @@ using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
-    /// <summary>
-    /// Object for listing phone system associations for a media switch.
-    /// </summary>
-    public class PhoneSystemAssociation
-    {
-        public string Alias { get; set; }
-        public string DisplayName { get; set; }
-        public string MediaSwitchDisplayName { get; set; }
-        public string MediaSwitchObjectId { get; set; }
-        public int numNoitificationDevice { get; set; }
-        public int numNotificationMWI { get; set; }
-        public int numPrimaryCallHandler { get; set; }
-
-        public override string ToString()
-        {
-            return string.Format("User alias={0}, display name={1}, switch name={2}", Alias, DisplayName,
-                                 MediaSwitchDisplayName);
-        }
-    }
 
     /// <summary>
     /// The phone system class provides methods for fetching, creating, updtaing and deleting phone system objects in the Unity 
@@ -44,7 +25,71 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class PhoneSystem
     {
+
+        #region Constructors and Destructors
+
+
+        /// <summary>
+        /// Generic constructor for JSON parsing library
+        /// </summary>
+        public PhoneSystem()
+        {
+            _changedPropList = new ConnectionPropertyList();
+        }
+
+        /// <summary>
+        /// Constructor for the PhoneSystem class
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// ConnectionServer data is being fetched from.
+        /// </param>
+        /// <param name="pObjectId">
+        /// Optional - if passed in the specifics of the switch identified by this GUID is fetched and the properties are filled in.
+        /// </param>
+        /// <param name="pDisplayName">
+        /// Optional display name to search for a switch definition by
+        /// </param>
+        public PhoneSystem(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+            : this()
+        {
+            if (pConnectionServer == null)
+            {
+                throw new ArgumentException("Null ConnectionServer referenced pasted to MediaSwitch construtor");
+            }
+
+            HomeServer = pConnectionServer;
+
+            //if no objectId is passed in just create an empty version of the class - used for constructing lists from data fetches.
+            if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pDisplayName))
+            {
+                return;
+            }
+
+            //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
+            WebCallResult res = GetPhoneSystem(pObjectId, pDisplayName);
+
+            if (res.Success == false)
+            {
+                throw new Exception(string.Format("Phone system not found in PhoneSystem constructor using ObjectId={0} " +
+                                                  "or displayName={1}\n\r{2}", pObjectId, pDisplayName, res.ErrorText));
+            }
+        }
+
+        #endregion
+
+
         #region Fields and Properties
+
+        //reference to the ConnectionServer object used to create this object instance.
+        public ConnectionServer HomeServer { get; private set; }
+
+        //used to keep track of which properties have been updated
+        private readonly ConnectionPropertyList _changedPropList;
+
+        #endregion
+
+
+        #region PhoneSystem Properties
 
         private string _displayName;
         public string DisplayName 
@@ -117,6 +162,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
         [JsonProperty]
         public string CcmAXLPassword { get; private set; }
+        
         [JsonProperty]
         public string CcmCtiPassword { get; private set; }
 
@@ -224,61 +270,6 @@ namespace Cisco.UnityConnection.RestFunctions
         }
         
 
-        //reference to the ConnectionServer object used to create this user instance.
-        public ConnectionServer HomeServer { get; private set; }
-
-        //used to keep track of whic properties have been updated
-        private readonly ConnectionPropertyList _changedPropList;
-
-        #endregion
-
-
-        #region Constructors
-
-        /// <summary>
-        /// Generic constructor for JSON parsing library
-        /// </summary>
-        public PhoneSystem()
-        {
-            _changedPropList = new ConnectionPropertyList();
-        }
-
-        /// <summary>
-        /// Constructor for the PhoneSystem class
-        /// </summary>
-        /// <param name="pConnectionServer">
-        /// ConnectionServer data is being fetched from.
-        /// </param>
-        /// <param name="pObjectId">
-        /// Optional - if passed in the specifics of the switch identified by this GUID is fetched and the properties are filled in.
-        /// </param>
-        /// <param name="pDisplayName">
-        /// Optional display name to search for a switch definition by
-        /// </param>
-        public PhoneSystem(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "") : this()
-        {
-            if (pConnectionServer==null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced pasted to MediaSwitch construtor");
-            }
-
-            HomeServer = pConnectionServer;
-
-            //if no objectId is passed in just create an empty version of the class - used for constructing lists from data fetches.
-            if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pDisplayName))
-            {
-                return;
-            }
-
-            //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
-            WebCallResult res = GetPhoneSystem(pObjectId, pDisplayName);
-
-            if (res.Success == false)
-            {
-                throw new Exception(string.Format("Phone system not found in PhoneSystem constructor using ObjectId={0} " +
-                                                  "or displayName={1}\n\r{2}", pObjectId, pDisplayName, res.ErrorText));
-            }
-        }
 
         #endregion
 
@@ -303,7 +294,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the PhoneSystem object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {

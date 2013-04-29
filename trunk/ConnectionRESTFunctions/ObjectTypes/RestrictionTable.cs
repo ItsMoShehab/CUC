@@ -19,56 +19,13 @@ namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
     /// The restriction table class is used only to provide an interface for user to select restriction tables for assignment to COS 
-    /// instances handlers.  
+    /// instances.  
     /// </summary>
     public class RestrictionTable
     {
-       
-        #region Fields and Properties
 
-        public ConnectionServer HomeServer { get; private set; }
+        #region Constructors and Destructors
 
-        public DateTime CreationTime { get; set; }
-        public bool DefaultBlocked { get; set; }
-        public string DisplayName { get; set; }
-        public string LocationObjectId { get; set; }
-        public string ObjectId { get; set; }
-        public int MaxDigits { get; set; }
-        public int MinDigits { get; set; }
-        public bool Undeletable { get; set; }
-
-
-        private List<RestrictionPattern> _restrictionPatterns;
-        /// <summary>
-        /// Lazy fetch for restriction patterns associated with a table - this needs to be implemented as a method instead of a 
-        /// property so that if a grid is bound to the generic list of objects it doesn't "lazy fetch" it for display purposes resulting
-        /// in needless data fetching
-        /// </summary>
-        /// <param name="pForceRefetchOfData">
-        /// Pass as true to force the restriction patterns to be refetched even if they've already be populated earlier.
-        /// </param>
-        /// <returns>
-        /// Generic list of RestrictionPattern objects associated with the restriction table.
-        /// </returns>
-        public List<RestrictionPattern> RestrictionPatterns(bool pForceRefetchOfData=false)
-        {
-            if (pForceRefetchOfData)
-            {
-                _restrictionPatterns = null;
-            }
-
-            if (_restrictionPatterns == null)
-            {
-                RestrictionPattern.GetRestrictionPatterns(this.HomeServer, this.ObjectId, out _restrictionPatterns);
-            }
-
-            return _restrictionPatterns;
-        }
-
-        #endregion
-
-
-        #region Constructors
 
         /// <summary>
         /// Pass in the objectId of the restriction table to load, it's display name (which should be unique) or neither and the constructor
@@ -89,10 +46,11 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 throw new ArgumentException("Null ConnectionServer passed to RestrictionTable constructor.");
             }
-            
+
             HomeServer = pConnectionServer;
 
-            //if the user passed in a specific ObjectId or display name then go load that handler up, otherwise just return an empty instance.
+            //if the user passed in a specific ObjectId or display name then go load that restriction table up, 
+            //otherwise just return an empty instance.
             if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pDisplayName))) return;
 
             ObjectId = pObjectId;
@@ -105,7 +63,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 throw new Exception(string.Format("RestrictionTable not found in RestrictionTable constructor using ObjectId={0} and DisplayName={1}\n\r{2}"
                                  , pObjectId, pDisplayName, res.ErrorText));
             }
-            
+
         }
 
         /// <summary>
@@ -113,8 +71,56 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public RestrictionTable()
         {
-            
+
         }
+
+        #endregion
+
+       
+        #region Fields and Properties
+
+        public ConnectionServer HomeServer { get; private set; }
+
+        private List<RestrictionPattern> _restrictionPatterns;
+        /// <summary>
+        /// Lazy fetch for restriction patterns associated with a table - this needs to be implemented as a method instead of a 
+        /// property so that if a grid is bound to the generic list of objects it doesn't "lazy fetch" it for display purposes resulting
+        /// in needless data fetching
+        /// </summary>
+        /// <param name="pForceRefetchOfData">
+        /// Pass as true to force the restriction patterns to be refetched even if they've already be populated earlier.
+        /// </param>
+        /// <returns>
+        /// Generic list of RestrictionPattern objects associated with the restriction table.
+        /// </returns>
+        public List<RestrictionPattern> RestrictionPatterns(bool pForceRefetchOfData = false)
+        {
+            if (pForceRefetchOfData)
+            {
+                _restrictionPatterns = null;
+            }
+
+            if (_restrictionPatterns == null)
+            {
+                RestrictionPattern.GetRestrictionPatterns(this.HomeServer, this.ObjectId, out _restrictionPatterns);
+            }
+
+            return _restrictionPatterns;
+        }
+
+        #endregion
+
+
+        #region RestrictionTable Properties
+
+        public DateTime CreationTime { get; set; }
+        public bool DefaultBlocked { get; set; }
+        public string DisplayName { get; set; }
+        public string LocationObjectId { get; set; }
+        public string ObjectId { get; set; }
+        public int MaxDigits { get; set; }
+        public int MinDigits { get; set; }
+        public bool Undeletable { get; set; }
 
         #endregion
 

@@ -24,21 +24,17 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class NotificationTemplate
     {
-        #region Fields and Properties
 
-        public string NotificationTemplateId { get; set; }
-        public string NotificationTemplateName { get; set; }
-
-        public ConnectionServer HomeServer { get; private set; }
-
-        #endregion
+        #region Constructors and Destructors
 
 
-        #region Constructors
-
+        /// <summary>
+        /// Constructor requires the ConnectionServer the template lives on and optionally takes an ObjectId of a template to 
+        /// load data for.
+        /// </summary>
         public NotificationTemplate(ConnectionServer pConnectionServer, string pObjectId = "")
         {
-            if (pConnectionServer==null)
+            if (pConnectionServer == null)
             {
                 throw new ArgumentException("Null ConnectionServer referenced pasted to NotificationTemplate construtor");
             }
@@ -67,6 +63,21 @@ namespace Cisco.UnityConnection.RestFunctions
         public NotificationTemplate()
         {
         }
+
+        #endregion
+
+
+        #region Fields and Properties
+
+        public ConnectionServer HomeServer { get; private set; }
+
+        #endregion
+
+
+        #region NotificationTemplate Properties
+
+        public string NotificationTemplateId { get; set; }
+        public string NotificationTemplateName { get; set; }
 
         #endregion
 

@@ -18,11 +18,7 @@ using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
-    /// <summary>
-    /// Enum defining the 3 possible phone integration methods assigned when creating a port group.
-    /// </summary>
-    public enum TelephonyIntegrationMethodEnum {SCCP =1, SIP=2, PIMG=3}
-
+    
     /// <summary>
     /// Class that provides methods for fetching, pdating, deleting and adding port groups in the Unity Connection
     /// directory.
@@ -30,7 +26,71 @@ namespace Cisco.UnityConnection.RestFunctions
     public class PortGroup
     {
 
+        #region Constructors and Destructors
+
+
+        /// <summary>
+        /// Constructor for the PortGroup class
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// ConnectionServer data is being fetched from.
+        /// </param>
+        /// <param name="pObjectId">
+        /// Optional - if passed in the specifics of the switch identified by this GUID is fetched and the properties are filled in.
+        /// </param>
+        /// <param name="pDisplayName">
+        /// Optional display name to search for a port group by
+        /// </param>
+        public PortGroup(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+            : this()
+        {
+            if (pConnectionServer == null)
+            {
+                throw new ArgumentException("Null ConnectionServer referenced pasted to PortGroup construtor");
+            }
+
+            HomeServer = pConnectionServer;
+            ObjectId = pObjectId;
+
+            //if no objectId is passed in just create an empty version of the class - used for constructing lists from XML fetches.
+            if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pDisplayName))
+            {
+                return;
+            }
+
+            //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
+            WebCallResult res = GetPortGroup(pObjectId, pDisplayName);
+
+            if (res.Success == false)
+            {
+                throw new Exception(string.Format("Port group not found in PortGroup constructor using ObjectId={0}\n\r{1}"
+                                                 , pObjectId, res.ErrorText));
+            }
+        }
+
+        /// <summary>
+        /// Generic constructor for Json libraries
+        /// </summary>
+        public PortGroup()
+        {
+            _changedPropList = new ConnectionPropertyList();
+        }
+
+        #endregion
+
+
         #region Fields and Properties
+
+        //reference to the ConnectionServer object used to create this object instance.
+        public ConnectionServer HomeServer { get; private set; }
+
+        //used to keep track of which properties have been updated
+        private readonly ConnectionPropertyList _changedPropList;
+
+        #endregion
+
+
+        #region PortGroup Properties
 
         private bool _ccmDoAutoFailback;
         public bool CcmDoAutoFailback
@@ -76,14 +136,14 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private bool _enableMWI;
+        private bool _enableMwi;
         public bool EnableMWI
         {
-            get { return _enableMWI; }
+            get { return _enableMwi; }
             set
             {
                 _changedPropList.Add("EnableMWI", value);
-                _enableMWI = value;
+                _enableMwi = value;
             }
         }
 
@@ -417,67 +477,9 @@ namespace Cisco.UnityConnection.RestFunctions
         public int TelephonyIntegrationMethodEnum { get; private set; }
 
 
-        //reference to the ConnectionServer object used to create this user instance.
-        public ConnectionServer HomeServer { get; private set; }
-
-        //used to keep track of whic properties have been updated
-        private readonly ConnectionPropertyList _changedPropList;
-
-
         #endregion
 
-        
-        #region Constructors
-
-        /// <summary>
-        /// Constructor for the PortGroup class
-        /// </summary>
-        /// <param name="pConnectionServer">
-        /// ConnectionServer data is being fetched from.
-        /// </param>
-        /// <param name="pObjectId">
-        /// Optional - if passed in the specifics of the switch identified by this GUID is fetched and the properties are filled in.
-        /// </param>
-        /// <param name="pDisplayName">
-        /// Optional display name to search for a port group by
-        /// </param>
-        public PortGroup(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName=""):this()
-        {
-            if (pConnectionServer==null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced pasted to PortGroup construtor");
-            }
-
-            HomeServer = pConnectionServer;
-            ObjectId = pObjectId;
-
-            //if no objectId is passed in just create an empty version of the class - used for constructing lists from XML fetches.
-            if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pDisplayName))
-            {
-                return;
-            }
-
-            //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
-            WebCallResult res = GetPortGroup(pObjectId, pDisplayName);
-
-            if (res.Success == false)
-            {
-                throw new Exception(string.Format("Port group not found in PortGroup constructor using ObjectId={0}\n\r{1}"
-                                                 , pObjectId, res.ErrorText));
-            }
-        }
-
-        /// <summary>
-        /// Generic constructor for Json libraries
-        /// </summary>
-        public PortGroup()
-        {
-            _changedPropList= new ConnectionPropertyList();
-        }
-
-        #endregion
-
-
+   
         #region Instance Methods
 
         /// <summary>
@@ -498,7 +500,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the PortGroup object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {
@@ -977,9 +979,6 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pConnectionServer">
         /// Connection server to create the new port gorup on.
         /// </param>
-        /// <param name="pMediaPortGroupTemplateObjectId">
-        /// The template ObjectId to use when creating the port group - dictates if it's SIP, PIMG/TIMG or SCCP type ports
-        /// </param>
         /// <param name="pDisplayName">
         /// Display name of the new port gorup
         /// </param>
@@ -1002,8 +1001,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with details of the method call and the results from the server.
         /// </returns>
-        
-                public static WebCallResult AddPortGroup(ConnectionServer pConnectionServer, string pDisplayName, string pPhoneSystemObjectId, 
+        public static WebCallResult AddPortGroup(ConnectionServer pConnectionServer, string pDisplayName, string pPhoneSystemObjectId, 
                     string pHostOrIpAddress, TelephonyIntegrationMethodEnum pPhoneIntegrationMethod, string pSccpDevicePrefix,out PortGroup pPortGroup)
         {
             pPortGroup = null;

@@ -16,21 +16,25 @@ using System.Text;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
-    /// <summary>
-    /// Make the private list member type enum more human readable in output.
-    /// </summary>
-    public enum PrivateListMemberType
-    {
-      	LocalUser, RemoteContact, DistributionList, PrivateList
-    }
 
     /// <summary>
-    /// Class for fetching and enumerating private list members
+    /// Class for fetching and enumerating private list members - creation of new members happens at the PrivateList
+    /// class level, this is a read only construction.
     /// </summary>
     public class PrivateListMember
     {
 
-        #region Properties
+        #region Fields and Properties
+
+        /// <summary>
+        /// Not in CUPI's data, this is derived locally in the class for ease of filtering/presentation.
+        /// </summary>
+        public PrivateListMemberType MemberType { get; private set; }
+
+        #endregion
+
+
+        #region PrivateListMember Properties
 
         public string Alias { get; set; }
         public string DisplayName { get; set; }
@@ -44,12 +48,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
         public string ObjectId { get; set; }
 
-        /// <summary>
-        /// Not in CUPI's data, this is derived locally in the class for ease of filtering/presentation.
-        /// </summary>
-        public PrivateListMemberType MemberType { get; private set; }
-
-        
         #endregion
 
 
@@ -168,7 +166,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the PrivateListMember object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {

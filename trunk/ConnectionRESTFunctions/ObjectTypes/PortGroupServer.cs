@@ -24,7 +24,78 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class PortGroupServer
     {
+
+        #region Constructors and Destructors
+
+
+        /// <summary>
+        /// Constructor for the PortGroup class
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// ConnectionServer data is being fetched from.
+        /// </param>
+        /// <param name="pPortGroupObjectId">
+        /// Port group that owns the port group server.
+        /// </param>
+        /// <param name="pObjectId">
+        /// Optional - if passed in the specifics of the switch identified by this GUID is fetched and the properties are filled in.
+        /// </param>
+        public PortGroupServer(ConnectionServer pConnectionServer, string pPortGroupObjectId, string pObjectId = "")
+            : this()
+        {
+            if (pConnectionServer == null)
+            {
+                throw new ArgumentException("Null ConnectionServer referenced pasted to PortGroupServer construtor");
+            }
+
+            if (string.IsNullOrEmpty(pPortGroupObjectId))
+            {
+                throw new ArgumentException("Empty port group ObjectId passed to PortGroupServer constructor");
+            }
+
+            HomeServer = pConnectionServer;
+            ObjectId = pObjectId;
+            PortGroupObjectId = pPortGroupObjectId;
+
+            //if no objectId is passed in just create an empty version of the class - used for constructing lists from XML fetches.
+            if (string.IsNullOrEmpty(pObjectId))
+            {
+                return;
+            }
+
+            //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
+            WebCallResult res = GetPortGroupServer(pObjectId, pPortGroupObjectId);
+
+            if (res.Success == false)
+            {
+                throw new Exception(string.Format("Port group server not found in PortGroup constructor using ObjectId={0}\n\r{1}"
+                                                 , pObjectId, res.ErrorText));
+            }
+        }
+
+        /// <summary>
+        /// Generic constructor for Json libraries
+        /// </summary>
+        public PortGroupServer()
+        {
+            _changedPropList = new ConnectionPropertyList();
+        }
+
+        #endregion
+
+
         #region Fields and Properties
+
+        //reference to the ConnectionServer object used to create this object instance.
+        public ConnectionServer HomeServer { get; private set; }
+
+        //used to keep track of which properties have been updated
+        private readonly ConnectionPropertyList _changedPropList;
+
+        #endregion
+
+
+        #region PortGroupServer Properties
 
         private string _hostOrIPAddress;
         public string HostOrIPAddress
@@ -133,69 +204,6 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
 
-        //reference to the ConnectionServer object used to create this user instance.
-        public ConnectionServer HomeServer { get; private set; }
-
-        //used to keep track of whic properties have been updated
-        private readonly ConnectionPropertyList _changedPropList;
-
-
-        #endregion
-
-        
-        #region Constructors
-
-        /// <summary>
-        /// Constructor for the PortGroup class
-        /// </summary>
-        /// <param name="pConnectionServer">
-        /// ConnectionServer data is being fetched from.
-        /// </param>
-        /// <param name="pPortGroupObjectId">
-        /// Port group that owns the port group server.
-        /// </param>
-        /// <param name="pObjectId">
-        /// Optional - if passed in the specifics of the switch identified by this GUID is fetched and the properties are filled in.
-        /// </param>
-        public PortGroupServer(ConnectionServer pConnectionServer, string pPortGroupObjectId, string pObjectId = ""):this()
-        {
-            if (pConnectionServer==null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced pasted to PortGroupServer construtor");
-            }
-
-            if (string.IsNullOrEmpty(pPortGroupObjectId))
-            {
-                throw new ArgumentException("Empty port group ObjectId passed to PortGroupServer constructor");
-            }
-
-            HomeServer = pConnectionServer;
-            ObjectId = pObjectId;
-            PortGroupObjectId = pPortGroupObjectId;
-
-            //if no objectId is passed in just create an empty version of the class - used for constructing lists from XML fetches.
-            if (string.IsNullOrEmpty(pObjectId))
-            {
-                return;
-            }
-
-            //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
-            WebCallResult res = GetPortGroupServer(pObjectId, pPortGroupObjectId);
-
-            if (res.Success == false)
-            {
-                throw new Exception(string.Format("Port group server not found in PortGroup constructor using ObjectId={0}\n\r{1}"
-                                                 , pObjectId, res.ErrorText));
-            }
-        }
-
-        /// <summary>
-        /// Generic constructor for Json libraries
-        /// </summary>
-        public PortGroupServer()
-        {
-            _changedPropList= new ConnectionPropertyList();
-        }
 
         #endregion
 
@@ -220,7 +228,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the PortGroupServer object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {
@@ -407,12 +415,20 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
-        /// 
+        /// Fetches a port group server by ObjectId and passes it back as an out parameter as an instance of the PortGroupServer class.
         /// </summary>
-        /// <param name="pPortGroupServer"></param>
-        /// <param name="pConnectionServer"></param>
-        /// <param name="pObjectId"></param>
-        /// <param name="pPortGroupObjectId"></param>
+        /// <param name="pPortGroupServer">
+        /// Out param that the information is passed back on.
+        /// </param>
+        /// <param name="pConnectionServer">
+        /// Connection server that the portgroup lives on.
+        /// </param>
+        /// <param name="pObjectId">
+        /// ObjectId of the portgroup server to load.
+        /// </param>
+        /// <param name="pPortGroupObjectId">
+        /// PortGroup that the port group server is tied to.
+        /// </param>
         /// <returns>
         ///  Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
@@ -514,7 +530,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pPortGroupObjectId">
         /// Port group to add the port group server to.
         /// </param>
-        /// <param name="pMediaPortGroupServiceanum"></param>
+        /// <param name="pMediaPortGroupServiceEnum">
+        /// </param>
         /// <param name="pHostOrIpAddress">
         /// Host address or IP address of the server to add.
         /// </param>

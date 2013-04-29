@@ -17,6 +17,72 @@ namespace Cisco.UnityConnection.RestFunctions
     // Collection of enums, structs and classes to help make the code more readable and avoid mistakes when setting values for various 
     // Connection objects such as the addressing mode for a subscriber or the target conversation name for a menu entry key or the like.
 
+    /// <summary>
+    /// Action types (0 to 8) for menu entry keys, after greeting actions, exit actions etc... 
+    /// </summary>
+    public enum ActionTypes
+    {
+        Ignore,
+        Hangup,
+        GoTo,
+        Error,
+        TakeMessage,
+        SkipGreeting,
+        RestartGreeting,
+        TransferToAlternateContactNumber,
+        RouteFromNextCallRoutingRule
+    }
+
+    /// <summary>
+    /// When addressing messages using touch tones in the subscriber conversation Connection can default to starting with the last name, 
+    /// starting with the first name or using the target's extension number.
+    /// </summary>
+    public enum AddressingMode
+    {
+        LastNameFirst,
+        Extension,
+        FirstNameFirst
+    }
+
+    /// <summary>
+    /// List of the ID mappings for alternate extensions.  0 is the pimary extension, 1 through 10 is admin added alternate extensions and 11 through 20 are 
+    /// user added alternate extensions
+    /// </summary>
+    public enum AlternateExtensionId
+    {
+        Primary,
+        AdminAdded1,
+        AdminAdded2,
+        AdminAdded3,
+        AdminAdded4,
+        AdminAdded5,
+        AdminAdded6,
+        AdminAdded7,
+        AdminAdded8,
+        AdminAdded9,
+        AdminAdded10,
+        UserAdded1,
+        UserAdded2,
+        UserAdded3,
+        UserAdded4,
+        UserAdded5,
+        UserAdded6,
+        UserAdded7,
+        UserAdded8,
+        UserAdded9,
+        UserAdded10
+    }
+
+
+    /// <summary>
+    /// The clock mode for users can be whatever the system default setting is, 12 hour (AM/PM) or 24 hour mode.
+    /// </summary>
+    public enum ClockMode
+    {
+        SystemDefaultClock,
+        HourClock12,
+        HourClock24
+    }
 
     /// <summary>
     /// The ConnectionObjectPropertyPair is a very simple name/value pair construct that gets used for passing lists of property values 
@@ -85,14 +151,17 @@ namespace Cisco.UnityConnection.RestFunctions
         //for adding an integer value
         public void Add(string pPropertyName, int pPropertyValue)
         {
-            ConnectionObjectPropertyPair oPair = new ConnectionObjectPropertyPair(pPropertyName, pPropertyValue.ToString());
+            ConnectionObjectPropertyPair oPair = new ConnectionObjectPropertyPair(pPropertyName,
+                                                                                  pPropertyValue.ToString());
             Add(oPair);
         }
 
         //for adding a boolean value - CUPI needs 0/1 passed instead of "true" or "false" here
         public void Add(string pPropertyName, bool pPropertyValue)
         {
-            ConnectionObjectPropertyPair oPair = new ConnectionObjectPropertyPair(pPropertyName, HTTPFunctions.BoolToString(pPropertyValue));
+            ConnectionObjectPropertyPair oPair = new ConnectionObjectPropertyPair(pPropertyName,
+                                                                                  HTTPFunctions.BoolToString(
+                                                                                      pPropertyValue));
             Add(oPair);
         }
 
@@ -100,7 +169,10 @@ namespace Cisco.UnityConnection.RestFunctions
         public void Add(string pPropertyName, DateTime pPropertyValue)
         {
             //The Informix time/date format is a little fussy...
-            ConnectionObjectPropertyPair oPair = new ConnectionObjectPropertyPair(pPropertyName, String.Format("{0:yyyy-MM-dd hh:mm:ss}", pPropertyValue));
+            ConnectionObjectPropertyPair oPair = new ConnectionObjectPropertyPair(pPropertyName,
+                                                                                  String.Format(
+                                                                                      "{0:yyyy-MM-dd hh:mm:ss}",
+                                                                                      pPropertyValue));
             Add(oPair);
         }
 
@@ -112,17 +184,20 @@ namespace Cisco.UnityConnection.RestFunctions
                 return;
             }
             //The Informix time/date format is a little fussy...
-            ConnectionObjectPropertyPair oPair = new ConnectionObjectPropertyPair(pPropertyName, String.Format("{0:yyyy-MM-dd hh:mm:ss}", pPropertyValue));
+            ConnectionObjectPropertyPair oPair = new ConnectionObjectPropertyPair(pPropertyName,
+                                                                                  String.Format(
+                                                                                      "{0:yyyy-MM-dd hh:mm:ss}",
+                                                                                      pPropertyValue));
             Add(oPair);
         }
-        
+
         /// <summary>
         /// return a simple list of all the name/value pairs in the list
         /// </summary>
         /// <returns></returns>
         public override string ToString()
         {
-            string strRet="";
+            string strRet = "";
 
             if (this.Count == 0) return "{empty}";
 
@@ -183,20 +258,17 @@ namespace Cisco.UnityConnection.RestFunctions
     }
 
 
+   
+
     /// <summary>
-    /// Action types (0 to 8) for menu entry keys, after greeting actions, exit actions etc... 
+    /// Definitions of the langauge type enum value from the data dictionary
     /// </summary>
-    public enum ActionTypes
+    public enum ConnectionLanguageTypes
     {
-      	Ignore,
-        Hangup,
-        GoTo,
-        Error,
-        TakeMessage,
-        SkipGreeting,
-        RestartGreeting,
-        TransferToAlternateContactNumber,
-        RouteFromNextCallRoutingRule
+        TUI,
+        GUI,
+        VUI,
+        TTS
     }
 
     /// <summary>
@@ -215,55 +287,43 @@ namespace Cisco.UnityConnection.RestFunctions
         SystemTransfer
     }
 
-    /// <summary>
-    /// List of the ID mappings for alternate extensions.  0 is the pimary extension, 1 through 10 is admin added alternate extensions and 11 through 20 are 
-    /// user added alternate extensions
-    /// </summary>
-    public enum AlternateExtensionId { 
-        Primary, 
-        AdminAdded1, 
-        AdminAdded2, 
-        AdminAdded3, 
-        AdminAdded4,
-        AdminAdded5,
-        AdminAdded6,
-        AdminAdded7,
-        AdminAdded8,
-        AdminAdded9,
-        AdminAdded10,
-        UserAdded1,
-        UserAdded2,
-        UserAdded3,
-        UserAdded4,
-        UserAdded5,
-        UserAdded6,
-        UserAdded7,
-        UserAdded8,
-        UserAdded9,
-        UserAdded10
-    }
-
-    /// <summary>
-    /// When addressing messages using touch tones in the subscriber conversation Connection can default to starting with the last name, 
-    /// starting with the first name or using the target's extension number.
-    /// </summary>
-    public enum AddressingMode { LastNameFirst, Extension, FirstNameFirst }
-
-    /// <summary>
-    /// The clock mode for users can be whatever the system default setting is, 12 hour (AM/PM) or 24 hour mode.
-    /// </summary>
-    public enum ClockMode { SystemDefaultClock, HourClock12, HourClock24 }
-
+   
 
     /// <summary>
     /// Credential types used by CUPI (3=GUI Password, 4 = Phone PIN.  Other types (Domino, Windows...) do not get used in CUPI.
     /// </summary>
-    public enum CredentialType {Password=3, Pin=4}
+    public enum CredentialType
+    {
+        Password = 3,
+        Pin = 4
+    }
+
+    
 
     /// <summary>
-    /// List of notification device types.  Be aware that MP3 is a defined type but is not supported or used in Connection.
+    /// For human readable output of distribution list member types
     /// </summary>
-    public enum NotificationDeviceTypes {Fax=3, Mp3=7, Pager=2, Phone=1, Sms=6, Smtp=4}
+    public enum DistributionListMemberType
+    {
+        LocalUser,
+        GlobalUser,
+        Contact,
+        DistributionList
+    }
+
+    /// <summary>
+    /// The 7 types of greetings allowed in Connection
+    /// </summary>
+    public enum GreetingTypes
+    {
+        Standard,
+        OffHours,
+        Alternate,
+        Busy,
+        Holiday,
+        Internal,
+        Error
+    }
 
     /// <summary>
     /// Couple helper functions for displaying and converting language codes from the big enum of them all.
@@ -272,24 +332,24 @@ namespace Cisco.UnityConnection.RestFunctions
     {
         public static string GetLanguageNameFromLanguageId(int pLanguageId)
         {
-            if (Enum.IsDefined(typeof(LanguageCodes),pLanguageId)==false)
+            if (Enum.IsDefined(typeof (LanguageCodes), pLanguageId) == false)
             {
                 return "Undefined";
             }
-            
-            return ((LanguageCodes)pLanguageId).ToString();
+
+            return ((LanguageCodes) pLanguageId).ToString();
         }
 
         public static int GetLanguageIdFromLanguageEnum(LanguageCodes pLanguageCode)
         {
 
-            if (Enum.IsDefined(typeof(LanguageCodes), pLanguageCode) == false)
+            if (Enum.IsDefined(typeof (LanguageCodes), pLanguageCode) == false)
             {
                 return -1;
             }
-            
-            return (int)pLanguageCode;  	
-            
+
+            return (int) pLanguageCode;
+
         }
 
     }
@@ -452,13 +512,28 @@ namespace Cisco.UnityConnection.RestFunctions
         EnglishIndian = 16393,
     }
 
+
+    /// <summary>
+    /// List of notification device types.  Be aware that MP3 is a defined type but is not supported or used in Connection.
+    /// </summary>
+    public enum NotificationDeviceTypes
+    {
+        Fax = 3,
+        Mp3 = 7,
+        Pager = 2,
+        Phone = 1,
+        Sms = 6,
+        Smtp = 4
+    }
+
+
     /// <summary>
     /// All possible event notification types that can be set on a notificaiton device.  Note that you cannot mix "AllMessage" and other types
     /// or "DispatchMessage" and other message types.
     /// </summary>
     public enum NotificationEventTypes
     {
-      	AllMessage,
+        AllMessage,
         NewFax,
         NewUrgentFax,
         NewVoiceMail,
@@ -471,7 +546,38 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Greetings setting to determine which greeting plays.
     /// 2=NoGreeting, 1=RecordedGreeting, 0=SystemGreeting
     /// </summary>
-    public enum PlayWhatTypes { SystemGreeting, RecordedGreeting, NoGreeting }
+    public enum PlayWhatTypes
+    {
+        SystemGreeting,
+        RecordedGreeting,
+        NoGreeting
+    }
+
+    /// <summary>
+    /// Make the private list member type enum more human readable in output.
+    /// </summary>
+    public enum PrivateListMemberType
+    {
+        LocalUser,
+        RemoteContact,
+        DistributionList,
+        PrivateList
+    }
+
+    /// <summary>
+    /// A schedule can be be in one of 3 states - active (on) inactive (off) or active for a holiday.
+    /// </summary>
+    public enum ScheduleState { INACTIVE, ACTIVE, HOLIDAY }
+
+    /// <summary>
+    /// SCCP ports can be configured for 1 of 3 security modes
+    /// </summary>
+    public enum SkinnySecurityModes
+    {
+        Insecure,
+        Authenticated,
+        Encrypted
+    }
 
     /// <summary>
     /// All the valid conversations a subscriber can be assigned to for their inbox conversation (i.e. what they hear when they call 
@@ -499,35 +605,41 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// The 3 transfer option types in Connection
     /// </summary>
-    public enum TransferOptionTypes { Standard, OffHours, Alternate }
-
-    /// <summary>
-    /// The 7 types of greetings allowed in Connection
-    /// </summary>
-    public enum GreetingTypes
+    public enum TransferOptionTypes
     {
-      	Standard,
+        Standard,
         OffHours,
-        Alternate,
-        Busy,
-        Holiday,
-        Internal,
-        Error
+        Alternate
+    }
+
+    
+    /// <summary>
+    /// Enum defining the 3 possible phone integration methods assigned when creating a port group.
+    /// </summary>
+    public enum TelephonyIntegrationMethodEnum
+    {
+        SCCP = 1,
+        SIP = 2,
+        PIMG = 3
     }
 
     /// <summary>
     /// A transfer rule can be set to ring the phone first or send the call directly to the active greeting.
     /// 0=Play greeting, 1= transfer 
     /// </summary>
-    public enum TransferActionTypes {PlayGreeting,Transfer}
+    public enum TransferActionTypes
+    {
+        PlayGreeting,
+        Transfer
+    }
 
     /// <summary>
     /// Transfer type options 0=unsupervised, 1 = supervised.
     /// </summary>
-    public enum TransferTypes { Unsupervised, Supervised }
+    public enum TransferTypes
+    {
+        Unsupervised,
+        Supervised
+    }
 
-    /// <summary>
-    /// Location objects can point to 4 different location types
-    /// </summary>
-    public enum LocationDestinationTypes {UnityConnection=1, Unity=2, UnityConnectionBridge = 7, Vpim=8}
 }

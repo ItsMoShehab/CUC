@@ -25,23 +25,14 @@ namespace Cisco.UnityConnection.RestFunctions
     public class Partition
     {
 
-        #region Fields and Properties 
-
-        public string Description { get; set; }
-        public string Name { get; set; }
-        public string ObjectId { get; set; }
-        public string LocationObjectId { get; set; }
-
-        //reference to the ConnectionServer object used to create this instance.
-        public ConnectionServer HomeServer { get; set; }
-
-        #endregion
+        #region Constructors and Destructors
 
 
-        #region Constructors
-
-        //constructor
-        public Partition(ConnectionServer pConnectionServer, string pObjectId="", string pName="")
+        /// <summary>
+        /// Constructor requires ConnectionServer the partition lives on - you can optionally pass the ObjectId or the display name
+        /// of the partition to load data for.
+        /// </summary>
+        public Partition(ConnectionServer pConnectionServer, string pObjectId = "", string pName = "")
         {
             if (pConnectionServer == null)
             {
@@ -59,7 +50,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Unable to find partition by objectId={0}, name={1}. Error={2}",pObjectId,pName, res));
+                throw new Exception(string.Format("Unable to find partition by objectId={0}, name={1}. Error={2}", pObjectId, pName, res));
             }
         }
 
@@ -69,6 +60,24 @@ namespace Cisco.UnityConnection.RestFunctions
         public Partition()
         {
         }
+
+        #endregion
+
+
+        #region Fields and Properties 
+
+        //reference to the ConnectionServer object used to create this instance.
+        public ConnectionServer HomeServer { get; set; }
+
+        #endregion
+
+
+        #region Partition Properties
+
+        public string Description { get; set; }
+        public string Name { get; set; }
+        public string ObjectId { get; set; }
+        public string LocationObjectId { get; set; }
 
         #endregion
 

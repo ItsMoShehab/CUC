@@ -131,10 +131,76 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class UserMessage
     {
+
+        #region Constructors and Destructors
+
+
+        /// <summary>
+        /// Constructor for user message class.  If you pass in the message objectId it will be stored in the instance, if not
+        /// you can fill it in later.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Connection server instance that holds the message (or more to the point the user that owns the message).
+        /// </param>
+        /// <param name="pUserObjectId">
+        /// User's mailbox to fetch messages for.
+        /// </param>
+        /// <param name="pMessageObjectId">
+        /// ObjectId of the message.
+        /// </param>
+        public UserMessage(ConnectionServer pConnectionServer, string pUserObjectId, string pMessageObjectId = "")
+        {
+            if (pConnectionServer == null)
+            {
+                throw new ArgumentException("Null ConnectionServer referenced pasted to Message construtor");
+            }
+            if (string.IsNullOrEmpty(pUserObjectId))
+            {
+                throw new ArgumentException("Empty user ObjectId passed to UserMessage constructor");
+            }
+
+            UserObjectId = pUserObjectId;
+            HomeServer = pConnectionServer;
+            MsgId = pMessageObjectId;
+
+            //make an instanced of the changed prop list to keep track of updated properties on this object
+            _changedPropList = new ConnectionPropertyList();
+
+            //create instances for the complex data types
+            From = new AddressData();
+            Recipients = new List<Recipient>();
+            Attachments = new List<Attachment>();
+            CallerId = new CallerId();
+
+            if (!string.IsNullOrEmpty(pMessageObjectId))
+            {
+                //fill in full message details
+                WebCallResult res = GetMessage(pMessageObjectId, pUserObjectId);
+                if (res.Success == false)
+                {
+                    throw new Exception("Failed to find message using messageObjectId:" + res);
+                }
+            }
+        }
+
+        #endregion
+
+
         #region Properties and Fields
 
         //owner of the mailbox that the message is pulled from
         public string UserObjectId { get; private set; }
+
+        //reference to the ConnectionServer object used to create this object instance.
+        internal ConnectionServer HomeServer;
+
+        //used to keep track of which properties have been updated
+        private readonly ConnectionPropertyList _changedPropList;
+
+        #endregion
+
+
+        #region UserMessage Properties
 
         //properties returned from the server for each message found in the user's inbox.
         
@@ -183,9 +249,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public bool IsSent { get; set; }
         public bool IsFuture { get; set; }
 
-        //public string CallerId_CallerNumber { get; set; }
-        //public string CallerId_CallerName { get; set; }
-
+  
         //complex types
         public AddressData From { get; set; }
         public List<Recipient> Recipients { get; set; }
@@ -194,64 +258,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
         public List<Attachment> Attachments { get; set; }
 
-        //reference to the ConnectionServer object used to create this user instance.
-        internal ConnectionServer HomeServer;
-
-        //used to keep track of whic properties have been updated
-        private readonly ConnectionPropertyList _changedPropList;
-
-        #endregion
-
-
-        #region Constructors 
-
-        /// <summary>
-        /// Constructor for user message class.  If you pass in the message objectId it will be stored in the instance, if not
-        /// you can fill it in later.
-        /// </summary>
-        /// <param name="pConnectionServer">
-        /// Connection server instance that holds the message (or more to the point the user that owns the message).
-        /// </param>
-        /// <param name="pUserObjectId">
-        /// User's mailbox to fetch messages for.
-        /// </param>
-        /// <param name="pMessageObjectId">
-        /// ObjectId of the message.
-        /// </param>
-        public UserMessage(ConnectionServer pConnectionServer, string pUserObjectId, string pMessageObjectId="")
-        {
-            if (pConnectionServer==null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced pasted to Message construtor");
-            }
-            if (string.IsNullOrEmpty(pUserObjectId))
-            {
-                throw new ArgumentException("Empty user ObjectId passed to UserMessage constructor");
-            }
-
-            UserObjectId = pUserObjectId;
-            HomeServer = pConnectionServer;
-            MsgId = pMessageObjectId;
-
-            //make an instanced of the changed prop list to keep track of updated properties on this object
-            _changedPropList = new ConnectionPropertyList();
-
-            //create instances for the complex data types
-            From = new AddressData();
-            Recipients = new List<Recipient>();
-            Attachments = new List<Attachment>();
-            CallerId = new CallerId();
-
-            if (!string.IsNullOrEmpty(pMessageObjectId))
-            {
-                //fill in full message details
-                WebCallResult res = GetMessage(pMessageObjectId, pUserObjectId);
-                if (res.Success==false)
-                {
-                    throw new Exception("Failed to find message using messageObjectId:"+res);
-                }
-            }
-        }
 
         #endregion
 
@@ -1053,7 +1059,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// a message.
         /// </summary>
         /// <param name="pConnectionServer">
-        /// Reference to the ConnectionServer object that points to the home server where the handler is homed.
+        /// Reference to the ConnectionServer object that points to the home server where the message is homed.
         /// </param>
         /// <param name="pMessageObjectId">
         /// Unique identifier to message to be updated
@@ -1217,7 +1223,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the UserMessage object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {
@@ -1710,7 +1716,7 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// If the call handler object has andy pending updates that have not yet be comitted, this will clear them out.
+        /// If the call object has andy pending updates that have not yet be comitted, this will clear them out.
         /// </summary>
         public void ClearPendingChanges()
         {

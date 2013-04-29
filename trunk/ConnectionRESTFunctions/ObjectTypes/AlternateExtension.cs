@@ -26,7 +26,8 @@ namespace Cisco.UnityConnection.RestFunctions
     public class AlternateExtension
     {
 
-        #region Constructors
+        #region Constructors and Destructors
+
 
         /// <summary>
         /// General constructor used in the JSON parsing routines.
@@ -93,8 +94,13 @@ namespace Cisco.UnityConnection.RestFunctions
         //reference to the ConnectionServer object used to create this Alternate Extension instance.
         public ConnectionServer HomeServer { get; private set; }
 
-        //used to keep track of whic properties have been updated
+        //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
+
+        #endregion
+
+
+        #region Alternate Extension Properties
 
         private int _idIndex;
 
@@ -479,7 +485,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
         }
 
-    #endregion
+        #endregion
 
 
         #region Instance Methods

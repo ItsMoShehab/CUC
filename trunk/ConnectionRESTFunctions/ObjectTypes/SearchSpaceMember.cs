@@ -9,42 +9,17 @@
 
 #endregion
 
+
 namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
-    /// simple read only class for providing lists of schedule set members
+    /// Mapping class used to fetch partitions associated with a search space (if any)
     /// </summary>
-    public class ScheduleSetMember
+    public class SearchSpaceMember
     {
-
-        #region Constructors and Destructors
-
-        /// <summary>
-        /// empty constructor for JSON serializer
-        /// </summary>
-        public ScheduleSetMember()
-        {
-
-        }
-        
-        /// <summary>
-        /// Simple constructor with scheduleset objectId value passed in
-        /// </summary>
-        public ScheduleSetMember(string pScheduleSetObjectId)
-        {
-            ScheduleSetObjectId = pScheduleSetObjectId;
-        }
-
-        #endregion
-
-
-        #region ScheduleSetMember Properties
-
-        public string ScheduleSetObjectId { get; set; }
-        public string ScheduleObjectId { get; set; }
-        public bool Exclude { get; set; }
-
-        #endregion
-
+        public string ObjectId { get; set; }
+        public string PartitionObjectId { get; set; }
+        public string SearchSpaceObjectId { get; set; }
+        public int SortOrder { get; set; }
     }
 }

@@ -20,26 +20,8 @@ namespace Cisco.UnityConnection.RestFunctions
     public class Schedule
     {
 
-        #region Fields and Properties
-
-        //reference to the ConnectionServer object used to create this Alternate Extension instance.
-        public ConnectionServer HomeServer { get; private set; }
-
-        //Every schedule has a list of schedule details which dictate the on/off time and day(s) the schedule is active.
-        //there may be 0 there may be many - it's not required that a schedule have a detail item.
-        private List<ScheduleDetail> _scheduleDetails; 
-
-        public string ObjectId { get; set; }
-        public string OwnerSubscriberObjectId { get; set; }
-        public string DisplayName { get; set; }
-        public bool IsHoliday { get; set; }
-        public bool Undeletable { get; set; }
-        public string OwnerLocationObjectId { get; set; }
-
-        #endregion
-
-
         #region Constructors and Destructors
+
 
         /// <summary>
         /// Creates a new instance of the Schedule class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
@@ -58,16 +40,16 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Optional display name search critiera - if both ObjectId and DisplayName are passed, ObjectId is used.  The display name search is not case
         /// sensitive.
         /// </param>
-        public Schedule(ConnectionServer pConnectionServer, string pObjectId="", string pDisplayName = "")
+        public Schedule(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
         {
             if (pConnectionServer == null)
             {
                 throw new ArgumentException("Null ConnectionServer passed to schedule constructor.");
             }
-            
+
             HomeServer = pConnectionServer;
 
-            //if the user passed in a specific ObjectId or display name then go load that handler up, otherwise just return an empty instance.
+            //if the user passed in a specific ObjectId or display name then go load that schedule up, otherwise just return an empty instance.
             if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pDisplayName))) return;
 
             ObjectId = pObjectId;
@@ -80,7 +62,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 throw new Exception(string.Format("Schedule not found in Schedule constructor using ObjectId={0} and DisplayName={1}\n\r{2}"
                                  , pObjectId, pDisplayName, res.ErrorText));
             }
-            
+
         }
 
 
@@ -90,6 +72,30 @@ namespace Cisco.UnityConnection.RestFunctions
         public Schedule()
         {
         }
+
+        #endregion
+
+
+        #region Fields and Properties
+
+        //reference to the ConnectionServer object used to create this Alternate Extension instance.
+        public ConnectionServer HomeServer { get; private set; }
+
+        //Every schedule has a list of schedule details which dictate the on/off time and day(s) the schedule is active.
+        //there may be 0 there may be many - it's not required that a schedule have a detail item.
+        private List<ScheduleDetail> _scheduleDetails; 
+
+        #endregion
+
+
+        #region Schedule Properties
+
+        public string ObjectId { get; set; }
+        public string OwnerSubscriberObjectId { get; set; }
+        public string DisplayName { get; set; }
+        public bool IsHoliday { get; set; }
+        public bool Undeletable { get; set; }
+        public string OwnerLocationObjectId { get; set; }
 
         #endregion
 
@@ -346,8 +352,7 @@ namespace Cisco.UnityConnection.RestFunctions
         #region Static Methods
 
         /// <summary>
-        /// Gets the list of all call handler templates and resturns them as a generic list of Schedule objects.  This
-        /// list can be used for providing drop down list selection for handler creation purposes or the like.
+        /// Gets the list of all Schedules and resturns them as a generic list of Schedule objects.
         /// </summary>
         /// <param name="pConnectionServer">
         /// The Connection server object that references the server the templates should be pulled from

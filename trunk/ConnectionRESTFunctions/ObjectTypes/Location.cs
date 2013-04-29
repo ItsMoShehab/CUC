@@ -25,15 +25,8 @@ namespace Cisco.UnityConnection.RestFunctions
     public class Location
     {
 
-        #region Fields and Properties
+        #region Constructors and Destructors
 
-        //reference to the ConnectionServer object used to create this location instance.
-        public ConnectionServer HomeServer { get; private set; }
-
-        #endregion
-
-
-        #region Constructors
 
         /// <summary>
         /// Creates a new instance of the Location class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
@@ -70,7 +63,7 @@ namespace Cisco.UnityConnection.RestFunctions
             if (res.Success == false)
             {
                 throw new Exception(string.Format("Location not found in Location constructor using HostAddress={0} and/or ObjectId={1}\n\rError={2}"
-                                                , pDisplayName, pObjectId,res.ErrorText));
+                                                , pDisplayName, pObjectId, res.ErrorText));
             }
         }
 
@@ -81,7 +74,15 @@ namespace Cisco.UnityConnection.RestFunctions
         public Location()
         {
         }
-       
+
+        #endregion
+
+
+        #region Fields and Properties
+
+        //reference to the ConnectionServer object used to create this location instance.
+        public ConnectionServer HomeServer { get; private set; }
+
         #endregion
 
 
@@ -340,9 +341,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region Instance Methods
-
-        //Fills the current instance of Location in with properties fetched from the server.  The fetch uses a query construction instead of the full ObjectId
-        //construction which returns less data and is quicker.
 
         /// <summary>
         /// Diplays the hostaddress, display name and extension of the Location by default.

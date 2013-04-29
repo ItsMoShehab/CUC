@@ -96,6 +96,11 @@ namespace Cisco.UnityConnection.RestFunctions
         //reference to the ConnectionServer object used to create this Greeting instance.
         public ConnectionServer HomeServer { get; private set; }
 
+        #endregion
+
+
+        #region PostGreetingRecordingStreamFile Properties
+
         /// <summary>
         /// Reference to the directory handler that owns this greeting.
         /// You cannot set or change this value after creation.

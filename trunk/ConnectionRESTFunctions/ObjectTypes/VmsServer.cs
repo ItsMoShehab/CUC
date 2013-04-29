@@ -24,26 +24,13 @@ namespace Cisco.UnityConnection.RestFunctions
     public class VmsServer
     {
 
-        #region Fields and Properties
+        #region Constructors and Destructors
 
-        public string ObjectId { get; set; }
-        public string HostName { get; set; }
-        public string ServerName { get; set; }
-        public string VmsServerObjectId { get; set; }
-        public string IpAddress { get; set; }
-        public int ClusterMemberId { get; set; }
-        public int ServerState { get; set; }
-        public int ServerDisplayState { get; set; }
-        public bool SubToPerformReplicationRole { get; set; }
-
-        public ConnectionServer HomeServer;
-
-        #endregion
-
-
-        #region Constructors
-
-        public VmsServer(ConnectionServer pConnectionServer, string pObjectId="")
+        /// <summary>
+        /// Constructor requires a ConnectionServer object for where the VMSServer is hosted.  You can optionally pass in an ObjectID 
+        /// to load a specific VMSserver object data directly.
+        /// </summary>
+        public VmsServer(ConnectionServer pConnectionServer, string pObjectId = "")
         {
             if (pConnectionServer == null)
             {
@@ -69,8 +56,30 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public VmsServer()
         {
-            
+
         }
+
+        #endregion
+
+
+        #region Fields and Properties
+
+        public ConnectionServer HomeServer;
+
+        #endregion
+
+
+        #region VmsServer Properties
+
+        public string ObjectId { get; set; }
+        public string HostName { get; set; }
+        public string ServerName { get; set; }
+        public string VmsServerObjectId { get; set; }
+        public string IpAddress { get; set; }
+        public int ClusterMemberId { get; set; }
+        public int ServerState { get; set; }
+        public int ServerDisplayState { get; set; }
+        public bool SubToPerformReplicationRole { get; set; }
 
         #endregion
 
@@ -96,7 +105,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {

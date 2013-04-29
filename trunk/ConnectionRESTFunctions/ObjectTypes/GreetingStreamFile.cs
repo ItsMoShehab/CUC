@@ -101,6 +101,11 @@ namespace Cisco.UnityConnection.RestFunctions
         //reference to the ConnectionServer object used to create this Greeting instance.
         public ConnectionServer HomeServer { get; private set; }
 
+        #endregion
+
+
+        #region GreetingStreamFile Properties
+
         /// <summary>
         /// Reference to the call handler that owns this greeting.
         /// You cannot set or change this value after creation.
@@ -633,14 +638,14 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// Fetches a transfer option object filled with all the properties for a specific entry identified with the ObjectId
-        /// of the call handler that owns it and the name of the transfer rule (Standard, Alternate, OffHours)
+        /// Fetches a greetingstreamfile option object filled with all the properties for a specific entry identified with the ObjectId
+        /// of the call handler that owns it and the name of the greeting rule (Standard, Alternate, OffHours...)
         /// </summary>
         /// <param name="pCallHandlerObjectId">
-        /// The objectID of the call handler that owns the transfer option to be fetched.
+        /// The objectID of the call handler that owns the greeting stream to be fetched.
         /// </param>
         /// <param name="pGreetingType">
-        /// The name of the transfer option to fetch (Standard, Alternate, OffHours)
+        /// The name of the greeting option to fetch (Standard, Alternate, OffHours...)
         /// </param>
         /// <param name="pLanguageCode">
         /// Language of the stream file to fetch

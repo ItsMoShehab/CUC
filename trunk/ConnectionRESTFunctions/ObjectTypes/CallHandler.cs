@@ -27,7 +27,8 @@ namespace Cisco.UnityConnection.RestFunctions
     public class CallHandler
     {
   
-        #region Constructors
+        #region Constructors and Destructors
+
 
         /// <summary>
         /// paramaterless constructor for JSON deseralizing path
@@ -88,9 +89,14 @@ namespace Cisco.UnityConnection.RestFunctions
         //reference to the ConnectionServer object used to create this call handler instance.
         public ConnectionServer HomeServer { get; private set; }
 
-        //used to keep track of whic properties have been updated
+        //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
 
+
+        #endregion
+
+
+        #region Call Handler Properties
 
         private int _afterMessageAction;
         /// <summary>

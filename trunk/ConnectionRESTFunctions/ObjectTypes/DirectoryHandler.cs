@@ -26,7 +26,89 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public class DirectoryHandler
         {
+
+            #region Constructors and Destructors
+
+
+            /// <summary>
+            /// Creates a new instance of the DirectoryHandler class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
+            /// updating data for this handler.  
+            /// If you pass the pObjectID or pDisplayName parameter the handler is automatically filled with data for that handler from the server.  
+            /// If neither are passed an empty instance of the DirectoryHandler class is returned (so you can fill it out on your own).
+            /// </summary>
+            /// <param name="pConnectionServer">
+            /// Instance of a ConnectonServer object which points to the home server for the handler being created.
+            /// </param>
+            /// <param name="pObjectId">
+            /// Optional parameter for the unique ID of the handler on the home server provided.  If no ObjectId is passed then an empty instance of the DirectoryHandler
+            /// class is returned instead.
+            /// </param>
+            /// <param name="pDisplayName">
+            /// Optional display name search critiera - if both ObjectId and DisplayName are passed, ObjectId is used.  The display name search is not case
+            /// sensitive.
+            /// </param>
+            public DirectoryHandler(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+                : this()
+            {
+                if (pConnectionServer == null)
+                {
+                    throw new ArgumentException("Null ConnectionServer referenced pasted to DirectoryHandler construtor");
+                }
+
+                //keep track of the home Connection server this handler is created on.
+                HomeServer = pConnectionServer;
+
+                //if the user passed in a specific ObjectId or display name then go load that handler up, otherwise just return an empty instance.
+                if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pDisplayName))) return;
+
+                //if the ObjectId or display name are passed in then fetch the data on the fly and fill out this instance
+                WebCallResult res = GetDirectoryHandler(pObjectId, pDisplayName);
+
+                if (res.Success == false)
+                {
+                    throw new Exception(
+                        string.Format("Directory Handler not found in DirectoryHandler constructor using ObjectId={0} and DisplayName={1}\n\r{2}"
+                                     , pObjectId, pDisplayName, res.ErrorText));
+                }
+            }
+
+            /// <summary>
+            /// Generic constructor for Json parsing libraries
+            /// </summary>
+            public DirectoryHandler()
+            {
+                //make an instanced of the changed prop list to keep track of updated properties on this object
+                _changedPropList = new ConnectionPropertyList();
+            }
+
+            #endregion
+
+
             #region Fields and Properties
+
+            //reference to the ConnectionServer object used to create this handlers instance.
+            internal ConnectionServer HomeServer { get; private set; }
+
+            //used to keep track of which properties have been updated
+            private readonly ConnectionPropertyList _changedPropList;
+
+            //greeting stream files are fetched on the fly if referenced
+            private List<DirectoryHandlerGreetingStreamFile> _greetingStreamFiles;
+            public List<DirectoryHandlerGreetingStreamFile> GetGreetingStreamFiles()
+            {
+                //fetch greeting options only if they are referenced
+                if (_greetingStreamFiles == null)
+                {
+                    GetGreetingStreamFiles(out _greetingStreamFiles);
+                }
+
+                return _greetingStreamFiles;
+            }
+
+            #endregion
+
+
+            #region DirectoryHandler Properties
 
             private bool _autoRoute;
             public bool AutoRoute 
@@ -475,79 +557,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
 
-            //reference to the ConnectionServer object used to create this handlers instance.
-            internal ConnectionServer HomeServer { get; private set; }
-
-            //used to keep track of whic properties have been updated
-            private readonly ConnectionPropertyList _changedPropList;
-
-            //greeting stream files are fetched on the fly if referenced
-            private List<DirectoryHandlerGreetingStreamFile> _greetingStreamFiles;
-            public List<DirectoryHandlerGreetingStreamFile> GetGreetingStreamFiles()
-            {
-                //fetch greeting options only if they are referenced
-                if (_greetingStreamFiles == null)
-                {
-                    GetGreetingStreamFiles(out _greetingStreamFiles);
-                }
-
-                return _greetingStreamFiles;
-            }
-
-            #endregion
-
-
-            #region Constructors
-
-            /// <summary>
-            /// Creates a new instance of the DirectoryHandler class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
-            /// updating data for this handler.  
-            /// If you pass the pObjectID or pDisplayName parameter the handler is automatically filled with data for that handler from the server.  
-            /// If neither are passed an empty instance of the DirectoryHandler class is returned (so you can fill it out on your own).
-            /// </summary>
-            /// <param name="pConnectionServer">
-            /// Instance of a ConnectonServer object which points to the home server for the handler being created.
-            /// </param>
-            /// <param name="pObjectId">
-            /// Optional parameter for the unique ID of the handler on the home server provided.  If no ObjectId is passed then an empty instance of the DirectoryHandler
-            /// class is returned instead.
-            /// </param>
-            /// <param name="pDisplayName">
-            /// Optional display name search critiera - if both ObjectId and DisplayName are passed, ObjectId is used.  The display name search is not case
-            /// sensitive.
-            /// </param>
-            public DirectoryHandler(ConnectionServer pConnectionServer, string pObjectId="", string pDisplayName=""):this()
-            {
-                if (pConnectionServer == null)
-                {
-                    throw new ArgumentException("Null ConnectionServer referenced pasted to DirectoryHandler construtor");
-                }
-
-                //keep track of the home Connection server this handler is created on.
-                HomeServer = pConnectionServer;
-
-                //if the user passed in a specific ObjectId or display name then go load that handler up, otherwise just return an empty instance.
-                if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pDisplayName))) return;
-
-                //if the ObjectId or display name are passed in then fetch the data on the fly and fill out this instance
-                WebCallResult res = GetDirectoryHandler(pObjectId,pDisplayName);
-
-                if (res.Success == false)
-                {
-                    throw new Exception(
-                        string.Format("Directory Handler not found in DirectoryHandler constructor using ObjectId={0} and DisplayName={1}\n\r{2}"
-                                     , pObjectId, pDisplayName, res.ErrorText));
-                }
-            }
-
-            /// <summary>
-            /// Generic constructor for Json parsing libraries
-            /// </summary>
-            public DirectoryHandler()
-            {
-                //make an instanced of the changed prop list to keep track of updated properties on this object
-                _changedPropList = new ConnectionPropertyList();
-            }
+         
 
             #endregion
 
@@ -1073,37 +1083,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
 
-            /// <summary>
-            /// When updating a greeting wav file you need to do a POST if it's not there already and a PUT if there is - so we need a quick way to 
-            /// indicate if a streamfile for a particular greeting exists or not.
-            /// </summary>
-            /// <param name="pConnectionServer">
-            /// Connection server that owns the greeting being checked.
-            /// </param>
-            /// <param name="pDirectoryHandlerObjectId">
-            /// GUID that identifies directory handler that owns the greeting being checked.
-            /// </param>
-            /// <param name="pLanguageId">
-            /// Language ID of the stream file to check for (i.e. English US = 1033)
-            /// </param>
-            /// <returns>
-            /// True if the greeting stream already exists, false if it does not.
-            /// </returns>
-            private static bool DoesGreetingStreamExist(ConnectionServer pConnectionServer,
-                                                            string pDirectoryHandlerObjectId,
-                                                            int pLanguageId)
-            {
-                string strUrl = string.Format("{0}handlers/directoryhandlers/{1}/directoryhandlerstreamfiles/{2}",
-                                              pConnectionServer.BaseUrl,
-                                              pDirectoryHandlerObjectId,
-                                              pLanguageId);
-
-                WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
-
-                //the only reason this will fail is if it doesn't exists - return that here
-                return res.Success;
-            }
-
             #endregion
 
 
@@ -1126,7 +1105,7 @@ namespace Cisco.UnityConnection.RestFunctions
             /// property dump when writing to a log file for instance.
             /// </param>
             /// <returns>
-            /// string containing all the name value pairs defined in the call handler object instance.
+            /// string containing all the name value pairs defined in the directory handler object instance.
             /// </returns>
             public string DumpAllProps(string pPrefix = "")
             {
@@ -1171,9 +1150,6 @@ namespace Cisco.UnityConnection.RestFunctions
             /// </returns>
             private WebCallResult GetDirectoryHandler(string pObjectId, string pDisplayName = "")
             {
-                string strUrl;
-                WebCallResult res = new WebCallResult {Success = false};
-
                 string strObjectId = pObjectId;
                 if (string.IsNullOrEmpty(pObjectId))
                 {
@@ -1188,10 +1164,10 @@ namespace Cisco.UnityConnection.RestFunctions
                     }
                 }
 
-                strUrl = string.Format("{0}handlers/directoryhandlers/{1}", HomeServer.BaseUrl, strObjectId);
+                string strUrl = string.Format("{0}handlers/directoryhandlers/{1}", HomeServer.BaseUrl, strObjectId);
 
                 //issue the command to the CUPI interface
-                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+                WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
                 if (res.Success == false)
                 {
@@ -1302,7 +1278,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             /// <summary>
-            /// If the call handler object has andy pending updates that have not yet be comitted, this will clear them out.
+            /// If the directory handler object has andy pending updates that have not yet be comitted, this will clear them out.
             /// </summary>
             public void ClearPendingChanges()
             {

@@ -11,59 +11,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
-    /// <summary>
-    /// struct for values in a server instance that's returned as a member of a cluster
-    /// </summary>
-    public class Server
-    {
-        public string HostName { get; set; }
-        public int DatabaseReplication { get; set; }
-        public string Key { get; set; }
-        public string Ipv6Name { get; set; }
-        public string MacAddress { get; set; }
-        public string Description { get; set; }
-
-
-        /// <summary>
-        /// Returns a string with the text host name and key of the server
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return string.Format("{0} [{1}]", HostName, Key);
-        }
-
-        /// <summary>
-        /// Dumps out all the properties associated with the instance of the server object in "name=value" format - each pair is on its
-        /// own line in the string returned.
-        /// </summary>
-        /// <param name="pPrefix">
-        /// Optional parameter for a sting that will preceed each name/value pair as it's dumped out.  This can be useful for indenting an object's
-        /// property dump when writing to a log file for instance.
-        /// </param>
-        /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
-        /// </returns>
-        public string DumpAllProps(string pPrefix = "")
-        {
-            StringBuilder strBuilder = new StringBuilder();
-
-            PropertyInfo[] oProps = this.GetType().GetProperties();
-
-            foreach (PropertyInfo oProp in oProps)
-            {
-                strBuilder.AppendFormat("{0}{1} = {2}\n", pPrefix, oProp.Name, oProp.GetValue(this, BindingFlags.GetProperty, null, null, null));
-            }
-
-            return strBuilder.ToString();
-        }
-    }
-
     /// <summary>
     /// Read only class for fetching cluster (server) details - little different than most classes in that it includes references to server instances
     /// as opposed to instances of itself - one cluster instance needs to be created (no static methods) and 1 or 2 server(s) will be available in the 
@@ -71,18 +21,9 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class Cluster
     {
-      
-        #region Fields and Properties
 
-        //reference to the ConnectionServer object used to create this user instance.
-        public ConnectionServer HomeServer { get; private set; }
+        #region Constructors and Destructors
 
-        public List<Server> Servers;
-
-        #endregion
-
-           
-        #region Constructors
 
         /// <summary>
         /// Constructor for the Server class
@@ -92,7 +33,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </param>
         public Cluster(ConnectionServer pConnectionServer)
         {
-            if (pConnectionServer==null)
+            if (pConnectionServer == null)
             {
                 throw new ArgumentException("Null ConnectionServer referenced passed to Cluster construtor");
             }
@@ -107,6 +48,16 @@ namespace Cisco.UnityConnection.RestFunctions
                 throw new Exception(string.Format("Cluster details not found in Cluster constructor\n\r{0}", res.ErrorText));
             }
         }
+
+        #endregion
+
+
+        #region Fields and Properties
+
+        //reference to the ConnectionServer object used to create this object instance.
+        public ConnectionServer HomeServer { get; private set; }
+
+        public List<Server> Servers;
 
         #endregion
 

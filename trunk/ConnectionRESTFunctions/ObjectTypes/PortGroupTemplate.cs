@@ -25,20 +25,13 @@ namespace Cisco.UnityConnection.RestFunctions
     public class PortGroupTemplate
     {
 
-        #region Fields and Properties 
-
-        public string ObjectId { get; set; }
-        public string TemplateDescriptionDefault { get; set; }
-        public int CopyTelephonyIntegrationMethodEnum { get; set; }
-
-        public ConnectionServer HomeServer;
-
-        #endregion
+        #region Constructors and Destructors
 
 
-        #region Constructors
-
-        //constructor
+        /// <summary>
+        /// Constructor requires a ConnectionServer where the port group template is homed.  Optionally you can
+        /// pass the objectId of the template and it will load values for that object.
+        /// </summary>
         public PortGroupTemplate(ConnectionServer pConnectionServer, string pObjectId = "")
         {
             if (pConnectionServer == null)
@@ -52,8 +45,8 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 return;
             }
-            
-            WebCallResult res= GetPortGroupTemplate(pObjectId);
+
+            WebCallResult res = GetPortGroupTemplate(pObjectId);
             if (res.Success == false)
             {
                 throw new Exception(string.Format("Failed to fetch PortGroupTemplate by ObjectId={0}", pObjectId));
@@ -65,8 +58,24 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public PortGroupTemplate()
         {
-            
+
         }
+
+        #endregion
+
+
+        #region Fields and Properties 
+
+        public ConnectionServer HomeServer;
+
+        #endregion
+
+
+        #region PortGrpoupTemplate Properties
+
+        public string ObjectId { get; set; }
+        public string TemplateDescriptionDefault { get; set; }
+        public int CopyTelephonyIntegrationMethodEnum { get; set; }
 
         #endregion
 
@@ -92,7 +101,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the PortGroupTemplate object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {

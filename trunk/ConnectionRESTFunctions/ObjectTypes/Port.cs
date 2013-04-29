@@ -21,22 +21,73 @@ namespace Cisco.UnityConnection.RestFunctions
 {
 
     /// <summary>
-    /// SCCP ports can be configured for 1 of 3 security modes
-    /// </summary>
-    public enum SkinnySecurityModes {Insecure, Authenticated, Encrypted}
-
-    /// <summary>
     /// Class that provides methods for fetching details about ports, creating, updating and deleting them
     /// </summary>
     public class Port
     {
+
+        #region Constructors and Destructors
+
+
+        /// <summary>
+        /// Constructor for the Port class
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// ConnectionServer data is being fetched from.
+        /// </param>
+        /// <param name="pObjectId">
+        /// Optional - if passed in the specifics of the switch identified by this GUID is fetched and the properties are filled in.
+        /// </param>
+        public Port(ConnectionServer pConnectionServer, string pObjectId = "")
+            : this()
+        {
+            if (pConnectionServer == null)
+            {
+                throw new ArgumentException("Null ConnectionServer referenced pasted to Port construtor");
+            }
+
+            HomeServer = pConnectionServer;
+            ObjectId = pObjectId;
+
+            //if no objectId is passed in just create an empty version of the class - used for constructing lists from XML fetches.
+            if (string.IsNullOrEmpty(pObjectId))
+            {
+                return;
+            }
+
+            //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
+            WebCallResult res = GetPort(pObjectId);
+
+            if (res.Success == false)
+            {
+                throw new Exception(string.Format("Port not found in Port constructor using ObjectId={0}\n\r{1}"
+                                                 , pObjectId, res.ErrorText));
+            }
+        }
+
+        /// <summary>
+        /// Generic constructor for Json parsing libraries
+        /// </summary>
+        public Port()
+        {
+            _changedPropList = new ConnectionPropertyList();
+        }
+
+        #endregion
+
+
         #region Fields and Properties
 
-        //reference to the ConnectionServer object used to create this user instance.
+        //reference to the ConnectionServer object used to create this object instance.
         public ConnectionServer HomeServer { get; private set; }
         
-        //used to keep track of whic properties have been updated
+        //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
+
+        #endregion
+
+
+        #region Port Properties
 
         private string _displayName;
         public string DisplayName
@@ -151,54 +202,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #endregion
 
-           
-        #region Constructors
-
-        /// <summary>
-        /// Constructor for the Port class
-        /// </summary>
-        /// <param name="pConnectionServer">
-        /// ConnectionServer data is being fetched from.
-        /// </param>
-        /// <param name="pObjectId">
-        /// Optional - if passed in the specifics of the switch identified by this GUID is fetched and the properties are filled in.
-        /// </param>
-        public Port(ConnectionServer pConnectionServer, string pObjectId = ""):this()
-        {
-            if (pConnectionServer==null)
-            {
-                throw new ArgumentException("Null ConnectionServer referenced pasted to Port construtor");
-            }
-
-            HomeServer = pConnectionServer;
-            ObjectId = pObjectId;
-
-            //if no objectId is passed in just create an empty version of the class - used for constructing lists from XML fetches.
-            if (string.IsNullOrEmpty(pObjectId))
-            {
-                return;
-            }
-
-            //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
-            WebCallResult res = GetPort(pObjectId);
-
-            if (res.Success == false)
-            {
-                throw new Exception(string.Format("Port not found in Port constructor using ObjectId={0}\n\r{1}"
-                                                 , pObjectId, res.ErrorText));
-            }
-        }
-
-        /// <summary>
-        /// Generic constructor for Json parsing libraries
-        /// </summary>
-        public Port()
-        {
-            _changedPropList = new ConnectionPropertyList();
-        }
-
-        #endregion
-
 
         #region Instance Methods
 
@@ -220,7 +223,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// property dump when writing to a log file for instance.
         /// </param>
         /// <returns>
-        /// string containing all the name value pairs defined in the call handler object instance.
+        /// string containing all the name value pairs defined in the Port object instance.
         /// </returns>
         public string DumpAllProps(string pPrefix = "")
         {
@@ -546,7 +549,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Number of ports to add to the port group - should be an even number but that's not enforced.
         /// </param>
         /// <param name="pPropList">
-        /// List ConnectionProperty pairs that identify a handlers property name and a new value for that property to apply to the port being created.
+        /// List ConnectionProperty pairs that identify a property name and a new value for that property to apply to the port being created.
         /// This is passed in as a ConnectionPropertyList instance which contains 1 or more ConnectionProperty instances.  Can be passed as null here.
         /// </param>
         /// <param name="pPimgPort">
