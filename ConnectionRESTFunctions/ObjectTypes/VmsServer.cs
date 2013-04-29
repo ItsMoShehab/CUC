@@ -71,15 +71,32 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region VmsServer Properties
 
-        public string ObjectId { get; set; }
-        public string HostName { get; set; }
-        public string ServerName { get; set; }
-        public string VmsServerObjectId { get; set; }
-        public string IpAddress { get; set; }
-        public int ClusterMemberId { get; set; }
-        public int ServerState { get; set; }
-        public int ServerDisplayState { get; set; }
-        public bool SubToPerformReplicationRole { get; set; }
+        [JsonProperty]
+        public string ObjectId { get; private set; }
+
+        [JsonProperty]
+        public string HostName { get; private set; }
+
+        [JsonProperty]
+        public string ServerName { get; private set; }
+
+        [JsonProperty]
+        public string VmsServerObjectId { get; private set; }
+
+        [JsonProperty]
+        public string IpAddress { get; private set; }
+
+        [JsonProperty]
+        public int ClusterMemberId { get; private set; }
+
+        [JsonProperty]
+        public int ServerState { get; private set; }
+
+        [JsonProperty]
+        public int ServerDisplayState { get; private set; }
+
+        [JsonProperty]
+        public bool SubToPerformReplicationRole { get; private set; }
 
         #endregion
 

@@ -28,8 +28,6 @@ namespace Cisco.UnityConnection.RestFunctions
     {
         #region Constructors and Destructors
 
-
-
         /// <summary>
         /// Creates a new instance of the DistributionList class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
         /// updating data for this list.  

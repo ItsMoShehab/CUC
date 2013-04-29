@@ -87,24 +87,50 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Credential Properties
 
-        //you can't change the ObjectId of a standing object
-        public string ObjectId { get; set; }
+        [JsonProperty]
+        public string ObjectId { get; private set; }
 
-        public CredentialType CredentialType { get; set; }
+        [JsonProperty]
+        public CredentialType CredentialType { get; private set; }
 
-        public string Alias { get; set; }
-        public bool CredMustChange { get; set; }
-        public string CredentialPolicyObjectId { get; set; }
-        public string Credentials { get; set; }
-        public bool CantChange { get; set; }
-        public bool DoesntExpire { get; set; }
-        public int EncryptionType { get; set; }
-        public int HackCount { get; set; }
-        public bool Hacked { get; set; }
-        public bool IsPrimary { get; set; }
-        public bool Locked { get; set; }
-        public DateTime TimeChanged { get; set; }
-        public string UserObjectId { get; set; }
+        [JsonProperty]
+        public string Alias { get; private set; }
+
+        [JsonProperty]
+        public bool CredMustChange { get; private set; }
+
+        [JsonProperty]
+        public string CredentialPolicyObjectId { get; private set; }
+
+        [JsonProperty]
+        public string Credentials { get; private set; }
+
+        [JsonProperty]
+        public bool CantChange { get; private set; }
+
+        [JsonProperty]
+        public bool DoesntExpire { get; private set; }
+
+        [JsonProperty]
+        public int EncryptionType { get; private set; }
+
+        [JsonProperty]
+        public int HackCount { get; private set; }
+
+        [JsonProperty]
+        public bool Hacked { get; private set; }
+
+        [JsonProperty]
+        public bool IsPrimary { get; private set; }
+
+        [JsonProperty]
+        public bool Locked { get; private set; }
+
+        [JsonProperty]
+        public DateTime TimeChanged { get; private set; }
+
+        [JsonProperty]
+        public string UserObjectId { get; private set; }
 
         #endregion
 

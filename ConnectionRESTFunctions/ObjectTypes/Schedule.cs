@@ -90,12 +90,23 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Schedule Properties
 
-        public string ObjectId { get; set; }
-        public string OwnerSubscriberObjectId { get; set; }
-        public string DisplayName { get; set; }
-        public bool IsHoliday { get; set; }
-        public bool Undeletable { get; set; }
-        public string OwnerLocationObjectId { get; set; }
+        [JsonProperty]
+        public string ObjectId { get; private set; }
+
+        [JsonProperty]
+        public string OwnerSubscriberObjectId { get; private set; }
+
+        [JsonProperty]
+        public string DisplayName { get; private set; }
+
+        [JsonProperty]
+        public bool IsHoliday { get; private set; }
+
+        [JsonProperty]
+        public bool Undeletable { get; private set; }
+
+        [JsonProperty]
+        public string OwnerLocationObjectId { get; private set; }
 
         #endregion
 

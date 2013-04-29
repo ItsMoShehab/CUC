@@ -70,11 +70,20 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Role Properties
 
-        public string RoleDescription { get; set; }
-        public string RoleName { get; set; }
-        public string ObjectId { get; set; }
-        public bool IsEnabled { get; set; }
-        public bool ReadOnly { get; set; }
+        [JsonProperty]
+        public string RoleDescription { get; private set; }
+
+        [JsonProperty]
+        public string RoleName { get; private set; }
+
+        [JsonProperty]
+        public string ObjectId { get; private set; }
+
+        [JsonProperty]
+        public bool IsEnabled { get; private set; }
+
+        [JsonProperty]
+        public bool ReadOnly { get; private set; }
         
         #endregion
 

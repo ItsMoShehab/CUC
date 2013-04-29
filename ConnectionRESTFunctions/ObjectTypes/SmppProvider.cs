@@ -60,10 +60,15 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region SmppProvider Properties 
+        
+        [JsonProperty]
+        public string TextName { get; private set; }
 
-        public string TextName { get; set; }
-        public string ObjectId { get; set; }
-        public bool IsEnabled { get; set; }
+        [JsonProperty]
+        public string ObjectId { get; private set; }
+
+        [JsonProperty]
+        public bool IsEnabled { get; private set; }
 
         #endregion
 

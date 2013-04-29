@@ -93,8 +93,11 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region PostGreetingRecording Properties
 
-        public string DisplayName { get; set; }
-        public string ObjectId { get; set; }
+        [JsonProperty]
+        public string DisplayName { get; private set; }
+
+        [JsonProperty]
+        public string ObjectId { get; private set; }
 
         #endregion
 

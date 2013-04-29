@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
@@ -30,30 +31,50 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <summary>
         /// Not in CUPI's data, this is derived locally in the class for ease of filtering/presentation.
         /// </summary>
-        public DistributionListMemberType MemberType { get; set; }
+        public DistributionListMemberType MemberType { get; private set; }
 
         #endregion
 
 
         #region DistributionListMember Properties
 
-        public string Alias { get; set; }
-        public bool AllowForeignMessage { get; set; }
-        
-        public string DisplayName { get; set; }
-        public string DistributionListObjectId { get; set; }
+        [JsonProperty]
+        public string Alias { get; private set; }
 
-        public bool IsUserTemplate { get; set; }
+        [JsonProperty]
+        public bool AllowForeignMessage { get; private set; }
 
-        public string LocationObjectId { get; set; }
+        [JsonProperty]
+        public string DisplayName { get; private set; }
 
-        public string MemberContactObjectId { get; set; }
-        public string MemberDistributionListObjectId { get; set; }
-        public string MemberGlobalUserObjectId { get; set; }
-        public string MemberGlobalUserDignetObjectId { get; set; }
+        [JsonProperty]
+        public string DistributionListObjectId { get; private set; }
+
+        [JsonProperty]
+        public bool IsUserTemplate { get; private set; }
+
+        [JsonProperty]
+        public string LocationObjectId { get; private set; }
+
+        [JsonProperty]
+        public string MemberContactObjectId { get; private set; }
+
+        [JsonProperty]
+        public string MemberDistributionListObjectId { get; private set; }
+
+        [JsonProperty]
+        public string MemberGlobalUserObjectId { get; private set; }
+
+        [JsonProperty]
+        public string MemberGlobalUserDignetObjectId { get; private set; }
+
+        [JsonProperty]
         public string MemberUserObjectId { get;  set; }
-        public string MemberLocationObjectId { get; set; }
 
+        [JsonProperty]
+        public string MemberLocationObjectId { get; private set; }
+
+        [JsonProperty]
         public string ObjectId { get;  set; }
 
         #endregion

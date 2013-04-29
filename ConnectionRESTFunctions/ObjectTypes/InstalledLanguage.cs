@@ -11,6 +11,7 @@
 
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 
 namespace Cisco.UnityConnection.RestFunctions
@@ -67,10 +68,17 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region InstalledLanguage Properties
 
-        public int LanguageType { get; set; }
-        public int LanguageCode { get; set; }
-        public bool Loaded { get; set; }
-        public bool IsLicensed { get; set; }
+        [JsonProperty]
+        public int LanguageType { get; private set; }
+
+        [JsonProperty]
+        public int LanguageCode { get; private set; }
+
+        [JsonProperty]
+        public bool Loaded { get; private set; }
+
+        [JsonProperty]
+        public bool IsLicensed { get; private set; }
 
         #endregion
 

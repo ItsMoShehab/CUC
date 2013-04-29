@@ -81,19 +81,44 @@ namespace Cisco.UnityConnection.RestFunctions
 
         //all the properties returned from Connection for the mailbox info
 
-        public string DisplayName { get; set; }
-        public long CurrentSizeInBytes { get; set; }
-        public bool IsPrimary { get; set; }
+        [JsonProperty]
+        public string DisplayName { get; private set; }
+
+        [JsonProperty]
+        public long CurrentSizeInBytes { get; private set; }
+
+        [JsonProperty]
+        public bool IsPrimary { get; private set; }
+
+        [JsonProperty]
         public bool IsStoreOverFlowed { get;set; }
-        public bool IsStoreMounted { get; set; }
+
+        [JsonProperty]
+        public bool IsStoreMounted { get; private set; }
+
+        [JsonProperty]
         public bool IsMailboxMounted { get;  set; }
-        public bool IsWarningQuotaExceeded { get; set; }
-        public bool IsReceiveQuotaExceeded { get; set; }
-        public bool IsSendQuotaExceeded { get; set; }
-        public long ReceiveQuota { get; set; }
-        public long WarningQuota { get; set; }
-        public long SendQuota { get; set; }
-        public bool IsDeletedFolderEnabled { get; set; }
+
+        [JsonProperty]
+        public bool IsWarningQuotaExceeded { get; private set; }
+
+        [JsonProperty]
+        public bool IsReceiveQuotaExceeded { get; private set; }
+
+        [JsonProperty]
+        public bool IsSendQuotaExceeded { get; private set; }
+
+        [JsonProperty]
+        public long ReceiveQuota { get; private set; }
+
+        [JsonProperty]
+        public long WarningQuota { get; private set; }
+
+        [JsonProperty]
+        public long SendQuota { get; private set; }
+
+        [JsonProperty]
+        public bool IsDeletedFolderEnabled { get; private set; }
 
         #endregion
 
@@ -208,8 +233,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         private class Folder
         {
-            public string DisplayName { get; set; }
-            public int MessageCount { get; set; }
+            public string DisplayName { get; private set; }
+            public int MessageCount { get; private set; }
         }
 
         private enum FolderTypes {inbox, deleted, sent}

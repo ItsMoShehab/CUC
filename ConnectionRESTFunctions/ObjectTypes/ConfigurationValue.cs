@@ -81,17 +81,36 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region ConfigurationValue Properties
 
-        public int Type { get; set; }
-        public string FullName { get; set; }
-        public bool UserSetting { get; set; }
-        public int MinVal { get; set; }
-        public int MaxVal { get; set; }
-        public bool RequiresRestart { get; set; }
-        public DateTime LastModifiedTime { get; set; }
-        public string LastModifiedByComponent { get; set; }
-        public string RegexValidation { get; set; }
-        public string Value { get; set; }
+        [JsonProperty]
+        public int Type { get; private set; }
+
+        [JsonProperty]
+        public string FullName { get; private set; }
         
+        [JsonProperty]
+        public bool UserSetting { get; private set; }
+
+        [JsonProperty]
+        public int MinVal { get; private set; }
+        
+        [JsonProperty]
+        public int MaxVal { get; private set; }
+
+        [JsonProperty]
+        public bool RequiresRestart { get; private set; }
+
+        [JsonProperty]
+        public DateTime LastModifiedTime { get; private set; }
+
+        [JsonProperty]
+        public string LastModifiedByComponent { get; private set; }
+
+        [JsonProperty]
+        public string RegexValidation { get; private set; }
+
+        [JsonProperty]
+        public string Value { get; private set; }
+
         #endregion
 
 

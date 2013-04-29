@@ -90,10 +90,17 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region ScheduleSet Properties
 
-        public string ObjectId { get; set; }
-        public string DisplayName { get; set; }
-        public string OwnerLocationObjectId { get; set; }
-        public bool Undeletable { get; set; }
+        [JsonProperty]
+        public string ObjectId { get; private set; }
+
+        [JsonProperty]
+        public string DisplayName { get; private set; }
+
+        [JsonProperty]
+        public string OwnerLocationObjectId { get; private set; }
+
+        [JsonProperty]
+        public bool Undeletable { get; private set; }
 
         #endregion
 

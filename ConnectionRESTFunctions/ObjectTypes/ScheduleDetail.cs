@@ -82,20 +82,47 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region ScheduleDetail Properties
 
-        public string ObjectId { get; set; }
-        public string ScheduleObjectId { get; set; }
-        public bool IsActiveMonday { get; set; }
-        public bool IsActiveTuesday { get; set; }
-        public bool IsActiveWednesday { get; set; }
-        public bool IsActiveThursday { get; set; }
-        public bool IsActiveFriday { get; set; }
-        public bool IsActiveSaturday { get; set; }
-        public bool IsActiveSunday { get; set; }
-        public int StartTime { get; set; }
-        public int EndTime { get; set; }
-        public string StartDate { get; set; }
-        public string EndDate { get; set; }
-        public string Subject { get; set; }
+        [JsonProperty]
+        public string ObjectId { get; private set; }
+
+        [JsonProperty]
+        public string ScheduleObjectId { get; private set; }
+
+        [JsonProperty]
+        public bool IsActiveMonday { get; private set; }
+
+        [JsonProperty]
+        public bool IsActiveTuesday { get; private set; }
+
+        [JsonProperty]
+        public bool IsActiveWednesday { get; private set; }
+
+        [JsonProperty]
+        public bool IsActiveThursday { get; private set; }
+
+        [JsonProperty]
+        public bool IsActiveFriday { get; private set; }
+
+        [JsonProperty]
+        public bool IsActiveSaturday { get; private set; }
+
+        [JsonProperty]
+        public bool IsActiveSunday { get; private set; }
+
+        [JsonProperty]
+        public int StartTime { get; private set; }
+
+        [JsonProperty]
+        public int EndTime { get; private set; }
+
+        [JsonProperty]
+        public string StartDate { get; private set; }
+
+        [JsonProperty]
+        public string EndDate { get; private set; }
+
+        [JsonProperty]
+        public string Subject { get; private set; }
 
         #endregion
 

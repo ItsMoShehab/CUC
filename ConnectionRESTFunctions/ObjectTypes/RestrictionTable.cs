@@ -113,14 +113,29 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region RestrictionTable Properties
 
-        public DateTime CreationTime { get; set; }
-        public bool DefaultBlocked { get; set; }
-        public string DisplayName { get; set; }
-        public string LocationObjectId { get; set; }
-        public string ObjectId { get; set; }
-        public int MaxDigits { get; set; }
-        public int MinDigits { get; set; }
-        public bool Undeletable { get; set; }
+        [JsonProperty]
+        public DateTime CreationTime { get; private set; }
+
+        [JsonProperty]
+        public bool DefaultBlocked { get; private set; }
+
+        [JsonProperty]
+        public string DisplayName { get; private set; }
+
+        [JsonProperty]
+        public string LocationObjectId { get; private set; }
+
+        [JsonProperty]
+        public string ObjectId { get; private set; }
+
+        [JsonProperty]
+        public int MaxDigits { get; private set; }
+
+        [JsonProperty]
+        public int MinDigits { get; private set; }
+
+        [JsonProperty]
+        public bool Undeletable { get; private set; }
 
         #endregion
 

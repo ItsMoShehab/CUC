@@ -64,12 +64,23 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Interview Question Properties
 
-        public int QuestionNumber { get; set; }
-        public int MaxMsgLength { get; set; }
-        public string StreamText { get; set; }
-        public bool IsActive { get; set; }
-        public string InterviewHandlerObjectId { get; set; }
-        public string VoiceFile { get; set; }
+        [JsonProperty]
+        public int QuestionNumber { get; private set; }
+
+        [JsonProperty]
+        public int MaxMsgLength { get; private set; }
+
+        [JsonProperty]
+        public string StreamText { get; private set; }
+
+        [JsonProperty]
+        public bool IsActive { get; private set; }
+
+        [JsonProperty]
+        public string InterviewHandlerObjectId { get; private set; }
+
+        [JsonProperty]
+        public string VoiceFile { get; private set; }
 
         #endregion
 

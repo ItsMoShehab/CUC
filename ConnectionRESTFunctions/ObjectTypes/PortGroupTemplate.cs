@@ -73,9 +73,14 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region PortGrpoupTemplate Properties
 
-        public string ObjectId { get; set; }
-        public string TemplateDescriptionDefault { get; set; }
-        public int CopyTelephonyIntegrationMethodEnum { get; set; }
+        [JsonProperty]
+        public string ObjectId { get; private set; }
+
+        [JsonProperty]
+        public string TemplateDescriptionDefault { get; private set; }
+
+        [JsonProperty]
+        public int CopyTelephonyIntegrationMethodEnum { get; private set; }
 
         #endregion
 
