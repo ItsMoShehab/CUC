@@ -233,7 +233,10 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         private class Folder
         {
+            [JsonProperty]
             public string DisplayName { get; private set; }
+            
+            [JsonProperty]
             public int MessageCount { get; private set; }
         }
 
@@ -264,10 +267,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            Folder oFolder = new Folder();
+            Folder oFolder;
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, oFolder, HTTPFunctions.JsonSerializerSettings);
+                oFolder= HTTPFunctions.GetObjectFromJson<Folder>(res.ResponseText, "Folder");
             }
             catch (Exception ex)
             {

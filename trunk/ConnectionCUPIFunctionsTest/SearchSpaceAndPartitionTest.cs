@@ -309,8 +309,8 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void SearchSpaceUpdateTests()
         {
-            _searchSpace.Description = "Updated description";
-            WebCallResult res = _searchSpace.Update();
+
+            var res = _searchSpace.Update(_searchSpace.Name, _searchSpace.Description + "new");
             Assert.IsTrue(res.Success, "Update of SearchSpace description failed:" + res);
 
             //search space member functions
@@ -386,11 +386,8 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void PartitionUpdateTests()
         {
-            _partition.Description = "Updated description";
-            WebCallResult res = _partition.Update();
-            Assert.IsTrue(res.Success, "Update of partition description failed:" + res);
 
-            res = Partition.UpdatePartition(_connectionServer, _partition.ObjectId, "NewName" + Guid.NewGuid().ToString(), "NewDescription");
+            var res = Partition.UpdatePartition(_connectionServer, _partition.ObjectId, "NewName" + Guid.NewGuid().ToString(), "NewDescription");
             Assert.IsTrue(res.Success, "Update of partition via static method failed:" + res);
 
 

@@ -586,7 +586,7 @@ namespace Cisco.UnityConnection.RestFunctions
         //used for fetching list of COS IDs off tenant
         private class TenantCos
         {
-            public string CosURI { get; private set; }
+            public string CosURI { get; set; }
         }
 
         /// <summary>
@@ -686,7 +686,7 @@ namespace Cisco.UnityConnection.RestFunctions
         //used for getting list of phone systems off tenant.
         private class TenantPhoneSystem
         {
-            public string PhoneSystemURI { get; private set; }
+            public string PhoneSystemURI { get; set; }
         }
 
         /// <summary>
@@ -763,7 +763,7 @@ namespace Cisco.UnityConnection.RestFunctions
         //used for fetching list of schedules off tenant
         private class TenantScheduleSet
         {
-            public string ScheduleSetURI { get; private set; }
+            public string ScheduleSetURI { get; set; }
         }
 
         /// <summary>
