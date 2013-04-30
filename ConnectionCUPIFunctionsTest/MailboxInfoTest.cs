@@ -155,7 +155,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success, "Failed to create new message from WAV file:" + res);
 
             //wait for message to be delivered
-            Thread.Sleep(5000);
+            Thread.Sleep(10000);
 
             //refetch mailbox info
              res = oInfo.RefetchMailboxData();
@@ -164,7 +164,7 @@ namespace ConnectionCUPIFunctionsTest
             //recheck counts
             res = oInfo.GetFolderMessageCounts(out iInboxCount, out iDeletedCount, out iSentCount);
             Assert.IsTrue(res.Success, "Failed to fetch message folder counts off mailbox with one message:" + res);
-            Assert.IsTrue(iInboxCount == 1, "Mailbox reporting with single message not reporting correct inbox count");
+            Assert.IsTrue(iInboxCount == 1, "Mailbox reporting with single message not reporting correct inbox count:"+iInboxCount);
 
         }
 
