@@ -75,6 +75,21 @@ namespace Cisco.UnityConnection.RestFunctions
     }
 
     /// <summary>
+    /// wrap an exception type so we can pass back the WebCallResult class in an exception when necessary
+    /// </summary>
+    public class UnityConnectionRestException : Exception
+    {
+        public UnityConnectionRestException(WebCallResult pWebCallResult, string pDescription=""):base(pDescription)
+        {
+            WebCallResult = pWebCallResult;
+            Description = pDescription;
+        }
+
+        public WebCallResult WebCallResult { get; private set; }
+        public string Description { get; private set; }
+    }
+
+    /// <summary>
     /// list of possible methods supported by CUPI for getting/setting properties. 
     /// </summary>
     public enum MethodType {PUT, POST, GET, DELETE}
@@ -127,6 +142,25 @@ namespace Cisco.UnityConnection.RestFunctions
         /// When in debug mode missing member flags are output to the command window, otherwise 
         /// </summary>
         public static bool DebugMode { get; set; }
+
+        private static int _timeoutSeconds = 15;
+        /// <summary>
+        /// Adjust the timeout for HTTP calls - defaults to 15 seconds at startup, can be adjusted here.
+        /// Accepted values are 1 through 99 seconds.
+        /// </summary>
+        public static int TimeoutSeconds { 
+            get
+            {
+                return _timeoutSeconds;
+            } 
+            set
+            {
+                if ((value > 1) & (value < 100))
+                {
+                    _timeoutSeconds = value;
+                }
+            } 
+        }
 
         #endregion
 
@@ -514,7 +548,7 @@ namespace Cisco.UnityConnection.RestFunctions
                     request.Method = pMethod.ToString();
                     request.Credentials = new NetworkCredential(pLoginName, pLoginPw);
                     request.KeepAlive = true;
-                    request.Timeout = 15 * 1000;
+                    request.Timeout = TimeoutSeconds * 1000;
                     //request.PreAuthenticate = true;
                     request.Headers.Add("Cache-Control", "no-cache");
 
@@ -581,6 +615,15 @@ namespace Cisco.UnityConnection.RestFunctions
                             res.StatusDescription = ((HttpWebResponse)ex.Response).StatusDescription;
                             res.StatusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
                             
+                            RaiseErrorEvent(res.ToString());
+                            return res;
+                        }
+                        else if (ex.Status == WebExceptionStatus.Timeout)
+                        {
+                            res.ErrorText = "Timeout";
+                            res.ResponseText = "Timeout";
+                            res.StatusDescription = "Timeout";
+                            res.StatusCode = -1;
                             RaiseErrorEvent(res.ToString());
                             return res;
                         }
@@ -1463,7 +1506,7 @@ namespace Cisco.UnityConnection.RestFunctions
             webrequest.UserAgent = "CUMILibraryFunctions";
             webrequest.KeepAlive = true;
             webrequest.Accept = "application/xml";
-            webrequest.Timeout = 15 * 1000;
+            webrequest.Timeout = TimeoutSeconds * 1000;
             webrequest.ContentType = "multipart/form-data;boundary=" + boundary;
             webrequest.Method = "POST";
             webrequest.Credentials = new NetworkCredential(pLogin, pPassword);
@@ -1694,7 +1737,7 @@ namespace Cisco.UnityConnection.RestFunctions
             webrequest.UserAgent = "CUMILibraryFunctions";
             webrequest.KeepAlive = true;
             webrequest.Accept = "application/json";
-            webrequest.Timeout = 15 * 1000;
+            webrequest.Timeout = TimeoutSeconds * 1000;
             webrequest.ContentType = "multipart/form-data;boundary=" + boundary;
             webrequest.Method = "POST";
             webrequest.Credentials = new NetworkCredential(pLogin, pPassword);
@@ -1902,7 +1945,7 @@ namespace Cisco.UnityConnection.RestFunctions
             webrequest.UserAgent = "CUMILibraryFunctions";
             webrequest.KeepAlive = true;
             webrequest.Accept = "application/json";
-            webrequest.Timeout = 15 * 1000;
+            webrequest.Timeout = TimeoutSeconds * 1000;
             webrequest.ContentType = "multipart/form-data;boundary=" + boundary;
             webrequest.Method = "POST";
 

@@ -70,7 +70,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Phone system not found in PhoneSystem constructor using ObjectId={0} " +
+                throw new UnityConnectionRestException(res,string.Format("Phone system not found in PhoneSystem constructor using ObjectId={0} " +
                                                   "or displayName={1}\n\r{2}", pObjectId, pDisplayName, res.ErrorText));
             }
         }

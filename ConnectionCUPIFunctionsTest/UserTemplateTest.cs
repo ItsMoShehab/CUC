@@ -161,6 +161,8 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success,"Fetching user templates failed:"+res);
             Assert.IsTrue(oTemplates.Count>1,"Templates not returned from fetch");
 
+
+            
         }
 
 

@@ -25,7 +25,7 @@ namespace ConnectionCUPIFunctionsTest.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("192.168.0.185")]
+        [global::System.Configuration.DefaultSettingValueAttribute("192.168.0.186")]
         public string ConnectionServer {
             get {
                 return ((string)(this["ConnectionServer"]));

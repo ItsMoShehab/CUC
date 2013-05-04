@@ -98,7 +98,7 @@ namespace Cisco.UnityConnection.RestFunctions
     public class ConnectionServer
     {
 
-        #region Properties
+        #region Fields and Properties
 
         //values set at class creation time that are read only externally
         public ConnectionVersion Version { get; private set; }
@@ -114,6 +114,10 @@ namespace Cisco.UnityConnection.RestFunctions
 
         //keeps track of the last time we sent anything or got anything to/from this server via HTTPS
         public DateTime LastSessionActivity { get; set; }
+
+        //information about cluster servers (if any) filled in at login time.  If there is no cluster the list
+        //will contain only the same server being attached to by this instance of ConnectionServer.
+        public List<VmsServer> VmsServers { get; private set; }
 
         //lazy fetch implementation for fetching the primary location objectId for the Connection server this instance is 
         //pointing to.
@@ -260,9 +264,25 @@ namespace Cisco.UnityConnection.RestFunctions
             this.LoginName = pLoginName;
             this.LoginPw = pLoginPw;
 
-            WebCallResult ret = HTTPFunctions.GetCupiResponse(BaseUrl + "version", MethodType.GET, this,"");
+            WebCallResult ret = GetVersionInfo(pServerName);
+            if (ret.Success == false)
+            {
+                return ret;
+            }
 
-            if (ret.Success==false)
+            return GetClusterInfo();
+        }
+
+
+        /// <summary>
+        /// Helper method to fetch the Conneciton version number off the server we're attaching to
+        /// </summary>
+        /// <returns></returns>
+        private WebCallResult GetVersionInfo(string pServerName)
+        {
+            WebCallResult ret = HTTPFunctions.GetCupiResponse(BaseUrl + "version", MethodType.GET, this, "");
+
+            if (ret.Success == false)
             {
                 return ret;
             }
@@ -270,7 +290,6 @@ namespace Cisco.UnityConnection.RestFunctions
             string strVersion;
             Dictionary<string, string> oResponse;
             if (string.IsNullOrEmpty(ret.ResponseText))
-            //if (ret.JsonResponse == null || !ret.JsonResponse.Any() || !ret.JsonResponse.TryGetValue("version", out strVersion))
             {
                 //invalid JSON returned
                 ret.ErrorText = string.Format("Invalid version XML returned logging into Connection server: {0}, return text={1}", pServerName, ret.ResponseText);
@@ -284,8 +303,8 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             catch (Exception ex)
             {
-                ret.ErrorText = string.Format("Invalid version XML returned logging into Connection server: {0}, return text={1}, error={2}", 
-                    pServerName, ret.ResponseText,ex);
+                ret.ErrorText = string.Format("Invalid version XML returned logging into Connection server: {0}, return text={1}, error={2}",
+                    pServerName, ret.ResponseText, ex);
                 ret.Success = false;
                 return ret;
             }
@@ -294,11 +313,29 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (ParseVersionString(strVersion) == false)
             {
-              	//Invalid version string encountered (or no version string returned).
-               ret.ErrorText= String.Format("No version version returned logging into Connection server: {0}, return text={1}", pServerName, ret.ResponseText);
+                //Invalid version string encountered (or no version string returned).
+                ret.ErrorText = String.Format("No version version returned logging into Connection server: {0}, return text={1}", pServerName, ret.ResponseText);
                 ret.Success = false;
                 return ret;
             }
+
+            return ret;
+        }
+
+        /// <summary>
+        /// fetch the servers in the cluster - if the call succeeds the list (which may contain only the local server) will be stored
+        /// on the VmsServers property off the instance of this class
+        /// </summary>
+        public WebCallResult GetClusterInfo()
+        {
+            List<VmsServer> oServers;
+            var ret= VmsServer.GetVmsServers(this, out oServers);
+            if (ret.Success == false)
+            {
+                return ret;
+            }
+
+            VmsServers = oServers;
 
             return ret;
         }

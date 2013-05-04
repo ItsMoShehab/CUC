@@ -181,8 +181,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("User not found in UserBase constructor using Alias={0} and/or ObjectId={1}\n\rError={2}"
-                                                , pAlias, pObjectId, res.ErrorText));
+                throw new UnityConnectionRestException(res,string.Format("User not found in UserBase constructor using Alias={0} and/or " +
+                                                                         "ObjectId={1}\n\rError={2}", pAlias, pObjectId, res.ErrorText));
             }
         }
 
@@ -891,6 +891,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 pUser = new UserBase(pConnectionServer, pObjectId, pAlias);
                 res.Success = true;
             }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
+            }
             catch (Exception ex)
             {
                 res.ErrorText = "Failed to fetch user in GetUser:" + ex.Message;
@@ -947,6 +951,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pUser = new UserFull(pConnectionServer, pObjectId,pAlias);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {
@@ -1480,6 +1488,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 try
                 {
                     oUserFull = new UserFull(pConnectionServer, pObjectId);
+                }
+                catch (UnityConnectionRestException ex)
+                {
+                    return ex.WebCallResult;
                 }
                 catch (Exception ex)
                 {
@@ -2189,22 +2201,24 @@ namespace Cisco.UnityConnection.RestFunctions
             : base(pConnectionServer)
         {
             string strObjectId = pObjectId;
+            WebCallResult res;
+
             if (string.IsNullOrEmpty(pObjectId))
             {
-                strObjectId = this.GetObjectIdFromAlias(pAlias);
-                if (string.IsNullOrEmpty(strObjectId))
+                res = GetObjectIdFromAlias(pAlias, out strObjectId);
+                if (res.Success==false)
                 {
-                    throw new Exception("User not found in UserFull constructor using alias=" + pAlias);
+                    throw new UnityConnectionRestException(res,"User not found in UserFull constructor using alias=" + pAlias);
                 }
             }
 
             //construct a new UserFull object in the UserBase constructor and then call the GetUSerFull instance method to fetch and 
             //fill in all the full user properties from the server.
-            WebCallResult res = GetUserFull(strObjectId);
+            res = GetUserFull(strObjectId);
 
             if (res.Success == false)
             {
-                throw new Exception("User not found in UserFull constructor using ObjectId=" + pObjectId);
+                throw new UnityConnectionRestException(res, "User not found in UserFull constructor using ObjectId=" + pObjectId);
             }
         }
 
@@ -3948,6 +3962,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 pUser = new UserFull(pConnectionServer, pObjectId);
                 res.Success = true;
             }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
+            }
             catch (Exception ex)
             {
                 res.ErrorText = "Failed to fetch full user in GetUsers:" + ex.Message;
@@ -4024,11 +4042,15 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pAlias">
         /// Alias of the user to search for.
         /// </param>
+        /// <param name="pObjectId">
+        /// ObjectId of the user with the alias in question returned via this out param.
+        /// </param>
         /// <returns>
-        /// ObjectId of the user if the alias is found, blank string if not.
+        /// WebCallResult instance.
         /// </returns>
-        private string GetObjectIdFromAlias(string pAlias)
+        private WebCallResult GetObjectIdFromAlias(string pAlias, out string pObjectId)
         {
+            pObjectId = "";
             string strUrl = string.Format("{0}users/?query=(Alias is {1})", HomeServer.BaseUrl, pAlias);
 
             //issue the command to the CUPI interface
@@ -4036,7 +4058,13 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                return "";
+                return res;
+            }
+            if (res.TotalObjectCount == 0)
+            {
+                res.Success = false;
+                res.ErrorText = "Could not find user by alias=" + pAlias;
+                return res;
             }
 
             List<UserBase> oUsers = HTTPFunctions.GetObjectsFromJson<UserBase>(res.ResponseText,"User");
@@ -4045,11 +4073,14 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 if (oUser.Alias.Equals(pAlias, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return oUser.ObjectId;
+                    pObjectId= oUser.ObjectId;
+                    return res;
                 }
             }
 
-            return "";
+            res.Success = false;
+            res.ErrorText = "User not found by alias=" + pAlias;
+            return res;
         }
        #endregion
 
