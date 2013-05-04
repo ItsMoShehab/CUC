@@ -604,8 +604,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pConnectionServer">
         /// Connection server being edited
         /// </param>
-        /// <param name="pTemplateObjectId">
-        /// The ObjectId of a user template on Connection to base the new template off of
+        /// <param name="pMediaSwitchObjectId">
+        /// The ObjectId of a the media switch this call handler should be associated with
         /// </param>
         /// <param name="pDisplayName">
         /// Display Name of the new call handler template - must be unique.
@@ -617,7 +617,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddCallHandlerTemplate(ConnectionServer pConnectionServer, string pTemplateObjectId, string pDisplayName, 
+        public static WebCallResult AddCallHandlerTemplate(ConnectionServer pConnectionServer, string pDisplayName,
+            string pMediaSwitchObjectId, string pRecipientDistributionListId, string pRecipientUserId,
             ConnectionPropertyList pPropList)
         {
             WebCallResult res = new WebCallResult();
@@ -629,9 +630,15 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            if (String.IsNullOrEmpty(pDisplayName) || string.IsNullOrEmpty(pTemplateObjectId))
+            if (String.IsNullOrEmpty(pDisplayName) || string.IsNullOrEmpty(pMediaSwitchObjectId))
             {
                 res.ErrorText = "Empty value passed for display name or template objectId in AddCallHandlerTemplate";
+                return res;
+            }
+
+            if (string.IsNullOrEmpty(pRecipientDistributionListId) & string.IsNullOrEmpty(pRecipientUserId))
+            {
+                res.ErrorText ="Both user and dl recipientIds passed as blank - a handler template requires a recipient";
                 return res;
             }
 
@@ -641,7 +648,17 @@ namespace Cisco.UnityConnection.RestFunctions
                 pPropList = new ConnectionPropertyList();
             }
 
+            if (string.IsNullOrEmpty(pRecipientUserId))
+            {
+                pPropList.Add("RecipientDistributionListObjectId",pRecipientDistributionListId);
+            }
+            else
+            {
+                pPropList.Add("RecipientSubscriberObjectId", pRecipientUserId);
+            }
+
             pPropList.Add("DisplayName", pDisplayName);
+            pPropList.Add("MediaSwitchObjectId", pMediaSwitchObjectId);
 
             string strBody = "<CallhandlerTemplate>";
 
@@ -652,16 +669,16 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             strBody += "</CallhandlerTemplate>";
-
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "CallHandlerTemplates?templateObjectId=" + pTemplateObjectId, 
+            
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "callhandlertemplates", 
                 MethodType.POST, pConnectionServer, strBody, false);
 
             //fetch the objectId of the newly created object off the return
             if (res.Success)
             {
-                if (res.ResponseText.Contains(@"/vmrest/CallHandlerTemplates/"))
+                if (res.ResponseText.Contains(@"/vmrest/callhandlertemplates/"))
                 {
-                    res.ReturnedObjectId = res.ResponseText.Replace(@"/vmrest/CallHandlerTemplates/", "").Trim();
+                    res.ReturnedObjectId = res.ResponseText.Replace(@"/vmrest/callhandlertemplates/", "").Trim();
                 }
             }
 
@@ -691,14 +708,17 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Instance of the WebCallResult class.
         /// </returns>
         public static WebCallResult AddCallHandlerTemplate(ConnectionServer pConnectionServer,
-                                                        string pTemplateObjectId,                                             
                                                         string pDisplayName,
-                                                         ConnectionPropertyList pPropList,
-                                                         out CallHandlerTemplate pCallHandlerTemplate)
+                                                        string pMediaSwitchObjectId, 
+                                                        string pRecipientDistributionListId, 
+                                                        string pRecipientUserId,
+                                                        ConnectionPropertyList pPropList,
+                                                        out CallHandlerTemplate pCallHandlerTemplate)
         {
             pCallHandlerTemplate = null;
 
-            WebCallResult res = AddCallHandlerTemplate(pConnectionServer,pTemplateObjectId, pDisplayName, pPropList);
+            WebCallResult res = AddCallHandlerTemplate(pConnectionServer, pDisplayName,pMediaSwitchObjectId,pRecipientDistributionListId,
+                pRecipientUserId, pPropList);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)

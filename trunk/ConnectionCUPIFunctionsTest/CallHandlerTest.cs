@@ -101,18 +101,6 @@ namespace ConnectionCUPIFunctionsTest
         }
 
 
-        /// <summary>
-        /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void CallHandlerTemplate_ClassCreationFailure()
-        {
-            CallHandlerTemplate oTestTemplate = new CallHandlerTemplate(null, "aaa");
-            Console.WriteLine(oTestTemplate);
-        }
-
-
         #endregion
 
 
@@ -360,102 +348,6 @@ namespace ConnectionCUPIFunctionsTest
          }
 
 
-        [TestMethod]
-        public void CallHandlerTemplate_AddDeleteTest()
-        {
-            List<CallHandlerTemplate> oTemplates;
-            WebCallResult res = CallHandlerTemplate.GetCallHandlerTemplates(_connectionServer, out oTemplates);
-            Assert.IsTrue(res.Success, "Failed to get call handler templates");
-            Assert.IsNotNull(oTemplates, "Null call handler template returned");
-            Assert.IsTrue(oTemplates.Count > 0, "Empty list of templates returned");
-
-            string strName = "Temp_" + Guid.NewGuid().ToString();
-
-            CallHandlerTemplate oTemplate;
-            res = CallHandlerTemplate.AddCallHandlerTemplate(_connectionServer, oTemplates[0].ObjectId,
-                                                                           strName, null, out oTemplate);
-
-            Assert.IsTrue(res.Success,"Failed creating new call handler template:"+res);
-
-            res = oTemplate.Delete();
-            Assert.IsTrue(res.Success,"Failed deleting call handler template:"+res);
-        }
-
-
-        /// <summary>
-        /// exercise call handler templates - call handler templates is a pretty simple class and it only gets used by handlers so 
-        /// test it here - make sure it handles an invalid conneciton server passed in and can get the list back out and hit the 
-        /// ToString override for it - that about covers it.
-        /// </summary>
-        [TestMethod]
-        public void CallHandlerTemplate_FetchTest()
-         {
-            List<CallHandlerTemplate> oTemplates;
-
-            WebCallResult res = CallHandlerTemplate.GetCallHandlerTemplates(null, out oTemplates);
-            Assert.IsFalse(res.Success,"Null ConnectionServer parameter should fail");
-
-            res = CallHandlerTemplate.GetCallHandlerTemplates(_connectionServer, out oTemplates);
-            Assert.IsTrue(res.Success,"Failed to get call handler templates");
-            Assert.IsNotNull(oTemplates,"Null call handler template returned");
-            Assert.IsTrue(oTemplates.Count>0,"Empty list of templates returned");
-
-            //exercise the toString method
-            Console.WriteLine(oTemplates[0].ToString());
-            Console.WriteLine(oTemplates[0].DumpAllProps());
-
-            res = oTemplates[0].RefetchUserTemplateData();
-            Assert.IsTrue(res.Success,"Failed refetching template data:"+res);
-
-            //exercise the NEW create methods
-            CallHandlerTemplate oNewTemplate;
-            try
-            {
-                oNewTemplate = new CallHandlerTemplate(_connectionServer, oTemplates[0].ObjectId);
-                Console.WriteLine(oNewTemplate);
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail("Failed to get call handler template via NEW by objectId:"+ex);
-            }
-
-            try
-            {
-                oNewTemplate = new CallHandlerTemplate(_connectionServer, "",oTemplates[0].DisplayName);
-                Console.WriteLine(oNewTemplate);
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail("Failed to get call handler template via NEW by displayName:" + ex);
-            }
-
-            try
-            {
-                oNewTemplate = new CallHandlerTemplate(_connectionServer, "");
-                Console.WriteLine(oNewTemplate);
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail("Failed to create empty call handler template via NEW:" + ex);
-            }
-            
-            //exercise the static methods
-            res = CallHandlerTemplate.GetCallHandlerTemplate(out oNewTemplate, _connectionServer);
-            Assert.IsFalse(res.Success, "Static call to get call handler template did not fail with empty objectid and name");
-
-            res = CallHandlerTemplate.GetCallHandlerTemplate(out oNewTemplate, null);
-            Assert.IsFalse(res.Success, "Static call to get call handler template did not fail with null ConnectionServer");
-
-            res = CallHandlerTemplate.GetCallHandlerTemplate(out oNewTemplate, _connectionServer,oTemplates[0].ObjectId);
-            Assert.IsTrue(res.Success,"Failed to get call handler via static call using ObjectID:"+res);
-
-            res = CallHandlerTemplate.GetCallHandlerTemplate(out oNewTemplate, _connectionServer,"", oTemplates[0].DisplayName);
-            Assert.IsTrue(res.Success, "Failed to get call handler via static call using DisplayName:" + res);
-
-            res = CallHandlerTemplate.GetCallHandlerTemplate(out oNewTemplate, _connectionServer, "", "bogus");
-            Assert.IsFalse(res.Success, "Call to get call handler via static call using invalid DisplayName did not fail.");
-
-         }
 
         #endregion
 
@@ -593,48 +485,6 @@ namespace ConnectionCUPIFunctionsTest
 
         }
 
-
-        /// <summary>
-        /// exercise failure points
-        /// </summary>
-        [TestMethod]
-        public void GetCallHandlerTemplate_Failure()
-        {
-            List<CallHandlerTemplate> oTemplates;
-            WebCallResult res = CallHandlerTemplate.GetCallHandlerTemplates(null, out oTemplates);
-            Assert.IsFalse(res.Success, "Passing null connection server should fail.");
-
-
-            CallHandlerTemplate oTemplate;
-
-            try
-            {
-                oTemplate = new CallHandlerTemplate(_connectionServer, "");
-                Console.WriteLine(oTemplate);
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail("Creating an empty call handler template failed:"+ex);
-            }
-
-            try
-            {
-                oTemplate = new CallHandlerTemplate(_connectionServer, "blah");
-                Console.WriteLine(oTemplate);
-                Assert.Fail("Creating call handler template via NEW with invalid objectId did not fail");
-            }
-            catch{}
-
-            try
-            {
-                oTemplate = new CallHandlerTemplate(_connectionServer, "","blah");
-                Console.WriteLine(oTemplate);
-                Assert.Fail("Creating call handler template via NEW with invalid name did not fail");
-            }
-            catch { }
-
-
-        }
 
         #endregion
     }

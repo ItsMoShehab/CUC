@@ -80,8 +80,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Alternate Extension not found in AlternateExtension constructor using ObjectId={0}\n\r{1}"
-                    , pObjectId, res.ErrorText));
+                throw new UnityConnectionRestException(res, string.Format("Alternate Extension not found in AlternateExtension constructor using " +
+                                                                          "ObjectId={0}\n\r{1}", pObjectId, res.ErrorText));
             }
         }
 

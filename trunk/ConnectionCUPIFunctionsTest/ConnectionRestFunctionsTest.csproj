@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlternateExtensionTest.cs" />
+    <Compile Include="CallHandlerTemplateTest.cs" />
     <Compile Include="CallHandlerTest.cs" />
     <Compile Include="ConnectionServerTest.cs" />
     <Compile Include="CredentialTest.cs" />

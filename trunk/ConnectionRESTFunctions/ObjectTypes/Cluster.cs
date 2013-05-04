@@ -73,7 +73,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strTemp="";
             foreach (var oServer in Servers)
             {
-                strTemp += oServer.ToString() + Environment.NewLine;
+                strTemp += oServer + Environment.NewLine;
             }
             return strTemp;
         }
@@ -90,13 +90,12 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         private WebCallResult GetServers(ConnectionServer pConnectionServer)
         {
-            WebCallResult res;
             Servers = new List<Server>();
 
             string strUrl = pConnectionServer.BaseUrl + "cluster";
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
 
             if (res.Success == false)
             {

@@ -71,32 +71,71 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region VmsServer Properties
 
+        /// <summary>
+        /// 0  - Primary, 1 – First secondary
+        /// </summary>
         [JsonProperty]
-        public string ObjectId { get; private set; }
+        public int ClusterMemberId { get; private set; }
 
         [JsonProperty]
         public string HostName { get; private set; }
 
         [JsonProperty]
-        public string ServerName { get; private set; }
-
-        [JsonProperty]
-        public string VmsServerObjectId { get; private set; }
-
-        [JsonProperty]
         public string IpAddress { get; private set; }
 
         [JsonProperty]
-        public int ClusterMemberId { get; private set; }
+        public string ObjectId { get; private set; }
 
+        [JsonProperty]
+        public string ServerName { get; private set; }
+
+        /// <summary>
+        ///Value: 0 Name: Pri_Init
+        ///Value: 1 Name: Pri_Active
+        ///Value: 2 Name: Pri_Act_Secondary
+        ///Value: 3 Name: Pri_Idle
+        ///Value: 4 Name: Pri_Failover
+        ///Value: 5 Name: Pri_Takeover
+        ///Value: 6 Name: Pri_SBR
+        ///Value: 7 Name: Sec_Init
+        ///Value: 8 Name: Sec_Active
+        ///Value: 9 Name: Sec_Act_Primary
+        ///Value: 10 Name: Sec_Idle
+        ///Value: 11 Name: Sec_Takeover
+        ///Value: 12 Name: Sec_Failover
+        ///Value: 13 Name: Sec_SBR
+        ///Value: 14 Name: Db_Sync
+        ///Value: 15 Name: Set_Peer_Idle
+        ///Value: 16 Name: Undefined
+        ///Value: 17 Name: Pri_Active_Disconnected
+        ///Value: 18 Name: Pri_Connecting
+        ///Value: 19 Name: Pri_Choose_Role
+        ///Value: 20 Name: Pri_Single_Server
+        ///Value: 21 Name: Sec_Act_Primary_Disconnected
+        ///Value: 22 Name: Sec_Connecting
+        ///Value: 23 Name: Sec_Choose_Role
+        ///Value: 24 Name: Shutdown
+        /// </summary>
         [JsonProperty]
         public int ServerState { get; private set; }
 
+        /// <summary>
+        ///Value: 1 Name: DOWN
+        ///Value: 2 Name: INITIALIZING
+        ///Value: 3 Name: PRIMARY
+        ///Value: 4 Name: SECONDARY
+        ///Value: 5 Name: IDLE
+        ///Value: 6 Name: IN_DB_SYNC
+        ///Value: 7 Name: IN_SBR
+        /// </summary>
         [JsonProperty]
         public int ServerDisplayState { get; private set; }
 
         [JsonProperty]
         public bool SubToPerformReplicationRole { get; private set; }
+
+        [JsonProperty]
+        public string VmsServerObjectId { get; private set; }
 
         #endregion
 
@@ -109,7 +148,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns></returns>
         public override string ToString()
         {
-            return string.Format("VmsServer:{0}, ObjectId:{1}", ServerName, VmsServerObjectId);
+            return string.Format("VmsServer:{0}, ObjectId:{1}, IP={2}", ServerName, VmsServerObjectId,IpAddress);
         }
 
 
