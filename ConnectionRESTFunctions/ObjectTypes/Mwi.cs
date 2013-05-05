@@ -77,7 +77,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Mwi Device not found in NotificationDevice constructor using ObjectId={0}\n\r{1}"
+                throw new UnityConnectionRestException(res,string.Format("Mwi Device not found in NotificationDevice constructor using ObjectId={0}\n\r{1}"
                                                  , pObjectId, res.ErrorText));
             }
 
@@ -288,6 +288,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pMwiDevice = new Mwi(pConnectionServer,pUserObjectId, pObjectId);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

@@ -69,10 +69,10 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// Make sure Exception is thrown if a bogus ObjectId is passed into the creator
+        /// Make sure UnityConnectionRestException is thrown if a bogus ObjectId is passed into the creator
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
             Policy oTest = new Policy(_connectionServer,"bogus");

@@ -42,7 +42,7 @@ namespace Cisco.UnityConnection.RestFunctions
             var res = GetInstalledLanguages();
             if (res.Success == false)
             {
-                throw new Exception("Failed to load installed languages:" + res);
+                throw new UnityConnectionRestException(res,"Failed to load installed languages:" + res);
             }
         }
 

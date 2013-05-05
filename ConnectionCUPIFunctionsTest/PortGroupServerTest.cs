@@ -71,6 +71,9 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTemp);
         }
 
+        /// <summary>
+        /// throw ArgumentException on empty objectId
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure2()
@@ -79,8 +82,11 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTemp);
         }
 
+        /// <summary>
+        /// throw UnityConnectionRestException on invalid objectID
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure3()
         {
             PortGroupServer oTemp = new PortGroupServer(_connectionServer, "bogus","bogus");

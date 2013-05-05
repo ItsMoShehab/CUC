@@ -67,10 +67,9 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("RestrictionPattern not found in RestrictionPattern constructor using ObjectId={0}\n\r{1}"
-                                 , pObjectId, res.ErrorText));
+                throw new UnityConnectionRestException(res,string.Format("RestrictionPattern not found in RestrictionPattern constructor " +
+                                                                         "using ObjectId={0}\n\r{1}", pObjectId, res.ErrorText));
             }
-
         }
 
         /// <summary>

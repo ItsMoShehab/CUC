@@ -61,7 +61,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Contact not found in Contact constructor using ObjectId={0} or Alias={1}\n\r{2}"
+                throw new UnityConnectionRestException(res,string.Format("Contact not found in Contact constructor using ObjectId={0} or Alias={1}\n\r{2}"
                                  , pObjectId,pAlias, res.ErrorText));
             }
         }
@@ -427,6 +427,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 pContact = new Contact(pConnectionServer, pObjectId, pAlias);
                 res.Success = true;
             }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
+            }
             catch (Exception ex)
             {
                 res.ErrorText = "Failed to fetch contact in GetContact:" + ex.Message;
@@ -711,6 +715,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 try
                 {
                     oContact = new Contact(pConnectionServer, pObjectId);
+                }
+                catch (UnityConnectionRestException ex)
+                {
+                    return ex.WebCallResult;
                 }
                 catch (Exception ex)
                 {

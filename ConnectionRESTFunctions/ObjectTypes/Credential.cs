@@ -60,10 +60,9 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Credential not found in Credential constructor using UserObjectID={0}\n\r{1}"
+                throw new UnityConnectionRestException(res,string.Format("Credential not found in Credential constructor using UserObjectID={0}\n\r{1}"
                                                  , pUserObjectId, res.ErrorText));
             }
-
         }
 
         /// <summary>
@@ -179,6 +178,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pCredential = new Credential(pConnectionServer, pUserObjectId, pCredentialType);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

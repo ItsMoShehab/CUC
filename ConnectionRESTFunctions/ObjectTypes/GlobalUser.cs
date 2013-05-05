@@ -63,8 +63,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("User not found in GlobalUser constructor using Alias={0} and/or ObjectId={1}\n\rError={2}"
-                                                , pAlias, pObjectId, res.ErrorText));
+                throw new UnityConnectionRestException(res,string.Format("User not found in GlobalUser constructor using Alias={0} " +
+                                                                         "and/or ObjectId={1}\n\rError={2}", pAlias, pObjectId, res.ErrorText));
             }
         }
 
@@ -325,6 +325,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pUser = new GlobalUser(pConnectionServer, pObjectId, pAlias);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

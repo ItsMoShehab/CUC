@@ -72,10 +72,10 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// Make sure an Exception is thrown if an invalid ObjectID is passed in.
+        /// Make sure an UnityConnectionRestException is thrown if an invalid ObjectID is passed in.
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
             NotificationTemplate oTemp = new NotificationTemplate(_connectionServer, "aaa");

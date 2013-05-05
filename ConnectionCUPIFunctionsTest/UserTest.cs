@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using Cisco.UnityConnection.RestFunctions;
@@ -141,6 +140,9 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTemp);
         }
 
+        /// <summary>
+        /// ArgumentException on null ConnectionServer
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void MWiCreationFailure()
@@ -149,14 +151,20 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTemp);
         }
 
+        /// <summary>
+        /// UnityConnectionRestException on invalid ObjectID
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void MWiCreationFailure2()
         {
             Mwi oTemp = new Mwi(_connectionServer, "bogus","bogus");
             Console.WriteLine(oTemp);
         }
 
+        /// <summary>
+        /// ArgumentException on empty objectId
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void MWiCreationFailure3()
@@ -440,146 +448,6 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Null ConnectionServer object should fail");
 
         }
-
-
-        [TestMethod]
-        public void StaticUserMessageFailures()
-        {
-            //CreateMessageLocalWav
-            MessageAddress oRecipient = new MessageAddress();
-            oRecipient.AddressType = MessageAddressType.BCC;
-            MessageAddress oRecipient2 = new MessageAddress();
-            oRecipient2.AddressType = MessageAddressType.TO;
-            MessageAddress oRecipient3 = new MessageAddress();
-            oRecipient3.AddressType = MessageAddressType.CC;
-
-
-            WebCallResult res = UserMessage.CreateMessageLocalWav(null, "userobjectID", "subject", "dummy.wav", false,
-                                                                  false, false, false, false, false, null, false, oRecipient, oRecipient2, oRecipient3);
-            Assert.IsFalse(res.Success, "Call to CreateMessageLocalWav with null ConnectionServer did not fail.");
-
-            res = UserMessage.CreateMessageLocalWav(_connectionServer, "", "subject", "dummy.wav", false,
-                                                    false, false, false, false, false, null, false, oRecipient, oRecipient2, oRecipient3);
-            Assert.IsFalse(res.Success, "Call to CreateMessageLocalWav with empty user obejectID did not fail.");
-
-            res = UserMessage.CreateMessageLocalWav(_connectionServer, "userobjectID", "subject", "bogus.wav", false,
-                                        false, false, false, false, false, null, false, oRecipient, oRecipient2, oRecipient3);
-            Assert.IsFalse(res.Success, "Call to CreateMessageLocalWav with invalid WAV path did not fail.");
-
-            res = UserMessage.CreateMessageLocalWav(_connectionServer, "userobjectID", "subject", "dummy.wav", false,
-                            false, false, false, false, false, null, false);
-            Assert.IsFalse(res.Success, "Call to CreateMessageLocalWav with no recipient did not fail.");
-
-            res = UserMessage.CreateMessageLocalWav(_connectionServer, "userobjectID", "subject", "dummy.wav", false,
-                                        false, false, false, false, false, null, true, oRecipient, oRecipient2, oRecipient3);
-            Assert.IsFalse(res.Success, "Call to CreateMessageLocalWav with invalid UserObjectId did not fail.");
-
-            res = UserMessage.CreateMessageLocalWav(_connectionServer, "userobjectID", "", "dummy.wav", false,
-                                        false, false, false, false, false, null, false, oRecipient, oRecipient2, oRecipient3);
-            Assert.IsFalse(res.Success, "Call to CreateMessageLocalWav with empty subject did not fail.");
-
-            //CreateMessageResourceId
-            res = UserMessage.CreateMessageResourceId(null, "userobjectId", "subject", "resourceId", false,
-                                                      false, false, false, false, false, null, oRecipient, oRecipient2, oRecipient3);
-            Assert.IsFalse(res.Success, "Call to CreateMessageResourceId with null ConnectionServer did not fail.");
-
-            res = UserMessage.CreateMessageResourceId(_connectionServer, "userobjectId", "subject", "resourceId", false,
-                  false, false, false, false, false, null);
-            Assert.IsFalse(res.Success, "Call to CreateMessageResourceId with empty recipients list did not fail.");
-
-            res = UserMessage.CreateMessageResourceId(_connectionServer, "userobjectId", "", "resourceId", false,
-                              false, false, false, false, false, null, oRecipient, oRecipient2, oRecipient3);
-            Assert.IsFalse(res.Success, "Call to CreateMessageResourceId with empty subject did not fail.");
-
-            res = UserMessage.CreateMessageResourceId(_connectionServer, "userobjectId", "subject", "", false,
-                              false, false, false, false, false, null, oRecipient, oRecipient2, oRecipient3);
-            Assert.IsFalse(res.Success, "Call to CreateMessageResourceId with empty resourceId did not fail.");
-
-            res = UserMessage.CreateMessageResourceId(_connectionServer, "userobjectId", "subject", "resourceId", true,
-                  true, true, true, true, true, new CallerId(), oRecipient, oRecipient2, oRecipient3);
-            Assert.IsFalse(res.Success, "Call to CreateMessageResourceId with invalid resourceId did not fail.");
-
-
-            //GetmessageAttachment
-            res = UserMessage.GetMessageAttachment(_connectionServer, "temp.wav", "bogus", "bogus", 1);
-            Assert.IsFalse(res.Success, "Call to static GetMessageAttachment did not fail with invalid user and message ObjectIds");
-
-            res = UserMessage.GetMessageAttachment(_connectionServer, "", "bogus", "bogus", 1);
-            Assert.IsFalse(res.Success, "Call to static GetMessageAttachment did not fail with blank local file target ");
-
-            res = UserMessage.GetMessageAttachment(_connectionServer, "temp.wav", "", "bogus", 1);
-            Assert.IsFalse(res.Success, "Call to static GetMessageAttachment did not fail with blank user ObjectId");
-
-            res = UserMessage.GetMessageAttachment(_connectionServer, "temp.wav", "bogus", "", 1);
-            Assert.IsFalse(res.Success, "Call to static GetMessageAttachment did not fail with blank message objectId");
-
-            res = UserMessage.GetMessageAttachment(null, "temp.wav", "bogus", "bogus", 1);
-            Assert.IsFalse(res.Success, "Call to static GetMessageAttachment did not fail with null Connection server");
-
-            //GetMessageAttachmentCount
-            int iCount;
-            res = UserMessage.GetMessageAttachmentCount(null, "bogus", "bogus", out iCount);
-            Assert.IsFalse(res.Success, "Call to static GetMessageAttachmentCount did not fail with null Connection server");
-
-            res = UserMessage.GetMessageAttachmentCount(_connectionServer, "bogus", "bogus", out iCount);
-            Assert.IsFalse(res.Success, "Call to static GetMessageAttachmentCount did not fail with invalid objectIds");
-
-            res = UserMessage.GetMessageAttachmentCount(_connectionServer, "", "bogus", out iCount);
-            Assert.IsFalse(res.Success, "Call to static GetMessageAttachmentCount did not fail with empty objectId");
-
-            List<UserMessage> oMessages;
-            //GetMessages
-            res = UserMessage.GetMessages(null, "bogus", out oMessages);
-            Assert.IsFalse(res.Success, "Call to static GetMessages did not fail with null Connection server");
-
-            res = UserMessage.GetMessages(_connectionServer, "bogus", out oMessages, 1, 10, MessageSortOrder.URGENT_FIRST, MessageFilter.Dispatch_False);
-            Assert.IsFalse(res.Success, "Call to static GetMessages did not fail with invalid objectId1");
-
-            res = UserMessage.GetMessages(_connectionServer, "bogus", out oMessages, 1, 10, MessageSortOrder.OLDEST_FIRST, MessageFilter.Dispatch_True);
-            Assert.IsFalse(res.Success, "Call to static GetMessages did not fail with invalid objectId2");
-
-            res = UserMessage.GetMessages(_connectionServer, "bogus", out oMessages, 1, 10, MessageSortOrder.NEWEST_FIRST, MessageFilter.Priority_Low);
-            Assert.IsFalse(res.Success, "Call to static GetMessages did not fail with invalid objectId3");
-
-            res = UserMessage.GetMessages(_connectionServer, "bogus", out oMessages, 1, 10, MessageSortOrder.NEWEST_FIRST, MessageFilter.Priority_Normal);
-            Assert.IsFalse(res.Success, "Call to static GetMessages did not fail with invalid objectId4");
-
-            res = UserMessage.GetMessages(_connectionServer, "bogus", out oMessages, 1, 10, MessageSortOrder.NEWEST_FIRST, MessageFilter.Priority_Urgent);
-            Assert.IsFalse(res.Success, "Call to static GetMessages did not fail with invalid objectId5");
-
-            res = UserMessage.GetMessages(_connectionServer, "bogus", out oMessages, 1, 10, MessageSortOrder.NEWEST_FIRST, MessageFilter.Read_False);
-            Assert.IsFalse(res.Success, "Call to static GetMessages did not fail with invalid objectId6");
-
-            res = UserMessage.GetMessages(_connectionServer, "bogus", out oMessages, 1, 10, MessageSortOrder.NEWEST_FIRST, MessageFilter.Read_True);
-            Assert.IsFalse(res.Success, "Call to static GetMessages did not fail with invalid objectId7");
-
-            res = UserMessage.GetMessages(_connectionServer, "bogus", out oMessages, 1, 10, MessageSortOrder.NEWEST_FIRST, MessageFilter.Type_Email);
-            Assert.IsFalse(res.Success, "Call to static GetMessages did not fail with invalid objectId8");
-
-            res = UserMessage.GetMessages(_connectionServer, "bogus", out oMessages, 1, 10, MessageSortOrder.NEWEST_FIRST, MessageFilter.Type_Fax);
-            Assert.IsFalse(res.Success, "Call to static GetMessages did not fail with invalid objectId9");
-
-            res = UserMessage.GetMessages(_connectionServer, "bogus", out oMessages, 1, 10, MessageSortOrder.NEWEST_FIRST, MessageFilter.Type_Receipt);
-            Assert.IsFalse(res.Success, "Call to static GetMessages did not fail with invalid objectId10");
-
-            res = UserMessage.GetMessages(_connectionServer, "bogus", out oMessages, 1, 10, MessageSortOrder.NEWEST_FIRST, MessageFilter.Type_Voice);
-            Assert.IsFalse(res.Success, "Call to static GetMessages did not fail with invalid objectId11");
-
-
-            Console.WriteLine(UserMessage.ConvertFromMillisecondsToTimeDate(1000).ToString());
-            Console.WriteLine(UserMessage.ConvertFromMillisecondsToTimeDate(1000, false).ToString());
-
-            Console.WriteLine(UserMessage.ConvertFromTimeDateToMilliseconds(DateTime.Now));
-            Console.WriteLine(UserMessage.ConvertFromTimeDateToMilliseconds(DateTime.Now, false));
-
-            //UpdateUserMessage
-            res = UserMessage.UpdateUserMessage(null, "bogus", "userobjectId", new ConnectionPropertyList());
-            Assert.IsFalse(res.Success, "Calling UpdateUserMessage with null ConnectionServer did not fail");
-
-            res = UserMessage.UpdateUserMessage(_connectionServer, "bogus", "userobjectId", new ConnectionPropertyList());
-            Assert.IsFalse(res.Success, "Calling UpdateUserMessage with empty parameter list did not fail");
-        }
-
 
         #endregion
 
@@ -896,178 +764,6 @@ namespace ConnectionCUPIFunctionsTest
             res = _tempUser.ResetPassword("asdfasdfui09au8dsf");
             Assert.IsTrue(res.Success, "Reset password failed:" + res.ToString());
 
-        }
-
-
-
-
-        /// <summary>
-        /// Create, delete, change messages in the temp user's mailbox before they're deleted
-        /// </summary>
-        [TestMethod]
-        public void UserMessageTests()
-        {
-            if (_tempUser == null)
-            {
-                Assert.Fail("Temp user not created, cannot run tests.");
-            }
-
-            //do other tests
-            List<UserMessage> oMessages;
-
-            WebCallResult res = UserMessage.GetMessages(_connectionServer, _tempUser.ObjectId, out oMessages);
-            Assert.IsTrue(res.Success, "Failed fetching messages on new user");
-            Assert.IsTrue(oMessages.Count == 0, "Test user account is reporting more than 0 messages");
-
-            //create a new message
-            MessageAddress oRecipient = new MessageAddress();
-            oRecipient.AddressType = MessageAddressType.TO;
-            oRecipient.SmtpAddress = _tempUser.SmtpAddress;
-            res = UserMessage.CreateMessageLocalWav(_connectionServer, _tempUser.ObjectId, "test subject", "dummy.wav", false,
-                                                   false, false, false, false, false, new CallerId{CallerNumber = "1234"}, 
-                                                   true, oRecipient);
-            Assert.IsTrue(res.Success, "Failed to create new message from WAV file:" + res);
-
-            
-
-            UserMessage oMessage = new UserMessage(_connectionServer, _tempUser.ObjectId);
-
-            Console.WriteLine(oMessage.ToString());
-            Console.WriteLine(oMessage.DumpAllProps());
-
-            res = UserMessage.GetMessages(_connectionServer, _tempUser.ObjectId, out oMessages, 1, 10, MessageSortOrder.OLDEST_FIRST, MessageFilter.None,
-                MailboxFolder.DeletedItems);
-            Assert.IsTrue(res.Success, "Failed fetching deleted messages on new user");
-
-            res = UserMessage.GetMessages(_connectionServer, _tempUser.ObjectId, out oMessages, 1, 10, MessageSortOrder.OLDEST_FIRST, MessageFilter.None,
-                MailboxFolder.SentItems);
-            Assert.IsTrue(res.Success, "Failed fetching send messages on new user");
-
-            try
-            {
-                UserMessage oNewMessage = new UserMessage(null, _tempUser.ObjectId);
-                Assert.Fail("Creating new UserMessage object with null Connection server did not fail:" + oNewMessage);
-            }
-            catch {}
-
-            try
-            {
-                UserMessage oNewMessage = new UserMessage(_connectionServer, "");
-                Assert.Fail("Creating new UserMessage object with and empty user ObjectID did not fail:"+oNewMessage);
-            }
-            catch { }
-
-            //give the message time to be delivered
-            Thread.Sleep(5000);
-
-            //fetch
-            res = UserMessage.GetMessages(_connectionServer, _tempUser.ObjectId, out oMessages);
-            Assert.IsTrue(res.Success, "Failed to fetch messages:" + res);
-            Assert.IsTrue(oMessages.Count>0,"No messages found for temp user after leaving a new message");
-
-            oMessage = oMessages[0];
-
-            //some static helper methods
-            Console.WriteLine(UserMessage.ConvertFromTimeDateToMilliseconds(DateTime.Now));
-            Console.WriteLine(UserMessage.ConvertFromTimeDateToMilliseconds(DateTime.Now, false));
-
-            //update failure
-            res = oMessage.Update();
-            Assert.IsFalse(res.Success,"Calling update on message with no pending changes did not fail");
-
-            //update it
-            oMessage.Subject = "New test subject";
-            oMessage.Read = true;
-            res = oMessage.Update();
-            Assert.IsTrue(res.Success, "Message update failed");
-
-            //get attachment count
-            int iCount;
-            res = UserMessage.GetMessageAttachmentCount(_connectionServer, oMessage.MsgId, _tempUser.ObjectId, out iCount);
-            Assert.IsTrue(res.Success,"Failed calling GetMessageAttachmentCount:"+res);
-            Assert.IsTrue(iCount>0,"Attachment count not valid");
-
-            res = UserMessage.GetMessageAttachmentCount(null, oMessage.MsgId, _tempUser.ObjectId, out iCount);
-            Assert.IsFalse(res.Success,"Calling GetMessageAttachmentAccount with null Connection server did not fail.");
-            //get attachments
-            
-            Assert.IsTrue(oMessage.Attachments.Count>0,"Message fetched has no attachments");
-
-            string filename = "c:\\" + Guid.NewGuid().ToString() + ".wav";
-            res = oMessage.GetMessageAttachment(filename, 0);
-            Assert.IsTrue(res.Success,"Failed to fetch attachment");
-
-            try
-            {
-                File.Delete(filename);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Failed to delete temporary wav file:" + filename+", error="+ex);
-            }
-
-            //forward it to mailbox
-            res= oMessage.ForwardMessageLocalWav("FW:" + oMessage.Subject, true, true, true, true, true, "dummy.wav", true,oRecipient);
-            Assert.IsTrue(res.Success, "Failed to forward message");
-
-            //Forward failures
-            res = oMessage.ForwardMessageLocalWav("FW:" + oMessage.Subject, true, true, true, false, false, "dummy.wav", true);
-            Assert.IsFalse(res.Success, "Forwarding with wav with no address did not fail");
-
-            res = oMessage.ForwardMessageLocalWav("FW:" + oMessage.Subject, true, true, true, false, false, "bogus.wav", true, oRecipient);
-            Assert.IsFalse(res.Success, "Forwarding with wav with invalid WAV file did not fail");
-
-            res = oMessage.ForwardMessageResourceId("FW:" + oMessage.Subject, true, true, true, false, false, "", oRecipient);
-            Assert.IsFalse(res.Success, "Forwarding with empty resource Id did not fail");
-
-            res = oMessage.ForwardMessageResourceId("FW:" + oMessage.Subject, true, true, true, false, false, "bogus");
-            Assert.IsFalse(res.Success, "Forwarding resourceId with no addresses did not fail");
-
-            res = oMessage.ForwardMessageResourceId("FW:" + oMessage.Subject, true, true, true, false, false, "bogus", oRecipient);
-            Assert.IsFalse(res.Success, "Forwarding resourceId with invalid resource Id did not fail");
-
-            //reply
-            res = oMessage.ReplyWithLocalWav("RE:" + oMessage.Subject, true, true, true, false, false, "dummy.wav", true);
-            Assert.IsTrue(res.Success, "Failed to reply");
-
-            //reply to all
-            res = oMessage.ReplyWithLocalWav("RE:" + oMessage.Subject, true, true, true, false, false, "dummy.wav", true, true);
-            Assert.IsTrue(res.Success, "Failed to reply to all");
-
-            //reply failures
-            res = oMessage.ReplyWithResourceId("RE:" + oMessage.Subject,"", true, true, true, false, false, true);
-            Assert.IsFalse(res.Success, "Reply with empty resource ID did not fail");
-
-            res = oMessage.ReplyWithResourceId("RE:" + oMessage.Subject, "bogus", true, true, true, false, false, true);
-            Assert.IsFalse(res.Success, "Reply to all with bogus resource ID did not fail");
-
-            res = oMessage.ReplyWithResourceId("RE:" + oMessage.Subject, "bogus", true, true, true, false, false);
-            Assert.IsFalse(res.Success, "Reply with bogus resource ID did not fail");
-
-            //delete it
-            res = oMessage.Delete(true);
-            Assert.IsTrue(res.Success, "Failed to delete messages:" + res);
-
-            //clear deleted items folder
-            res = UserMessage.ClearDeletedItemsFolder(_connectionServer, _tempUser.ObjectId);
-            Assert.IsTrue(res.Success,"Failed to clear deleted items folder");
-
-            //failure
-            res = UserMessage.ClearDeletedItemsFolder(null, _tempUser.ObjectId);
-            Assert.IsFalse(res.Success, "Calling ClearDeletedItemsFolder with null ConnectionServer did not fail");
-
-
-            res = UserMessage.RecallMessage(null, _tempUser.ObjectId, "bugus");
-            Assert.IsFalse(res.Success, "Calling RecallMessage with null Connection server did not fail");
-
-            res = UserMessage.RecallMessage(_connectionServer, _tempUser.ObjectId, "bugus");
-            Assert.IsFalse(res.Success, "Calling RecallMessage with invalid message ID did not fail");
-
-            res = UserMessage.RestoreDeletedMessage(null, _tempUser.ObjectId, "bugus");
-            Assert.IsFalse(res.Success, "Calling RestoreDeletedMessage with null ConnectionServer did not fail");
-
-            res = UserMessage.RestoreDeletedMessage(_connectionServer, _tempUser.ObjectId, "bugus");
-            Assert.IsFalse(res.Success, "Calling RestoreDeletedMessage with invalid messae Id did not fail");
         }
 
 

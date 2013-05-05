@@ -46,7 +46,7 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res = GetRole(pObjectId, pRoleName);
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Failed to fetch role by ObjectId={0} or Name={1}", pObjectId, pRoleName));
+                throw new UnityConnectionRestException(res,string.Format("Failed to fetch role by ObjectId={0} or Name={1}", pObjectId, pRoleName));
             }
         }
 

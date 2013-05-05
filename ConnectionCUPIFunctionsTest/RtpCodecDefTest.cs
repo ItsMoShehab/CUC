@@ -70,8 +70,11 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTemp);
         }
 
+        /// <summary>
+        /// UnityConnectionRestException on invalid ObjectId
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
             RtpCodecDef oTemp = new RtpCodecDef(_connectionServer, "bogus");

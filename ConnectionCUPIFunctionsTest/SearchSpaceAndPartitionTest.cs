@@ -101,10 +101,10 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// Make sure an Exception is thrown if an invalid ObjectId is passed
+        /// Make sure an UnityConnectionRestException is thrown if an invalid ObjectId is passed
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void PartitionClassCreationFailure2()
         {
             Partition oTest = new Partition(_connectionServer,"bogus");
@@ -112,10 +112,10 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// Make sure an Exception is thrown if an invalid name is passed
+        /// Make sure an UnityConnectionRestException is thrown if an invalid name is passed
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void PartitionClassCreationFailure3()
         {
             Partition oTest = new Partition(_connectionServer,"","bogus");
@@ -135,20 +135,20 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// Make sure an Exception is thrown if an invalid objectId is passed
+        /// Make sure an UnityConnectionRestException is thrown if an invalid objectId is passed
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void SearchSpaceClassCreationFailure2()
         {
             SearchSpace oTest = new SearchSpace(_connectionServer,"bogus");
             Console.WriteLine(oTest);
         }
         /// <summary>
-        /// Make sure an Exception is thrown if an invalid name is passed
+        /// Make sure an UnityConnectionRestException is thrown if an invalid name is passed
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void SearchSpaceClassCreationFailure3()
         {
             SearchSpace oTest = new SearchSpace(_connectionServer,"","bogus");

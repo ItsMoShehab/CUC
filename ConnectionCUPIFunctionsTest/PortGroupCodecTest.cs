@@ -81,10 +81,10 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// Make sure an Exception is thrown if an invalid ConnectionServer is passed in.
+        /// Make sure an UnityConnectionRestException is thrown if an invalid objectId passed
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure3()
         {
             PortGroupCodec oPort = new PortGroupCodec(_connectionServer, "bogus","bogus");

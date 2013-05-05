@@ -57,8 +57,9 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Schedule detail not found in ScheduleDetail constructor using ScheduleObjectId={0} and " +
-                                  "ScheduleDetailObjectId={1}\n\r{2}", pScheduleObjectId, pScheduleDetailObjectId, res.ErrorText));
+                throw new UnityConnectionRestException(res, string.Format("Schedule detail not found in ScheduleDetail constructor using " +
+                                                                          "ScheduleObjectId={0} and ScheduleDetailObjectId={1}\n\r{2}", 
+                                                                          pScheduleObjectId, pScheduleDetailObjectId, res.ErrorText));
             }
         }
 

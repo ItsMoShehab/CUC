@@ -71,10 +71,10 @@ namespace ConnectionCUPIFunctionsTest
 
         
         /// <summary>
-        /// Make sure an exception is thrown for an invalid ObjectID
+        /// Make sure an UnityConnectionRestException is thrown for an invalid ObjectID
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
             Role oTest = new Role(_connectionServer,"bogus");
@@ -82,10 +82,10 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// Make sure an exception is thrown on an invalid name
+        /// Make sure an UnityConnectionRestException is thrown on an invalid name
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure3()
         {
             Role oTest = new Role(_connectionServer,"","bogus");

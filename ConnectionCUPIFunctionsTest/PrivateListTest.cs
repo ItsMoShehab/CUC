@@ -106,7 +106,7 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
+        /// Make sure an ArgumentException is thrown if a empty objectId passed
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
@@ -116,8 +116,11 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTest);
         }
 
+        /// <summary>
+        /// UnityConnectionRestException on invalid ObjectId
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure3()
         {
             PrivateList oTest = new PrivateList(_connectionServer, "blah","blah");

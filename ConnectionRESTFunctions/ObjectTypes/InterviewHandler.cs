@@ -66,7 +66,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(
+                throw new UnityConnectionRestException(res,
                     string.Format("Interview Handler not found in InterviewHandler constructor using ObjectId={0} and DisplayName={1}\n\r{2}"
                                     , pObjectId, pDisplayName, res.ErrorText));
             }
@@ -449,6 +449,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 pInterviewHandler = new InterviewHandler(pConnectionServer, pObjectId,pDisplayName);
                 res.Success = true;
             }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
+            }
             catch (Exception ex)
             {
                 res.ErrorText = "Failed to fetch handler in GetInterviewHandler:" + ex.Message;
@@ -728,6 +732,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 try
                 {
                     oInterviewHandler = new InterviewHandler(pConnectionServer, pObjectId);
+                }
+                catch (UnityConnectionRestException ex)
+                {
+                    return ex.WebCallResult;
                 }
                 catch (Exception ex)
                 {

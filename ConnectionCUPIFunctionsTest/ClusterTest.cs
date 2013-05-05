@@ -71,10 +71,10 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
+        /// Make sure an UnityConnectionRestException is thrown if an empty Connection server is passed in
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
             Cluster oTest = new Cluster(new ConnectionServer());

@@ -83,16 +83,22 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTest);
         }
 
+        /// <summary>
+        /// UnityConnectionRestException on invalid objectId
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure_InvalidObjectId()
         {
             PostGreetingRecording oTest = new PostGreetingRecording(_connectionServer,"bogus");
             Console.WriteLine(oTest);
         }
 
+        /// <summary>
+        /// UnityConnectionRestException on invalid name
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure_InvalidName()
         {
             PostGreetingRecording oTest = new PostGreetingRecording(_connectionServer, "","bogus");

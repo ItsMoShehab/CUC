@@ -46,7 +46,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception("Failed fetching interview question:" + res);
+                throw new UnityConnectionRestException(res,"Failed fetching interview question:" + res);
             }
         }
 
@@ -272,6 +272,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 pInterviewQuestion = new InterviewQuestion(pConnectionServer, pInterviewHandlerObjectId, pInterviewQuestionNumber);
                 res.Success = true;
             }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
+            }
             catch (Exception ex)
             {
                 res.ErrorText = "Failed to fetch handler in GetInterviewQuestion:" + ex.Message;
@@ -333,6 +337,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 try
                 {
                     oInterviewHandler = new InterviewHandler(pConnectionServer, pObjectId);
+                }
+                catch (UnityConnectionRestException ex)
+                {
+                    return ex.WebCallResult;
                 }
                 catch (Exception ex)
                 {

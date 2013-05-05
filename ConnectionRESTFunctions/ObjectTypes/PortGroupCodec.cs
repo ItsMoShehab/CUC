@@ -62,7 +62,7 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res = GetPortGroupCodec(pObjectId);
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Failed to fetch PortGroupCodec by ObjectId={0}", pObjectId));
+                throw new UnityConnectionRestException(res,string.Format("Failed to fetch PortGroupCodec by ObjectId={0}", pObjectId));
             }
         }
 
@@ -369,6 +369,10 @@ namespace Cisco.UnityConnection.RestFunctions
             try
             {
                 pPortGroupCodec = new PortGroupCodec(pConnectionServer, pPortGroupObjectId, res.ReturnedObjectId);
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

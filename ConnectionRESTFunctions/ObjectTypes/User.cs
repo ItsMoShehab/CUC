@@ -3987,18 +3987,6 @@ namespace Cisco.UnityConnection.RestFunctions
         #region Instance Methods
 
         /// <summary>
-        /// Pull the data from the Connection server for this object again - if changes have been made external this will 
-        /// "refresh" the object
-        /// </summary>
-        /// <returns>
-        /// Instance of the WebCallResult class.
-        /// </returns>
-        //public WebCallResult RefetchUserData()
-        //{
-        //    return GetUserFull(this.ObjectId);
-        //}
-
-        /// <summary>
         /// Returns a single full user object filled with all the data Conneciton provides for a user via CUPI.  Many more properties are provided on a 
         /// Full user than a base user that is provided for list presentation and selection purposes and they must be fetched one at a time, you cannot 
         /// provide a list of full users in one call.  As a rule you should refrain from fetching full user data into a list since it takes much more time 

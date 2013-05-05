@@ -58,10 +58,10 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// Make sure an exception is thrown if an invalid ObjectId is presented
+        /// Make sure an UnityConnectionRestException is thrown if an invalid ObjectId is presented
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure_InvalidObjectId()
         {
             Credential oTest = new Credential(_connectionServer, "blah", CredentialType.Pin);

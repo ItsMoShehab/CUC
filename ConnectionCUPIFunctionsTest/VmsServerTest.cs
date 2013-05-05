@@ -70,8 +70,11 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTemp);
         }
 
+        /// <summary>
+        /// UnityConnectionRestException on invalid objectId
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
             VmsServer oTemp = new VmsServer(_connectionServer, "bogus");

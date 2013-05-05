@@ -56,8 +56,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Configuration value not found in ConfigurationValue constructor using FullName={0}\n\r{1}"
-                                    , pFullName, res.ErrorText));
+                throw new UnityConnectionRestException(res,string.Format("Configuration value not found in ConfigurationValue constructor " +
+                                                                         "using FullName={0}\n\r{1}", pFullName, res.ErrorText));
             }
         }
 
@@ -268,6 +268,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pConfigurationValue = new ConfigurationValue(pConnectionServer,pFullName);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

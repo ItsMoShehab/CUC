@@ -71,6 +71,9 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTemp);
         }
 
+        /// <summary>
+        /// ArgumentException if blank phone number passed
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void ClassCreationFailure2()
@@ -79,8 +82,11 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTemp);
         }
 
+        /// <summary>
+        /// Throw UnityConnectionRestException if an invalid phone number passed
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure3()
         {
             PhoneRecording oTemp = new PhoneRecording(_connectionServer, "xyz");
@@ -104,9 +110,9 @@ namespace ConnectionCUPIFunctionsTest
             {
                 oRecording = new PhoneRecording(_connectionServer, _extensionToDial);
             }
-            catch (Exception ex)
+            catch (UnityConnectionRestException ex)
             {
-                Assert.Fail("Phone connection failed to extension:{0}, error={1}",_extensionToDial,ex);
+                Assert.Fail("Phone connection failed to extension:{0}, error={1}",_extensionToDial,ex.WebCallResult);
             }
 
             WebCallResult res = oRecording.PlayMessageFile();

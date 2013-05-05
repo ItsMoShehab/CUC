@@ -59,7 +59,7 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res = GetScheduleSet(pObjectId, pDisplayName);
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Failed to find ScheduleSet using Objectid={0}, or displayname={1}, error={2}",
+                throw new UnityConnectionRestException(res,string.Format("Failed to find ScheduleSet using Objectid={0}, or displayname={1}, error={2}",
                     pObjectId, pDisplayName, res));
             }
 
@@ -392,6 +392,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pScheduleSet = new ScheduleSet(pConnectionServer, pObjectId, pDisplayName);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

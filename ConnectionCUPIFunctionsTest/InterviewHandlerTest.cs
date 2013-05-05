@@ -92,16 +92,22 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTestInterviewer);
         }
 
+        /// <summary>
+        /// throw a UnityConnectionRestException if an invalid objectId is passed
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure_InvalidObjectId()
         {
             InterviewHandler oTestInterviewer = new InterviewHandler(_connectionServer,"blah");
             Console.WriteLine(oTestInterviewer);
         }
 
+        /// <summary>
+        /// Throw a UnityConnectionRestException if an invalid name is passed.
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure_InvalidName()
         {
             InterviewHandler oTestInterviewer = new InterviewHandler(_connectionServer, "","blah");
@@ -112,22 +118,32 @@ namespace ConnectionCUPIFunctionsTest
 
 
         #region Interview Question Class Construction Errors
+        
+        /// <summary>
+        /// throw an UnityConnectionRestException if an invalid objectId is passed
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void Question_ClassCreationFailure_InvalidObjectId()
         {
             var oTest = new InterviewQuestion (_connectionServer, "bogus",1);
             Console.WriteLine(oTest);
         }
 
+        /// <summary>
+        /// Throw UnityConnectionRestException if an invalid question number passed
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void Question_ClassCreationFailure_InvalidQuestionNumber()
         {
             var oTest = new InterviewQuestion(_connectionServer, _tempHandler.ObjectId, 999);
             Console.WriteLine(oTest);
         }
 
+        /// <summary>
+        /// Throw an ArgumentException for null Connection server
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void Question_ClassCreationFailure_NullConnection()
@@ -136,6 +152,9 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTest);
         }
 
+        /// <summary>
+        /// Throw an ARgumentException for an empty objectId
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void Question_ClassCreationFailure_EmptyObjectId()

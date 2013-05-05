@@ -69,16 +69,22 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTest);
         }
 
+        /// <summary>
+        /// UnityConnectionRestException if invalid ObjectId passed
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void RestrictionTableClassCreationFailureClassCreationFailure2()
         {
             RestrictionTable oTest = new RestrictionTable(_connectionServer,"bogus");
             Console.WriteLine(oTest);
         }
 
+        /// <summary>
+        /// UnityConnectionRestException if invalid name passed
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void RestrictionTableClassCreationFailureClassCreationFailure3()
         {
             RestrictionTable oTest = new RestrictionTable(_connectionServer, "", "bogus");
@@ -96,6 +102,9 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTest);
         }
 
+        /// <summary>
+        /// ArgumentException passed if empty objectId passed
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void RestrictionPatternClassCreationFailureClassCreationFailure2()
@@ -104,8 +113,11 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTest);
         }
 
+        /// <summary>
+        /// UnityConnectionRestException if invalid ObjectId passed
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void RestrictionPatternClassCreationFailureClassCreationFailure3()
         {
             RestrictionPattern oTest = new RestrictionPattern(_connectionServer, "bogus", "bogus");

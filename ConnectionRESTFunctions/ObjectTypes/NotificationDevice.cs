@@ -84,8 +84,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Notification Device not found in NotificationDevice constructor using ObjectId={0} or " +
-                                                  "Display name={1}\n\r{2}", pObjectId, pDisplayName, res.ErrorText));
+                throw new UnityConnectionRestException(res,string.Format("Notification Device not found in NotificationDevice constructor using ObjectId={0} " +
+                                                                         "or Display name={1}\n\r{2}", pObjectId, pDisplayName, res.ErrorText));
             }
 
         }
@@ -631,6 +631,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pNotificationDevice = new NotificationDevice(pConnectionServer,pUserObjectId, pObjectId,pDisplayName);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

@@ -72,10 +72,10 @@ namespace ConnectionCUPIFunctionsTest
 
 
         /// <summary>
-        /// Empty Connection class instance should fail.
+        /// Empty Connection class instance should fail with UnityConnectionRestException
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
             PortGroup oPorts = new PortGroup(new ConnectionServer(), "blah");
@@ -83,10 +83,10 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// Valid connection server but invalid object ID should fail
+        /// Valid connection server but invalid object ID should fail with UnityConnectionRestException
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure3()
         {
             PortGroup oPorts = new PortGroup(_connectionServer, "blah");

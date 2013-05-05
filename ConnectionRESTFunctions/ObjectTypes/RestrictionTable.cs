@@ -60,10 +60,9 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("RestrictionTable not found in RestrictionTable constructor using ObjectId={0} and DisplayName={1}\n\r{2}"
-                                 , pObjectId, pDisplayName, res.ErrorText));
+                throw new UnityConnectionRestException(res,string.Format("RestrictionTable not found in RestrictionTable constructor using ObjectId={0} " +
+                                                                         "and DisplayName={1}\n\r{2}", pObjectId, pDisplayName, res.ErrorText));
             }
-
         }
 
         /// <summary>

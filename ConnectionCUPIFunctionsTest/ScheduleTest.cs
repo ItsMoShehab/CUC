@@ -87,10 +87,10 @@ namespace ConnectionCUPIFunctionsTest
         
         
         /// <summary>
-        /// Make sure an Exception is thrown if an invalid ConnectionServer is passed in.
+        /// Make sure an UnityConnectionRestException is thrown if an invalid ConnectionServer is passed in.
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
             Schedule oTest = new Schedule(new ConnectionServer(),"blah");
@@ -99,10 +99,10 @@ namespace ConnectionCUPIFunctionsTest
 
 
         /// <summary>
-        /// Make sure an Exception is thrown if an invalid ObjectId is passed
+        /// Make sure an UnityConnectionRestException is thrown if an invalid ObjectId is passed
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure3()
         {
             Schedule oTest = new Schedule(_connectionServer,"blah");
@@ -111,10 +111,10 @@ namespace ConnectionCUPIFunctionsTest
 
 
         /// <summary>
-        /// Make sure an Exception is thrown if an invalid ObjectId is passed
+        /// Make sure an UnityConnectionRestException is thrown if an invalid ObjectId is passed
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure4()
         {
             ScheduleDetail oDetail = new ScheduleDetail(_connectionServer,"blah","blah");
