@@ -116,17 +116,56 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Static Call Failures 
+
         [TestMethod]
-        public void PhoneSystem_StaticFailureTests()
+        public void StaticCallFailures_AddPhoneSystem()
         {
             WebCallResult res = PhoneSystem.AddPhoneSystem(null, "bogus");
             Assert.IsFalse(res.Success, "Static call to AddPhoneSystem with null ConnectionServer did not fail");
 
             res = PhoneSystem.AddPhoneSystem(_connectionServer, "");
             Assert.IsFalse(res.Success, "Static call to AddPhoneSystem with empty name did not fail");
+        }
 
+        [TestMethod]
+        public void StaticCallFailures_DeletePhoneSystem()
+        {
+            var res = PhoneSystem.DeletePhoneSystem(null, "objectid");
+            Assert.IsFalse(res.Success, "Static call to DeletePhoneSystem with null ConnectionServer did not fail");
+
+            res = PhoneSystem.DeletePhoneSystem(_connectionServer, "objectid");
+            Assert.IsFalse(res.Success, "Static call to DeletePhoneSystem with invalid ObjectId did not fail");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_UpdatePhoneSystem()
+        {
+            var res = PhoneSystem.UpdatePhoneSystem(null, "objectid", null);
+            Assert.IsFalse(res.Success, "Static call to UpdatePhoneSystem with null ConnectionServer did not fail");
+
+            res = PhoneSystem.UpdatePhoneSystem(_connectionServer, "objectid", null);
+            Assert.IsFalse(res.Success, "Static call to UpdatePhoneSystem with invalid ObjectId did not fail");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_GetPhoneSystemAssociations()
+        {
+            List<PhoneSystemAssociation> oList;
+            var res = PhoneSystem.GetPhoneSystemAssociations(null, "objectid", out oList);
+            Assert.IsFalse(res.Success, "Static call to GetPhoneSystemAssociations with null ConnectionServer did not fail");
+
+            res = PhoneSystem.GetPhoneSystemAssociations(_connectionServer, "objectid", out oList);
+            Assert.IsTrue(res.Success, "Fetching phone system associations with invalid objectid should not fail:" + res);
+            Assert.IsTrue(oList.Count == 0, "Static call to GetPhoneSystemAssociations with invalid ObjectId did not return empty list");
+        }
+
+
+        [TestMethod]
+        public void StaticCallFailures_GetPhoneSystem()
+        {
             PhoneSystem oPhoneSystem;
-            res = PhoneSystem.GetPhoneSystem(out oPhoneSystem, null, "objectid");
+            var res = PhoneSystem.GetPhoneSystem(out oPhoneSystem, null, "objectid");
             Assert.IsFalse(res.Success, "Static call to GetPhoneSystem with null ConnectionServer did not fail");
 
             res = PhoneSystem.GetPhoneSystem(out oPhoneSystem, _connectionServer, "bogus");
@@ -137,34 +176,18 @@ namespace ConnectionCUPIFunctionsTest
 
             res = PhoneSystem.GetPhoneSystem(out oPhoneSystem, _connectionServer, "","bogus");
             Assert.IsFalse(res.Success, "Static call to GetPhoneSystem with invalid display name did not fail");
-
-            res = PhoneSystem.UpdatePhoneSystem(null, "objectid", null);
-            Assert.IsFalse(res.Success, "Static call to UpdatePhoneSystem with null ConnectionServer did not fail");
-
-            res = PhoneSystem.UpdatePhoneSystem(_connectionServer, "objectid", null);
-            Assert.IsFalse(res.Success, "Static call to UpdatePhoneSystem with invalid ObjectId did not fail");
-
-            res = PhoneSystem.DeletePhoneSystem(null, "objectid");
-            Assert.IsFalse(res.Success, "Static call to DeletePhoneSystem with null ConnectionServer did not fail");
-
-            res = PhoneSystem.DeletePhoneSystem(_connectionServer, "objectid");
-            Assert.IsFalse(res.Success, "Static call to DeletePhoneSystem with invalid ObjectId did not fail");
-
-            List<PhoneSystemAssociation> oList;
-            res = PhoneSystem.GetPhoneSystemAssociations(null, "objectid", out oList);
-            Assert.IsFalse(res.Success, "Static call to GetPhoneSystemAssociations with null ConnectionServer did not fail");
-
-            res = PhoneSystem.GetPhoneSystemAssociations(_connectionServer, "objectid", out oList);
-            Assert.IsTrue(res.Success,"Fetching phone system associations with invalid objectid should not fail:"+res);
-            Assert.IsTrue(oList.Count==0, "Static call to GetPhoneSystemAssociations with invalid ObjectId did not return empty list");
         }
 
+        #endregion
+
+
+        #region Live tests
 
         /// <summary>
         ///A test for getting and listing PhoneSystems
         ///</summary>
         [TestMethod]
-        public void PhoneSystem_GetTest()
+        public void PhoneSystem_FetchTest()
         {
             List<PhoneSystem> oSystems;
 
@@ -179,6 +202,15 @@ namespace ConnectionCUPIFunctionsTest
 
             Console.WriteLine(oSystem.ToString());
             Console.WriteLine(oSystem.DumpAllProps());
+
+            //fetch the phone system by name
+            PhoneSystem oNewSystem;
+            res = PhoneSystem.GetPhoneSystem(out oNewSystem, _connectionServer, "", oSystems[0].DisplayName);
+            Assert.IsTrue(res.Success,"Failed to fetch phone system by name");
+
+            res = PhoneSystem.GetPhoneSystem(out oNewSystem, _connectionServer, "", "_bogus_");
+            Assert.IsFalse(res.Success, "Fetching phone system by invalid name did not fail");
+
 
             List<PhoneSystemAssociation> oAssociations;
             res = oSystem.GetPhoneSystemAssociations(out oAssociations);
@@ -295,5 +327,8 @@ namespace ConnectionCUPIFunctionsTest
 
         }
 
+        #endregion
+
     }
 }
+

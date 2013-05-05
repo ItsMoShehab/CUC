@@ -16,6 +16,10 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass()]
     public class AlternateExtensionTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
+        #region Fields and Properties
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
@@ -24,7 +28,14 @@ namespace ConnectionCUPIFunctionsTest
         //class wide _user instance to use for testing
         private static UserBase _user;
 
-        private TestContext testContextInstance;
+        /// <summary>
+        ///Gets or sets the test context which provides
+        ///information about and functionality for the current test run.
+        ///</summary>
+        public TestContext TestContext { get; set; }
+
+        #endregion
+
 
         #region Additional test attributes
 
@@ -65,41 +76,10 @@ namespace ConnectionCUPIFunctionsTest
 
         }
 
-        //Use ClassCleanup to run code after all tests in a class have run
-        //[ClassCleanup()]
-        //public static void MyClassCleanup()
-        //{
-        //}
-        //
-        //Use TestInitialize to run code before running each test
-        //[TestInitialize()]
-        //public void MyTestInitialize()
-        //{
-        //}
-        //
-        //Use TestCleanup to run code after each test has run
-        //[TestCleanup()]
-        //public void MyTestCleanup()
-        //{
-        //}
-        //
         #endregion
 
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
+
+        #region Class Construction Errors
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
@@ -121,11 +101,16 @@ namespace ConnectionCUPIFunctionsTest
             AlternateExtension oTemp = new AlternateExtension(_connectionServer, "");
         }
 
+        #endregion
+
+
+        #region Static Call Failures
+
         /// <summary>
         /// testing failure conditiions
         /// </summary>
         [TestMethod]
-        public void DeleteAlternateExtension_Failure()
+        public void StaticCallFailures_DeleteAlternateExtension()
         {
             WebCallResult res;
 
@@ -151,7 +136,7 @@ namespace ConnectionCUPIFunctionsTest
         /// testing failure conditiions
         /// </summary>
         [TestMethod]
-        public void GetAlternateExtensions_Failure()
+        public void StaticCallFailures_GetAlternateExtensions()
         {
             WebCallResult res;
             List<AlternateExtension> oAltExts;
@@ -166,7 +151,7 @@ namespace ConnectionCUPIFunctionsTest
         /// testing failure conditiions
         /// </summary>
         [TestMethod]
-        public void GetAlternateExtension_Failure()
+        public void StaticCallFailures_GetAlternateExtension()
         {
             AlternateExtension oAltExt;
             WebCallResult res;
@@ -191,7 +176,7 @@ namespace ConnectionCUPIFunctionsTest
         /// testing failure conditiions
         /// </summary>
         [TestMethod]
-        public void UpdateAlternateExtension_Failure()
+        public void StaticCallFailures_UpdateAlternateExtension()
         {
             WebCallResult res;
 
@@ -220,7 +205,7 @@ namespace ConnectionCUPIFunctionsTest
         /// testing failure conditiions
         /// </summary>
         [TestMethod]
-        public void AddAlternateExtension_Failure()
+        public void StaticCallFailures_AddAlternateExtension()
         {
             WebCallResult res;
 
@@ -242,6 +227,8 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Empty extension string should fail");
 
         }
+
+        #endregion
 
     }
 }

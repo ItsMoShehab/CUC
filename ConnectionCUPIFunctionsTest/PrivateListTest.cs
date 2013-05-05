@@ -130,19 +130,12 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Static Call Failure Tests 
+
         [TestMethod]
-        public void PrivateListStaticMethodTests()
+        public void StaticCallFailures_AddPrivateList()
         {
-            //static method calls
-            PrivateList oNewPrivateList;
-            List<PrivateList> oLists;
-            WebCallResult res = PrivateList.GetPrivateLists(null, "blah", out oLists);
-            Assert.IsFalse(res.Success, "Fetching private lists with null ConnectionServer did not fail");
-
-            res = PrivateList.GetPrivateLists(_connectionServer, _tempUser.ObjectId, out oLists);
-            Assert.IsTrue(res.Success, "Failed fetching private lists for user:" + res);
-
-            res = PrivateList.AddPrivateList(null, "blah", "blah", 1);
+            var res = PrivateList.AddPrivateList(null, "blah", "blah", 1);
             Assert.IsFalse(res.Success, "Adding private list with null connection server did not fail");
 
             res = PrivateList.AddPrivateList(_connectionServer, "blah", "blah", 1);
@@ -156,8 +149,14 @@ namespace ConnectionCUPIFunctionsTest
 
             res = PrivateList.AddPrivateList(_connectionServer, "blah", "blah", 200);
             Assert.IsFalse(res.Success, "Adding private list with invalid numeric id did not fail");
+        }
 
-            res = PrivateList.GetPrivateList(out oNewPrivateList, null, "blah");
+        [TestMethod]
+        public void StaticCallFailures_GetPrivateList()
+        {
+            PrivateList oNewPrivateList;
+
+            var res = PrivateList.GetPrivateList(out oNewPrivateList, null, "blah");
             Assert.IsFalse(res.Success, "Fetching private list with null ConnectionServer did not fail");
 
             res = PrivateList.GetPrivateList(out oNewPrivateList, _connectionServer, "blah");
@@ -165,9 +164,12 @@ namespace ConnectionCUPIFunctionsTest
 
             res = PrivateList.GetPrivateList(out oNewPrivateList, _connectionServer, "");
             Assert.IsFalse(res.Success, "Fetching private list with empty owner objectId not fail");
+        }
 
-
-            res = PrivateList.UpdatePrivateList(null, "Object", null, "ownerId");
+        [TestMethod]
+        public void StaticCallFailures_UpdatePrivateList()
+        {
+            var res = PrivateList.UpdatePrivateList(null, "Object", null, "ownerId");
             Assert.IsFalse(res.Success, "Updating private list via static method did not fail with null ConnectionServer");
 
             ConnectionPropertyList oProps = new ConnectionPropertyList();
@@ -184,15 +186,23 @@ namespace ConnectionCUPIFunctionsTest
             oProps.Add("blah", "blah");
             res = PrivateList.UpdatePrivateList(_connectionServer, "Object", oProps, "ownerId");
             Assert.IsFalse(res.Success, "Updating private list via static method did not fail with invalid owner and objectIds ");
+        }
 
-            res = PrivateList.DeletePrivateList(null, "Object", "UserObjectId");
+        [TestMethod]
+        public void StaticCallFailures_DeletePrivateList()
+        {
+            var res = PrivateList.DeletePrivateList(null, "Object", "UserObjectId");
             Assert.IsFalse(res.Success, "Deleting private list via static method did not fail with invalid null ConnectionString");
 
             res = PrivateList.DeletePrivateList(_connectionServer, "Object", "UserObjectId");
             Assert.IsFalse(res.Success, "Deleting private list via static method did not fail with invalid user and ObjectIds");
+        }
 
 
-            res = PrivateList.GetPrivateListVoiceName(null, "UserObjectId", @"c:\", "ObjectId", "WavName");
+        [TestMethod]
+        public void StaticCallFailures_GetPrivateListVoiceName()
+        {
+            var res = PrivateList.GetPrivateListVoiceName(null, "UserObjectId", @"c:\", "ObjectId", "WavName");
             Assert.IsFalse(res.Success, "Getting private list voice name via static method did not fail with null Connection server ");
 
             res = PrivateList.GetPrivateListVoiceName(_connectionServer, "", @"c:\", "ObjectId", "WavName");
@@ -207,20 +217,46 @@ namespace ConnectionCUPIFunctionsTest
 
             res = PrivateList.SetPrivateListVoiceName(_connectionServer, "UserObjectId", "", "ObjectId", true);
             Assert.IsFalse(res.Success, "Setting private list voice name via static method did not fail with ObjectId");
+        }
 
-            res = PrivateList.AddMemberPublicList(null, "ObjectId", "PublicObjectId", "OwnerObjectId");
+
+        [TestMethod]
+        public void StaticCallFailures_AddMemberPublicList()
+        {
+            var res = PrivateList.AddMemberPublicList(null, "ObjectId", "PublicObjectId", "OwnerObjectId");
             Assert.IsFalse(res.Success, "Adding private list public DL member via static method did not fail with null ConnectionServer ");
 
             res = PrivateList.AddMemberPublicList(_connectionServer, "", "PublicObjectId", "OwnerObjectId");
             Assert.IsFalse(res.Success, "Adding private list public DL member via static method did not fail with empty private list objectId");
+        }
 
-            res = PrivateList.AddMemberUser(null, "ObjectId", "PublicObjectId", "OwnerObjectId");
+        [TestMethod]
+        public void StaticCallFailures_AddMemberUser()
+        {
+            var res = PrivateList.AddMemberUser(null, "ObjectId", "PublicObjectId", "OwnerObjectId");
             Assert.IsFalse(res.Success, "Adding private list user member via static method did not fail with null ConnectionServer ");
 
             res = PrivateList.AddMemberUser(_connectionServer, "", "PublicObjectId", "OwnerObjectId");
             Assert.IsFalse(res.Success, "Adding private list user member via static method did not fail with empty private list objectId");
-
         }
+
+
+        [TestMethod]
+        public void StaticCallFailures_GetPrivateLists()
+        {
+            //static method calls
+            List<PrivateList> oLists;
+            WebCallResult res = PrivateList.GetPrivateLists(null, "blah", out oLists);
+            Assert.IsFalse(res.Success, "Fetching private lists with null ConnectionServer did not fail");
+
+            res = PrivateList.GetPrivateLists(_connectionServer, _tempUser.ObjectId, out oLists);
+            Assert.IsTrue(res.Success, "Failed fetching private lists for user:" + res);
+        }
+
+        #endregion
+
+
+        #region Live Testts
 
         [TestMethod]
         public void PrivateListVoiceName()
@@ -299,6 +335,9 @@ namespace ConnectionCUPIFunctionsTest
             _tempPrivateList.DisplayName = "New display name";
             res = _tempPrivateList.Update();
             Assert.IsTrue(res.Success, "Failed updating private list:" + res);
+
+            res = _tempPrivateList.RefetchPrivateListData();
+            Assert.IsTrue(res.Success,"Failed to refetch private list data:"+res);
         }
 
 
@@ -323,5 +362,7 @@ namespace ConnectionCUPIFunctionsTest
             res = PrivateListMember.GetPrivateListMembers(_connectionServer, _tempPrivateList.ObjectId, "", out oMembers);
             Assert.IsFalse(res.Success, "Getting private list members via static method did not fail with blank owner ObjectId");
         }
+
+        #endregion
     }
 }

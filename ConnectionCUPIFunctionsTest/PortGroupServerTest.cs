@@ -8,12 +8,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ConnectionCUPIFunctionsTest
 {
-    // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
-    // ReSharper disable HeuristicUnreachableCode
-
     [TestClass]
     public class PortGroupServerTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
         #region Fields and Properties
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
@@ -96,31 +96,25 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Static Call Failures
+
         [TestMethod]
-        public void StaticMethodFailures()
+        public void StaticCallFailures_AddPortGroupServer()
         {
-        
-            List<PortGroupServer> oList;
-            WebCallResult res = PortGroupServer.GetPortGroupServers(null,"", out oList);
-            Assert.IsFalse(res.Success, "Static call to GetPortGroupTemplates did not fail with: null ConnectionServer");
-
-            res = PortGroupServer.GetPortGroupServers(_connectionServer, "", out oList);
-            Assert.IsFalse(res.Success, "Static call to GetPortGroupTemplates did not fail with: empty objectId");
-
-            res = PortGroupServer.GetPortGroupServers(_connectionServer, "bogus", out oList);
-            Assert.IsTrue(res.Success,"Fetching port group servers with invalid objectId should not fail");
-            Assert.IsTrue(oList.Count==0, "Static call to GetPortGroupTemplates did not fail with: invalid objectId");
-
-            res = PortGroupServer.AddPortGroupServer(null, "",100, "10.20.30.40");
-            Assert.IsFalse(res.Success,"Static call to did not fail");
-
-            res = PortGroupServer.AddPortGroupServer(_connectionServer, "",100, "10.20.30.40");
+            var res = PortGroupServer.AddPortGroupServer(null, "", 100, "10.20.30.40");
             Assert.IsFalse(res.Success, "Static call to did not fail");
 
-            res = PortGroupServer.AddPortGroupServer(_connectionServer, "invalid",100, "10.20.30.40");
+            res = PortGroupServer.AddPortGroupServer(_connectionServer, "", 100, "10.20.30.40");
             Assert.IsFalse(res.Success, "Static call to did not fail");
 
-            res = PortGroupServer.DeletePortGroupServer(null, "objectid", "portgroupobjectid");
+            res = PortGroupServer.AddPortGroupServer(_connectionServer, "invalid", 100, "10.20.30.40");
+            Assert.IsFalse(res.Success, "Static call to did not fail");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_DeletePortGroupServer()
+        {
+            var res = PortGroupServer.DeletePortGroupServer(null, "objectid", "portgroupobjectid");
             Assert.IsFalse(res.Success, "Static call to did not fail");
 
             res = PortGroupServer.DeletePortGroupServer(_connectionServer, "", "portgroupobjectid");
@@ -131,9 +125,13 @@ namespace ConnectionCUPIFunctionsTest
 
             res = PortGroupServer.DeletePortGroupServer(_connectionServer, "bogus", "bogus");
             Assert.IsFalse(res.Success, "Static call to did not fail");
+        }
 
+        [TestMethod]
+        public void StaticCallFailures_GetPortGroupServer()
+        {
             PortGroupServer oPortGroupServer;
-            res = PortGroupServer.GetPortGroupServer(out oPortGroupServer, null, "objectid", "portgroupobjectid");
+            var res = PortGroupServer.GetPortGroupServer(out oPortGroupServer, null, "objectid", "portgroupobjectid");
             Assert.IsFalse(res.Success, "Static call to did not fail");
 
             res = PortGroupServer.GetPortGroupServer(out oPortGroupServer, _connectionServer, "objectid", "portgroupobjectid");
@@ -150,21 +148,41 @@ namespace ConnectionCUPIFunctionsTest
 
             res = PortGroupServer.UpdatePortGroupServer(_connectionServer, "portgroupobjectid", "objectid", null);
             Assert.IsFalse(res.Success, "Static call to did not fail");
-            
-            res = PortGroupServer.UpdatePortGroupServer(_connectionServer, "", "objectid", null);
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_UpdatePortGroupServers()
+        {
+
+            var res = PortGroupServer.UpdatePortGroupServer(_connectionServer, "", "objectid", null);
             Assert.IsFalse(res.Success, "Static call to did not fail");
 
             res = PortGroupServer.UpdatePortGroupServer(_connectionServer, "portgroupobjectid", "", null);
             Assert.IsFalse(res.Success, "Static call to did not fail");
 
-            ConnectionPropertyList oProps=new ConnectionPropertyList();
-            oProps.Add("Bogus","invalid");
+            ConnectionPropertyList oProps = new ConnectionPropertyList();
+            oProps.Add("Bogus", "invalid");
 
             res = PortGroupServer.UpdatePortGroupServer(_connectionServer, "portgroupobjectid", "bogus", oProps);
             Assert.IsFalse(res.Success, "Static call to did not fail");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_GetPortGroupServers()
+        {
+            List<PortGroupServer> oList;
+            WebCallResult res = PortGroupServer.GetPortGroupServers(null,"", out oList);
+            Assert.IsFalse(res.Success, "Static call to GetPortGroupTemplates did not fail with: null ConnectionServer");
+
+            res = PortGroupServer.GetPortGroupServers(_connectionServer, "", out oList);
+            Assert.IsFalse(res.Success, "Static call to GetPortGroupTemplates did not fail with: empty objectId");
+
+            res = PortGroupServer.GetPortGroupServers(_connectionServer, "bogus", out oList);
+            Assert.IsTrue(res.Success,"Fetching port group servers with invalid objectId should not fail");
+            Assert.IsTrue(oList.Count==0, "Static call to GetPortGroupTemplates did not fail with: invalid objectId");
 
         }
 
-
+        #endregion
     }
 }

@@ -57,6 +57,7 @@ namespace ConnectionCUPIFunctionsTest
 
 
         #region Constructor Tests
+
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
@@ -97,7 +98,7 @@ namespace ConnectionCUPIFunctionsTest
         public void LocationFetchTests()
         {
             List<Location> oLocations;
-            WebCallResult res = Location.GetLocations(_connectionServer, out oLocations);
+            WebCallResult res = Location.GetLocations(_connectionServer, out oLocations,1,10,null);
             Assert.IsTrue(res.Success,"Failed to fetch list of Locations:"+res);
 
             Assert.IsTrue(oLocations.Count>0,"No locations found in fetch");
@@ -105,35 +106,53 @@ namespace ConnectionCUPIFunctionsTest
             string strObjectId = "";
             string strDisplayName = "";
 
-            foreach (var oLocation in oLocations)
-            {
-                Console.WriteLine(oLocation.ToString());
-                Console.WriteLine(oLocation.DumpAllProps());
-                strObjectId = oLocation.ObjectId;
-                strDisplayName = oLocation.DisplayName;
-            }
+            Console.WriteLine(oLocations[0].ToString());
+            Console.WriteLine(oLocations[0].DumpAllProps());
+            strObjectId = oLocations[0].ObjectId;
+            strDisplayName = oLocations[0].DisplayName;
+
+            res = oLocations[0].RefetchLocationData();
+            Assert.IsTrue(res.Success,"Refetching location data failed:"+res);
 
             Location oNewLocation;
+
             res = Location.GetLocation(out oNewLocation, _connectionServer, strObjectId);
-            Assert.IsTrue(res.Success,"Failed to fetch location with valid ObjectId:"+res);
-            
-            res = Location.GetLocation(out oNewLocation, _connectionServer, "",strDisplayName);
+            Assert.IsTrue(res.Success, "Failed to fetch location with valid ObjectId:" + res);
+
+            res = Location.GetLocation(out oNewLocation, _connectionServer, "", strDisplayName);
             Assert.IsTrue(res.Success, "Failed to fetch location with valid display name:" + res);
+        }
 
-            res = Location.GetLocation(out oNewLocation, null, "", strDisplayName);
-            Assert.IsFalse(res.Success, "Call to GetLocation did not fail with null ConnectionServer");
-
-            res = Location.GetLocation(out oNewLocation, _connectionServer, "");
-            Assert.IsFalse(res.Success, "Call to GetLocation did not fail with empty name and objectId parameters");
-
-
-            res = Location.GetLocations(null, out oLocations);
+        [TestMethod]
+        public void StaticCallFailure_GetLocations()
+        {
+            List<Location> oLocations;
+            WebCallResult res = Location.GetLocations(null, out oLocations);
             Assert.IsFalse(res.Success, "Call to GetLocations did not fail with null ConnectionServer");
 
-            res = Location.GetLocations(_connectionServer, out oLocations, "","query=(BogusQuery)");
+            res = Location.GetLocations(_connectionServer, out oLocations, 1, 10, "query=(BogusQuery)");
             Assert.IsFalse(res.Success, "Call to GetLocations did not fail with bogus query string");
+
+            res = Location.GetLocations(_connectionServer, out oLocations, "", "query=(ObjectID is bogus)");
+            Assert.IsTrue(res.Success, "Call to GetLocations with valid query failed:"+res);
+            Assert.IsTrue(oLocations.Count==0,"Query that should return no matches returned non zero");
+
 
         }
 
+        [TestMethod]
+         public void StaticCallFailure_GetLocation()
+         {
+             Location oNewLocation;
+
+             var res = Location.GetLocation(out oNewLocation, null, "", "displayname");
+             Assert.IsFalse(res.Success, "Call to GetLocation did not fail with null ConnectionServer");
+
+             res = Location.GetLocation(out oNewLocation, _connectionServer, "");
+             Assert.IsFalse(res.Success, "Call to GetLocation did not fail with empty name and objectId parameters");
+
+             res = Location.GetLocation(out oNewLocation, _connectionServer, "","__bogus___");
+             Assert.IsFalse(res.Success, "Call to GetLocation did not fail with invalid name");
+         }
     }
 }

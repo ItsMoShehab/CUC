@@ -97,7 +97,7 @@ namespace ConnectionCUPIFunctionsTest
 
 
         [TestMethod]
-        public void StaticMethodFailures()
+        public void StaticCallFailures_GetPortGroups()
         {
             List<PortGroup> oPortGroups;
 

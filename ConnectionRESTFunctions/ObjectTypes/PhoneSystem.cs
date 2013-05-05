@@ -397,7 +397,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //issue the command to the CUPI interface
             WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
-            if (res.Success == false)
+            if (res.Success == false || res.TotalObjectCount==0)
             {
                 return "";
             }

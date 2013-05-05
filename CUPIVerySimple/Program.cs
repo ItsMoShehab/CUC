@@ -57,24 +57,11 @@ namespace CUPIVerySimple
             //the WebCallResult is the structure returned on most calls into the CUPIFunctions library.
             WebCallResult res;
 
-            DateTime oNow = DateTime.Now;
-            long lMs = UserMessage.ConvertFromTimeDateToMilliseconds(oNow);
-            long lMs2 = UserMessage.ConvertFromTimeDateToMilliseconds(oNow.ToUniversalTime(),true);
-            Console.WriteLine(lMs==lMs2);
+            List<ConfigurationValue> oValues;
+            res = ConfigurationValue.GetConfigurationValues(connectionServer, out oValues, 1, 20, "", "bogus");
+            Console.WriteLine(res);
 
 
-            lMs = UserMessage.ConvertFromTimeDateToMilliseconds(oNow.ToUniversalTime());
-            lMs2 = UserMessage.ConvertFromTimeDateToMilliseconds(oNow,false);
-            Console.WriteLine(lMs == lMs2);
-
-            lMs = UserMessage.ConvertFromTimeDateToMilliseconds(oNow);
-            DateTime oTemp = UserMessage.ConvertFromMillisecondsToTimeDate(lMs);
-            TimeSpan oSpan = oTemp - oNow;
-            Console.WriteLine(oSpan.Minutes);
-
-
-
-            
             //fetch user with alias of "jlindborg" - we will be sending the message from his 
             //mailbox.
             UserFull oUserTestDude;

@@ -6,31 +6,29 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ConnectionCUPIFunctionsTest
 {
+    /// <summary>
+    /// Cluster is a simple read only class that has very little logic other than it's cosntrctor
+    /// </summary>
     [TestClass]
     public class ClusterTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
+        #region Fields and Properties
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
         private static ConnectionServer _connectionServer;
 
-        private TestContext _testContextInstance;
-
         /// <summary>
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
         ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return _testContextInstance;
-            }
-            set
-            {
-                _testContextInstance = value;
-            }
-        }
+        public TestContext TestContext { get; set; }
+
+        #endregion
+
 
         #region Additional test attributes
         // 
@@ -60,6 +58,8 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Class Construction Errors
+
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
         /// </summary>
@@ -79,6 +79,8 @@ namespace ConnectionCUPIFunctionsTest
         {
             Cluster oTest = new Cluster(new ConnectionServer());
         }
+
+        #endregion
 
 
         [TestMethod]

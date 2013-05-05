@@ -82,8 +82,51 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Static Call Failures 
+
         [TestMethod]
-        public void Policy_StaticFailures()
+        public void StaticCallFailures_GetPoliciesForRole()
+        {
+            List<Policy> oNewPolicies;
+
+           var res = Policy.GetPoliciesForRole(null, "blah", out oNewPolicies);
+            Assert.IsFalse(res.Success, "Fetching policies by role with null Connection server did not fail");
+
+            res = Policy.GetPoliciesForRole(_connectionServer, "blah", out oNewPolicies);
+            Assert.IsTrue(res.Success, "Fetching policies by role with invalid ID should not fail:" + res);
+            Assert.IsTrue(oNewPolicies.Count == 0, "Fetching policies with invalid Id should return empty policies list");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_GetPoliciesForUser()
+        {
+            List<Policy> oNewPolicies;
+
+            var res = Policy.GetPoliciesForUser(null, "blah", out oNewPolicies);
+            Assert.IsFalse(res.Success, "Fetching policies by user with null Connection server did not fail");
+
+            res = Policy.GetPoliciesForUser(_connectionServer, "blah", out oNewPolicies);
+            Assert.IsTrue(res.Success, "Fetching policies by user with invalid objectID should not fail:" + res);
+            Assert.IsTrue(oNewPolicies.Count == 0, "Fetching policies by user with invalid ObjectId should return empty policies list");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_GetRoleNamesForUser()
+        {
+            List<string> oRoles;
+            var res = Policy.GetRoleNamesForUser(null, "objectid", out oRoles);
+            Assert.IsFalse(res.Success, "Fetching role names by user with null Connection server did not fail");
+
+            res = Policy.GetRoleNamesForUser(_connectionServer, "", out oRoles);
+            Assert.IsFalse(res.Success, "Fetching role names by user with empty Id did not fail");
+
+            res = Policy.GetRoleNamesForUser(_connectionServer, "objectid", out oRoles);
+            Assert.IsTrue(res.Success, "Fetching role names by user with invalid Id should not fail:" + res);
+            Assert.IsTrue(oRoles.Count == 0, "Fetching roles names by user with invalid Id should return empty roles list");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_GetPolicies()
         {
             //Static methods
             List<Policy> oNewPolicies;
@@ -93,41 +136,22 @@ namespace ConnectionCUPIFunctionsTest
 
             res = Policy.GetPolicies(_connectionServer, out oNewPolicies, "query=(bogus)", "", "sort=(bogus)");
             Assert.IsFalse(res.Success, "Fetching policies with invalid query did not fail");
-
-
-            res = Policy.GetPoliciesForRole(null, "blah", out oNewPolicies);
-            Assert.IsFalse(res.Success, "Fetching policies by role with null Connection server did not fail");
-
-            res = Policy.GetPoliciesForRole(_connectionServer, "blah", out oNewPolicies);
-            Assert.IsTrue(res.Success, "Fetching policies by role with invalid ID should not fail:"+res);
-            Assert.IsTrue(oNewPolicies.Count==0,"Fetching policies with invalid Id should return empty policies list");
-
-            res = Policy.GetPoliciesForUser(null, "blah", out oNewPolicies);
-            Assert.IsFalse(res.Success, "Fetching policies by user with null Connection server did not fail");
-
-            res = Policy.GetPoliciesForUser(_connectionServer, "blah", out oNewPolicies);
-            Assert.IsTrue(res.Success, "Fetching policies by user with invalid objectID should not fail:"+res);
-            Assert.IsTrue(oNewPolicies.Count==0,"Fetching policies by user with invalid ObjectId should return empty policies list");
-
-            List<string> oRoles; 
-            res = Policy.GetRoleNamesForUser(null, "objectid", out oRoles);
-            Assert.IsFalse(res.Success, "Fetching role names by user with null Connection server did not fail");
-
-            res = Policy.GetRoleNamesForUser(_connectionServer, "", out oRoles);
-            Assert.IsFalse(res.Success, "Fetching role names by user with empty Id did not fail");
-
-            res = Policy.GetRoleNamesForUser(_connectionServer, "objectid", out oRoles);
-            Assert.IsTrue(res.Success,"Fetching role names by user with invalid Id should not fail:"+res);
-            Assert.IsTrue(oRoles.Count==0,"Fetching roles names by user with invalid Id should return empty roles list");
         }
+
+        #endregion
+
+
 
         [TestMethod]
         public void Policy_FetchTest()
         {
             //fetch all policies and iterate them
             List<Policy> oPolicies;
-            WebCallResult res = Policy.GetPolicies(_connectionServer, out oPolicies,1,10);
+            WebCallResult res = Policy.GetPolicies(_connectionServer, out oPolicies,1,10,null);
             Assert.IsTrue(res.Success,"Failed to fetch list of policies from server");
+
+            res = Policy.GetPolicies(_connectionServer, out oPolicies, 1, 10,"");
+            Assert.IsTrue(res.Success, "Failed to fetch list of policies from server");
 
             Assert.IsTrue(oPolicies.Count>0,"No policies returned from fetch");
 

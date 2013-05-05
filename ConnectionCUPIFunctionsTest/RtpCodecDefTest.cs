@@ -85,7 +85,7 @@ namespace ConnectionCUPIFunctionsTest
 
 
         [TestMethod]
-        public void StaticMethodFailures()
+        public void StaticCallFailures_GetRtpCodecDefs()
         {
             List<RtpCodecDef> oList;
             WebCallResult res = RtpCodecDef.GetRtpCodecDefs(null, out oList);

@@ -10,11 +10,19 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class HttpFunctionsTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
+        #region Fields and Properties
+
         /// <summary>
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
         ///</summary>
         public TestContext TestContext { get; set; }
+
+        #endregion
+
 
         #region Additional test attributes
         // 

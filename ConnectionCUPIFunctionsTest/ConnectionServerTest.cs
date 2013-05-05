@@ -7,28 +7,36 @@ using System;
 
 namespace ConnectionCUPIFunctionsTest
 {
-
-
     /// <summary>
     ///This is a test class for ConnectionServerTest and is intended
     ///to contain all ConnectionServerTest Unit Tests
     ///</summary>
-    [TestClass()]
+    [TestClass]
     public class ConnectionServerTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
+        #region Fields and Properties
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
         private static ConnectionServer _connectionServer;
 
-        private TestContext testContextInstance;
+        /// <summary>
+        ///Gets or sets the test context which provides
+        ///information about and functionality for the current test run.
+        ///</summary>
+        public TestContext TestContext { get; set; }
+
+
+        #endregion
+
 
         #region Additional test attributes
-        // 
-        //You can use the following additional attributes as you write your tests:
-        //
+
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -52,21 +60,33 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
+
+        #region Class Construction Failures
+
         /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
+        /// Make sure an ArgumentException is thrown if a blank server name is passed
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void ClassCreationFailure()
         {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
+            //invalid login value - empty server name
+            ConnectionServer oTestServer = new ConnectionServer("", "login", "Pw");
+            Console.WriteLine(oTestServer);
         }
+
+        /// <summary>
+        /// Make sure an Exception is thrown if 
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(Exception))]
+        public void ClassCreationFailureBadLogin()
+        {
+            ConnectionServer oTestServer = new ConnectionServer("badservername", "badloginname", "badpassword");
+            Console.WriteLine(oTestServer);
+        }
+
+        #endregion
 
 
         /// <summary>
@@ -95,7 +115,7 @@ namespace ConnectionCUPIFunctionsTest
         /// check all insertion routes into the XMLFetch routine.
         /// </summary>
         [TestMethod]
-        public void SaveXMLFetchTest()
+        public void SaveXmlFetchTest()
         {
             UserBase oUser = new UserBase(_connectionServer);
             UserFull oUserFull = new UserFull(_connectionServer);
@@ -143,33 +163,8 @@ namespace ConnectionCUPIFunctionsTest
         public void ConstructorPlain()
         {
             ConnectionServer oTestServer = new ConnectionServer();
-
+            Console.WriteLine(oTestServer);
         }
-
-
-        /// <summary>
-        /// Make sure an ArgumentException is thrown if a blank server name is passed
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure()
-        {
-            //invalid login value - empty server name
-            ConnectionServer oTestServer = new ConnectionServer("", "login", "Pw");
-        }
-
-
-        /// <summary>
-        /// Make sure an Exception is thrown if 
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(Exception))]
-        public void ClassCreationFailureBadLogin()
-        {
-            ConnectionServer oTestServer = new ConnectionServer("badservername", "badloginname", "badpassword");
-        }
-
-
 
 
         /// <summary>

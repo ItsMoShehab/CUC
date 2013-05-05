@@ -183,98 +183,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
-        public void GetAndListUsers_Test()
-        {
-            UserFull oUserFull;
-            List<UserBase> oUserBaseList;
-            
-            //get the first couple user found (could be only 1 -operator- but that doesn't matter here).
-            WebCallResult res = UserBase.GetUsers(_connectionServer, out oUserBaseList, "rowsPerPage=5");
-            Assert.IsTrue(res.Success, "Failed to fetch first user in system");
-            Assert.IsNotNull(oUserBaseList, "Null user list returned");
-            Assert.IsTrue(oUserBaseList.Count > 0, "Empty user list returned");
-
-
-            Console.WriteLine(oUserBaseList.First().ToString());
-            Console.WriteLine(oUserBaseList.First().DumpAllProps());
-
-            //get the base user properties
-            UserBase oTempBase;
-            res = UserBase.GetUser(out oTempBase,_connectionServer, oUserBaseList.First().ObjectId);
-            Assert.IsTrue(res.Success, "Failed to fetch base user properties for selected user");
-
-            //get the full user properties 
-            res = UserFull.GetUser(_connectionServer, oUserBaseList.First().ObjectId, out oUserFull);
-            Assert.IsTrue(res.Success, "Failed to fetch full user properties for selected user");
-
-            Console.WriteLine(oUserFull.ToString());
-            Console.WriteLine(oUserFull.DumpAllProps());
-
-            //dump primary call handler details
-            Console.WriteLine(oUserFull.PrimaryCallHandler().ToString());
-
-            Console.WriteLine(oUserFull.PrimaryCallHandler(true).ToString());
-            
-            // dump the phone system details
-            Console.WriteLine(oUserFull.PhoneSystem().ToString());
-            Console.WriteLine(oUserFull.PhoneSystem(true).ToString());
-
-            //dump the private list details
-            Console.WriteLine(oUserFull.PrivateLists().ToString());
-            Console.WriteLine(oUserFull.PrivateLists(true).ToString());
-
-            //dump the MWI list
-            Console.WriteLine(oUserFull.Mwis().ToString());
-            Console.WriteLine(oUserFull.Mwis(true).ToString());
-
-            //dump the COS details
-            Console.WriteLine(oUserFull.Cos().ToString());
-            Console.WriteLine(oUserFull.Cos(true).ToString());
-
-
-            //Show the user's credentials for PIN and Password
-            Console.WriteLine("User PIN credential details:"+oUserFull.Pin());
-            Console.WriteLine(oUserFull.Pin().DumpAllProps());
-
-            Console.WriteLine("User Password credential details:"+oUserFull.Password());
-            Console.WriteLine(oUserFull.Password().DumpAllProps());
-
-            //Fetch credentials via static function
-            Credential oCredential;
-            res=Credential.GetCredential(_connectionServer, oUserFull.ObjectId, CredentialType.Pin, out oCredential);
-            Assert.IsTrue(res.Success, "Failed to fetch PIN credential manually:"+res.ToString());
-
-            res = Credential.GetCredential(_connectionServer, oUserFull.ObjectId, CredentialType.Password, out oCredential);
-            Assert.IsTrue(res.Success, "Failed to fetch password credential manually:" + res.ToString());
-
-            
-
-            //hit a couple of the list sorting entries
-            UserComparer oCompareer = new UserComparer("DTMFAccessID");
-            oUserBaseList.Sort(oCompareer);
-
-            oCompareer = new UserComparer("Alias");
-            oUserBaseList.Sort(oCompareer);
-
-            oCompareer = new UserComparer("FirstName");
-            oUserBaseList.Sort(oCompareer);
-
-            oCompareer = new UserComparer("LastName");
-            oUserBaseList.Sort(oCompareer);
-
-            oCompareer = new UserComparer("LastName");
-            oUserBaseList.Sort(oCompareer);
-
-            //defaults to alias
-            oCompareer = new UserComparer("bogus");
-            oUserBaseList.Sort(oCompareer);
-        }
-
-        /// <summary>
-        /// exercise failure points
-        /// </summary>
-        [TestMethod]
-        public void GetUser_Failure()
+        public void StaticCallFailure_GetUser()
         {
             UserBase oUserBase;
             UserFull oUserFull;
@@ -308,7 +217,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
-        public void GetUsers_Failure()
+        public void StaticCallFailure_GetUsers()
         {
             List<UserBase> oUserList;
             string[] strList = new string[2];
@@ -334,7 +243,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
-        public void UpdateUsers_Failure()
+        public void StaticCallFailure_UpdateUsers()
         {
             ConnectionPropertyList oPropList = new ConnectionPropertyList();
             oPropList.Add("test", "value");
@@ -357,7 +266,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
-        public void GetUserVoiceName_Failure()
+        public void StaticCallFailure_GetUserVoiceName()
         {
             WebCallResult res = UserBase.GetUserVoiceName(_connectionServer, "temp.wav", "aaa");
             Assert.IsFalse(res.Success, "Invalid user objectID should fail");
@@ -377,7 +286,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
-        public void SetUserVoiceName_Failure()
+        public void StaticCallFailure_SetUserVoiceName()
         {
             WebCallResult res = UserBase.SetUserVoiceName(_connectionServer, "Dummy.wav", "aaa", true);
             Assert.IsFalse(res.Success, "Invalid user objectID should fail");
@@ -397,7 +306,7 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         [TestMethod]
-        public void SetUserVoiceNameToStreamFile_Failure()
+        public void StaticCallFailure_SetUserVoiceNameToStreamFile()
         {
             WebCallResult res = UserBase.SetUserVoiceNameToStreamFile(_connectionServer, "aaa", "bbb");
             Assert.IsFalse(res.Success, "Invalid user objectID should fail");
@@ -417,7 +326,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
-        public void AddUser_Failure()
+        public void StaticCallFailure_AddUser()
         {
             WebCallResult res = UserBase.AddUser(null, "", "", "", null);
             Assert.IsFalse(res.Success, "AddUser should fail if the ConnectionServer parameter is null");
@@ -436,7 +345,7 @@ namespace ConnectionCUPIFunctionsTest
         /// DELETE user static method failure paths
         /// </summary>
         [TestMethod]
-        public void DeleteUser_Failure()
+        public void StaticCallFailure_DeleteUser()
         {
             WebCallResult res = UserBase.DeleteUser(_connectionServer, "aaa");
             Assert.IsFalse(res.Success, "Invalid ObjectId should fail");
@@ -453,6 +362,97 @@ namespace ConnectionCUPIFunctionsTest
 
 
         #region Live Tests
+
+        /// <summary>
+        /// exercise failure points
+        /// </summary>
+        [TestMethod]
+        public void GetAndListUsers_Test()
+        {
+            UserFull oUserFull;
+            List<UserBase> oUserBaseList;
+
+            //get the first couple user found (could be only 1 -operator- but that doesn't matter here).
+            WebCallResult res = UserBase.GetUsers(_connectionServer, out oUserBaseList, "rowsPerPage=5");
+            Assert.IsTrue(res.Success, "Failed to fetch first user in system");
+            Assert.IsNotNull(oUserBaseList, "Null user list returned");
+            Assert.IsTrue(oUserBaseList.Count > 0, "Empty user list returned");
+
+
+            Console.WriteLine(oUserBaseList.First().ToString());
+            Console.WriteLine(oUserBaseList.First().DumpAllProps());
+
+            //get the base user properties
+            UserBase oTempBase;
+            res = UserBase.GetUser(out oTempBase, _connectionServer, oUserBaseList.First().ObjectId);
+            Assert.IsTrue(res.Success, "Failed to fetch base user properties for selected user");
+
+            //get the full user properties 
+            res = UserFull.GetUser(_connectionServer, oUserBaseList.First().ObjectId, out oUserFull);
+            Assert.IsTrue(res.Success, "Failed to fetch full user properties for selected user");
+
+            Console.WriteLine(oUserFull.ToString());
+            Console.WriteLine(oUserFull.DumpAllProps());
+
+            //dump primary call handler details
+            Console.WriteLine(oUserFull.PrimaryCallHandler().ToString());
+
+            Console.WriteLine(oUserFull.PrimaryCallHandler(true).ToString());
+
+            // dump the phone system details
+            Console.WriteLine(oUserFull.PhoneSystem().ToString());
+            Console.WriteLine(oUserFull.PhoneSystem(true).ToString());
+
+            //dump the private list details
+            Console.WriteLine(oUserFull.PrivateLists().ToString());
+            Console.WriteLine(oUserFull.PrivateLists(true).ToString());
+
+            //dump the MWI list
+            Console.WriteLine(oUserFull.Mwis().ToString());
+            Console.WriteLine(oUserFull.Mwis(true).ToString());
+
+            //dump the COS details
+            Console.WriteLine(oUserFull.Cos().ToString());
+            Console.WriteLine(oUserFull.Cos(true).ToString());
+
+
+            //Show the user's credentials for PIN and Password
+            Console.WriteLine("User PIN credential details:" + oUserFull.Pin());
+            Console.WriteLine(oUserFull.Pin().DumpAllProps());
+
+            Console.WriteLine("User Password credential details:" + oUserFull.Password());
+            Console.WriteLine(oUserFull.Password().DumpAllProps());
+
+            //Fetch credentials via static function
+            Credential oCredential;
+            res = Credential.GetCredential(_connectionServer, oUserFull.ObjectId, CredentialType.Pin, out oCredential);
+            Assert.IsTrue(res.Success, "Failed to fetch PIN credential manually:" + res.ToString());
+
+            res = Credential.GetCredential(_connectionServer, oUserFull.ObjectId, CredentialType.Password, out oCredential);
+            Assert.IsTrue(res.Success, "Failed to fetch password credential manually:" + res.ToString());
+
+
+
+            //hit a couple of the list sorting entries
+            UserComparer oCompareer = new UserComparer("DTMFAccessID");
+            oUserBaseList.Sort(oCompareer);
+
+            oCompareer = new UserComparer("Alias");
+            oUserBaseList.Sort(oCompareer);
+
+            oCompareer = new UserComparer("FirstName");
+            oUserBaseList.Sort(oCompareer);
+
+            oCompareer = new UserComparer("LastName");
+            oUserBaseList.Sort(oCompareer);
+
+            oCompareer = new UserComparer("LastName");
+            oUserBaseList.Sort(oCompareer);
+
+            //defaults to alias
+            oCompareer = new UserComparer("bogus");
+            oUserBaseList.Sort(oCompareer);
+        }
 
         /// <summary>
         /// Large test that edits/reads/adds many items for users

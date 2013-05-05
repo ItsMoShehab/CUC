@@ -452,7 +452,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //upload message
             return HTTPFunctions.UploadVoiceMessageWav(pConnectionServer.ServerName, pConnectionServer.LoginName,
                                                     pConnectionServer.LoginPw,pPathToLocalWavFile, strMessageJsonString,
-                                                    pSenderUserObjectId, pConnectionServer.LastSessionCookie,
+                                                    pSenderUserObjectId, pConnectionServer.LastSessionTokenIssued,
                                                     strRecipientJsonString);
         }
 
@@ -544,7 +544,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //upload message
             return HTTPFunctions.UploadVoiceMessageResourceId(pConnectionServer.ServerName, pConnectionServer.LoginName,
                                                     pConnectionServer.LoginPw, pResourceId, strMessageJsonString,
-                                                    pSenderUserObjectId, pConnectionServer.LastSessionCookie,
+                                                    pSenderUserObjectId, pConnectionServer.LastSessionTokenIssued,
                                                     strRecipientJsonString);
         }
 
@@ -1493,7 +1493,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //forward message
             return HTTPFunctions.UploadVoiceMessageWav(HomeServer.ServerName, HomeServer.LoginName,
                                                     HomeServer.LoginPw, pPathToWavFile, strMessageJsonString,
-                                                    UserObjectId, HomeServer.LastSessionCookie,strRecipientJsonString,
+                                                    UserObjectId, HomeServer.LastSessionTokenIssued,strRecipientJsonString,
                                                     strUri);
         }
 
@@ -1563,7 +1563,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //forward message
             return HTTPFunctions.UploadVoiceMessageResourceId(HomeServer.ServerName, HomeServer.LoginName,
                                                     HomeServer.LoginPw, pResourceId, strMessageJsonString,
-                                                    UserObjectId, HomeServer.LastSessionCookie, strRecipientJsonString,
+                                                    UserObjectId, HomeServer.LastSessionTokenIssued, strRecipientJsonString,
                                                     strUri);
         }
 

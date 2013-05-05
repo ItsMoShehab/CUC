@@ -85,7 +85,7 @@ namespace ConnectionCUPIFunctionsTest
 
 
         [TestMethod]
-        public void StaticMethodFailures()
+        public void StaticCallFailures_GetVmsServers()
         {
             //GetVmsServers is the only static method offered in the class
             List<VmsServer> oList;

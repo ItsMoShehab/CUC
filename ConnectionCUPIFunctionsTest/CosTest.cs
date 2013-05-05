@@ -97,6 +97,81 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
+
+        #region Static Call Failures
+
+        [TestMethod]
+        public void StaticMethodFailures_DeleteClassOfService()
+        {
+            //DeleteClassOfService
+            var res = ClassOfService.DeleteClassOfService(null, "bogus");
+            Assert.IsFalse(res.Success, "Static call to DeleteClassOfService did not fail with: null connectionServer");
+
+            res = ClassOfService.DeleteClassOfService(_connectionServer, "bogus");
+            Assert.IsFalse(res.Success, "Static call to DeleteClassOfService did not fail with: invalid objectid");
+
+            res = ClassOfService.DeleteClassOfService(_connectionServer, "");
+            Assert.IsFalse(res.Success, "Static call to DeleteClassOfService did not fail with: empty objectid");
+        }
+
+        [TestMethod]
+        public void StaticMethodFailures_GetClassOfService()
+        {
+            //GetClassOfService
+            ClassOfService oCos;
+            var res = ClassOfService.GetClassOfService(out oCos, null, "bogus", "bogus");
+            Assert.IsFalse(res.Success, "Static call to GetClassOfService did not fail with: null ConnectionServer");
+
+            res = ClassOfService.GetClassOfService(out oCos, _connectionServer, "bogus", "bogus");
+            Assert.IsFalse(res.Success, "Static call to GetClassOfService did not fail with: invalid ObjectId");
+
+            res = ClassOfService.GetClassOfService(out oCos, _connectionServer);
+            Assert.IsFalse(res.Success, "Static call to GetClassOfService did not fail with: empty objectId and Name");
+        }
+
+        [TestMethod]
+        public void StaticMethodFailures_UpdateClassOfService()
+        {
+            //GetClassesOfService
+            var res = ClassOfService.UpdateClassOfService(null, "bogus", null);
+            Assert.IsFalse(res.Success, "Static call to UpdateClassOfService did not fail with: null ConnectionServer");
+
+            res = ClassOfService.UpdateClassOfService(_connectionServer, "bogus", null);
+            Assert.IsFalse(res.Success, "Static call to UpdateClassOfService did not fail with: invalid objectId");
+
+            res = ClassOfService.UpdateClassOfService(_connectionServer, "", null);
+            Assert.IsFalse(res.Success, "Static call to UpdateClassOfService did not fail with: empty objectId");
+        }
+
+        [TestMethod]
+        public void StaticMethodFailures_GetClassesOfService()
+        {
+            //GetClassesOfService
+            List<ClassOfService> oCoses;
+            var res = ClassOfService.GetClassesOfService(null, out oCoses);
+            Assert.IsFalse(res.Success, "Static call to GetClassesOfService did not fail with: null ConnectionServer");
+
+            res = ClassOfService.GetClassesOfService(_connectionServer, out oCoses, "query=(bogus)", "", "sort=(bogus)");
+            Assert.IsFalse(res.Success, "Static call to GetClassesOfService did not fail with: invalid query construction");
+        }
+
+        [TestMethod]
+        public void StaticMethodFailures_AddClassOfService()
+        {
+            //AddClassOfService
+            WebCallResult res = ClassOfService.AddClassOfService(null, "display", null);
+            Assert.IsFalse(res.Success, "Static call to AddClassOfSerice did not fail with: null ConnectionServer");
+
+            res = ClassOfService.AddClassOfService(_connectionServer, "", null);
+            Assert.IsFalse(res.Success, "Static call to AddClassOfSerice did not fail with: empty objectId");
+
+        }
+
+        #endregion
+
+
+        #region Live Tests
+
         [TestMethod]
         public void Test_CosFetchTests()
         {
@@ -152,56 +227,6 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(_tempCos.MaxPrivateDlists==92,"Max list value pulled on refetch does not matched what was set:"+res);
         }
 
-
-        [TestMethod]
-        public void StaticMethodFailures()
-        {
-            //AddClassOfService
-            WebCallResult res = ClassOfService.AddClassOfService(null, "display", null);
-            Assert.IsFalse(res.Success, "Static call to AddClassOfSerice did not fail with: null ConnectionServer");
-
-            res = ClassOfService.AddClassOfService(_connectionServer, "", null);
-            Assert.IsFalse(res.Success,"Static call to AddClassOfSerice did not fail with: empty objectId");
-            
-            //DeleteClassOfService
-            res = ClassOfService.DeleteClassOfService(null, "bogus");
-            Assert.IsFalse(res.Success, "Static call to DeleteClassOfService did not fail with: null connectionServer");
-
-            res = ClassOfService.DeleteClassOfService(_connectionServer, "bogus");
-            Assert.IsFalse(res.Success, "Static call to DeleteClassOfService did not fail with: invalid objectid");
-
-            res = ClassOfService.DeleteClassOfService(_connectionServer, "");
-            Assert.IsFalse(res.Success, "Static call to DeleteClassOfService did not fail with: empty objectid");
-
-            //GetClassOfService
-            ClassOfService oCos;
-            res = ClassOfService.GetClassOfService(out oCos, null, "bogus","bogus");
-            Assert.IsFalse(res.Success, "Static call to GetClassOfService did not fail with: null ConnectionServer");
-
-            res = ClassOfService.GetClassOfService(out oCos, _connectionServer, "bogus", "bogus");
-            Assert.IsFalse(res.Success, "Static call to GetClassOfService did not fail with: invalid ObjectId");
-            
-            res = ClassOfService.GetClassOfService(out oCos, _connectionServer);
-            Assert.IsFalse(res.Success, "Static call to GetClassOfService did not fail with: empty objectId and Name");
-
-            //GetClassesOfService
-            res = ClassOfService.UpdateClassOfService(null, "bogus", null);
-            Assert.IsFalse(res.Success, "Static call to UpdateClassOfService did not fail with: null ConnectionServer");
-
-            res = ClassOfService.UpdateClassOfService(_connectionServer, "bogus", null);
-            Assert.IsFalse(res.Success, "Static call to UpdateClassOfService did not fail with: invalid objectId");
-
-            res = ClassOfService.UpdateClassOfService(_connectionServer, "", null);
-            Assert.IsFalse(res.Success, "Static call to UpdateClassOfService did not fail with: empty objectId");
-
-            //GetClassesOfService
-            List<ClassOfService> oCoses;
-            res = ClassOfService.GetClassesOfService(null, out oCoses);
-            Assert.IsFalse(res.Success, "Static call to GetClassesOfService did not fail with: null ConnectionServer");
-
-            res = ClassOfService.GetClassesOfService(_connectionServer, out oCoses,"query=(bogus)","","sort=(bogus)");
-            Assert.IsFalse(res.Success, "Static call to GetClassesOfService did not fail with: invalid query construction");
-        }
-
+        #endregion
     }
 }

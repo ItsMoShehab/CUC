@@ -160,7 +160,7 @@ namespace Cisco.UnityConnection.RestFunctions
         #endregion
 
 
-        #region Static Methods
+        #region Static Method
 
         /// <summary>
         /// Fetches an alternate extension object filled with all the properties for a specific alternate extension identified with the ObjectId

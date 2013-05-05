@@ -133,7 +133,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //issue the command to the CUPI interface
             res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
-            if (res.Success == false || res.TotalObjectCount == 0)
+            if (res.Success == false)
             {
                 return res;
             }

@@ -188,19 +188,15 @@ namespace ConnectionCUPIFunctionsTest
 
         }
 
+        #region Static Call Failures
+
         [TestMethod]
-        public void StaticMethodFailures()
+        public void StaticCallFailures_GetScheduleSet()
         {
-            //get schedule sets
-            List<ScheduleSet> oSets;
-
-            WebCallResult res = ScheduleSet.GetSchedulesSets(null, out oSets);
-            Assert.IsFalse(res.Success,"Getting schedule sets with null ConnectionServer did not fail");
-
             //get ScheduleSet
             ScheduleSet oTempSet;
-            res = ScheduleSet.GetScheduleSet(out oTempSet, null, "", "bogus");
-            Assert.IsFalse(res.Success,"Calling GetScheduleSet with null ConnecitonServer did not fail.");
+            var res = ScheduleSet.GetScheduleSet(out oTempSet, null, "", "bogus");
+            Assert.IsFalse(res.Success, "Calling GetScheduleSet with null ConnecitonServer did not fail.");
 
             res = ScheduleSet.GetScheduleSet(out oTempSet, _connectionServer);
             Assert.IsFalse(res.Success, "Calling GetScheduleSet with empty name and ObjectId did not fail.");
@@ -210,17 +206,25 @@ namespace ConnectionCUPIFunctionsTest
 
             res = ScheduleSet.GetScheduleSet(out oTempSet, _connectionServer, "", "bogus");
             Assert.IsFalse(res.Success, "Calling GetScheduleSet with invalid name did not fail.");
+        }
 
+        [TestMethod]
+        public void StaticCallFailures_GetSchedulesSetsMembers()
+        {
             //get scheduleset memebers
             List<ScheduleSetMember> oMembers;
-            res = ScheduleSet.GetSchedulesSetsMembers(null, "bogus", out oMembers);
+            var res = ScheduleSet.GetSchedulesSetsMembers(null, "bogus", out oMembers);
             Assert.IsFalse(res.Success, "Getting schedule set members with null ConnectionServer did not fail");
 
             res = ScheduleSet.GetSchedulesSetsMembers(_connectionServer, "", out oMembers);
             Assert.IsFalse(res.Success, "Getting schedule set members with empty objectId did not fail");
+        }
 
+        [TestMethod]
+        public void StaticCallFailures_AddScheduleSet()
+        {
             //AddScheduleSet
-            res = ScheduleSet.AddScheduleSet(null, "DisplayName", _connectionServer.PrimaryLocationObjectId,"");
+            var res = ScheduleSet.AddScheduleSet(null, "DisplayName", _connectionServer.PrimaryLocationObjectId, "");
             Assert.IsFalse(res.Success, "Calling AddScheduleSet with null ConnectionServer did not fail");
 
             res = ScheduleSet.AddScheduleSet(_connectionServer, "", _connectionServer.PrimaryLocationObjectId, "");
@@ -234,13 +238,17 @@ namespace ConnectionCUPIFunctionsTest
 
             res = ScheduleSet.AddScheduleSet(_connectionServer, "DisplayName", "", "bogus");
             Assert.IsFalse(res.Success, "Calling AddScheduleSet with invalid owner ObjectId did not fail");
-
+            
             ScheduleSet oSet;
-            res = ScheduleSet.AddScheduleSet(null, "DisplayName", _connectionServer.PrimaryLocationObjectId, "",out oSet);
+            res = ScheduleSet.AddScheduleSet(null, "DisplayName", _connectionServer.PrimaryLocationObjectId, "", out oSet);
             Assert.IsFalse(res.Success, "Calling AddScheduleSet with null ConnectionServer did not fail");
+        }
 
+        [TestMethod]
+        public void StaticCallFailures_DeleteScheduleSet()
+        {
             //deleteScheduleSet
-            res = ScheduleSet.DeleteScheduleSet(null, "bogus");
+            var res = ScheduleSet.DeleteScheduleSet(null, "bogus");
             Assert.IsFalse(res.Success, "Calling DeleteScheduleSet with null ConnectionServer did not fail");
 
             res = ScheduleSet.DeleteScheduleSet(_connectionServer, "bogus");
@@ -248,9 +256,13 @@ namespace ConnectionCUPIFunctionsTest
 
             res = ScheduleSet.DeleteScheduleSet(_connectionServer, "");
             Assert.IsFalse(res.Success, "Calling DeleteScheduleSet with empty objectId did not fail");
+        }
 
+        [TestMethod]
+        public void StaticCallFailures_AddScheduleSetMember()
+        {
             //AddScheduleSetMember
-            res = ScheduleSet.AddScheduleSetMember(null, "bogus", "bogus");
+            var res = ScheduleSet.AddScheduleSetMember(null, "bogus", "bogus");
             Assert.IsFalse(res.Success, "Calling AddScheduleSetMember with null ConnectionServer did not fail");
 
             res = ScheduleSet.AddScheduleSetMember(_connectionServer, "bogus", "bogus");
@@ -258,15 +270,17 @@ namespace ConnectionCUPIFunctionsTest
 
             res = ScheduleSet.AddScheduleSetMember(_connectionServer, "", "");
             Assert.IsFalse(res.Success, "Calling AddScheduleSetMember with empty scheduleset and schedule Ids did not fail");
+        }
 
+        [TestMethod]
+        public void StaticCallFailures_AddQuickSchedule()
+        {
             //AddQuickSchedule
-            res = ScheduleSet.AddQuickSchedule(null, "display name",
-                                               _connectionServer.PrimaryLocationObjectId, "",
+            var res = ScheduleSet.AddQuickSchedule(null, "display name",_connectionServer.PrimaryLocationObjectId, "",
                                                0, 100, true, true, true, true, true, false, false);
             Assert.IsFalse(res.Success, "Calling AddQuickSchedule with null Connection server did not fail");
 
-            res = ScheduleSet.AddQuickSchedule(_connectionServer, "",
-                                    _connectionServer.PrimaryLocationObjectId, "",
+            res = ScheduleSet.AddQuickSchedule(_connectionServer, "",_connectionServer.PrimaryLocationObjectId, "",
                                     0, 100, true, true, true, true, true, false, false);
             Assert.IsFalse(res.Success, "Calling AddQuickSchedule with empty display name did not fail");
 
@@ -275,17 +289,26 @@ namespace ConnectionCUPIFunctionsTest
                                     0, 100, true, true, true, true, true, false, false);
             Assert.IsFalse(res.Success, "Calling AddQuickSchedule with both a location and subscriberObjectId did not fail");
 
-            res = ScheduleSet.AddQuickSchedule(_connectionServer, "display name","", "",
+            res = ScheduleSet.AddQuickSchedule(_connectionServer, "display name", "", "",
                                     0, 100, true, true, true, true, true, false, false);
             Assert.IsFalse(res.Success, "Calling AddQuickSchedule with empty locaiton and subscriber ObjectID did not fail");
 
-            res = ScheduleSet.AddQuickSchedule(_connectionServer, "display name","", "bogus",
+            res = ScheduleSet.AddQuickSchedule(_connectionServer, "display name", "", "bogus",
                         0, 100, true, true, true, true, true, false, false);
             Assert.IsFalse(res.Success, "Calling AddQuickSchedule with invalid subscriberObjectId did not fail");
 
-        
         }
 
+        [TestMethod]
+        public void StaticCallFailures_GetScheduleSets()
+        {
+            //get schedule sets
+            List<ScheduleSet> oSets;
 
+            WebCallResult res = ScheduleSet.GetSchedulesSets(null, out oSets);
+            Assert.IsFalse(res.Success,"Getting schedule sets with null ConnectionServer did not fail");
+        }
+
+        #endregion
     }
 }

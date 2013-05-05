@@ -70,7 +70,96 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
-       
+
+        #region Static Call Failures
+
+        /// <summary>
+        /// exercise transfer options failure cases 
+        /// </summary>
+        [TestMethod]
+        public void StaticCallFailures_UpdateTransferOptionEnabledStatus()
+        {
+            //hit some invalid calls for updating the enabled status for transfer options
+            WebCallResult res = TransferOption.UpdateTransferOptionEnabledStatus(null, _callHandler.ObjectId, "Alternate", true);
+            Assert.IsFalse(res.Success, "Null ConnectionServer parameter should fail");
+
+            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, "aaa", "Alternate", true);
+            Assert.IsFalse(res.Success, "Invalid ObjectId for call handler should fail");
+
+            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, _callHandler.ObjectId, "Standard", false);
+            Assert.IsFalse(res.Success, "Disabling the standard transfer option should fail");
+
+            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, _callHandler.ObjectId, "Alternate", false, DateTime.Now.AddDays(1));
+            Assert.IsFalse(res.Success, "Disabing a transfer option with a date in the past should fail");
+
+            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, _callHandler.ObjectId, "aaa", true);
+            Assert.IsFalse(res.Success, "Invalid TransferOption type name should fail");
+
+            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, _callHandler.ObjectId, "Alternate", true, DateTime.Now.AddDays(-1));
+            Assert.IsFalse(res.Success, "Enabling rule with date in the past should fail");
+
+
+        }
+
+        /// <summary>
+        /// exercise transfer options failure cases 
+        /// </summary>
+        [TestMethod]
+        public void StaticCallFailures_UpdateTransferOption()
+        {
+            //check manually editing properties on transfer options failure cases
+            WebCallResult res = TransferOption.UpdateTransferOption(null, _callHandler.ObjectId, "Alternate", null);
+            Assert.IsFalse(res.Success, "Updating transfer options with null ConnectionServer param should fail");
+
+            res = TransferOption.UpdateTransferOption(_connectionServer, _callHandler.ObjectId, "Alternate", null);
+            Assert.IsFalse(res.Success, "Calling update for transfer options with no parameters should fail");
+
+        }
+
+        /// <summary>
+        /// exercise transfer options failure cases 
+        /// </summary>
+        [TestMethod]
+        public void StaticCallFailures_GetTransferOptions()
+        {
+            List<TransferOption> oTransferOptions;
+
+            WebCallResult res = TransferOption.GetTransferOptions(null, _callHandler.ObjectId, out oTransferOptions);
+            Assert.IsFalse(res.Success, "Null Connection server parameter should fail");
+
+            res = TransferOption.GetTransferOptions(_connectionServer, "aaa", out oTransferOptions);
+            Assert.IsFalse(res.Success, "Invalid CallHandlerObjectID should fail");
+
+        }
+
+        /// <summary>
+        /// exercise transfer options failure cases 
+        /// </summary>
+        [TestMethod]
+        public void StaticCallFailures_GetTransferOption()
+        {
+            TransferOption oTransfer;
+
+            WebCallResult res = TransferOption.GetTransferOption(_connectionServer, _callHandler.ObjectId, "", out oTransfer);
+            Assert.IsFalse(res.Success, "Empty transfer option type should fail");
+
+            res = TransferOption.GetTransferOption(_connectionServer, _callHandler.ObjectId, "Bogus", out oTransfer);
+            Assert.IsFalse(res.Success, "Invalid transfer option type should fail");
+
+            res = TransferOption.GetTransferOption(null, "", "", out oTransfer);
+            Assert.IsFalse(res.Success, "Null ConnectionServer parameter should fail");
+
+            res = TransferOption.GetTransferOption(_connectionServer, "", "", out oTransfer);
+            Assert.IsFalse(res.Success, "Empty ObjectId should should fail");
+
+            //make sure invalid Connection server param is caught
+            res = TransferOption.GetTransferOption(null, _callHandler.ObjectId, "Alterante", out oTransfer);
+            Assert.IsFalse(res.Success, "Null ConnectionServer parameter should fail");
+
+        }
+
+        #endregion
+
         /// <summary>
         /// exercise transfer options
         /// </summary>
@@ -122,91 +211,6 @@ namespace ConnectionCUPIFunctionsTest
 
         }
 
-
-        /// <summary>
-        /// exercise transfer options failure cases 
-        /// </summary>
-        [TestMethod]
-        public void UpdateTransferOptionEnabledStatus_Failure()
-        {
-            //hit some invalid calls for updating the enabled status for transfer options
-            WebCallResult res = TransferOption.UpdateTransferOptionEnabledStatus(null, _callHandler.ObjectId, "Alternate", true);
-            Assert.IsFalse(res.Success, "Null ConnectionServer parameter should fail");
-
-            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, "aaa", "Alternate", true);
-            Assert.IsFalse(res.Success, "Invalid ObjectId for call handler should fail");
-
-            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, _callHandler.ObjectId, "Standard", false);
-            Assert.IsFalse(res.Success, "Disabling the standard transfer option should fail");
-
-            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, _callHandler.ObjectId, "Alternate", false, DateTime.Now.AddDays(1));
-            Assert.IsFalse(res.Success, "Disabing a transfer option with a date in the past should fail");
-
-            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, _callHandler.ObjectId, "aaa", true);
-            Assert.IsFalse(res.Success, "Invalid TransferOption type name should fail");
-
-            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, _callHandler.ObjectId, "Alternate", true, DateTime.Now.AddDays(-1));
-            Assert.IsFalse(res.Success, "Enabling rule with date in the past should fail");
-
-
-        }
-
-        /// <summary>
-        /// exercise transfer options failure cases 
-        /// </summary>
-        [TestMethod]
-        public void UpdateTransferOption_Failure()
-        {
-            //check manually editing properties on transfer options failure cases
-            WebCallResult res = TransferOption.UpdateTransferOption(null, _callHandler.ObjectId, "Alternate", null);
-            Assert.IsFalse(res.Success, "Updating transfer options with null ConnectionServer param should fail");
-
-            res = TransferOption.UpdateTransferOption(_connectionServer, _callHandler.ObjectId, "Alternate", null);
-            Assert.IsFalse(res.Success, "Calling update for transfer options with no parameters should fail");
-
-        }
-
-        /// <summary>
-        /// exercise transfer options failure cases 
-        /// </summary>
-        [TestMethod]
-        public void GetTransferOptions_Failure()
-        {
-            List<TransferOption> oTransferOptions;
-
-            WebCallResult res = TransferOption.GetTransferOptions(null, _callHandler.ObjectId, out oTransferOptions);
-            Assert.IsFalse(res.Success, "Null Connection server parameter should fail");
-
-            res = TransferOption.GetTransferOptions(_connectionServer, "aaa", out oTransferOptions);
-            Assert.IsFalse(res.Success, "Invalid CallHandlerObjectID should fail");
-
-        }
-
-        /// <summary>
-        /// exercise transfer options failure cases 
-        /// </summary>
-        [TestMethod]
-        public void GetTransferOption_Failure()
-        {
-            TransferOption oTransfer;
-
-            WebCallResult res = TransferOption.GetTransferOption(_connectionServer, _callHandler.ObjectId, "", out oTransfer);
-            Assert.IsFalse(res.Success, "Empty transfer option type should fail");
-
-            res = TransferOption.GetTransferOption(_connectionServer, _callHandler.ObjectId, "Bogus", out oTransfer);
-            Assert.IsFalse(res.Success, "Invalid transfer option type should fail");
-
-            res = TransferOption.GetTransferOption(null, "", "", out oTransfer);
-            Assert.IsFalse(res.Success, "Null ConnectionServer parameter should fail");
-
-            res = TransferOption.GetTransferOption(_connectionServer, "", "", out oTransfer);
-            Assert.IsFalse(res.Success, "Empty ObjectId should should fail");
-
-            //make sure invalid Connection server param is caught
-            res = TransferOption.GetTransferOption(null, _callHandler.ObjectId, "Alterante", out oTransfer);
-            Assert.IsFalse(res.Success, "Null ConnectionServer parameter should fail");
-
-        }
-
+      
     }
 }

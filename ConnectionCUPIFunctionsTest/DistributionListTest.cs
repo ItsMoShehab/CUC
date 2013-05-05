@@ -95,6 +95,167 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
+
+        #region Static Call Failures
+
+        /// <summary>
+        /// Test common failure scenarios distribution list functions
+        /// </summary>
+        [TestMethod]
+        public void StaticCallFailures_GetDistributionListTest()
+        {
+            //create new list with GUID in the name to ensure uniqueness
+            DistributionList oList;
+
+            //null connection server object
+            WebCallResult res = DistributionList.GetDistributionList(out oList, null, "", "allvoicemailusers");
+            Assert.IsFalse(res.Success, "Null Connection server on GetDistributionList did not fail.");
+
+            //invalid alias/objectId pair
+            res = DistributionList.GetDistributionList(out oList, _connectionServer);
+            Assert.IsFalse(res.Success, "Blank alias/objectID params on GetDistributionList did not fail");
+        }
+
+        /// <summary>
+        /// exercise GetDistributionLists failure points
+        /// </summary>
+        [TestMethod]
+        public void StaticCallFailures_GetDistributionLists()
+        {
+            List<DistributionList> oList;
+            WebCallResult res = DistributionList.GetDistributionLists(null, out oList, null);
+
+            Assert.IsFalse(res.Success, "GetDistributionLists failed to catch null ConnectionServer object");
+        }
+
+        /// <summary>
+        /// Exercise AddDistributionList failure points.
+        /// </summary>
+        [TestMethod]
+        public void StaticCallFailures_AddDistributionList()
+        {
+            WebCallResult res = DistributionList.AddDistributionList(null, "aaa", "aaa", "123", null);
+            Assert.IsFalse(res.Success, "AddDistributionList failed to catch null ConnectionServer object");
+
+
+            res = DistributionList.AddDistributionList(_connectionServer, "", "", "123", null);
+            Assert.IsFalse(res.Success, "AddDistributionList failed to catch empty alias and display name params");
+        }
+
+        /// <summary>
+        /// Exercise GetDistributionListMember failure points.
+        /// </summary>
+        [TestMethod]
+        public void StaticCallFailures_GetDistributionListMember()
+        {
+            List<DistributionListMember> oListMember;
+
+            WebCallResult res = DistributionListMember.GetDistributionListMembers(null, "", out oListMember);
+            Assert.IsFalse(res.Success, "Fetch of distribution list members should fail with null Connection Server object passed");
+
+            res = DistributionListMember.GetDistributionListMembers(_connectionServer, "", out oListMember);
+            Assert.IsFalse(res.Success, "GetDistributionListMember should fail with an invalid DistributionListObjectID passed to it");
+        }
+
+
+        /// <summary>
+        /// Exercise UpdateDistrubitonList failure points
+        /// </summary>
+        [TestMethod]
+        public void StaticCallFailures_UpdateDistributionList()
+        {
+            WebCallResult res = DistributionList.UpdateDistributionList(null, "aaa", null);
+            Assert.IsFalse(res.Success, "UpdateDistributionList failed to catch null ConnectionServer object");
+
+
+            res = DistributionList.UpdateDistributionList(_connectionServer, "aaa", null);
+            Assert.IsFalse(res.Success, "UpdateDistributionList failed to catch empty property list");
+        }
+
+
+        /// <summary>
+        /// Exercise DeleteDistributionList failure points
+        /// </summary>
+        [TestMethod]
+        public void StaticCallFailures_DeleteDistributionList()
+        {
+            WebCallResult res = DistributionList.DeleteDistributionList(null, "aaa");
+            Assert.IsFalse(res.Success, "DeleteDistributionList failed to catch null ConnectionServer object");
+        }
+
+
+        /// <summary>
+        /// Exercise GetDistributionList failure points
+        /// </summary>
+        [TestMethod]
+        public void StaticCallFailures_GetDistributionList()
+        {
+            DistributionList oList;
+
+            WebCallResult res = DistributionList.GetDistributionList(out oList, null);
+            Assert.IsFalse(res.Success, "GetDistributionList failed to catch null ConnectionServer object");
+
+            res = DistributionList.GetDistributionList(out oList, _connectionServer);
+            Assert.IsFalse(res.Success, "GetDistributionList failed to catch empty alias and ObjectId being passed");
+
+            res = DistributionList.GetDistributionList(out oList, _connectionServer, "", "bogus alias");
+            Assert.IsFalse(res.Success, "GetDistributionList failed to catch bogus alias and empty ObjectId being passed");
+
+        }
+
+
+
+        /// <summary>
+        /// Exercise GetDistributionListVoiceName failure points
+        /// </summary>
+        [TestMethod]
+        public void StaticCallFailures_GetDistributionListVoiceName()
+        {
+            //use the same string for the alias and display name here
+            const string strWavName = @"c:\";
+
+            //invalid local WAV file name
+            WebCallResult res = DistributionList.GetDistributionListVoiceName(null, "aaa", "");
+            Assert.IsFalse(res.Success, "GetDistributionListVoiceName did not fail for null Conneciton server");
+
+            //empty target file path
+            res = DistributionList.GetDistributionListVoiceName(_connectionServer, "aaa", "aaa");
+            Assert.IsFalse(res.Success, "GetDistributionListVoiceName did not fail with invalid target path passed");
+
+            //invalid objectId 
+            res = DistributionList.GetDistributionListVoiceName(_connectionServer, "", strWavName);
+            Assert.IsFalse(res.Success, "GetDistributionListVoiceName did not fail with invalid ObjectId passed");
+
+        }
+
+        /// <summary>
+        /// Exercise SetDistributionListVoiceName failure points
+        /// </summary>
+        [TestMethod]
+        public void StaticCallFailures_SetDistributionListVoiceName()
+        {
+            //use the same string for the alias and display name here
+            const string strWavName = @"c:\";
+
+            //invalid Connection server
+            WebCallResult res = DistributionList.SetDistributionListVoiceName(null, "", "");
+            Assert.IsFalse(res.Success, "SetDistributionListVoiceName did not fail with null Connection server passed.");
+
+            //invalid target path
+            res = DistributionList.SetDistributionListVoiceName(_connectionServer, "aaa", "aaa");
+            Assert.IsFalse(res.Success, "SetDistributionListVoiceName did not fail with invalid target path");
+
+            //invalid ObjectId
+            res = DistributionList.SetDistributionListVoiceName(_connectionServer, strWavName, "");
+            Assert.IsFalse(res.Success, "SetDistributionListVoiceName did not fail with invalid obejctID");
+
+        }
+        
+        #endregion
+
+
+        #region Live Tests
+
         /// <summary>
         ///A test for GetDistributionListVoiceName - this exercises the GetDistribitonList as well since it fetches the 
         /// AllVoiceMailUsers list which should always have a voice name.
@@ -133,159 +294,6 @@ namespace ConnectionCUPIFunctionsTest
             File.Delete(strWavName);
         }
 
-
-        /// <summary>
-        /// Test common failure scenarios distribution list functions
-        /// </summary>
-        [TestMethod]
-        public void GetDistributionListTest_Failure()
-        {
-            //create new list with GUID in the name to ensure uniqueness
-            DistributionList oList;
-
-            //null connection server object
-            WebCallResult res = DistributionList.GetDistributionList(out oList, null, "", "allvoicemailusers");
-            Assert.IsFalse(res.Success, "Null Connection server on GetDistributionList did not fail.");
-
-            //invalid alias/objectId pair
-            res = DistributionList.GetDistributionList(out oList, _connectionServer);
-            Assert.IsFalse(res.Success, "Blank alias/objectID params on GetDistributionList did not fail");
-        }
-
-        /// <summary>
-        /// exercise GetDistributionLists failure points
-        /// </summary>
-        [TestMethod]
-        public void GetDistributionLists_Failure()
-        {
-            List<DistributionList> oList;
-            WebCallResult res = DistributionList.GetDistributionLists(null,out oList , null);
-
-            Assert.IsFalse(res.Success,"GetDistributionLists failed to catch null ConnectionServer object");
-        }
-
-        /// <summary>
-        /// Exercise AddDistributionList failure points.
-        /// </summary>
-        [TestMethod]
-        public void AddDistributionList_Failure()
-        {
-            WebCallResult res = DistributionList.AddDistributionList(null, "aaa", "aaa", "123", null);
-            Assert.IsFalse(res.Success, "AddDistributionList failed to catch null ConnectionServer object");
-
-
-            res = DistributionList.AddDistributionList(_connectionServer, "", "", "123", null);
-            Assert.IsFalse(res.Success, "AddDistributionList failed to catch empty alias and display name params");
-        }
-
-        /// <summary>
-        /// Exercise GetDistributionListMember failure points.
-        /// </summary>
-        [TestMethod]
-        public void GetDistributionListMember_Failure()
-        {
-            List<DistributionListMember> oListMember;
-
-            WebCallResult res = DistributionListMember.GetDistributionListMembers(null,"",out oListMember);
-            Assert.IsFalse(res.Success,"Fetch of distribution list members should fail with null Connection Server object passed");
-
-            res = DistributionListMember.GetDistributionListMembers(_connectionServer, "", out oListMember);
-            Assert.IsFalse(res.Success,"GetDistributionListMember should fail with an invalid DistributionListObjectID passed to it");
-        }
-
-        
-        /// <summary>
-        /// Exercise UpdateDistrubitonList failure points
-        /// </summary>
-        [TestMethod]
-        public void UpdateDistributionList_Failure()
-        {
-            WebCallResult res = DistributionList.UpdateDistributionList(null, "aaa", null);
-            Assert.IsFalse(res.Success, "UpdateDistributionList failed to catch null ConnectionServer object");
-
-
-            res = DistributionList.UpdateDistributionList(_connectionServer, "aaa", null);
-            Assert.IsFalse(res.Success, "UpdateDistributionList failed to catch empty property list");
-        }
-
-
-        /// <summary>
-        /// Exercise DeleteDistributionList failure points
-        /// </summary>
-        [TestMethod]
-        public void DeleteDistributionList_Failure()
-        {
-            WebCallResult res = DistributionList.DeleteDistributionList(null, "aaa");
-            Assert.IsFalse(res.Success, "DeleteDistributionList failed to catch null ConnectionServer object");
-        }
-
-
-        /// <summary>
-        /// Exercise GetDistributionList failure points
-        /// </summary>
-        [TestMethod]
-        public void GetDistributionList_Failure()
-        {
-            DistributionList oList;
-
-            WebCallResult res = DistributionList.GetDistributionList(out oList,null);
-            Assert.IsFalse(res.Success, "GetDistributionList failed to catch null ConnectionServer object");
-
-            res = DistributionList.GetDistributionList(out oList, _connectionServer);
-            Assert.IsFalse(res.Success, "GetDistributionList failed to catch empty alias and ObjectId being passed");
-
-            res = DistributionList.GetDistributionList(out oList, _connectionServer, "","bogus alias" );
-            Assert.IsFalse(res.Success, "GetDistributionList failed to catch bogus alias and empty ObjectId being passed");
-
-        }
-
-
-
-        /// <summary>
-        /// Exercise GetDistributionListVoiceName failure points
-        /// </summary>
-        [TestMethod]
-        public void GetDistributionListVoiceNameTest_Failure()
-        {
-            //use the same string for the alias and display name here
-            const string strWavName = @"c:\";
-
-            //invalid local WAV file name
-            WebCallResult res = DistributionList.GetDistributionListVoiceName(null, "aaa", "");
-            Assert.IsFalse(res.Success, "GetDistributionListVoiceName did not fail for null Conneciton server");
-
-            //empty target file path
-            res = DistributionList.GetDistributionListVoiceName(_connectionServer, "aaa", "aaa");
-            Assert.IsFalse(res.Success, "GetDistributionListVoiceName did not fail with invalid target path passed");
-
-            //invalid objectId 
-            res = DistributionList.GetDistributionListVoiceName(_connectionServer, "", strWavName);
-            Assert.IsFalse(res.Success, "GetDistributionListVoiceName did not fail with invalid ObjectId passed");
-
-        }
-
-        /// <summary>
-        /// Exercise SetDistributionListVoiceName failure points
-        /// </summary>
-        [TestMethod]
-        public void SetDistributionListVoiceNameTest_Failure()
-        {
-            //use the same string for the alias and display name here
-            const string strWavName = @"c:\";
-
-            //invalid Connection server
-            WebCallResult res = DistributionList.SetDistributionListVoiceName(null, "", "");
-            Assert.IsFalse(res.Success, "SetDistributionListVoiceName did not fail with null Connection server passed.");
-
-            //invalid target path
-            res = DistributionList.SetDistributionListVoiceName(_connectionServer, "aaa", "aaa");
-            Assert.IsFalse(res.Success, "SetDistributionListVoiceName did not fail with invalid target path");
-
-            //invalid ObjectId
-            res = DistributionList.SetDistributionListVoiceName(_connectionServer, strWavName, "");
-            Assert.IsFalse(res.Success, "SetDistributionListVoiceName did not fail with invalid obejctID");
-
-        }
 
         /// <summary>
         /// Add a new list, change it's name, save it and delete it.  This covers a lot of ground but since we're working with a real, live 
@@ -394,7 +402,7 @@ namespace ConnectionCUPIFunctionsTest
         /// DumpAllProps methods as well.
         ///</summary>
         [TestMethod]
-        public void GetDistributionLists_Test()
+        public void DistributionList_GetDistributionLists()
         {
 
             ConnectionServer pConnectionServer = _connectionServer;
@@ -416,5 +424,6 @@ namespace ConnectionCUPIFunctionsTest
 
         }
 
+        #endregion
     }
 }

@@ -127,34 +127,57 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
-        [TestMethod]
-        public void TestMethod1()
-        {
+        #region Static Call Failures
 
+        [TestMethod]
+        public void StaticCallFailure_GetRestrictionTables()
+        {
+            //static fetch failures
+            List<RestrictionTable> oTables;
+            var res = RestrictionTable.GetRestrictionTables(null, out oTables);
+            Assert.IsFalse(res.Success, "Static restriction table creation did not fail with null ConnectionServer");
+        }
+
+        [TestMethod]
+        public void StaticCallFailure_GetRestrictionPatterns()
+        {
+            List<RestrictionPattern> oPatterns;
+            var res = RestrictionPattern.GetRestrictionPatterns(null, "bogus", out oPatterns);
+            Assert.IsFalse(res.Success, "Static call to GetRestrictionPattners did not fail with null Connection server");
+
+            res = RestrictionPattern.GetRestrictionPatterns(_connectionServer, "", out oPatterns);
+            Assert.IsFalse(res.Success, "Static call to GetRestrictionPattners did not fail with empty objectId");
+
+        }
+
+        #endregion
+
+        
+        [TestMethod]
+        public void FetchTests()
+        {
             List<RestrictionTable> oTables;
             WebCallResult res = RestrictionTable.GetRestrictionTables(_connectionServer, out oTables);
             Assert.IsTrue(res.Success,"Fetching restriction tables failed:"+res);
+            Assert.IsTrue(oTables.Count>0,"No restriction tables fetched");
 
             string strTableName = "";
             string strTableObjectId = "";
             string strPatternObjectId = "";
 
-            foreach (var oTable in oTables)
+            strTableName = oTables[0].DisplayName;
+            strTableObjectId = oTables[0].ObjectId;
+
+            Console.WriteLine(oTables[0].ToString());
+            Console.WriteLine(oTables[0].DumpAllProps());
+            foreach (var oPattern in oTables[0].RestrictionPatterns())
             {
-                strTableName = oTable.DisplayName;
-                strTableObjectId = oTable.ObjectId;
-
-                Console.WriteLine(oTable.ToString());
-                Console.WriteLine(oTable.DumpAllProps());
-                foreach (var oPattern in oTable.RestrictionPatterns())
-                {
-                    strPatternObjectId = oPattern.ObjectId;
-                    Console.WriteLine(oPattern.ToString());
-                    Console.WriteLine(oPattern.DumpAllProps());
-                }
-                oTable.RestrictionPatterns(true);
-
+                strPatternObjectId = oPattern.ObjectId;
+                Console.WriteLine(oPattern.ToString());
+                Console.WriteLine(oPattern.DumpAllProps());
             }
+            oTables[0].RestrictionPatterns(true);
+
 
             Assert.IsFalse(string.IsNullOrEmpty(strTableObjectId),"No valid restriction table found in fetch");
             Assert.IsFalse(string.IsNullOrEmpty(strTableName), "No valid restriction table found in fetch");
@@ -192,17 +215,9 @@ namespace ConnectionCUPIFunctionsTest
             }
 
 
-            //static fetch failures
-            res = RestrictionTable.GetRestrictionTables(null, out oTables);
-            Assert.IsFalse(res.Success,"Static restriction table creation did not fail with null ConnectionServer");
-
-            List<RestrictionPattern> oPatterns;
-            res = RestrictionPattern.GetRestrictionPatterns(null, "bogus", out oPatterns);
-            Assert.IsFalse(res.Success,"Static call to GetRestrictionPattners did not fail with null Connection server");
-
-            res = RestrictionPattern.GetRestrictionPatterns(_connectionServer, "", out oPatterns);
-            Assert.IsFalse(res.Success, "Static call to GetRestrictionPattners did not fail with empty objectId");
-
+            
         }
+
+
     }
 }

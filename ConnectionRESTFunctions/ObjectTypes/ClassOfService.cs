@@ -780,7 +780,15 @@ namespace Cisco.UnityConnection.RestFunctions
             int pPageNumber=1, int pRowsPerPage=20,params string[] pClauses)
         {
             //tack on the paging items to the parameters list
-            var temp = pClauses.ToList();
+            List<string> temp;
+            if (pClauses == null)
+            {
+                temp = new List<string>();
+            }
+            else
+            {
+                temp = pClauses.ToList();
+            } 
             temp.Add("pageNumber=" + pPageNumber);
             temp.Add("rowsPerPage=" + pRowsPerPage);
 

@@ -112,6 +112,146 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Static Call Failures
+
+        [TestMethod]
+        public void StaticMethodFailure_DeleteContact()
+        {
+            //DeleteContact
+            var res = Contact.DeleteContact(null, "bogus");
+            Assert.IsFalse(res.Success, "Static call to DeleteContact did not return failure for null ConnectionServer");
+
+            res = Contact.DeleteContact(_connectionServer, "");
+            Assert.IsFalse(res.Success, "Static call to DeleteContact did not return failure for empty objectId");
+
+            res = Contact.DeleteContact(_connectionServer, "bogus");
+            Assert.IsFalse(res.Success, "Static call to DeleteContact did not return failure for invalid  ObjectID");
+        }
+
+        [TestMethod]
+        public void StaticMethodFailure_GetContact()
+        {
+            //GetContact
+            Contact oContact;
+            var res = Contact.GetContact(out oContact, null, "bogus");
+            Assert.IsFalse(res.Success, "Static call to GetContact did not return failure for null ConnectionServer");
+
+            res = Contact.GetContact(out oContact, _connectionServer);
+            Assert.IsFalse(res.Success, "Static call to GetContact did not return failure for empty objectId and alias");
+
+            res = Contact.GetContact(out oContact, _connectionServer, "bogus");
+            Assert.IsFalse(res.Success, "Static call to GetContact did not return failure for invalid ObjectId");
+
+            res = Contact.GetContact(out oContact, _connectionServer, "", "bogus");
+            Assert.IsFalse(res.Success, "Static call to GetContact did not return failure for invalid alias");
+        }
+
+        [TestMethod]
+        public void StaticMethodFailure_GetContactVoiceName()
+        {
+            //GetContactVoiceName
+            var res = Contact.GetContactVoiceName(null, "boguspath", "bogus", "bogus");
+            Assert.IsFalse(res.Success, "Static call to did not return failure for ");
+
+            res = Contact.GetContactVoiceName(_connectionServer, "", "bogus", "bogus");
+            Assert.IsFalse(res.Success, "Static call to did not return failure for empty local wav path");
+
+            res = Contact.GetContactVoiceName(_connectionServer, "bogus", "", "bogus");
+            Assert.IsFalse(res.Success, "Static call to did not return failure for empty objectId");
+
+            res = Contact.GetContactVoiceName(_connectionServer, "temp.wav", "bogus", "bogus");
+            Assert.IsFalse(res.Success, "Static call to did not return failure for invalid objectId");
+
+            res = Contact.GetContactVoiceName(_connectionServer, "temp.wav", "bogus");
+            Assert.IsFalse(res.Success, "Static call to did not return failure for invalid objectId");
+        }
+
+        [TestMethod]
+        public void StaticMethodFailure_SetContactVoiceName()
+        {
+            //SetContactVoiceName
+            var res = Contact.SetContactVoiceName(null, "bogus", "bogus");
+            Assert.IsFalse(res.Success, "Static call to SetContactVoiceName did not return failure for null ConnectionServer");
+
+            res = Contact.SetContactVoiceName(_connectionServer, "bogus", "", true);
+            Assert.IsFalse(res.Success, "Static call to SetContactVoiceName did not return failure for empty objectId");
+
+            res = Contact.SetContactVoiceName(_connectionServer, "", "bogus", true);
+            Assert.IsFalse(res.Success, "Static call to SetContactVoiceName did not return failure for empty wav path ");
+
+            res = Contact.SetContactVoiceName(_connectionServer, "Dummy.wav", "bogus", true);
+            Assert.IsFalse(res.Success, "Static call to SetContactVoiceName did not return failure for invalid ObjectId");
+        }
+
+        [TestMethod]
+        public void StaticMethodFailure_SetContactVoiceNameToStream()
+        {
+            //SetContactVoiceNameToStream
+            var res = Contact.SetContactVoiceNameToStreamFile(null, "bogus", "bogus");
+            Assert.IsFalse(res.Success, "Static call to SetContactVoiceNameToStreamFile did not return failure for null ConnectionServer");
+
+            res = Contact.SetContactVoiceNameToStreamFile(_connectionServer, "", "bogus");
+            Assert.IsFalse(res.Success, "Static call to SetContactVoiceNameToStreamFile did not return failure for empty objectId");
+
+            res = Contact.SetContactVoiceNameToStreamFile(_connectionServer, "bogus", "");
+            Assert.IsFalse(res.Success, "Static call to SetContactVoiceNameToStreamFile did not return failure for empty Wav resource Id");
+
+            res = Contact.SetContactVoiceNameToStreamFile(_connectionServer, "bogus", "bogus");
+            Assert.IsFalse(res.Success, "Static call to SetContactVoiceNameToStreamFile did not return failure for invalid objectId");
+        }
+
+        [TestMethod]
+        public void StaticMethodFailure_GetContacts()
+        {
+            //GetContacts
+            List<Contact> oContacts;
+            var res = Contact.GetContacts(null, out oContacts);
+            Assert.IsFalse(res.Success, "Static call to GetContacts did not return failure for null ConnectionServer");
+
+            res = Contact.GetContacts(_connectionServer, out oContacts, "query=(bogus)", "", "sort=(bogus)");
+            Assert.IsFalse(res.Success, "Static call to GetContacts did not return failure for invalid query construction");
+        }
+
+        [TestMethod]
+        public void StaticMethodFailure_Update()
+        {
+            //Update
+            var res = Contact.UpdateContact(null, "bogus", null);
+            Assert.IsFalse(res.Success, "Static call to UpdateContact did not return failure for null ConnectionServer");
+
+            res = Contact.UpdateContact(_connectionServer, "bogus", null);
+            Assert.IsFalse(res.Success, "Static call to UpdateContact did not return failure for null property list");
+
+            ConnectionPropertyList oProps = new ConnectionPropertyList();
+
+            res = Contact.UpdateContact(_connectionServer, "bogus", oProps);
+            Assert.IsFalse(res.Success, "Static call to UpdateContact did not return failure for empty property list");
+
+            oProps.Add("bogus", "bogus");
+            res = Contact.UpdateContact(_connectionServer, "bogus", oProps);
+            Assert.IsFalse(res.Success, "Static call to UpdateContact did not return failure for invalid objectId");
+
+        }
+
+        [TestMethod]
+        public void StaticMethodFailure_AddContact()
+        {
+            //AddContact
+            WebCallResult res = Contact.AddContact(null, "bogus", "bogus", "bogus", "bogus", "bogus", null);
+            Assert.IsFalse(res.Success, "Static call to AddContact did not return failure for null Connection server");
+
+            res = Contact.AddContact(_connectionServer, "", "bogus", "bogus", "bogus", "bogus", null);
+            Assert.IsFalse(res.Success, "Static call to AddContact did not return failure for empty template alias string ");
+
+            res = Contact.AddContact(_connectionServer, "bogus", "bogus", "bogus", "bogus", "", null);
+            Assert.IsFalse(res.Success, "Static call to AddContact did not return failure for empty alias string");
+        }
+
+        #endregion
+
+
+        #region Live Tests
+
         /// <summary>
         /// Since a clean system will not have any contacts on it we need to do the add test up front so we can then do 
         /// the fetch tests.
@@ -167,116 +307,8 @@ namespace ConnectionCUPIFunctionsTest
              Assert.IsFalse(res.Success, "Call to set voice name to streamFile with empty stream file name did not fail");
          }
 
-
-        [TestMethod]
-        public void StaticMethodFailures()
-        {
-            //AddContact
-            WebCallResult res = Contact.AddContact(null, "bogus", "bogus", "bogus", "bogus", "bogus", null);
-            Assert.IsFalse(res.Success, "Static call to AddContact did not return failure for null Connection server");
-
-            res = Contact.AddContact(_connectionServer, "", "bogus", "bogus", "bogus", "bogus", null);
-            Assert.IsFalse(res.Success,"Static call to AddContact did not return failure for empty template alias string ");
-
-            res = Contact.AddContact(_connectionServer, "bogus", "bogus", "bogus", "bogus", "", null);
-            Assert.IsFalse(res.Success, "Static call to AddContact did not return failure for empty alias string");
-
-            //DeleteContact
-            res = Contact.DeleteContact(null, "bogus");
-            Assert.IsFalse(res.Success, "Static call to DeleteContact did not return failure for null ConnectionServer");
-
-            res = Contact.DeleteContact(_connectionServer, "");
-            Assert.IsFalse(res.Success, "Static call to DeleteContact did not return failure for empty objectId");
-
-            res = Contact.DeleteContact(_connectionServer, "bogus");
-            Assert.IsFalse(res.Success, "Static call to DeleteContact did not return failure for invalid ObjectID");
-
-            //GetContact
-            Contact oContact;
-            res = Contact.GetContact(out oContact, null, "bogus");
-            Assert.IsFalse(res.Success, "Static call to GetContact did not return failure for null ConnectionServer");
-
-            res = Contact.GetContact(out oContact, _connectionServer);
-            Assert.IsFalse(res.Success, "Static call to GetContact did not return failure for empty objectId and alias");
-
-            res = Contact.GetContact(out oContact, _connectionServer, "bogus");
-            Assert.IsFalse(res.Success, "Static call to GetContact did not return failure for invalid ObjectId");
-
-            res = Contact.GetContact(out oContact, _connectionServer, "", "bogus");
-            Assert.IsFalse(res.Success, "Static call to GetContact did not return failure for invalid alias");
-
-            //GetContactVoiceName
-            res = Contact.GetContactVoiceName(null, "boguspath", "bogus", "bogus");
-            Assert.IsFalse(res.Success, "Static call to did not return failure for ");
-
-            res = Contact.GetContactVoiceName(_connectionServer, "", "bogus", "bogus");
-            Assert.IsFalse(res.Success, "Static call to did not return failure for empty local wav path");
-
-            res = Contact.GetContactVoiceName(_connectionServer, "bogus", "", "bogus");
-            Assert.IsFalse(res.Success, "Static call to did not return failure for empty objectId");
-
-            res = Contact.GetContactVoiceName(_connectionServer, "temp.wav", "bogus", "bogus");
-            Assert.IsFalse(res.Success, "Static call to did not return failure for invalid objectId");
-
-            res = Contact.GetContactVoiceName(_connectionServer, "temp.wav", "bogus");
-            Assert.IsFalse(res.Success, "Static call to did not return failure for invalid objectId");
-
-
-            //SetContactVoiceName
-            res = Contact.SetContactVoiceName(null, "bogus", "bogus");
-            Assert.IsFalse(res.Success, "Static call to SetContactVoiceName did not return failure for null ConnectionServer");
-            
-            res = Contact.SetContactVoiceName(_connectionServer, "bogus", "", true);
-            Assert.IsFalse(res.Success, "Static call to SetContactVoiceName did not return failure for empty objectId");
-
-            res = Contact.SetContactVoiceName(_connectionServer, "", "bogus", true);
-            Assert.IsFalse(res.Success, "Static call to SetContactVoiceName did not return failure for empty wav path ");
-
-            res = Contact.SetContactVoiceName(_connectionServer, "Dummy.wav", "bogus", true);
-            Assert.IsFalse(res.Success, "Static call to SetContactVoiceName did not return failure for invalid ObjectId");
-
-
-            //SetContactVoiceNameToStream
-            res = Contact.SetContactVoiceNameToStreamFile(null, "bogus", "bogus");
-            Assert.IsFalse(res.Success, "Static call to SetContactVoiceNameToStreamFile did not return failure for null ConnectionServer");
-
-            res = Contact.SetContactVoiceNameToStreamFile(_connectionServer, "", "bogus");
-            Assert.IsFalse(res.Success, "Static call to SetContactVoiceNameToStreamFile did not return failure for empty objectId");
-
-            res = Contact.SetContactVoiceNameToStreamFile(_connectionServer, "bogus", "");
-            Assert.IsFalse(res.Success, "Static call to SetContactVoiceNameToStreamFile did not return failure for empty Wav resource Id");
-
-            res = Contact.SetContactVoiceNameToStreamFile(_connectionServer, "bogus", "bogus");
-            Assert.IsFalse(res.Success, "Static call to SetContactVoiceNameToStreamFile did not return failure for invalid objectId");
-
-
-            //GetContacts
-            List<Contact> oContacts;
-            res = Contact.GetContacts(null, out oContacts);
-            Assert.IsFalse(res.Success, "Static call to GetContacts did not return failure for null ConnectionServer");
-
-            res = Contact.GetContacts(_connectionServer, out oContacts,"query=(bogus)","","sort=(bogus)");
-            Assert.IsFalse(res.Success, "Static call to GetContacts did not return failure for invalid query construction");
-
-            //Update
-            res = Contact.UpdateContact(null, "bogus", null);
-            Assert.IsFalse(res.Success, "Static call to UpdateContact did not return failure for null ConnectionServer");
-
-            res = Contact.UpdateContact(_connectionServer, "bogus", null);
-            Assert.IsFalse(res.Success, "Static call to UpdateContact did not return failure for null property list");
-
-            ConnectionPropertyList oProps = new ConnectionPropertyList();
-
-            res = Contact.UpdateContact(_connectionServer, "bogus", oProps);
-            Assert.IsFalse(res.Success, "Static call to UpdateContact did not return failure for empty property list");
-
-            oProps.Add("bogus","bogus");
-            res = Contact.UpdateContact(_connectionServer, "bogus", oProps);
-            Assert.IsFalse(res.Success, "Static call to UpdateContact did not return failure for invalid objectId");
-        }
-
          [TestMethod]
-        private void ContactFetchTests()
+        public void ContactFetchTests()
         {
             List<Contact> oContacts;
             WebCallResult res = Contact.GetContacts(_connectionServer, out oContacts);
@@ -289,8 +321,16 @@ namespace ConnectionCUPIFunctionsTest
                 Console.WriteLine(oContact.DumpAllProps());
             }
 
+             res = Contact.GetContacts(_connectionServer, out oContacts, 1, 20, "query=(blah is blah)");
+             Assert.IsFalse(res.Success,"Fetching contacts with invalid query construction did not fail");
+
+             
+             res = Contact.GetContacts(_connectionServer, out oContacts, 1, 20, "query=(objectId is blah)");
+             Assert.IsTrue(res.Success, "Fetching contacts with valid query failed:"+res);
+             Assert.IsTrue(oContacts.Count==0,"Contacts for invalid objectId query did not return 0:"+res);
+
         }
 
-
+        #endregion
     }
 }

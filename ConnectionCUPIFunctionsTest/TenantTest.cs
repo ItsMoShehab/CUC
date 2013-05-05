@@ -111,8 +111,52 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
+
+        #region Static Test Failures
+
         [TestMethod]
-        public void Tenant_StaticMethodFailures()
+        public void StaticCallFailures_DeleteTenant()
+        {
+            //DeleteTenant
+            var res = Tenant.DeleteTenant(null, "objectid");
+            Assert.IsFalse(res.Success, "");
+
+            res = Tenant.DeleteTenant(_connectionServer, "objectid");
+            Assert.IsFalse(res.Success, "");
+
+            res = Tenant.DeleteTenant(_connectionServer, "");
+            Assert.IsFalse(res.Success, "");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_GetTenant()
+        {
+            //GetTenant
+            Tenant oTenant;
+            var res = Tenant.GetTenant(out oTenant, null, "objectId");
+            Assert.IsFalse(res.Success, "");
+
+            res = Tenant.GetTenant(out oTenant, _connectionServer, "objectId");
+            Assert.IsFalse(res.Success, "");
+
+            res = Tenant.GetTenant(out oTenant, _connectionServer, "", "bogus");
+            Assert.IsFalse(res.Success, "");
+
+            res = Tenant.GetTenant(out oTenant, _connectionServer);
+            Assert.IsFalse(res.Success, "");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_GetTenants()
+        {
+            //GetTenants
+            List<Tenant> oTenants;
+            var res = Tenant.GetTenants(null, out oTenants, 1, 1);
+            Assert.IsFalse(res.Success, "");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_AddTenant()
         {
             //AddTenant
             WebCallResult res = Tenant.AddTenant(null, "alias", "domain", "description");
@@ -124,35 +168,9 @@ namespace ConnectionCUPIFunctionsTest
             res = Tenant.AddTenant(_connectionServer, "alias", "", "description");
             Assert.IsFalse(res.Success, "");
 
-            //DeleteTenant
-            res = Tenant.DeleteTenant(null, "objectid");
-            Assert.IsFalse(res.Success, "");
-
-            res = Tenant.DeleteTenant(_connectionServer, "objectid");
-            Assert.IsFalse(res.Success, "");
-
-            res = Tenant.DeleteTenant(_connectionServer, "");
-            Assert.IsFalse(res.Success, "");
-
-            //GetTenant
-            Tenant oTenant;
-            res = Tenant.GetTenant(out oTenant, null, "objectId");
-            Assert.IsFalse(res.Success, "");
-
-            res = Tenant.GetTenant(out oTenant, _connectionServer, "objectId");
-            Assert.IsFalse(res.Success, "");
-
-            res = Tenant.GetTenant(out oTenant, _connectionServer, "","bogus");
-            Assert.IsFalse(res.Success, "");
-
-            res = Tenant.GetTenant(out oTenant, _connectionServer);
-            Assert.IsFalse(res.Success, "");
-
-            //GetTenants
-            List<Tenant> oTenants;
-            res = Tenant.GetTenants(null, out oTenants, 1, 1);
-            Assert.IsFalse(res.Success, "");
         }
+
+        #endregion
 
         [TestMethod]
         public void Tenant_SetTests()
