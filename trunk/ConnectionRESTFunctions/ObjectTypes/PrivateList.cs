@@ -75,8 +75,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Private List not found in PrivateList constructor using ObjectId={0} or NumericId={1}\n\r{2}"
-                                 , pObjectId, pNumericId, res.ErrorText));
+                throw new UnityConnectionRestException(res,string.Format("Private List not found in PrivateList constructor using ObjectId={0} " +
+                                                                         "or NumericId={1}\n\r{2}", pObjectId, pNumericId, res.ErrorText));
             }
         }
 
@@ -437,6 +437,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pDistributionList = new PrivateList(pConnectionServer,pOwnerUserObjectId, pObjectId, pNumericId);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

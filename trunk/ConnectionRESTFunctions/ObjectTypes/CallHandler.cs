@@ -76,8 +76,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Call Handler not found in CallHandler constructor using ObjectId={0} or DisplayName={1}\n\r{2}"
-                                 , pObjectId,pDisplayName, res.ErrorText));
+                throw new UnityConnectionRestException(res,string.Format("Call Handler not found in CallHandler constructor using ObjectId={0} or " +
+                                                                         "DisplayName={1}\n\r{2}", pObjectId,pDisplayName, res.ErrorText));
             }
         }
 
@@ -712,6 +712,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 pCallHandler = new CallHandler(pConnectionServer, pObjectId,pDisplayName);
                 res.Success = true;
             }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
+            }
+
             catch (Exception ex)
             {
                 res.ErrorText = "Failed to fetch handler in GetCallHandler:" + ex.Message;
@@ -997,6 +1002,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 {
                     oCallHandler = new CallHandler(pConnectionServer, pObjectId);
                 }
+                catch (UnityConnectionRestException ex)
+                {
+                    return ex.WebCallResult;
+                }
                 catch (Exception ex)
                 {
                     res.ErrorText = string.Format("Error fetching call handler in GetCallHandlerVoiceName with objectID{0}\n{1}", pObjectId, ex.Message);
@@ -1271,9 +1280,6 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //chop of the "wrapper" in the JSON response for easy parsing.
-            string strJson = res.ResponseText.TrimToEndOfToken(",\"CallHandler\":").TrimTokenFromEnd("}");
-            
             try
             {
                 JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "Callhandler"), this,

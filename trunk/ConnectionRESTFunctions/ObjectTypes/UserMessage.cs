@@ -178,7 +178,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 WebCallResult res = GetMessage(pMessageObjectId, pUserObjectId);
                 if (res.Success == false)
                 {
-                    throw new Exception("Failed to find message using messageObjectId:" + res);
+                    throw new UnityConnectionRestException(res,"Failed to find message using messageObjectId:" + res);
                 }
             }
         }
@@ -273,23 +273,32 @@ namespace Cisco.UnityConnection.RestFunctions
         /// millisecond offset from 1970 for a date
         /// </param>
         /// <param name="pConvertToLocal">
-        /// convert to local time of the PC we're running on.  Defaults to true otherwise
-        /// the value is return as UTC
+        /// defaults to null which means the date is not converted.  If passed as true the time will be converted
+        /// into local time, if passed as false it will be converted into UTC.
         /// </param>
         /// <returns>
         /// TimeDate instance.
         /// </returns>
-        public static DateTime ConvertFromMillisecondsToTimeDate(long pMilliseconds, bool pConvertToLocal = true)
+        public static DateTime ConvertFromMillisecondsToTimeDate(long pMilliseconds, bool? pConvertToLocal = null)
         {
             DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
             origin = origin.AddMilliseconds(pMilliseconds);
 
-            if (pConvertToLocal)
+            if (pConvertToLocal == null)
+            {
+                return origin;
+            }
+            
+            if (pConvertToLocal == false)
+            {
+                origin = origin.ToUniversalTime();
+            }
+            else
+            {
                 origin = origin.ToLocalTime();
+            }
 
             return origin;
-
-            
         }
 
         /// <summary>
@@ -299,23 +308,30 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pDateTime">
         /// Date/time to convert
         /// </param>
-        /// <param name="pConvertToUtc">
-        /// Converts the time to UTC (default).  IF the time is already in UTC pass this as FALSE.
+        /// <param name="pConvertToLocal">
+        /// Defaults to null which means the date is not converted.
+        /// If passed as true, it's converted into the local time of the client.
+        /// If passed as false it's converted into UTC
         ///  </param>
         /// <returns>
         /// long representing the number of milliseconds from 1970
         /// </returns>
-        public static long ConvertFromTimeDateToMilliseconds(DateTime pDateTime, bool pConvertToUtc = true)
+        public static long ConvertFromTimeDateToMilliseconds(DateTime pDateTime, bool? pConvertToLocal = null)
         {
             DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
             TimeSpan diff;
-            if (pConvertToUtc)
+            
+            if (pConvertToLocal== null)
+            {
+                diff = pDateTime - origin;
+            }
+            else if (pConvertToLocal==false)
             {
                 diff = pDateTime.ToUniversalTime() - origin;
             }
             else
             {
-                diff = pDateTime - origin;
+                diff = pDateTime.ToLocalTime() - origin;
             }
 
             return (long)Math.Floor(diff.TotalMilliseconds);

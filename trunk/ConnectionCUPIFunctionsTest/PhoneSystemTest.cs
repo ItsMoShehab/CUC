@@ -101,8 +101,11 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTest);
         }
 
+        /// <summary>
+        /// Throw UnityConnectionRestException on invalid objectId
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreation_Failure2()
         {
             PhoneSystem oTest = new PhoneSystem(_connectionServer, "aaa");

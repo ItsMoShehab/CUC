@@ -47,7 +47,7 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res = GetVmsServer(pObjectId);
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Failed to fetch VmsServer by ObjectId={0}", pObjectId));
+                throw new UnityConnectionRestException(res,string.Format("Failed to fetch VmsServer by ObjectId={0}", pObjectId));
             }
         }
 

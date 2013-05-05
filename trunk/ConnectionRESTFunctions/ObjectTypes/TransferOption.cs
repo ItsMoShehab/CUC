@@ -83,8 +83,9 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Transfer Option not found in TransferOption constructor using CallHandlerObjectID={0} and rule={1}\n\rError={2}",
-                    pCallHandlerObjectId, pTransferOptionType, res.ErrorText));
+                throw new UnityConnectionRestException(res,string.Format("Transfer Option not found in TransferOption constructor using " +
+                                                                         "CallHandlerObjectID={0} and rule={1}\n\rError={2}",
+                                                                         pCallHandlerObjectId, pTransferOptionType, res.ErrorText));
             }
         }
 
@@ -423,6 +424,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pTransferOption = new TransferOption(pConnectionServer, pCallHandlerObjectId, pTransferOptionType);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

@@ -87,18 +87,21 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// 
+        /// UnityConnectionRestException on invalid ObjectId
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure_InvalidObjectId()
         {
             Tenant oTest = new Tenant(_connectionServer,"bogus");
             Console.WriteLine(oTest);
         }
 
+        /// <summary>
+        /// throw UnityConnectionRestException on invalid alias
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure_InvalidAlias()
         {
             Tenant oTest = new Tenant(_connectionServer, "","bogus");

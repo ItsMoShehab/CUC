@@ -85,7 +85,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
             }
 
-            throw new Exception("Failed to connect to phone");
+            throw new UnityConnectionRestException(res,"Failed to connect to phone");
         }
 
         #endregion

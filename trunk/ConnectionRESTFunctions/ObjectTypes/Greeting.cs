@@ -83,8 +83,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Greeting not found in Greeting constructor using CallHandlerObjectID={0} and greeting type={1}\n\rError={2}",
-                    pCallHandlerObjectId, pGreetingType, res.ErrorText));
+                throw new UnityConnectionRestException(res,string.Format("Greeting not found in Greeting constructor using CallHandlerObjectID={0} " +
+                                                                         "and greeting type={1}\n\rError={2}",pCallHandlerObjectId, pGreetingType, res.ErrorText));
             }
         }
 
@@ -341,6 +341,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pGreeting = new Greeting(pConnectionServer, pCallHandlerObjectId, pGreetingType);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

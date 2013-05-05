@@ -97,7 +97,7 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res = LoadTimeZones(pConnectionServer);
             if (res.Success == false)
             {
-                throw new Exception("Failed to fetch timezones in TimeZones constructor:" + res.ToString());
+                throw new UnityConnectionRestException(res,"Failed to fetch timezones in TimeZones constructor:" + res.ToString());
             }
         }
 

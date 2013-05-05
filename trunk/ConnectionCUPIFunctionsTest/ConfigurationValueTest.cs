@@ -64,20 +64,20 @@ namespace ConnectionCUPIFunctionsTest
 
 
         /// <summary>
-        /// Make sure an Exception is thrown if an invalid ConnectionServer is passed in.
+        /// Make sure an UnityConnectionRestException is thrown if an invalid ConnectionServer is passed in.
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
             ConfigurationValue oTest = new ConfigurationValue(new ConnectionServer(),"blah");
         }
 
         /// <summary>
-        /// Make sure an Exception is thrown if an invalid configuration item name is passed in.
+        /// Make sure an UnityConnectionRestException is thrown if an invalid configuration item name is passed in.
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure3()
         {
             ConfigurationValue oTest = new ConfigurationValue(_connectionServer, "blah");

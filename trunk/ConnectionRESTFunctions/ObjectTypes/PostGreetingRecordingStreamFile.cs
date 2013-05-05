@@ -82,7 +82,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Greeting stream file not found in PostGreetingRecordingStreamFile constructor " +
+                throw new UnityConnectionRestException(res,string.Format("Greeting stream file not found in PostGreetingRecordingStreamFile constructor " +
                                                   "using pPostGreetingRecordingObjectId={0} and language{1}\n\rError={2}",
                                                   pPostGreetingRecordingObjectId, pLanguageCode, res.ErrorText));
             }
@@ -316,6 +316,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 pGreetingStreamFile = new PostGreetingRecordingStreamFile(pConnectionServer, pPostGreetingRecordingObjectId, pLanguageCode);
                 res.Success = true;
             }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
+            }
             catch (Exception ex)
             {
                 res.ErrorText = "Failed to fetch greeting stream file in GetGreetingStreamFile:" + ex.Message;
@@ -498,6 +502,10 @@ namespace Cisco.UnityConnection.RestFunctions
             try
             {
                 oStreamFile = new PostGreetingRecordingStreamFile(pConnectionServer, pPostGreetingRecordingObjectId, pLanguageCode);
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

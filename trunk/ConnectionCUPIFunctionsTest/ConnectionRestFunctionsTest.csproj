@@ -98,6 +98,7 @@
     <Compile Include="PhoneRecordingTest.cs" />
     <Compile Include="CosTest.cs" />
     <Compile Include="NotificationTemplateTest.cs" />
+    <Compile Include="UserMessageTest.cs" />
     <Compile Include="UserTemplateTest.cs" />
     <Compile Include="UserTest.cs" />
     <Compile Include="VmsServerTest.cs" />

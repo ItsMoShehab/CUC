@@ -59,7 +59,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception("Failed to fetch mailbox details in MailboxInfo constructor"+res.ErrorText);
+                throw new UnityConnectionRestException(res,"Failed to fetch mailbox details in MailboxInfo constructor"+res.ErrorText);
             }
         }
 

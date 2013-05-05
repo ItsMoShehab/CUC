@@ -50,7 +50,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Unable to find post greeting recording by objectId={0}, name={1}. " +
+                throw new UnityConnectionRestException(res,string.Format("Unable to find post greeting recording by objectId={0}, name={1}. " +
                                                   "Error={2}", pObjectId, pDisplayName, res));
             }
         }
@@ -452,6 +452,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pPostGreetingRecording = new PostGreetingRecording(pConnectionServer, pObjectId, pDisplayName);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

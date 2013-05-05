@@ -63,10 +63,10 @@ namespace ConnectionCUPIFunctionsTest
         #region Constructor Tests
 
         /// <summary>
-        /// Make sure an Exception is thrown if the objectId for an SMPP provider is not found
+        /// Make sure an UnityConnectionRestException is thrown if the objectId for an SMPP provider is not found
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreation_Failure()
         {
             SmppProvider oTest = new SmppProvider(_connectionServer, "aaa");

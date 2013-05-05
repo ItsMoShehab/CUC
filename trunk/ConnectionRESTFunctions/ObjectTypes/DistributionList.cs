@@ -62,8 +62,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Distribution List not found in DistributionList constructor using ObjectId={0} or DisplayName={1}\n\r{2}"
-                                 , pObjectId, pAlias, res.ErrorText));
+                throw new UnityConnectionRestException(res,string.Format("Distribution List not found in DistributionList constructor using " +
+                                                                         "ObjectId={0} or DisplayName={1}\n\r{2}", pObjectId, pAlias, res.ErrorText));
             }
         }
 
@@ -627,6 +627,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 pDistributionList = new DistributionList(pConnectionServer, pObjectId, pAlias);
                 res.Success = true;
             }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
+            }
             catch (Exception ex)
             {
                 res.ErrorText = "Failed to fetch list in GetDistributionList:" + ex.Message;
@@ -764,6 +768,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 try
                 {
                     oDistributionList = new DistributionList(pConnectionServer, pObjectId);
+                }
+                catch (UnityConnectionRestException ex)
+                {
+                    return ex.WebCallResult;
                 }
                 catch (Exception ex)
                 {

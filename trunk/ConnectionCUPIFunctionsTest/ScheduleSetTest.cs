@@ -86,16 +86,22 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTest);
         }
 
+        /// <summary>
+        /// UnityConnectionRestException on invalid ObjectId
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
             ScheduleSet oTest = new ScheduleSet(_connectionServer,"bogus");
             Console.WriteLine(oTest);
         }
 
+        /// <summary>
+        /// UnityConnectionRestException on invalid name
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure3()
         {
             ScheduleSet oTest = new ScheduleSet(_connectionServer,"","bogus");

@@ -68,8 +68,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("UserTemplate not found in UserTemplate constructor using Alias={0} and/or ObjectId={1}\n\rError={2}"
-                                                , pAlias, pObjectId, res.ErrorText));
+                throw new UnityConnectionRestException(res, string.Format("UserTemplate not found in UserTemplate constructor using Alias={0} " +
+                                                                          "and/or ObjectId={1}\n\rError={2}", pAlias, pObjectId, res.ErrorText));
             }
         }
 
@@ -2444,6 +2444,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pUserTemplate = new UserTemplate(pConnectionServer, pObjectId, pAlias);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

@@ -69,16 +69,22 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTest);
         }
 
+        /// <summary>
+        /// Make sure a UnityConnectionRestException is thrown for an invalid objectId
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
             GlobalUser oTest = new GlobalUser(_connectionServer,"bogus");
             Console.WriteLine(oTest);
         }
 
+        /// <summary>
+        /// Throw a UnityConnectionRestException if the alias is invalid
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure3()
         {
             GlobalUser oTest = new GlobalUser(_connectionServer,"","bogus");

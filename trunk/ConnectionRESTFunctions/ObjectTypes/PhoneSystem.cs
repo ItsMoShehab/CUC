@@ -611,6 +611,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 pPhoneSystem = new PhoneSystem(pConnectionServer, pObjectId, pDisplayName);
                 res.Success = true;
             }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
+            }
             catch (Exception ex)
             {
                 res.ErrorText = "Failed to fetch phone system in GetPhonesystem:" + ex.Message;

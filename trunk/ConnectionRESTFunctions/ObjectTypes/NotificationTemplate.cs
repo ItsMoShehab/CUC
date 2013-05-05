@@ -52,8 +52,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Notification template not found in NotificationTemplate constructor using ObjectId={0}\n\r{1}"
-                                                 , pObjectId, res.ErrorText));
+                throw new UnityConnectionRestException(res,string.Format("Notification template not found in NotificationTemplate constructor using " +
+                                                                         "ObjectId={0}\n\r{1}", pObjectId, res.ErrorText));
             }
         }
 

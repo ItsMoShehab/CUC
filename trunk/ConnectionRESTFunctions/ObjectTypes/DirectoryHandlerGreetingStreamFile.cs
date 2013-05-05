@@ -81,7 +81,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Greeting stream file not found in DirectoryHandlerGreetingStreamFile constructor " +
+                throw new UnityConnectionRestException(res,string.Format("Greeting stream file not found in DirectoryHandlerGreetingStreamFile constructor " +
                                                   "using DirectoryHandlerObjectID={0} and language{1}\n\rError={2}",
                                                   pDirectoryHandlerObjectId, pLanguageCode, res.ErrorText));
             }
@@ -315,6 +315,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pGreetingStreamFile = new DirectoryHandlerGreetingStreamFile(pConnectionServer, pDirectoryHandlerObjectId, pLanguageCode);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

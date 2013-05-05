@@ -45,7 +45,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Cluster details not found in Cluster constructor\n\r{0}", res.ErrorText));
+                throw new UnityConnectionRestException(res,string.Format("Cluster details not found in Cluster constructor\n\r{0}", res.ErrorText));
             }
         }
 

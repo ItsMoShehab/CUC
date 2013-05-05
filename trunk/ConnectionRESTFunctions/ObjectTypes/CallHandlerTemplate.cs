@@ -67,7 +67,7 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res = GetCallHandlerTemplate(pObjectId, pDisplayName);
             if (res.Success == false)
             {
-                throw new Exception("Failed to fetch handler template by alias or objectId:" + res);
+                throw new UnityConnectionRestException(res,"Failed to fetch handler template by alias or objectId:" + res);
             }
 
         }
@@ -576,6 +576,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pCallHandlerTemplate = new CallHandlerTemplate(pConnectionServer, pObjectId, pDisplayName);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

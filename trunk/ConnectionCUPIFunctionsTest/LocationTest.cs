@@ -69,10 +69,10 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// Throw an exception if an invalid objectId is passed
+        /// Throw an UnityConnectionRestException if an invalid objectId is passed
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
             Location oTestLocation = new Location(_connectionServer, "bogus");
@@ -80,10 +80,10 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// Throw an exception if an invalid host address is passed
+        /// Throw an UnityConnectionRestException if an invalid name address is passed
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure3()
         {
             Location oTestLocation = new Location(_connectionServer, "", "bogus");

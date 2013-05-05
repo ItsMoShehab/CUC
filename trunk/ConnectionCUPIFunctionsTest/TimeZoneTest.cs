@@ -67,8 +67,11 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTest);
         }
 
+        /// <summary>
+        /// UnityConnectionRestException on invalid ConnectionServer
+        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
             TimeZones oTest = new TimeZones(new ConnectionServer());

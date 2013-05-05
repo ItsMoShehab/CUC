@@ -48,7 +48,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Unable to find search space by objectId={0}, name={1}. Error={2}", pObjectId, pName, res));
+                throw new UnityConnectionRestException(res,string.Format("Unable to find search space by objectId={0}, name={1}. Error={2}", 
+                    pObjectId, pName, res));
             }
         }
 

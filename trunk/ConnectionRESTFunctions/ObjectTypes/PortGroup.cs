@@ -63,7 +63,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Port group not found in PortGroup constructor using ObjectId={0}\n\r{1}"
+                throw new UnityConnectionRestException(res,string.Format("Port group not found in PortGroup constructor using ObjectId={0}\n\r{1}"
                                                  , pObjectId, res.ErrorText));
             }
         }
@@ -822,6 +822,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pPortGroup = new PortGroup(pConnectionServer, pObjectId, pDisplayName);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

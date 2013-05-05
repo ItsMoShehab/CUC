@@ -45,7 +45,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception("Failed to find SmppProvider in SmppConstructor:" + res.ToString());
+                throw new UnityConnectionRestException(res, "Failed to find SmppProvider in SmppConstructor:" + res.ToString());
             }
         }
 

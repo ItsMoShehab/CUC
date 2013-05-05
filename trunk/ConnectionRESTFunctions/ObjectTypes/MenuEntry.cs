@@ -79,8 +79,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Menu Entry not found in MenuEntry constructor using CallHandlerObjectID={0} and key={1}\n\rError={2}",
-                    pCallHandlerObjectId, pKey, res.ErrorText));
+                throw new UnityConnectionRestException(res,string.Format("Menu Entry not found in MenuEntry constructor using CallHandlerObjectID={0} " +
+                                                                         "and key={1}\n\rError={2}",pCallHandlerObjectId, pKey, res.ErrorText));
             }
         }
 
@@ -251,6 +251,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pMenuEntry = new MenuEntry(pConnectionServer, pCallHandlerObjectId,pKeyName );
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

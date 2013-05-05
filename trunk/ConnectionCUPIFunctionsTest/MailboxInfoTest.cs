@@ -105,10 +105,10 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// Make sure an ArgumentException is thrown if an invalid Connection server is passed
+        /// Make sure an UnityConnectionRestException is thrown if an invalid user objectId is passed
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure3()
         {
             MailboxInfo otest = new MailboxInfo(new ConnectionServer(), "blah");

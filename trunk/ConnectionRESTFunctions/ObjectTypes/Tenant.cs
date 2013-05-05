@@ -65,7 +65,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(
+                throw new UnityConnectionRestException(res,
                     string.Format("Tenant not found in constructor using ObjectId={0} and Alias={1}\n\r{2}", pObjectId, pAlias, res.ErrorText));
             }
         }
@@ -281,6 +281,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pTenant = new Tenant(pConnectionServer, pObjectId, pAlias);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

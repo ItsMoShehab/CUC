@@ -62,8 +62,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
-                throw new Exception(string.Format("Location not found in Location constructor using HostAddress={0} and/or ObjectId={1}\n\rError={2}"
-                                                , pDisplayName, pObjectId, res.ErrorText));
+                throw new UnityConnectionRestException(res,string.Format("Location not found in Location constructor using HostAddress={0} " +
+                                                                         "and/or ObjectId={1}\n\rError={2}", pDisplayName, pObjectId, res.ErrorText));
             }
         }
 
@@ -403,6 +403,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pLocation = new Location(pConnectionServer, pObjectId, pDisplayName);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

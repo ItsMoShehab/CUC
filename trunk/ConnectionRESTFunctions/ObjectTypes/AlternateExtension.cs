@@ -201,8 +201,12 @@ namespace Cisco.UnityConnection.RestFunctions
             //create a new Alternate Extension instance passing the ObjectId which fills out the data automatically
             try
             {
-                pAlternateExtension = new AlternateExtension(pConnectionServer, pObjectId,pObjectId);
+                pAlternateExtension = new AlternateExtension(pConnectionServer, pObjectId, pObjectId);
                 res.Success = true;
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                return ex.WebCallResult;
             }
             catch (Exception ex)
             {

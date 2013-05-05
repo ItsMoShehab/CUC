@@ -66,7 +66,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
                 if (res.Success == false)
                 {
-                    throw new Exception(
+                    throw new UnityConnectionRestException(res,
                         string.Format("Directory Handler not found in DirectoryHandler constructor using ObjectId={0} and DisplayName={1}\n\r{2}"
                                      , pObjectId, pDisplayName, res.ErrorText));
                 }
@@ -723,6 +723,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 {
                     pDirectoryHandler = new DirectoryHandler(pConnectionServer, pObjectId,pDisplayName);
                     res.Success = true;
+                }
+                catch (UnityConnectionRestException ex)
+                {
+                    return ex.WebCallResult;
                 }
                 catch (Exception ex)
                 {

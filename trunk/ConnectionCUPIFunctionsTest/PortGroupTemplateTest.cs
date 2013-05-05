@@ -71,10 +71,10 @@ namespace ConnectionCUPIFunctionsTest
         }
 
          /// <summary>
-         /// Make sure an invalid ObjectId passed into the constructor fails
+         /// throw UnityConnectionRestException invalid objectId
          /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
             PortGroupTemplate oTemp = new PortGroupTemplate(_connectionServer,"bogus");

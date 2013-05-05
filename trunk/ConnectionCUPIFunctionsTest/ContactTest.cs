@@ -88,10 +88,10 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// throw an exception if an invalid objectId is passed
+        /// throw an UnityConnectionRestException is thrown if an invalid objectId is passed
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
             Contact oTemp = new Contact(_connectionServer,"bogus");
@@ -99,10 +99,10 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// Throw an exception if an invalid alias is passed
+        /// Throw an UnityConnectionRestException if an invalid alias is passed
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure3()
         {
             Contact oTemp = new Contact(_connectionServer,"","bogus");
