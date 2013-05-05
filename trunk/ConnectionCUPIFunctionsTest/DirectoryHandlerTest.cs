@@ -88,6 +88,192 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Static Call Failures
+
+        /// <summary>
+        /// exercise failure points
+        /// </summary>
+        [TestMethod]
+        public void StaticCallFailures_GetDirectoryHandlers()
+        {
+            List<DirectoryHandler> oHandlerList;
+
+            WebCallResult res = DirectoryHandler.GetDirectoryHandlers(null, out oHandlerList, null);
+            Assert.IsFalse(res.Success, "GetDirectoryHandler should fail with null ConnectionServer passed to it");
+
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_AddDirectoryHandler()
+        {
+            DirectoryHandler oHandler;
+            var res = DirectoryHandler.AddDirectoryHandler(null, "display name", true, null, out oHandler);
+            Assert.IsFalse(res.Success, "Calling AddHandler with null ConnectionServer did not fail");
+
+            res = DirectoryHandler.AddDirectoryHandler(_connectionServer, "", true, null, out oHandler);
+            Assert.IsFalse(res.Success, "Calling AddHandler with empty display name did not fail");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_DeleteDirectoryHandler()
+        {
+            var res = DirectoryHandler.DeleteDirectoryHandler(null, "objectid");
+            Assert.IsFalse(res.Success, "Calling DeleteDirectoryHandler with null ConnectionServer did not fail");
+
+            res = DirectoryHandler.DeleteDirectoryHandler(_connectionServer, "objectid");
+            Assert.IsFalse(res.Success, "Calling DeleteDirectoryHandler with invalid objectId did not fail");
+
+            res = DirectoryHandler.DeleteDirectoryHandler(_connectionServer, "");
+            Assert.IsFalse(res.Success, "Calling DeleteDirectoryHandler with empty objectId did not fail");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_UpdateDirectoryHandler()
+        {
+            var res = DirectoryHandler.UpdateDirectoryHandler(null, "objectid", null);
+            Assert.IsFalse(res.Success, "Calling UpdateDirectoryHandler with null ConnectionServer did not fail");
+
+            res = DirectoryHandler.UpdateDirectoryHandler(_connectionServer, "objectid", null);
+            Assert.IsFalse(res.Success, "Calling UpdateDirectoryHandler with null property list did not fail");
+
+            res = DirectoryHandler.UpdateDirectoryHandler(_connectionServer, "", null);
+            Assert.IsFalse(res.Success, "Calling UpdateDirectoryHandler with empty objectid did not fail");
+
+            res = DirectoryHandler.UpdateDirectoryHandler(_connectionServer, "objectid", new ConnectionPropertyList());
+            Assert.IsFalse(res.Success, "Calling UpdateDirectoryHandler with empty property list did not fail");
+
+            res = DirectoryHandler.UpdateDirectoryHandler(_connectionServer, "objectid", new ConnectionPropertyList("name", "value"));
+            Assert.IsFalse(res.Success, "Calling UpdateDirectoryHandler with invalid objectId did not fail");
+        }
+
+        /// <summary>
+        /// exercise failure points
+        /// </summary>
+        [TestMethod]
+        public void StaticCallFailures_GetDirectoryHandler()
+        {
+            DirectoryHandler oHandler;
+
+            WebCallResult res = DirectoryHandler.GetDirectoryHandler(out oHandler, null);
+            Assert.IsFalse(res.Success, "GetDirectoryHandler should fail if the ConnectionServer is null");
+
+            res = DirectoryHandler.GetDirectoryHandler(out oHandler, _connectionServer);
+            Assert.IsFalse(res.Success, "GetDirectoryHandler should fail if the ObjectId and display name are both blank");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_GetGreetingStreamFiles()
+        {
+            //GetGreetingStreamFiles
+            List<DirectoryHandlerGreetingStreamFile> oStreams;
+            var res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFiles(null, "objectid", out oStreams);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFiles(_connectionServer, "objectid", out oStreams);
+            Assert.IsTrue(res.Success, "Fetching greeting stream files with an invalid objectId shouldn't fail:" + res);
+            Assert.IsTrue(oStreams.Count == 0, "Fetching streams with an invalid objectId should return an empty list");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFiles(_connectionServer, "", out oStreams);
+            Assert.IsFalse(res.Success, "");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_GetGreetingWavFile()
+        {
+            //GetGreetingWavFile
+            var res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(null, "c:\\temp.wav", "streamname.wav");
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", "streamname.wav");
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "", "streamname.wav");
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", "");
+            Assert.IsFalse(res.Success, "");
+
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(null, "c:\\temp.wav", "objectId", 1033);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", "objectId", 1033);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "", "objectId", 1033);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", "", 1033);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", _tempHandler.ObjectId, 9999);
+            Assert.IsFalse(res.Success, "");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_SetGreetingWavFile()
+        {
+            //SetGreetingWavFile
+            var res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(null, "objectid", 1033, "bogus.wav", true);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_connectionServer, "objectid", 1033, "bogus.wav", true);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_connectionServer, "", 1033, "bogus.wav", true);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_connectionServer, "objectid", 1033, "", true);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_connectionServer, _tempHandler.ObjectId, 9999, "Dummy.wav", true);
+            Assert.IsFalse(res.Success, "");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_SetGreetingStreamFile()
+        {
+            var res = DirectoryHandler.SetGreetingRecordingToStreamFile(null, "streamname", "objectId", 1033);
+            Assert.IsFalse(res.Success, "Calling SetGreetingRecordingToStreamFile with null ConnectionServer did not fail");
+
+            res = DirectoryHandler.SetGreetingRecordingToStreamFile(_connectionServer, "streamname", "objectId", 1033);
+            Assert.IsFalse(res.Success, "Calling SetGreetingRecordingToStreamFile with invalid objectId did not fail");
+
+            res = DirectoryHandler.SetGreetingRecordingToStreamFile(_connectionServer, "", "objectId", 1033);
+            Assert.IsFalse(res.Success, "Calling SetGreetingRecordingToStreamFile with empty streamID did not fail");
+
+            res = DirectoryHandler.SetGreetingRecordingToStreamFile(_connectionServer, "streamname", "", 1033);
+            Assert.IsFalse(res.Success, "Calling SetGreetingRecordingToStreamFile with empty objecTId did not fail");
+
+            res = DirectoryHandler.SetGreetingRecordingToStreamFile(_connectionServer, "streamname", "objectId", 9999);
+            Assert.IsFalse(res.Success, "Calling SetGreetingRecordingToStreamFile with invalid language ID did not fail");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_GetGreetingStreamFile()
+        {
+            //GetGreetingStreamFile
+            DirectoryHandlerGreetingStreamFile oStream;
+            var res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFile(null, "objectid", 1033, out oStream);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFile(_connectionServer, "objectid", 1033, out oStream);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFile(_connectionServer, "", 1033, out oStream);
+            Assert.IsFalse(res.Success, "");
+
+            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFile(_connectionServer, _tempHandler.ObjectId, 9999, out oStream);
+            Assert.IsFalse(res.Success, "");
+
+        }
+
+
+        #endregion
+
+
+        #region Live Tests
+
         /// <summary>
         /// GET first handler in directory using static method call, iterate over it and use the ToString and DumpAllProps
         /// methods on it.
@@ -114,41 +300,23 @@ namespace ConnectionCUPIFunctionsTest
                 res = DirectoryHandler.GetDirectoryHandler(out oNewHandler, _connectionServer, oHandler.ObjectId);
                 Assert.IsTrue(res.Success, "Fetching directory handler by ObjectId: " + res.ToString());
             }
+            
+            try
+            {
+                oNewHandler = new DirectoryHandler(_connectionServer, "", oHandlerList[0].DisplayName);
+                Console.WriteLine(oNewHandler);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Failed to create new direcotry handler using valid display name for search");
+            }
 
             //hit failed searches
-            res = DirectoryHandler.GetDirectoryHandler(out oNewHandler, _connectionServer,"","bogus name that shouldnt match");
+            res = DirectoryHandler.GetDirectoryHandler(out oNewHandler, _connectionServer, "", "bogus name that shouldnt match");
             Assert.IsFalse(res.Success, "Fetching directory handler by bogus name did not fail");
 
         }
 
-
-        /// <summary>
-        /// exercise failure points
-        /// </summary>
-        [TestMethod]
-        public void GetDirectoryHandlers_StaticCallFailure()
-        {
-            List<DirectoryHandler> oHandlerList;
-
-            WebCallResult res = DirectoryHandler.GetDirectoryHandlers(null, out oHandlerList, null);
-            Assert.IsFalse(res.Success, "GetDirectoryHandler should fail with null ConnectionServer passed to it");
-
-        }
-
-        /// <summary>
-        /// exercise failure points
-        /// </summary>
-        [TestMethod]
-        public void GetDirectoryHandler_StaticFailure()
-        {
-            DirectoryHandler oHandler;
-
-            WebCallResult res = DirectoryHandler.GetDirectoryHandler(out oHandler, null);
-            Assert.IsFalse(res.Success, "GetDirectoryHandler should fail if the ConnectionServer is null");
-
-            res = DirectoryHandler.GetDirectoryHandler(out oHandler, _connectionServer);
-            Assert.IsFalse(res.Success, "GetDirectoryHandler should fail if the ObjectId and display name are both blank");
-        }
 
         [TestMethod]
         public void DirectoryHandler_EditTopLevel()
@@ -168,7 +336,7 @@ namespace ConnectionCUPIFunctionsTest
          [TestMethod]
         public void DirectoryHandler_CustomStreamTests()
          {
-             WebCallResult res = _tempHandler.SetGreetingWavFile("temp.wav",1033,true);
+             WebCallResult res = _tempHandler.SetGreetingWavFile("dummy.wav",1033,true);
              Assert.IsTrue(res.Success,"Failed to upload custom directory handler greeting:"+res);
 
              _tempHandler.UseCustomGreeting = true;
@@ -206,84 +374,7 @@ namespace ConnectionCUPIFunctionsTest
              Assert.IsTrue(res.Success,"Failed to set greeting via DirectoryHandlerGreetingStreamFile instance method:"+res);
          }
 
-        [TestMethod]
-        public void DirectoryHandlerGreetingStream_StaticFailures()
-        {
-            WebCallResult res;
-
-            //GetGreetingStreamFile
-            DirectoryHandlerGreetingStreamFile oStream;
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFile(null, "objectid", 1033, out oStream);
-            Assert.IsFalse(res.Success,"");
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFile(_connectionServer, "objectid", 1033, out oStream);
-            Assert.IsFalse(res.Success, "");
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFile(_connectionServer, "", 1033, out oStream);
-            Assert.IsFalse(res.Success, "");
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFile(_connectionServer, _tempHandler.ObjectId, 9999, out oStream);
-            Assert.IsFalse(res.Success, "");
-
-            //GetGreetingStreamFiles
-            List<DirectoryHandlerGreetingStreamFile> oStreams;
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFiles(null, "objectid", out oStreams);
-            Assert.IsFalse(res.Success, "");
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFiles(_connectionServer, "objectid", out oStreams);
-            Assert.IsTrue(res.Success, "Fetching greeting stream files with an invalid objectId shouldn't fail:"+res);
-            Assert.IsTrue(oStreams.Count==0,"Fetching streams with an invalid objectId should return an empty list");
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFiles(_connectionServer, "", out oStreams);
-            Assert.IsFalse(res.Success, "");
-
-            //GetGreetingWavFile
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(null, "c:\\temp.wav", "streamname.wav");
-            Assert.IsFalse(res.Success, "");
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", "streamname.wav");
-            Assert.IsFalse(res.Success, "");
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "", "streamname.wav");
-            Assert.IsFalse(res.Success, "");
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", "");
-            Assert.IsFalse(res.Success, "");
-
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(null, "c:\\temp.wav", "objectId",1033);
-            Assert.IsFalse(res.Success, "");
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", "objectId",1033);
-            Assert.IsFalse(res.Success, "");
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "", "objectId",1033);
-            Assert.IsFalse(res.Success, "");
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", "",1033);
-            Assert.IsFalse(res.Success, "");
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", _tempHandler.ObjectId, 9999);
-            Assert.IsFalse(res.Success, "");
-
-
-            //SetGreetingWavFile
-            res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(null, "objectid", 1033, "bogus.wav", true);
-            Assert.IsFalse(res.Success, "");
-
-            res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_connectionServer, "objectid", 1033, "bogus.wav", true);
-            Assert.IsFalse(res.Success, "");
-
-            res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_connectionServer, "", 1033, "bogus.wav", true);
-            Assert.IsFalse(res.Success, "");
-
-            res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_connectionServer, "objectid", 1033, "", true);
-            Assert.IsFalse(res.Success, "");
-
-            res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_connectionServer, _tempHandler.ObjectId, 9999, "Dummy.wav", true);
-            Assert.IsFalse(res.Success, "");
-
-        }
+        #endregion
 
     }
 }

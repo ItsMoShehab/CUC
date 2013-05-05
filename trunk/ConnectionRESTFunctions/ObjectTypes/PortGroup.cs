@@ -716,7 +716,16 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //add on the paging directive to existing clauses
-            var temp = pClauses.ToList();
+            List<string> temp;
+            if (pClauses == null)
+            {
+                temp = new List<string>();
+            }
+            else
+            {
+                temp = pClauses.ToList();
+            }
+
             temp.Add("pageNumber=" + pPageNumber);
             temp.Add("rowsPerPage=" + pRowsPerPage);
 

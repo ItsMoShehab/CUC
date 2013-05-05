@@ -13,6 +13,9 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass]
     public class PortGroupCodecTest
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
         #region Fields and Properties
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
@@ -95,6 +98,53 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Static Call Failures
+
+        [TestMethod]
+        public void StaticCallFailures_DeletePortGroupCodec()
+        {
+            var res = PortGroupCodec.DeletePortGroupCodec(null, "portgroupobjectid", "objectid");
+            Assert.IsFalse(res.Success, "Static call to AddPortGroupCodec did not fail with null connection server");
+
+            res = PortGroupCodec.DeletePortGroupCodec(_connectionServer, "", "objectid");
+            Assert.IsFalse(res.Success, "Static call to DeletePortGroupCodec did not fail with empty media port objectId");
+
+            res = PortGroupCodec.DeletePortGroupCodec(_connectionServer, "portgroupobjectid", "");
+            Assert.IsFalse(res.Success, "Static call to DeletePortGroupCodec did not fail with empty objectid");
+
+            res = PortGroupCodec.DeletePortGroupCodec(_connectionServer, "portgroupobjectid", "objectid");
+            Assert.IsFalse(res.Success, "Static call to DeletePortGroupCodec did not fail with invalid port group and objectid");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_GetPortGroupCodec()
+        {
+            List<PortGroupCodec> oList;
+            var res = PortGroupCodec.GetPortGroupCodecs(null, "portgroupobjectid", out oList);
+            Assert.IsFalse(res.Success, "Static call to GetPortGroupCodecs did not fail with null connection server");
+
+            res = PortGroupCodec.GetPortGroupCodecs(_connectionServer, "", out oList);
+            Assert.IsFalse(res.Success, "Static call to GetPortGroupCodecs did not fail with empty media port objectId");
+        }
+
+
+        [TestMethod]
+        public void StaticCallFailures_AddPortGroupCodec()
+        {
+            PortGroupCodec oPortGroupCodec;
+            WebCallResult res = PortGroupCodec.AddPortGroupCodec(null, "portgroupid", "rtpobjectid", 20, 1, out oPortGroupCodec);
+            Assert.IsFalse(res.Success, "Static call to AddPortGroupCodec did not fail with null connection server ");
+
+            res = PortGroupCodec.AddPortGroupCodec(_connectionServer, "", "rtpobjectid", 20, 1);
+            Assert.IsFalse(res.Success, "Static call to AddPortGroupCodec did not fail with empty media port objectId");
+
+            res = PortGroupCodec.AddPortGroupCodec(_connectionServer, "portgroupid", "", 20, 1);
+            Assert.IsFalse(res.Success, "Static call to AddPortGroupCodec did not fail with empty objectid");
+        }
+
+        #endregion
+
+
         [TestMethod]
         public void PortGroupCodecFetchTests()
         {
@@ -128,39 +178,6 @@ namespace ConnectionCUPIFunctionsTest
 
         }
 
-
-        [TestMethod]
-        public void StaticMethodFailures()
-        {
-            PortGroupCodec oPortGroupCodec;
-            WebCallResult res = PortGroupCodec.AddPortGroupCodec(null, "portgroupid", "rtpobjectid", 20, 1,out oPortGroupCodec);
-            Assert.IsFalse(res.Success,"Static call to AddPortGroupCodec did not fail with null connection server ");
-
-            res = PortGroupCodec.AddPortGroupCodec(_connectionServer, "", "rtpobjectid", 20, 1);
-            Assert.IsFalse(res.Success, "Static call to AddPortGroupCodec did not fail with empty media port objectId");
-
-            res = PortGroupCodec.AddPortGroupCodec(_connectionServer, "portgroupid", "", 20, 1);
-            Assert.IsFalse(res.Success, "Static call to AddPortGroupCodec did not fail with empty objectid");
-
-            res = PortGroupCodec.DeletePortGroupCodec(null, "portgroupobjectid", "objectid");
-            Assert.IsFalse(res.Success, "Static call to AddPortGroupCodec did not fail with null connection server");
-
-            res = PortGroupCodec.DeletePortGroupCodec(_connectionServer, "", "objectid");
-            Assert.IsFalse(res.Success, "Static call to DeletePortGroupCodec did not fail with empty media port objectId");
-
-            res = PortGroupCodec.DeletePortGroupCodec(_connectionServer, "portgroupobjectid", "");
-            Assert.IsFalse(res.Success, "Static call to DeletePortGroupCodec did not fail with empty objectid");
-
-            res = PortGroupCodec.DeletePortGroupCodec(_connectionServer, "portgroupobjectid", "objectid");
-            Assert.IsFalse(res.Success, "Static call to DeletePortGroupCodec did not fail with invalid port group and objectid");
-
-            List<PortGroupCodec> oList;
-            res = PortGroupCodec.GetPortGroupCodecs(null, "portgroupobjectid", out oList);
-            Assert.IsFalse(res.Success, "Static call to GetPortGroupCodecs did not fail with null connection server");
-
-            res = PortGroupCodec.GetPortGroupCodecs(_connectionServer, "", out oList);
-            Assert.IsFalse(res.Success, "Static call to GetPortGroupCodecs did not fail with empty media port objectId");
-        }
-
+     
     }
 }

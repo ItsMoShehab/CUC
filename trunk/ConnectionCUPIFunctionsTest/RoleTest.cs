@@ -101,33 +101,35 @@ namespace ConnectionCUPIFunctionsTest
             List<Role> oRoles;
             WebCallResult res= Role.GetRoles(_connectionServer, out oRoles);
             Assert.IsTrue(res.Success,"Failed to fetch roles list:"+res);
+            Assert.IsTrue(oRoles.Count>0,"No roles returned from server");
 
-            foreach (var oRole in oRoles)
-            {
-                Console.WriteLine(oRole.ToString());
-            }
+            Console.WriteLine(oRoles[0].ToString());
 
             res = Role.GetRoles(null, out oRoles);
             Assert.IsFalse(res.Success,"Static fetch of rules did not fail with null ConnectionServer");
+            
             string strObjectId = "";
+            
             try
             {
                 Role oNewRole = new Role(_connectionServer, "", "Audio Text Administrator");
                 strObjectId = oNewRole.ObjectId;
+                Assert.IsTrue(oNewRole.RoleName.Equals("Audio Text Administrator"));
             }
             catch (Exception ex)
             {
-                Assert.IsTrue(false,"Class construction with valid role name failed:"+ex);
+                Assert.Fail("Class construction with valid role name failed:"+ex);
             }
 
             try
             {
                 Role oNewRole = new Role(_connectionServer, strObjectId);
-                Console.WriteLine(oNewRole);
+                Assert.IsTrue(oNewRole.ObjectId.Equals(strObjectId));
+
             }
             catch (Exception ex)
             {
-                Assert.IsTrue(false, "Class construction with valid objectId failed:" + ex);
+                Assert.Fail("Class construction with valid objectId failed:" + ex);
             }
         }
     }

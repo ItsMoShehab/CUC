@@ -67,8 +67,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (string.IsNullOrEmpty(pUserObjectId))
             {
-                if (Debugger.IsAttached) Debugger.Break();
-                //throw new ArgumentException("Empty user objectId passed to NotificationDevice constructor");
+                throw new ArgumentException("Empty user objectId passed to NotificationDevice constructor");
             }
 
             HomeServer = pConnectionServer;
@@ -1429,9 +1428,10 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns></returns>
         private WebCallResult GetNotificationDevice(string pUserObjectId, string pObjectId, string pDisplayName)
         {
+            string strObjectId = pObjectId;
             if (string.IsNullOrEmpty(pObjectId))
             {
-                string strObjectId = GetObjectIdFromName(pUserObjectId, pDisplayName);
+                strObjectId = GetObjectIdFromName(pUserObjectId, pDisplayName);
                 if (string.IsNullOrEmpty(strObjectId))
                 {
                     return new WebCallResult
@@ -1442,7 +1442,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
             }
 
-            string strUrl = string.Format("{0}users/{1}/notificationdevices/{2}", HomeServer.BaseUrl,pUserObjectId, pObjectId);
+            string strUrl = string.Format("{0}users/{1}/notificationdevices/{2}", HomeServer.BaseUrl, pUserObjectId, strObjectId);
 
             //issue the command to the CUPI interface
             WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");

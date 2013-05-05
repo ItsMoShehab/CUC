@@ -454,6 +454,13 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             string retUri = pUri;
 
+            if (pClauses == null)
+            {
+                return retUri;
+            }
+
+            bool bFirstClause = true;
+
             //Tack on all the search/query/page clauses here if any are passed in.  If an empty string is passed in account
             //for it here.
             for (int iCounter = 0; iCounter < pClauses.Length; iCounter++)
@@ -465,9 +472,10 @@ namespace Cisco.UnityConnection.RestFunctions
 
                 //if it's the first param seperate the clause from the URL with a ?, otherwise append compound clauses 
                 //seperated by &
-                if (iCounter == 0)
+                if (bFirstClause)
                 {
                     retUri += "?";
+                    bFirstClause = false;
                 }
                 else
                 {
@@ -838,24 +846,25 @@ namespace Cisco.UnityConnection.RestFunctions
             //invalidate the cookie if it's been more than a minute - more aggressive than necessary but safe.
             if ((DateTime.Now - pConnectionServer.LastSessionActivity).TotalSeconds > 60)
             {
-                pConnectionServer.LastSessionCookie = "";
+                pConnectionServer.LastSessionTokenIssued = "";
             }
 
             WebCallResult res = GetCupiResponse(pUrl, pMethod, pConnectionServer.LoginName, pConnectionServer.LoginPw,pRequestBody,
-                pConnectionServer.LastSessionCookie, pJson);
+                pConnectionServer.LastSessionTokenIssued, pJson);
 
             //update the details of the session cookie and last connect time.  If the session cookie contains an instance
-            //of JSESSIONID in it then store the entire cookie in the LastSessionCookie property and roll the date/time 
+            //of JSESSIONID in it then store the entire cookie in the LastSessionTokenIssued property and roll the date/time 
             //note of the last time it was updated.
             if (res.Success)
             {
-                //update the last time we had activity using the current cookie
+
+                //update the last time we got a new set of token
                 pConnectionServer.LastSessionActivity = DateTime.Now;
-             
+
                 //if the response includes a new JSESSIONID (and/or JSESSIONIDSSO) update the cookie.
                 if ((!string.IsNullOrEmpty(res.SessionCookie)) && (res.SessionCookie.IndexOf("JSESSIONID=") > 0))
                 {
-                    pConnectionServer.LastSessionCookie = res.SessionCookie;
+                    pConnectionServer.LastSessionTokenIssued = res.SessionCookie;
                 }
             }
 
@@ -2146,7 +2155,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}voicefiles", pConnectionServer.BaseUrl);
             
             WebCallResult res = GetCupiResponse(strUrl, MethodType.POST, pConnectionServer.LoginName, pConnectionServer.LoginPw, "",
-                pConnectionServer.LastSessionCookie,false);
+                pConnectionServer.LastSessionTokenIssued,false);
 
             if (res.Success==false)
             {

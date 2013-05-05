@@ -358,7 +358,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
-        public void GetCallHandlers_Failure()
+        public void StaticCallFailure_GetCallHandlers()
         {
             List<CallHandler> oHandlerList;
 
@@ -372,7 +372,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
-        public void GetCallHandler_Failure()
+        public void StaticCallFailure_GetCallHandler()
         {
             CallHandler oHandler;
 
@@ -388,7 +388,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
-        public void AddCallHandler_Failure()
+        public void StaticCallFailure_AddCallHandler()
         {
             WebCallResult res = CallHandler.AddCallHandler(null, "", "", "", null);
             Assert.IsFalse(res.Success, "AddCallHandler should fail if the ConnectionServer parameter is null");
@@ -409,7 +409,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
-        public void DeleteCallHandler_Failure()
+        public void StaticCallFailure_DeleteCallHandler()
         {
             WebCallResult res = CallHandler.DeleteCallHandler(null, "");
             Assert.IsFalse(res.Success, "DeleteCallHandler should fail if the ConnectionServer parameter is null");
@@ -423,7 +423,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
-        public void UpdateCallHandler_Failure()
+        public void StaticCallFailure_UpdateCallHandler()
         {
             ConnectionPropertyList oPropList = new ConnectionPropertyList();
 
@@ -441,7 +441,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
-        public void GetCallHandlerVoiceName_Failure()
+        public void StaticCallFailure_GetCallHandlerVoiceName()
         {
             //use the same string for the alias and display name here
             const string strWavName = @"c:\";
@@ -466,7 +466,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
-        public void SetCallHandlerVoiceName_Failure()
+        public void StaticCallFailure_SetCallHandlerVoiceName()
         {
             //use the same string for the alias and display name here
             const string strWavName = @"c:\";

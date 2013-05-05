@@ -110,7 +110,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string BaseUrl { get; private set; }
 
         //keeps track of the last session cookie we got from this server via HTTPS
-        public string LastSessionCookie { get; set; }
+        public string LastSessionTokenIssued { get; set; }
 
         //keeps track of the last time we sent anything or got anything to/from this server via HTTPS
         public DateTime LastSessionActivity { get; set; }
@@ -214,7 +214,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 throw new ArgumentException("Empty server name, login name or password provided on constructor");
             }
 
-            LastSessionCookie = "";
+            LastSessionTokenIssued = "";
             LastSessionActivity = DateTime.MinValue;
 
             //validate login.  This fills in the version and primary location object ID details.

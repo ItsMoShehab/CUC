@@ -101,6 +101,113 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
+
+        #region Static Call Failures
+
+        [TestMethod]
+        public void StaticCallFailures_DeleteUserTemplate()
+        {
+            //DeleteUserTemplate
+            var res = UserTemplate.DeleteUserTemplate(null, "bogus");
+            Assert.IsFalse(res.Success, "Static call to DeleteUserTemplate did not fail with: null ConnectionServer");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_GetUserTemplate()
+        {
+            UserTemplate oTemplate;
+            var res = UserTemplate.GetUserTemplate(null, "bogus", "bogus", out oTemplate);
+            Assert.IsFalse(res.Success, "Static call to DeleteUserTemplate did not fail with: null ConnectionServer");
+
+            res = UserTemplate.GetUserTemplate(_connectionServer, "bogus", "bogus", out oTemplate);
+            Assert.IsFalse(res.Success, "Static call to DeleteUserTemplate did not fail with: invalid objectId and name");
+
+            res = UserTemplate.GetUserTemplate(_connectionServer, "", "bogus", out oTemplate);
+            Assert.IsFalse(res.Success, "Static call to DeleteUserTemplate did not fail with: invalid name");
+
+            res = UserTemplate.GetUserTemplate(_connectionServer, "bogus", "", out oTemplate);
+            Assert.IsFalse(res.Success, "Static call to DeleteUserTemplate did not fail with: invalid objectID");
+
+            res = UserTemplate.GetUserTemplate(_connectionServer, "", "", out oTemplate);
+            Assert.IsFalse(res.Success, "Static call to DeleteUserTemplate did not fail with: empty objectID and name");
+        }
+
+
+        [TestMethod]
+        public void StaticCallFailures_GetUserTemplates()
+        {
+            //GetUserTemplates
+            List<UserTemplate> oTemplates;
+            var res = UserTemplate.GetUserTemplates(null, out oTemplates);
+            Assert.IsFalse(res.Success, "Static call to GetUserTemplates did not fail with: null ConnectionServer");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_RestUserTemplatePassword()
+        {
+            //RestUserTemplatePassword
+            var res = UserTemplate.ResetUserTemplatePassword(null, "bogus", "newPW");
+            Assert.IsFalse(res.Success, "Static call to ResetUserTemplatePassword did not fail with: null ConnectionServer");
+
+            res = UserTemplate.ResetUserTemplatePassword(_connectionServer, "bogus", "newPW");
+            Assert.IsFalse(res.Success, "Static call to ResetUserTemplatePassword did not fail with: invalid objectID");
+
+            res = UserTemplate.ResetUserTemplatePassword(_connectionServer, "", "newPW");
+            Assert.IsFalse(res.Success, "Static call to ResetUserTemplatePassword did not fail with: empty objectId");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_ResetUserTemplatePin()
+        {
+            //ResetUserTemplatePin
+            var res = UserTemplate.ResetUserTemplatePin(null, "bogus", "newPW");
+            Assert.IsFalse(res.Success, "Static call to ResetUserTemplatePin did not fail with: null ConnectionServer");
+
+            res = UserTemplate.ResetUserTemplatePin(_connectionServer, "bogus", "newPW");
+            Assert.IsFalse(res.Success, "Static call to ResetUserTemplatePin did not fail with: invalid objectId");
+
+            res = UserTemplate.ResetUserTemplatePin(_connectionServer, "", "newPW");
+            Assert.IsFalse(res.Success, "Static call to ResetUserTemplatePin did not fail with: empty objectId");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_UpdateUserTemplate()
+        {
+            //UpdateUserTemplate
+            var res = UserTemplate.UpdateUserTemplate(null, "bogus", null);
+            Assert.IsFalse(res.Success, "Static call to UpdateUserTemplate did not fail with: null ConnectionServer");
+
+            res = UserTemplate.UpdateUserTemplate(_connectionServer, "bogus", null);
+            Assert.IsFalse(res.Success, "Static call to UpdateUserTemplate did not fail with: invalid objectID");
+
+            res = UserTemplate.UpdateUserTemplate(_connectionServer, "", null);
+            Assert.IsFalse(res.Success, "Static call to UpdateUserTemplate did not fail with: empty objectID");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_AddUserTemplate()
+        {
+            //AddUserTemplate
+            WebCallResult res = UserTemplate.AddUserTemplate(null, "voicemailusertemplate", "alias", "name", null);
+            Assert.IsFalse(res.Success, "Static call to AddUserTemplate did not fail with: null ConnectionServer");
+
+            res = UserTemplate.AddUserTemplate(_connectionServer, "voicemailusertemplate", "", "name", null);
+            Assert.IsFalse(res.Success, "Static call to AddUserTemplate did not fail with: empty alias");
+
+            res = UserTemplate.AddUserTemplate(_connectionServer, "voicemailusertemplate", "alias", "", null);
+            Assert.IsFalse(res.Success, "Static call to AddUserTemplate did not fail with: empty display name");
+
+            res = UserTemplate.AddUserTemplate(_connectionServer, "", "alias", "name", null);
+            Assert.IsFalse(res.Success, "Static call to AddUserTemplate did not fail with: empty template alias");
+
+            res = UserTemplate.AddUserTemplate(_connectionServer, "bogus", "alias", "name", null);
+            Assert.IsFalse(res.Success, "Static call to AddUserTemplate did not fail with: invalid template alias");
+
+        }
+
+        #endregion
+
+
         [TestMethod]
         public void TopLevelPropertyTests()
         {
@@ -160,85 +267,7 @@ namespace ConnectionCUPIFunctionsTest
             res = UserTemplate.GetUserTemplates(_connectionServer, out oTemplates);
             Assert.IsTrue(res.Success,"Fetching user templates failed:"+res);
             Assert.IsTrue(oTemplates.Count>1,"Templates not returned from fetch");
-
-
-            
         }
 
-
-        [TestMethod]
-        public void StaticCallFailures()
-        {
-            //AddUserTemplate
-            WebCallResult res = UserTemplate.AddUserTemplate(null, "voicemailusertemplate", "alias", "name", null);
-            Assert.IsFalse(res.Success, "Static call to AddUserTemplate did not fail with: null ConnectionServer");
-            
-            res = UserTemplate.AddUserTemplate(_connectionServer, "voicemailusertemplate", "", "name", null);
-            Assert.IsFalse(res.Success, "Static call to AddUserTemplate did not fail with: empty alias");
-
-            res = UserTemplate.AddUserTemplate(_connectionServer, "voicemailusertemplate", "alias", "", null);
-            Assert.IsFalse(res.Success, "Static call to AddUserTemplate did not fail with: empty display name");
-
-            res = UserTemplate.AddUserTemplate(_connectionServer, "", "alias", "name", null);
-            Assert.IsFalse(res.Success, "Static call to AddUserTemplate did not fail with: empty template alias");
-
-            res = UserTemplate.AddUserTemplate(_connectionServer, "bogus", "alias", "name", null);
-            Assert.IsFalse(res.Success, "Static call to AddUserTemplate did not fail with: invalid template alias");
-
-            //DeleteUserTemplate
-            res = UserTemplate.DeleteUserTemplate(null, "bogus");
-            Assert.IsFalse(res.Success, "Static call to DeleteUserTemplate did not fail with: null ConnectionServer");
-
-            UserTemplate oTemplate;
-            res = UserTemplate.GetUserTemplate(null, "bogus", "bogus", out oTemplate);
-            Assert.IsFalse(res.Success, "Static call to DeleteUserTemplate did not fail with: null ConnectionServer");
-
-            res = UserTemplate.GetUserTemplate(_connectionServer, "bogus", "bogus", out oTemplate);
-            Assert.IsFalse(res.Success, "Static call to DeleteUserTemplate did not fail with: invalid objectId and name");
-
-            res = UserTemplate.GetUserTemplate(_connectionServer, "", "bogus", out oTemplate);
-            Assert.IsFalse(res.Success, "Static call to DeleteUserTemplate did not fail with: invalid name");
-
-            res = UserTemplate.GetUserTemplate(_connectionServer, "bogus", "", out oTemplate);
-            Assert.IsFalse(res.Success, "Static call to DeleteUserTemplate did not fail with: invalid objectID");
-
-            res = UserTemplate.GetUserTemplate(_connectionServer, "", "", out oTemplate);
-            Assert.IsFalse(res.Success, "Static call to DeleteUserTemplate did not fail with: empty objectID and name");
-
-            //GetUserTemplates
-            List<UserTemplate> oTemplates;
-            res = UserTemplate.GetUserTemplates(null, out oTemplates);
-            Assert.IsFalse(res.Success, "Static call to GetUserTemplates did not fail with: null ConnectionServer");
-
-            //RestUserTemplatePassword
-            res = UserTemplate.ResetUserTemplatePassword(null, "bogus", "newPW");
-            Assert.IsFalse(res.Success, "Static call to ResetUserTemplatePassword did not fail with: null ConnectionServer");
-
-            res = UserTemplate.ResetUserTemplatePassword(_connectionServer, "bogus", "newPW");
-            Assert.IsFalse(res.Success, "Static call to ResetUserTemplatePassword did not fail with: invalid objectID");
-
-            res = UserTemplate.ResetUserTemplatePassword(_connectionServer, "", "newPW");
-            Assert.IsFalse(res.Success, "Static call to ResetUserTemplatePassword did not fail with: empty objectId");
-
-            //ResetUserTemplatePin
-            res = UserTemplate.ResetUserTemplatePin(null, "bogus", "newPW");
-            Assert.IsFalse(res.Success, "Static call to ResetUserTemplatePin did not fail with: null ConnectionServer");
-            
-            res = UserTemplate.ResetUserTemplatePin(_connectionServer, "bogus", "newPW");
-            Assert.IsFalse(res.Success, "Static call to ResetUserTemplatePin did not fail with: invalid objectId");
-
-            res = UserTemplate.ResetUserTemplatePin(_connectionServer, "", "newPW");
-            Assert.IsFalse(res.Success, "Static call to ResetUserTemplatePin did not fail with: empty objectId");
-
-            //UpdateUserTemplate
-            res = UserTemplate.UpdateUserTemplate(null, "bogus", null);
-            Assert.IsFalse(res.Success, "Static call to UpdateUserTemplate did not fail with: null ConnectionServer");
-
-            res = UserTemplate.UpdateUserTemplate(_connectionServer, "bogus", null);
-            Assert.IsFalse(res.Success, "Static call to UpdateUserTemplate did not fail with: invalid objectID"); 
-            
-            res = UserTemplate.UpdateUserTemplate(_connectionServer, "", null);
-            Assert.IsFalse(res.Success, "Static call to UpdateUserTemplate did not fail with: empty objectID");
-        }
     }
 }

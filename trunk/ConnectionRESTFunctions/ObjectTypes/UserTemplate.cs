@@ -2500,7 +2500,16 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            var temp = pClauses.ToList();
+            List<string> temp;
+            if (pClauses == null)
+            {
+                temp = new List<string>();
+            }
+            else
+            {
+                temp = pClauses.ToList();
+            } 
+            
             temp.Add("pageNumber=" + pPageNumber);
             temp.Add("rowsPerPage=" + pRowsPerPage);
 

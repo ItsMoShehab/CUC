@@ -93,8 +93,49 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Static Call Failures 
+
         [TestMethod]
-        public void StaticMethodFailures()
+        public void StaticCallFailures_UpdatePort()
+        {
+            var res = Port.UpdatePort(null, "objectid", null);
+            Assert.IsFalse(res.Success, "Static call to UpdatePort did not fail with null Connection server");
+
+            res = Port.UpdatePort(_connectionServer, "", null);
+            Assert.IsFalse(res.Success, "Static call to UpdatePort did not fail with empty objectid");
+
+            res = Port.UpdatePort(_connectionServer, "objectId", null);
+            Assert.IsFalse(res.Success, "Static call to UpdatePort did not fail with empty prop list");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_AddPort()
+        {
+            var res = Port.AddPort(null, "portgroupid", 4, null);
+            Assert.IsFalse(res.Success, "Static call to AddPort did not fail with null connection server");
+
+            res = Port.AddPort(_connectionServer, "", 4, null);
+            Assert.IsFalse(res.Success, "Static call to AddPort did not fail with empty port group objectId");
+
+            res = Port.AddPort(_connectionServer, "portgroupid", 4, null);
+            Assert.IsFalse(res.Success, "Static call to AddPort did not fail with invalid prop group objectId");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_DeletePort()
+        {
+            var res = Port.DeletePort(null, "objectId");
+            Assert.IsFalse(res.Success, "Static call to DeletePort did not fail with null Connection server");
+
+            res = Port.DeletePort(_connectionServer, "");
+            Assert.IsFalse(res.Success, "Static call to DeletePort did not fail with empty objectId");
+
+            res = Port.DeletePort(_connectionServer, "objectId");
+            Assert.IsFalse(res.Success, "Static call to DeletePort did not fail with Invalid objectId");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_GetPort()
         {
             Port oPort;
             WebCallResult res = Port.GetPort(out oPort, null, "objectId");
@@ -106,34 +147,9 @@ namespace ConnectionCUPIFunctionsTest
             res = Port.GetPort(out oPort, _connectionServer, "objectId");
             Assert.IsFalse(res.Success, "Static call to GetPort did not fail with invalid objectId");
 
-            res = Port.UpdatePort(null, "objectid", null);
-            Assert.IsFalse(res.Success, "Static call to UpdatePort did not fail with null Connection server");
-
-            res = Port.UpdatePort(_connectionServer, "", null);
-            Assert.IsFalse(res.Success, "Static call to UpdatePort did not fail with empty objectid");
-
-            res = Port.UpdatePort(_connectionServer, "objectId", null);
-            Assert.IsFalse(res.Success, "Static call to UpdatePort did not fail with empty prop list");
-
-            res = Port.AddPort(null, "portgroupid", 4, null);
-            Assert.IsFalse(res.Success, "Static call to AddPort did not fail with null connection server");
-
-            res = Port.AddPort(_connectionServer, "", 4, null);
-            Assert.IsFalse(res.Success, "Static call to AddPort did not fail with empty port group objectId");
-
-            res = Port.AddPort(_connectionServer, "portgroupid", 4, null);
-            Assert.IsFalse(res.Success, "Static call to AddPort did not fail with invalid prop group objectId");
-
-            res = Port.DeletePort(null, "objectId");
-            Assert.IsFalse(res.Success, "Static call to DeletePort did not fail with null Connection server");
-
-            res = Port.DeletePort(_connectionServer, "");
-            Assert.IsFalse(res.Success, "Static call to DeletePort did not fail with empty objectId");
-
-            res = Port.DeletePort(_connectionServer, "objectId");
-            Assert.IsFalse(res.Success, "Static call to DeletePort did not fail with Invalid objectId");
         }
 
+        #endregion
 
         [TestMethod]
         public void TestMethod1()

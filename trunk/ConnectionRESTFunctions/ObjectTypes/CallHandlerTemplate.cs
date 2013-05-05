@@ -491,7 +491,15 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            var temp = pClauses.ToList();
+            List<string> temp;
+            if (pClauses == null)
+            {
+                temp = new List<string>();
+            }
+            else
+            {
+                temp = pClauses.ToList();
+            }
             temp.Add("pageNumber=" + pPageNumber);
             temp.Add("rowsPerPage=" + pRowsPerPage);
 
@@ -770,6 +778,12 @@ namespace Cisco.UnityConnection.RestFunctions
             if (pConnectionServer == null)
             {
                 res.ErrorText = "Null ConnectionServer referenced passed to UpdateCallHandlerTemplate";
+                return res;
+            }
+
+            if (string.IsNullOrEmpty(pObjectId))
+            {
+                res.ErrorText = "Empty ObjectId passed to UpdateCallHandlerTemplate";
                 return res;
             }
 

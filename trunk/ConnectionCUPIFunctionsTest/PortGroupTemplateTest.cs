@@ -7,13 +7,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ConnectionCUPIFunctionsTest
 {
-    // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
-    // ReSharper disable HeuristicUnreachableCode
-
      [TestClass]
     public class PortGroupTemplateTest
     {
-        #region Fields and Properties
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
+         #region Fields and Properties
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
@@ -84,17 +84,25 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Static Call Failures
+
         [TestMethod]
-        public void StaticMethodFailures()
+        public void StaticCallFailures_GetPortGroupTemplateObjectId()
+         {
+             string strObjectId;
+             var res = PortGroupTemplate.GetPortGroupTemplateObjectId(null, TelephonyIntegrationMethodEnum.SCCP, out strObjectId);
+             Assert.IsFalse(res.Success, "Static call to GetPortGroupTemplateObjectId did not fail with: null ConnectionServer");
+         }
+
+         [TestMethod]
+        public void StaticCallFailures_GetPortGroupTemplates()
         {
             List<PortGroupTemplate> oList;
             WebCallResult res = PortGroupTemplate.GetPortGroupTemplates(null, out oList);
             Assert.IsFalse(res.Success, "Static call to GetPortGroupTemplates did not fail with: null ConnectionServer");
-
-            string strObjectId;
-            res = PortGroupTemplate.GetPortGroupTemplateObjectId(null,TelephonyIntegrationMethodEnum.SCCP, out strObjectId);
-            Assert.IsFalse(res.Success, "Static call to GetPortGroupTemplateObjectId did not fail with: null ConnectionServer");
         }
+
+        #endregion
 
 
          [TestMethod]

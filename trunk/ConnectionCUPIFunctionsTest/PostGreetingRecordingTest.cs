@@ -108,29 +108,28 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region PostGreetingRecording Static Call Failures
+
         [TestMethod]
-        public void PostGreetingRecording_StaticMethodFailures()
+        public void StaticCallFailures_DeletePostGreetingRecording()
         {
-            //AddPostGreetingRecording
-            WebCallResult res = PostGreetingRecording.AddPostGreetingRecording(null, "displayname");
-            Assert.IsFalse(res.Success,"");
-
-            res = PostGreetingRecording.AddPostGreetingRecording(_connectionServer, "");
-            Assert.IsFalse(res.Success, "");
-
             //DeletePostGreetingRecording
-            res = PostGreetingRecording.DeletePostGreetingRecording(null, "objectID");
+            var res = PostGreetingRecording.DeletePostGreetingRecording(null, "objectID");
             Assert.IsFalse(res.Success, "");
 
             res = PostGreetingRecording.DeletePostGreetingRecording(_connectionServer, "objectID");
             Assert.IsFalse(res.Success, "");
-            
+
             res = PostGreetingRecording.DeletePostGreetingRecording(_connectionServer, "");
             Assert.IsFalse(res.Success, "");
+        }
 
+        [TestMethod]
+        public void StaticCallFailures_GetPostGreetingRecording()
+        {
             //GetPostGreetingRecording
             PostGreetingRecording oGreeting;
-            res = PostGreetingRecording.GetPostGreetingRecording(out oGreeting, null, "objectID");
+            var res = PostGreetingRecording.GetPostGreetingRecording(out oGreeting, null, "objectID");
             Assert.IsFalse(res.Success, "");
 
             res = PostGreetingRecording.GetPostGreetingRecording(out oGreeting, _connectionServer, "objectID");
@@ -139,16 +138,24 @@ namespace ConnectionCUPIFunctionsTest
             res = PostGreetingRecording.GetPostGreetingRecording(out oGreeting, _connectionServer);
             Assert.IsFalse(res.Success, "");
 
-            res = PostGreetingRecording.GetPostGreetingRecording(out oGreeting, _connectionServer, "","bogus");
+            res = PostGreetingRecording.GetPostGreetingRecording(out oGreeting, _connectionServer, "", "bogus");
             Assert.IsFalse(res.Success, "");
+        }
 
+        [TestMethod]
+        public void StaticCallFailures_GetPostGreetingRecordings()
+        {
             //GetPostGreetingRecordings
             List<PostGreetingRecording> oGreetings;
-            res = PostGreetingRecording.GetPostGreetingRecordings(null, out oGreetings, 1, 10);
+            var res = PostGreetingRecording.GetPostGreetingRecordings(null, out oGreetings, 1, 10);
             Assert.IsFalse(res.Success, "");
+        }
 
+        [TestMethod]
+        public void StaticCallFailures_SetPostGreetingRecordingWavFile()
+        {
             //SetPostGreetingRecordingWavFile
-            res = PostGreetingRecording.SetPostGreetingRecordingWavFile(null, "test.wav", "objectid", 1033, true);
+            var res = PostGreetingRecording.SetPostGreetingRecordingWavFile(null, "test.wav", "objectid", 1033, true);
             Assert.IsFalse(res.Success, "");
 
             res = PostGreetingRecording.SetPostGreetingRecordingWavFile(_connectionServer, "", "objectid", 1033, true);
@@ -159,9 +166,13 @@ namespace ConnectionCUPIFunctionsTest
 
             res = PostGreetingRecording.SetPostGreetingRecordingWavFile(_connectionServer, "wavcopy.exe", "", 1033, true);
             Assert.IsFalse(res.Success, "");
+        }
 
+        [TestMethod]
+        public void StaticCallFailures_SetPostGreetingRecordingToStreamFile()
+        {
             //SetPostGreetingRecordingToStreamFile
-            res = PostGreetingRecording.SetPostGreetingRecordingToStreamFile(null, "streamid", "objectid", 1033);
+            var res = PostGreetingRecording.SetPostGreetingRecordingToStreamFile(null, "streamid", "objectid", 1033);
             Assert.IsFalse(res.Success, "");
 
             res = PostGreetingRecording.SetPostGreetingRecordingToStreamFile(_connectionServer, "streamid", "objectid", 1033);
@@ -172,9 +183,13 @@ namespace ConnectionCUPIFunctionsTest
 
             res = PostGreetingRecording.SetPostGreetingRecordingToStreamFile(_connectionServer, "streamid", "", 1033);
             Assert.IsFalse(res.Success, "");
+        }
 
+        [TestMethod]
+        public void StaticCallFailures_UpdatePostGreetingRecording()
+        {
             //UpdatePostGreetingRecording
-            res = PostGreetingRecording.UpdatePostGreetingRecording(null, "objectid", "display name");
+            var res = PostGreetingRecording.UpdatePostGreetingRecording(null, "objectid", "display name");
             Assert.IsFalse(res.Success, "");
 
             res = PostGreetingRecording.UpdatePostGreetingRecording(_connectionServer, "objectid", "display name");
@@ -187,33 +202,40 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "");
         }
 
+
         [TestMethod]
-        public void PostGreetingRecordingStreamFiles_StaticMethodFailures()
+        public void StaticCallFailures_AddPostGreetingRecording()
         {
-            //GetGreetingStreamFile
-            PostGreetingRecordingStreamFile oGreetingStream;
-            WebCallResult res = PostGreetingRecordingStreamFile.GetGreetingStreamFile(null, "objectid", 1033,out oGreetingStream);
-            Assert.IsFalse(res.Success, "");
+            //AddPostGreetingRecording
+            WebCallResult res = PostGreetingRecording.AddPostGreetingRecording(null, "displayname");
+            Assert.IsFalse(res.Success,"");
 
-            res = PostGreetingRecordingStreamFile.GetGreetingStreamFile(_connectionServer, "objectid", 1033, out oGreetingStream);
+            res = PostGreetingRecording.AddPostGreetingRecording(_connectionServer, "");
             Assert.IsFalse(res.Success, "");
+        }
 
-            res = PostGreetingRecordingStreamFile.GetGreetingStreamFile(_connectionServer, "", 1033, out oGreetingStream);
-            Assert.IsFalse(res.Success, "");
+        #endregion
 
-            res = PostGreetingRecordingStreamFile.GetGreetingStreamFile(_connectionServer, _tempGreeting.ObjectId, 9999, out oGreetingStream);
-            Assert.IsFalse(res.Success, "");
 
+        #region PostGreetingRecordingStreamFile Static Call Failures 
+
+        [TestMethod]
+        public void StaticCallFailures_GetGreetingStreamFiles()
+        {
             //GetGreetingStreamFiles
             List<PostGreetingRecordingStreamFile> oGreetingStreams;
-            res = PostGreetingRecordingStreamFile.GetGreetingStreamFiles(null, "objectid", out oGreetingStreams);
+            var res = PostGreetingRecordingStreamFile.GetGreetingStreamFiles(null, "objectid", out oGreetingStreams);
             Assert.IsFalse(res.Success, "");
 
             res = PostGreetingRecordingStreamFile.GetGreetingStreamFiles(_connectionServer, "", out oGreetingStreams);
             Assert.IsFalse(res.Success, "");
+        }
 
+        [TestMethod]
+        public void StaticCallFailures_GetGreetingWavFile()
+        {
             //GetGreetingWavFile
-            res =PostGreetingRecordingStreamFile.GetGreetingWavFile(null, "c:\\temp.wav", "streamfilename");
+            var res = PostGreetingRecordingStreamFile.GetGreetingWavFile(null, "c:\\temp.wav", "streamfilename");
             Assert.IsFalse(res.Success, "");
 
             res = PostGreetingRecordingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", "streamfilename");
@@ -225,20 +247,24 @@ namespace ConnectionCUPIFunctionsTest
             res = PostGreetingRecordingStreamFile.GetGreetingWavFile(_connectionServer, "bogus.xyz", "");
             Assert.IsFalse(res.Success, "");
 
-            res = PostGreetingRecordingStreamFile.GetGreetingWavFile(null, "c:\\temp.wav", "streamfilename",1033);
+            res = PostGreetingRecordingStreamFile.GetGreetingWavFile(null, "c:\\temp.wav", "streamfilename", 1033);
             Assert.IsFalse(res.Success, "");
 
-            res = PostGreetingRecordingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", "streamfilename",1033);
+            res = PostGreetingRecordingStreamFile.GetGreetingWavFile(_connectionServer, "c:\\temp.wav", "streamfilename", 1033);
             Assert.IsFalse(res.Success, "");
 
-            res = PostGreetingRecordingStreamFile.GetGreetingWavFile(_connectionServer, "e:\\bogus\\bogus.xyz", "bogus",1033);
+            res = PostGreetingRecordingStreamFile.GetGreetingWavFile(_connectionServer, "e:\\bogus\\bogus.xyz", "bogus", 1033);
             Assert.IsFalse(res.Success, "");
 
-            res = PostGreetingRecordingStreamFile.GetGreetingWavFile(_connectionServer, "bogus.xyz", "",1033);
+            res = PostGreetingRecordingStreamFile.GetGreetingWavFile(_connectionServer, "bogus.xyz", "", 1033);
             Assert.IsFalse(res.Success, "");
+        }
 
+        [TestMethod]
+        public void StaticCallFailures_SetGreetingWavFile()
+        {
             //SetGreetingWavFile
-            res =PostGreetingRecordingStreamFile.SetGreetingWavFile(null, "objectid", 1033, "c:\\temp.wav", true);
+            var res = PostGreetingRecordingStreamFile.SetGreetingWavFile(null, "objectid", 1033, "c:\\temp.wav", true);
             Assert.IsFalse(res.Success, "");
 
             res = PostGreetingRecordingStreamFile.SetGreetingWavFile(_connectionServer, "objectid", 1033, "c:\\temp.wav", true);
@@ -256,6 +282,30 @@ namespace ConnectionCUPIFunctionsTest
             res = PostGreetingRecordingStreamFile.SetGreetingWavFile(_connectionServer, _tempGreeting.ObjectId, 9999, "Dummy.wav", true);
             Assert.IsFalse(res.Success, "");
         }
+
+        [TestMethod]
+        public void StaticCallFailures_GetGreetingStreamFile()
+        {
+            //GetGreetingStreamFile
+            PostGreetingRecordingStreamFile oGreetingStream;
+            WebCallResult res = PostGreetingRecordingStreamFile.GetGreetingStreamFile(null, "objectid", 1033,out oGreetingStream);
+            Assert.IsFalse(res.Success, "");
+
+            res = PostGreetingRecordingStreamFile.GetGreetingStreamFile(_connectionServer, "objectid", 1033, out oGreetingStream);
+            Assert.IsFalse(res.Success, "");
+
+            res = PostGreetingRecordingStreamFile.GetGreetingStreamFile(_connectionServer, "", 1033, out oGreetingStream);
+            Assert.IsFalse(res.Success, "");
+
+            res = PostGreetingRecordingStreamFile.GetGreetingStreamFile(_connectionServer, _tempGreeting.ObjectId, 9999, out oGreetingStream);
+            Assert.IsFalse(res.Success, "");
+        }
+
+        #endregion
+
+
+        #region Live Tests
+
 
         [TestMethod]
         public void FetchTests()
@@ -331,6 +381,6 @@ namespace ConnectionCUPIFunctionsTest
 
         }
 
-
+        #endregion
     }
 }

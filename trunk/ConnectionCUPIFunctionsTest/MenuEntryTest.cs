@@ -169,7 +169,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise menu entry failure points
         /// </summary>
         [TestMethod]
-        public void UpdateMenuEntry_Failure()
+        public void StaticCallFailure_UpdateMenuEntry()
         {
             //manual update failure calls
             WebCallResult res = MenuEntry.UpdateMenuEntry(null, _callHandler.ObjectId, "1", null);
@@ -190,7 +190,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise menu entry failure points
         /// </summary>
         [TestMethod]
-        public void GetMenuEntry_Failure()
+        public void StaticCallFailure_GetMenuEntry()
         {
             //update menu entry
             MenuEntry oMenu;

@@ -135,6 +135,117 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Static Call Failures 
+
+        [TestMethod]
+        public void StaticCallFailures_GetSchedules()
+        {
+            //get schedules
+            List<Schedule> oSchedules;
+
+            var res = Schedule.GetSchedules(null, out oSchedules);
+            Assert.IsFalse(res.Success, "Static call to getSchedules with null ConnectionServer did not fail");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_AddSchedule()
+        {
+            //Add Schedule
+            var res = Schedule.AddSchedule(null, "bogus", "bogus", "", false);
+            Assert.IsFalse(res.Success, "Static call to create new schedule with null Connection server did not fail");
+
+            res = Schedule.AddSchedule(_connectionServer, "", "bogus", "", false);
+            Assert.IsFalse(res.Success, "Static call to create new schedule with empty name did not fail");
+
+            res = Schedule.AddSchedule(_connectionServer, _connectionServer.PrimaryLocationObjectId, "", "", false);
+            Assert.IsFalse(res.Success, "Static call to create new schedule with empty location did not fail");
+
+            res = Schedule.AddSchedule(_connectionServer, _connectionServer.PrimaryLocationObjectId, "bogus", "bogus", false);
+            Assert.IsFalse(res.Success, "Static call to create new schedule with invalid user objectId owner did not fail");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_DeleteSchedule()
+        {
+            //Delete Schedule
+            var res = Schedule.DeleteSchedule(null, "");
+            Assert.IsFalse(res.Success, "Static call to delete schedule with null connection server did not fail");
+
+            res = Schedule.DeleteSchedule(_connectionServer, "");
+            Assert.IsFalse(res.Success, "Static call to delete schedule with empty objectId did not fail");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_AddScheduleDetail()
+        {
+            //get schedules
+            List<Schedule> oSchedules;
+
+            var res = Schedule.GetSchedules(null, out oSchedules);
+            Assert.IsFalse(res.Success, "Static call to getSchedules with null ConnectionServer did not fail");
+
+            res = Schedule.GetSchedules(_connectionServer, out oSchedules);
+            Assert.IsTrue(res.Success, "Static call to getSchedules with null ConnectionServer did not fail");
+            Assert.IsTrue(oSchedules.Count > 0, "No schedules returned in fetch:" + res);
+
+            //add schedule details
+            res = Schedule.AddScheduleDetail(null, oSchedules[0].ObjectId, "subject", 0, 200, true, true, true,
+                                             true, true, false, false);
+            Assert.IsFalse(res.Success, "Static call to addScheduleDetail with null ConnectionServer did not fail");
+
+            res = Schedule.AddScheduleDetail(_connectionServer, "", "subject", 0, 200, true, true, true,
+                                 true, true, false, false);
+            Assert.IsFalse(res.Success, "Static call to addScheduleDetail with empty ScheduleObjectId did not fail");
+        }
+
+        [TestMethod]
+        public void StaticCallFailures_DeleteScheduleDetail()
+        {
+            //schedule detail
+            var res = ScheduleDetail.DeleteScheduleDetail(null, "scheduleobjectId", "detailobjectid");
+            Assert.IsFalse(res.Success, "Static call to DeleteScheduleDetail did not fail with null Connection server");
+
+            res = ScheduleDetail.DeleteScheduleDetail(_connectionServer, "", "detailobjectid");
+            Assert.IsFalse(res.Success, "Static call to DeleteScheduleDetail did not fail with blank schedule ObjectId");
+
+            res = ScheduleDetail.DeleteScheduleDetail(_connectionServer, "scheduleId", "");
+            Assert.IsFalse(res.Success, "Static call to DeleteScheduleDetail did not fail with blank objectId ");
+        }
+
+
+        [TestMethod]
+        public void StaticCallFailures_GetSchedule()
+        {
+            Schedule oSchedule;
+
+            //getSchedule
+            WebCallResult res = Schedule.GetSchedule(out oSchedule, null);
+            Assert.IsFalse(res.Success, "Static call to get schedule with null ConnectionServer did not fail");
+
+            res = Schedule.GetSchedule(out oSchedule, null, "bogus");
+            Assert.IsFalse(res.Success, "Static call to get schedule with null ConnectionServer did not fail");
+
+            res = Schedule.GetSchedule(out oSchedule, _connectionServer);
+            Assert.IsFalse(res.Success, "Static call to get schedule with empty objectId and name did not fail");
+
+            res = Schedule.GetSchedule(out oSchedule, null, "", "bogus");
+            Assert.IsFalse(res.Success, "Static call to get schedule with null ConnectionServer did not fail");
+        }
+
+
+        #endregion
+
+
+        #region Live Test 
+
+        [TestMethod]
+        public void TimePartsTest()
+        {
+            //get time parts
+            int iMinutes = Schedule.GetMinutesFromTimeParts(2, 10);
+            Assert.IsTrue(iMinutes == 130, "GetMinutesFromTimeParts did not return 130 for 2 hours and 10 minutes");
+        }
+
         [TestMethod]
         public void ScheduleTests()
         {
@@ -189,80 +300,6 @@ namespace ConnectionCUPIFunctionsTest
 
             res = Schedule.GetSchedule(out oNewSchedule, _connectionServer, "", "bogus");
             Assert.IsFalse(res.Success,"Fetching schedule by invalid name did not fail");
-        }
-
-        [TestMethod]
-        public void StaticScheduleTests()
-        {
-            Schedule oSchedule;
-
-            //getSchedule
-            WebCallResult res = Schedule.GetSchedule(out oSchedule, null);
-            Assert.IsFalse(res.Success,"Static call to get schedule with null ConnectionServer did not fail");
-
-            res = Schedule.GetSchedule(out oSchedule, null, "bogus");
-            Assert.IsFalse(res.Success, "Static call to get schedule with null ConnectionServer did not fail");
-
-            res = Schedule.GetSchedule(out oSchedule, _connectionServer);
-            Assert.IsFalse(res.Success, "Static call to get schedule with empty objectId and name did not fail");
-
-            res = Schedule.GetSchedule(out oSchedule, null, "", "bogus");
-            Assert.IsFalse(res.Success, "Static call to get schedule with null ConnectionServer did not fail");
-
-            //get schedules
-            List<Schedule> oSchedules;
-            
-            res = Schedule.GetSchedules(null, out oSchedules);
-            Assert.IsFalse(res.Success, "Static call to getSchedules with null ConnectionServer did not fail");
-
-            res = Schedule.GetSchedules(_connectionServer, out oSchedules);
-            Assert.IsTrue(res.Success, "Static call to getSchedules with null ConnectionServer did not fail");
-            Assert.IsTrue(oSchedules.Count>0,"No schedules returned in fetch:"+res);
-
-            //Add Schedule
-            res = Schedule.AddSchedule(null, "bogus", "bogus", "", false);
-            Assert.IsFalse(res.Success,"Static call to create new schedule with null Connection server did not fail");
-
-            res = Schedule.AddSchedule(_connectionServer, "", "bogus", "", false);
-            Assert.IsFalse(res.Success, "Static call to create new schedule with empty name did not fail");
-
-            res = Schedule.AddSchedule(_connectionServer, _connectionServer.PrimaryLocationObjectId, "", "", false);
-            Assert.IsFalse(res.Success, "Static call to create new schedule with empty location did not fail");
-
-            res = Schedule.AddSchedule(_connectionServer, _connectionServer.PrimaryLocationObjectId, "bogus","bogus", false);
-            Assert.IsFalse(res.Success, "Static call to create new schedule with invalid user objectId owner did not fail");
-
-            //Delete Schedule
-            res = Schedule.DeleteSchedule(null, "");
-            Assert.IsFalse(res.Success, "Static call to delete schedule with null connection server did not fail");
-
-            res = Schedule.DeleteSchedule(_connectionServer, "");
-            Assert.IsFalse(res.Success, "Static call to delete schedule with empty objectId did not fail");
-
-            //add schedule details
-            res = Schedule.AddScheduleDetail(null,oSchedules[0].ObjectId,"subject", 0, 200, true, true, true,
-                                             true, true, false, false);
-            Assert.IsFalse(res.Success, "Static call to addScheduleDetail with null ConnectionServer did not fail");
-
-            res = Schedule.AddScheduleDetail(_connectionServer, "", "subject", 0, 200, true, true, true,
-                                 true, true, false, false);
-            Assert.IsFalse(res.Success, "Static call to addScheduleDetail with empty ScheduleObjectId did not fail");
-
-
-            //schedule detail
-            res = ScheduleDetail.DeleteScheduleDetail(null, "scheduleobjectId", "detailobjectid");
-            Assert.IsFalse(res.Success,"Static call to DeleteScheduleDetail did not fail with null Connection server");
-
-            res = ScheduleDetail.DeleteScheduleDetail(_connectionServer, "", "detailobjectid");
-            Assert.IsFalse(res.Success, "Static call to DeleteScheduleDetail did not fail with blank schedule ObjectId");
-
-            res = ScheduleDetail.DeleteScheduleDetail(_connectionServer, "scheduleId", "");
-            Assert.IsFalse(res.Success, "Static call to DeleteScheduleDetail did not fail with blank objectId ");
-
-            //get time parts
-            int iMinutes= Schedule.GetMinutesFromTimeParts(2, 10);
-            Assert.IsTrue(iMinutes==130,"GetMinutesFromTimeParts did not return 130 for 2 hours and 10 minutes");
-
         }
 
 
@@ -353,5 +390,7 @@ namespace ConnectionCUPIFunctionsTest
                 Assert.IsTrue(false,"Failed to create a ScheduleDetial instance with valid objectIds:"+ex);
             }
         }
+
+        #endregion
     }
 }

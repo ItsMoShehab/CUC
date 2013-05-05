@@ -95,26 +95,19 @@ namespace ConnectionCUPIFunctionsTest
 
 
         [TestMethod]
-        public void GlobalUserFetchTests()
+        public void GlobalUser_GetUser()
         {
-            List<GlobalUser> oUsers;
-            WebCallResult res = GlobalUser.GetUsers(_connectionServer, out oUsers);
-            Assert.IsTrue(res.Success,"Failed to fetch global users");
-            Assert.IsTrue(oUsers.Count>0,"No global users returned on fetch");
-
-            foreach (var oUser in oUsers)
-            {
-                Console.WriteLine(oUser.ToString());
-                Console.WriteLine(oUser.DumpAllProps());
-            }
-
-            //static method calls
             GlobalUser oNewUser;
-            List<GlobalUser> oNewUsers;
+            List<GlobalUser> oUsers;
+
+            WebCallResult res = GlobalUser.GetUsers(_connectionServer, out oUsers);
             
+            Assert.IsTrue(res.Success, "Failed to fetch global users");
+            Assert.IsTrue(oUsers.Count > 0, "No global users returned on fetch");
+
             //GetUser
             res = GlobalUser.GetUser(out oNewUser, _connectionServer, "");
-            Assert.IsFalse(res.Success,"Fetching user with static method with empty objectId did not fail");
+            Assert.IsFalse(res.Success, "Fetching user with static method with empty objectId did not fail");
 
             res = GlobalUser.GetUser(out oNewUser, null, "bogus");
             Assert.IsFalse(res.Success, "Fetching user with static method with null Connection server did not fail");
@@ -123,14 +116,30 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Fetching user with static method with invalid objectId did not fail");
 
             res = GlobalUser.GetUser(out oNewUser, _connectionServer, oUsers[0].ObjectId);
-            Assert.IsTrue(res.Success, "Failed to fetch a user by valid ObjectId:"+res);
+            Assert.IsTrue(res.Success, "Failed to fetch a user by valid ObjectId:" + res);
 
             res = GlobalUser.GetUser(out oNewUser, _connectionServer, "", oUsers[0].Alias);
             Assert.IsTrue(res.Success, "Failed to fetch a user by valid Alias:" + res);
+        }
 
+        [TestMethod]
+        public void GlobalUser_GetUsers()
+        {
+            //static method calls
+            List<GlobalUser> oNewUsers;
+
+            List<GlobalUser> oUsers;
+            WebCallResult res = GlobalUser.GetUsers(_connectionServer, out oUsers);
+            Assert.IsTrue(res.Success, "Failed to fetch global users");
+            Assert.IsTrue(oUsers.Count > 0, "No global users returned on fetch");
+
+            //exercise dump calls
+            Console.WriteLine(oUsers[0].ToString());
+            Console.WriteLine(oUsers[0].DumpAllProps());
+            
             //GetUsers
             res = GlobalUser.GetUsers(null, out oNewUsers);
-            Assert.IsFalse(res.Success,"Fetching users via static method with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Fetching users via static method with null ConnectionServer did not fail");
 
             res = GlobalUser.GetUsers(_connectionServer, out oNewUsers, "query=(bogus)", "", "sort=(bogus)");
             Assert.IsFalse(res.Success, "Fetching users via static method with invalid query construction did not fail");
@@ -138,8 +147,7 @@ namespace ConnectionCUPIFunctionsTest
             string strQuery = string.Format("query=(Alias is {0})", oUsers[0].Alias);
             res = GlobalUser.GetUsers(_connectionServer, out oNewUsers, strQuery);
             Assert.IsTrue(res.Success, "Fetching users via static method with valid alias query construction failed");
-            Assert.IsTrue(oNewUsers.Count==1,"Fetching users by alias construction did not return single match");
-
+            Assert.IsTrue(oNewUsers.Count == 1, "Fetching users by alias construction did not return single match");
         }
 
     }
