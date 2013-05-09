@@ -201,10 +201,13 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pLoginPw">
         /// Login password used to authenticate to the CUPI interface on the Connection server provided.
         /// </param>
+        /// <param name="pLoginAsAdministrator">
+        /// When validating the login credentials of a user (as opposed to an admin) pass this as false instead
+        /// </param>
         /// <returns>
         /// Instance of the ConnectionServer class
         /// </returns>
-        public ConnectionServer (string pServerName, string pLoginName, string pLoginPw)
+        public ConnectionServer (string pServerName, string pLoginName, string pLoginPw, bool pLoginAsAdministrator=true)
         {
             BaseUrl = string.Format("https://{0}:8443/vmrest/", pServerName);
             Version = new ConnectionVersion(0,0,0,0,0);
@@ -218,7 +221,7 @@ namespace Cisco.UnityConnection.RestFunctions
             LastSessionActivity = DateTime.MinValue;
 
             //validate login.  This fills in the version and primary location object ID details.
-            if (LoginToConnectionServer(pServerName,pLoginName,pLoginPw).Success==false)
+            if (LoginToConnectionServer(pServerName, pLoginName, pLoginPw, pLoginAsAdministrator).Success == false)
             {
                 ServerName = "";
                 LoginName = "";
@@ -255,17 +258,27 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pLoginPw">
         /// The login password to use when attachign to the Connection server's CUPI interface.
         /// </param>
+        /// <param name="pIncludeServers">
+        /// When authenticating as a user instead of an admin you wont have rights to get server (cluster) details - so this is passed as false.  When 
+        /// authenticating as an admin it'll be passed as true so we have cluster details.
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.  If the login fails the Success property
         /// on the return class will be FALSE, otherwise TRUE is returned.
         /// </returns>
-        private WebCallResult LoginToConnectionServer(string pServerName, string pLoginName, string pLoginPw)
+        private WebCallResult LoginToConnectionServer(string pServerName, string pLoginName, string pLoginPw, bool pIncludeServers)
         {
             this.LoginName = pLoginName;
             this.LoginPw = pLoginPw;
 
             WebCallResult ret = GetVersionInfo(pServerName);
             if (ret.Success == false)
+            {
+                return ret;
+            }
+
+            //if we don't need to include servers, just return now.
+            if (pIncludeServers == false)
             {
                 return ret;
             }
@@ -781,7 +794,7 @@ namespace Cisco.UnityConnection.RestFunctions
             pUser = null;
             try
             {
-                new ConnectionServer(this.ServerName, pLoginName, pPassword);
+                new ConnectionServer(this.ServerName, pLoginName, pPassword,false);
             }
             catch 
             {
@@ -813,7 +826,7 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             try
             {
-                new ConnectionServer(this.ServerName, pLoginName, pPassword);
+                new ConnectionServer(this.ServerName, pLoginName, pPassword,false);
             }
             catch 
             {
