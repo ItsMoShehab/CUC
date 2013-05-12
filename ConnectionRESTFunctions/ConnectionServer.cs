@@ -277,6 +277,12 @@ namespace Cisco.UnityConnection.RestFunctions
                 return ret;
             }
 
+            //the servers method was not in prior to 9.0
+            if (!this.Version.IsVersionAtLeast(9, 0, 1, 0))
+            {
+                return ret;
+            }
+
             //if we don't need to include servers, just return now.
             if (pIncludeServers == false)
             {
