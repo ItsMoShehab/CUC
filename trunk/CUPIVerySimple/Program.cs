@@ -18,7 +18,7 @@ namespace CUPIVerySimple
     class Program
     {
         //To keep things simple we'll just do this all in a long Main method here.
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             //you can attach to multiple different Connection servers an interact with them in the same program easily by just creating
             //new instances of ConnectionServer objects - all objects "know" which server they are associated with.  This example, of course, 
@@ -28,39 +28,34 @@ namespace CUPIVerySimple
             //turn on "chatty" output to console
             HTTPFunctions.DebugMode = true;
 
-            Logger.Log("Starting log output");            
-            
+            Logger.Log("Starting log output");
+
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
-                connectionServer = new ConnectionServer("192.168.0.187", "CCMAdministrator", "ecsbulab");
+                connectionServer = new ConnectionServer("192.168.0.190", "CCMAdministrator", "ecsbulab");
             }
 
             catch (Exception ex)
             {
                 //return an exit code of 1 to indicate failure exit.
-                Console.WriteLine("Could not attach to Connection server: "+ex.Message);
+                Console.WriteLine("Could not attach to Connection server: " + ex.Message);
                 Console.Read();
                 Environment.Exit(1);
             }
 
             //the Connection server object spits out the server name and version number in the ToString function.
-            Console.WriteLine("Attached to Connection server: "+connectionServer);
+            Console.WriteLine("Attached to Connection server: " + connectionServer);
 
             //do a version check - most things will work on older versions as well but voice name updates and some other functions will not.
-            if (connectionServer.Version.IsVersionAtLeast(8,5,0,0)==false)
+            if (connectionServer.Version.IsVersionAtLeast(8, 5, 0, 0) == false)
             {
                 Console.WriteLine("WARNING! The ConnectionCUPIFunctions library was written and tested against Connection 8.5 and later."
-                                    +"  The version you are attached to is less than that.");
+                                  + "  The version you are attached to is less than that.");
             }
 
             //the WebCallResult is the structure returned on most calls into the CUPIFunctions library.
             WebCallResult res;
-
-            List<ConfigurationValue> oValues;
-            res = ConfigurationValue.GetConfigurationValues(connectionServer, out oValues, 1, 20, "", "bogus");
-            Console.WriteLine(res);
-
 
             //fetch user with alias of "jlindborg" - we will be sending the message from his 
             //mailbox.
