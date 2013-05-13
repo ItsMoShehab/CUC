@@ -308,7 +308,7 @@ namespace ConnectionCUPIFunctionsTest
             }
             catch (Exception ex)
             {
-                Assert.Fail("Failed to create new direcotry handler using valid display name for search");
+                Assert.Fail("Failed to create new direcotry handler using valid display name for search:"+ex);
             }
 
             //hit failed searches

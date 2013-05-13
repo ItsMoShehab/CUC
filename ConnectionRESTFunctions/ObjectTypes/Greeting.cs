@@ -691,13 +691,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strGreetingStreamUriPath= string.Format("https://{0}:8443/vmrest/handlers/callhandlers/{1}/greetings/{2}/greetingstreamfiles/{3}/audio",
                                          pConnectionServer.ServerName, pCallHandlerObjectId, pGreetingType, pLanguageId);
 
-
-            res = HTTPFunctions.UploadWavFile(strGreetingStreamUriPath, pConnectionServer.LoginName,
-                                              pConnectionServer.LoginPw, pSourceLocalFilePath);
-
-
-            return res;
-
+            return HTTPFunctions.UploadWavFile(strGreetingStreamUriPath, pConnectionServer, pSourceLocalFilePath);
         }
 
 
@@ -763,8 +757,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            return HTTPFunctions.GetJsonResponse(strUrl, MethodType.PUT, pConnectionServer.LoginName,
-                                                 pConnectionServer.LoginPw, oParams, out oOutput);
+            return HTTPFunctions.GetJsonResponse(strUrl, MethodType.PUT, pConnectionServer, oParams, out oOutput);
         }
 
 

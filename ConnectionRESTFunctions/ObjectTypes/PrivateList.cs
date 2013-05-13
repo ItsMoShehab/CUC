@@ -594,13 +594,9 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //fetch the WAV file
-            res = HTTPFunctions.DownloadWavFile(pConnectionServer.ServerName,
-                                                pConnectionServer.LoginName,
-                                                pConnectionServer.LoginPw,
+            return HTTPFunctions.DownloadWavFile(pConnectionServer,
                                                 pTargetLocalFilePath,
                                                 pConnectionWavFileName);
-
-            return res;
         }
 
 
@@ -678,9 +674,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strResourcePath = string.Format(@"{0}users/{1}/privatelists/{2}/voicename", pConnectionServer.BaseUrl, pUserObjectId, pObjectId);
 
             //upload the WAV file to the server.
-            res = HTTPFunctions.UploadWavFile(strResourcePath, pConnectionServer.LoginName, pConnectionServer.LoginPw, pSourceLocalFilePath);
-
-            return res;
+            return HTTPFunctions.UploadWavFile(strResourcePath, pConnectionServer, pSourceLocalFilePath);
         }
 
 

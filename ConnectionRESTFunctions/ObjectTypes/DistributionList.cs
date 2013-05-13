@@ -800,13 +800,9 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //fetch the WAV file
-            res = HTTPFunctions.DownloadWavFile(pConnectionServer.ServerName,
-                                                pConnectionServer.LoginName,
-                                                pConnectionServer.LoginPw,
+            return HTTPFunctions.DownloadWavFile(pConnectionServer,
                                                 pTargetLocalFilePath,
                                                 pConnectionWavFileName);
-
-            return res;
         }
 
 
@@ -878,7 +874,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strResourcePath = string.Format(@"{0}distributionlists/{1}/voicename", pConnectionServer.BaseUrl, pObjectId);
 
             //upload the WAV file to the server.
-            res = HTTPFunctions.UploadWavFile(strResourcePath, pConnectionServer.LoginName, pConnectionServer.LoginPw, pSourceLocalFilePath);
+            res = HTTPFunctions.UploadWavFile(strResourcePath, pConnectionServer, pSourceLocalFilePath);
 
             //if we converted a file to G711 in the process clean up after ourselves here. Only delete it if the upload was good - otherwise
             //keep it around as it may be useful for diagnostic purposes.
@@ -955,8 +951,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.PUT, pConnectionServer.LoginName,
-                                                 pConnectionServer.LoginPw, oParams, out oOutput);
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.PUT, pConnectionServer, oParams, out oOutput);
 
             return res;
         }

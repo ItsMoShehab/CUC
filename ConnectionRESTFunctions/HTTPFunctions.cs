@@ -44,7 +44,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string RequestBody;   //Request body that was sent to the server.
         public string Misc;         //string to hold other data the calling/caller may wish to log such as full paths to file names processed and such.
         public string ReturnedObjectId; //for all new object creation the objectID of the new object is returned here.
-        public string SessionCookie;  //entire cookie string (can contain both jsession and jsessionsso
+
         /// <summary>
         /// dumps the entire contents of the WebCallREsult excpept for the XElement object (which is just a parsed version of the ResponseText) and
         /// returns it as a formatted string for logging and display purposes.
@@ -493,6 +493,64 @@ namespace Cisco.UnityConnection.RestFunctions
         #region HTTP Request and Response Methods
 
         /// <summary>
+        /// Before a request goes out, tack on the basic authentication string and include the JSESSIONID and token
+        /// strings from the server we're communiating with if we have them.
+        /// </summary>
+        private static void AddCredentialsAndTokens(ref HttpWebRequest pRequest, ConnectionServer pServer)
+        {
+            //always stick the authorization item in the header - the .NET library only does this on a challange
+            //which wastes a trip
+            string authInfo = pServer.LoginName + ":" + pServer.LoginPw;
+            authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
+
+            pRequest.Credentials = new NetworkCredential(pServer.LoginName, pServer.LoginPw);
+
+            pRequest.Headers["Authorization"] = "Basic " + authInfo;
+
+            //if a session ID is passed in, include it in the header
+            if (!string.IsNullOrEmpty(pServer.LastSessionCookie))
+            {
+                pRequest.Headers["Cookie"] = pServer.LastSessionCookie;
+            }
+        }
+
+        /// <summary>
+        /// Whenever we get a response from the server check the headers in the response and fish out the cookies if it
+        /// includes a JSESSIONID and save them for the next request to this server.
+        /// </summary>
+        private static void FetchCookieDetails(HttpWebResponse pResponse, ConnectionServer pServer)
+        {
+            if (pResponse == null | pServer == null)
+            {
+                return;
+            }
+
+            //invalidate the cookie if it's been more than a minute - more aggressive than necessary but safe.
+            if ((DateTime.Now - pServer.TimeSessionCookieIssued).TotalSeconds > 60)
+            {
+                pServer.LastSessionCookie = "";
+                pServer.TimeSessionCookieIssued = DateTime.Now;
+                return;
+            }
+
+
+            //if the server set a session cookie in the header, return it here
+            var cookie = pResponse.Headers["Set-Cookie"];
+            if (cookie != null)
+            {
+
+                //if the response includes a new JSESSIONID (and/or JSESSIONIDSSO) update the cookie.
+                if ((!string.IsNullOrEmpty(cookie)) && (cookie.IndexOf("JSESSIONID=") > 0))
+                {
+                    pServer.TimeSessionCookieIssued = DateTime.Now;
+                    pServer.LastSessionCookie = cookie;
+                    RaiseDebugEvent("Setting new cookie:" + cookie);
+                }
+            }
+        }
+
+
+        /// <summary>
         /// Primary method for sending/fetching data to and from the Connection server via CUPI.  
         /// </summary>
         /// <param name="pUrl">
@@ -502,11 +560,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pMethod">
         /// GET, PUT, POST, DELETE method type
         /// </param>
-        /// <param name="pLoginName">
-        /// The login name used to authenticate to the CUPI interface on Connection.
-        /// </param>
-        /// <param name="pLoginPw">
-        /// The login password used to authenticate to the CUPI interface on Connection
+        /// <param name="pConnectionServer">
+        /// Instance of the ConnectionServer class
         /// </param>
         /// <param name="pRequestBody">
         /// If the command (for instance a POST) include the need for a post body for additional data, include it here.  Not all commands
@@ -516,13 +571,12 @@ namespace Cisco.UnityConnection.RestFunctions
         /// If passed as true the resquest is formed as a JSON request and the results are assumed to be in the same format.  If the default of 
         /// false is passed it's sent as XML and the response is assumed to be the same.
         ///  </param>
-        /// <param name="pJsessionId"></param>
         /// <returns>
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
         /// with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        private static WebCallResult GetHttpResponse(string pUrl, MethodType pMethod, string pLoginName, string pLoginPw,
-                        string pRequestBody, bool pIsJson = false, string pJsessionId = "")
+        private static WebCallResult GetHttpResponse(string pUrl, MethodType pMethod, ConnectionServer pConnectionServer,
+                        string pRequestBody, bool pIsJson = false)
         {
             WebCallResult res = new WebCallResult();
             StreamReader reader = null;
@@ -554,23 +608,11 @@ namespace Cisco.UnityConnection.RestFunctions
                     RaiseDebugEvent("    Body:" + pRequestBody);
                     
                     request.Method = pMethod.ToString();
-                    request.Credentials = new NetworkCredential(pLoginName, pLoginPw);
                     request.KeepAlive = true;
                     request.Timeout = TimeoutSeconds * 1000;
-                    //request.PreAuthenticate = true;
                     request.Headers.Add("Cache-Control", "no-cache");
 
-                    //always stick the authorization item in the header - the .NET library only does this on a challange
-                    //which wastes a trip
-                    string authInfo = pLoginName + ":" + pLoginPw;
-                    authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
-                    request.Headers["Authorization"] = "Basic " + authInfo;
-
-                    //if a session ID is passed in, include it in the header
-                    if (!string.IsNullOrEmpty(pJsessionId))
-                    {
-                        request.Headers["Cookie"] = pJsessionId;
-                    }
+                    AddCredentialsAndTokens(ref request,pConnectionServer);
 
                     if (pIsJson)
                     {
@@ -597,18 +639,7 @@ namespace Cisco.UnityConnection.RestFunctions
                     try
                     {
                         response = request.GetResponse() as HttpWebResponse;
-                        
-                        if (response != null)
-                        {
-                            //if the server set a session cookie in the header, return it here
-                            var cookie = response.Headers["Set-Cookie"];
-                            if (cookie != null)
-                            {
-                                res.SessionCookie = cookie;
-                            }
-                        }
-                         
-
+                        FetchCookieDetails(response,pConnectionServer);
                     }
                     catch (WebException ex)
                     {
@@ -710,18 +741,12 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pMethod">
         /// GET, PUT, POST, DELETE method type
         /// </param>
-        /// <param name="pLoginName">
-        /// The login name used to authenticate to the CUPI interface on Connection.
-        /// </param>
-        /// <param name="pLoginPw">
-        /// The login password used to authenticate to the CUPI interface on Connection
+        /// <param name="pConnectionServer">
+        /// Instance of the ConnectionServer object
         /// </param>
         /// <param name="pRequestBody">
         /// If the command (for instance a POST) include the need for a post body for additional data, include it here.  Not all commands
         /// require this (GET calls for instance).
-        /// </param>
-        /// <param name="pSessionCookie">
-        /// Optional session cookie string to include in the request header
         /// </param>
         /// <param name="pJsonResponse">
         /// Defaults to getting JSON body as a response, if passed as false XML will be requested instead.
@@ -730,11 +755,19 @@ namespace Cisco.UnityConnection.RestFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
         /// with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        private static WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, string pLoginName, string pLoginPw, string pRequestBody,
-            string pSessionCookie = "", bool pJsonResponse = true)
+        public static WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServer pConnectionServer, string pRequestBody,
+            bool pJsonResponse = true)
         {
+            if (pConnectionServer == null)
+            {
+                return new WebCallResult
+                    {
+                        Success = false,
+                        ErrorText = "Null ConnectionServer passed to GetCupiResponse on HTTPFunctions.cs"
+                    };
+            }
 
-            WebCallResult res = GetHttpResponse(pUrl, pMethod, pLoginName, pLoginPw, pRequestBody, pJsonResponse, pSessionCookie);
+            WebCallResult res = GetHttpResponse(pUrl, pMethod, pConnectionServer, pRequestBody, pJsonResponse);
             
             res.TotalObjectCount = 0;
             //if we get a result text blob back, try and parse it out and check for a "total" item in there.  This gets used for 
@@ -817,60 +850,6 @@ namespace Cisco.UnityConnection.RestFunctions
             return res;
         }
 
-        /// <summary>
-        /// Primary method for sending/fetching data to and from the Connection server via CUPI - tries to parse results returned into XML format.
-        /// Use the GetJsonResponse if you're sending/recieving data in JSON format instead.
-        /// </summary>
-        /// <param name="pUrl">
-        /// Full URL to send to Connection - format should look like:
-        /// https://{Connection Server Name}:8443/vmrest/users
-        /// </param>
-        /// <param name="pMethod">
-        /// GET, PUT, POST, DELETE method type
-        /// </param>
-        /// <param name="pConnectionServer">
-        /// instance of the ConnectionServer object 
-        /// </param>
-        /// <param name="pRequestBody">
-        /// If the command (for instance a POST) include the need for a post body for additional data, include it here.  Not all commands
-        /// require this (GET calls for instance).
-        /// </param>
-        /// <param name="pJson"></param>
-        /// <returns>
-        /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
-        /// with the call so the calling party can easily log details in the event of a failure.
-        /// </returns>        
-        public static WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServer pConnectionServer,string pRequestBody,
-            bool pJson = true)
-        {
-            //invalidate the cookie if it's been more than a minute - more aggressive than necessary but safe.
-            if ((DateTime.Now - pConnectionServer.LastSessionActivity).TotalSeconds > 60)
-            {
-                pConnectionServer.LastSessionTokenIssued = "";
-            }
-
-            WebCallResult res = GetCupiResponse(pUrl, pMethod, pConnectionServer.LoginName, pConnectionServer.LoginPw,pRequestBody,
-                pConnectionServer.LastSessionTokenIssued, pJson);
-
-            //update the details of the session cookie and last connect time.  If the session cookie contains an instance
-            //of JSESSIONID in it then store the entire cookie in the LastSessionTokenIssued property and roll the date/time 
-            //note of the last time it was updated.
-            if (res.Success)
-            {
-
-                //update the last time we got a new set of token
-                pConnectionServer.LastSessionActivity = DateTime.Now;
-
-                //if the response includes a new JSESSIONID (and/or JSESSIONIDSSO) update the cookie.
-                if ((!string.IsNullOrEmpty(res.SessionCookie)) && (res.SessionCookie.IndexOf("JSESSIONID=") > 0))
-                {
-                    pConnectionServer.LastSessionTokenIssued = res.SessionCookie;
-                }
-            }
-
-            return res;
-        }
-
 
         /// <summary>
         /// Primary method for sending/fetching data to and from the Connection server via CUMI - tries to parse results returned into JSON format.
@@ -883,11 +862,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pMethod">
         /// GET, PUT, POST, DELETE method type
         /// </param>
-        /// <param name="pLoginName">
-        /// The login name used to authenticate to the CUPI interface on Connection.
-        /// </param>
-        /// <param name="pLoginPw">
-        /// The login password used to authenticate to the CUPI interface on Connection
+        /// <param name="pConnectionServer">
+        /// Instance of the ConnectionServer class
         /// </param>
         /// <param name="pJsonParams">
         /// Dictionary of name/value pairs as strings - this method will construct it into a JSON body and include it with the request.  You can 
@@ -901,10 +877,19 @@ namespace Cisco.UnityConnection.RestFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
         /// with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        public static WebCallResult GetJsonResponse(string pUrl, MethodType pMethod, string pLoginName, string pLoginPw,
+        public static WebCallResult GetJsonResponse(string pUrl, MethodType pMethod, ConnectionServer pConnectionServer,
                                                     Dictionary<string, string> pJsonParams, out Dictionary<string, object> pResults)
         {
             pResults = new Dictionary<string, object>();
+
+            if (pConnectionServer == null)
+            {
+                return new WebCallResult
+                    {
+                        Success = false,
+                        ErrorText = "Null ConnectionServer passed to GetJsonResponse on HTTPFunctions.cs"
+                    };
+            }
 
             StringBuilder strRequestBody = new StringBuilder();
             //construct the JSON format request body based on name/value pairs passed in via dictionary
@@ -935,7 +920,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //fetch the raw results from the Connection server - anything returned by the server will be stored in the ResponseText
             //in the WebCallResult instance.
-            WebCallResult res = GetHttpResponse(pUrl, pMethod, pLoginName, pLoginPw, strRequestBody.ToString(), true);
+            WebCallResult res = GetHttpResponse(pUrl, pMethod, pConnectionServer, strRequestBody.ToString(), true);
 
             //if we get a result text blob back, try and parse it out and check for a "total" item in there.  This gets used for 
             //paging scenarios and such.
@@ -1039,14 +1024,8 @@ namespace Cisco.UnityConnection.RestFunctions
         ///     been in place since 7.0(2) and will work across all versions of Connection (COBRAS uses this).  I'm using it here to simplify
         ///     fetching media files through a single method here - all that's needed is the actual WAV file name (GUID followed by a .wav).
         /// </remarks>
-        /// <param name="pServerName" type="string">
-        ///     The server name or IP address of the Connection server to download the WAV file from.
-        /// </param>
-        /// <param name="pLogin" type="string">
-        ///     The login name to use - the account used must have administrator rights (remote DB administration rights are not required).
-        /// </param>
-        /// <param name="pPassword" type="string">
-        ///     The password for the login account.
+        /// <param name="pConnectionServer">
+        /// Instance of the ConnectionServer class
         /// </param>
         /// <param name="pLocalWavFilePath" type="string">
         ///     The full path to stored the downloaded WAV file locally.
@@ -1058,16 +1037,25 @@ namespace Cisco.UnityConnection.RestFunctions
         ///     An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
         ///     associiated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>    
-        public static WebCallResult DownloadWavFile(string pServerName, string pLogin, string pPassword, string pLocalWavFilePath, string pConnectionFileName)
+        public static WebCallResult DownloadWavFile(ConnectionServer pConnectionServer, string pLocalWavFilePath, string pConnectionFileName)
         {
+            if (pConnectionServer == null)
+            {
+                return new WebCallResult
+                    {
+                        Success = false,
+                        ErrorText = "Null ConnectionServer passed to DownloadWavFile on HTTPFunctions.cs"
+                    };
+            }
+
             //if the target file is already occupied, delete it here.
             if (File.Exists(pLocalWavFilePath))
                 File.Delete(pLocalWavFilePath);
 
             //this is the general CUALS web interface that will fetch any stream file exposed in the streams folder by name.
-            string strUrl = @"https://" + pServerName + "/cuals/VoiceServlet?filename=" + pConnectionFileName;
+            string strUrl = @"https://" + pConnectionServer.ServerName + "/cuals/VoiceServlet?filename=" + pConnectionFileName;
 
-            return DownloadMediaFile(strUrl, pLogin, pPassword, pLocalWavFilePath);
+            return DownloadMediaFile(strUrl, pConnectionServer, pLocalWavFilePath);
 
         }
 
@@ -1082,11 +1070,8 @@ namespace Cisco.UnityConnection.RestFunctions
         ///  Base URL for VMRest - usually something like "https://(server name):8442/vmrest/".  This is created and stored off the 
         /// ConnserverServer object when it's created.
         /// </param>
-        /// <param name="pLogin" type="string">
-        ///     The login name to use - the account used must have administrator rights (remote DB administration rights are not required).
-        /// </param>
-        /// <param name="pPassword" type="string">
-        ///     The password for the login account.
+        /// <param name="pConnectionServer">
+        /// Instance of the ConnectionServer class
         /// </param>
         /// <param name="pLocalWavFilePath" type="string">
         ///     The full path to stored the downloaded WAV file locally.
@@ -1104,7 +1089,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
         /// associiated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>    
-        public static WebCallResult DownloadMessageAttachment(string pBaseUrl, string pLogin, string pPassword, string pLocalWavFilePath, 
+        public static WebCallResult DownloadMessageAttachment(string pBaseUrl, ConnectionServer pConnectionServer, string pLocalWavFilePath, 
                                                                 string pUserObjectId, string pMessageObjectId, int pAttachmentNumber)
         {
             //if the target file is already occupied, delete it here.
@@ -1115,7 +1100,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format(@"{0}messages/{1}/attachments/{2}?userobjectid={3}", pBaseUrl, pMessageObjectId, 
                 pAttachmentNumber, pUserObjectId);
 
-            return DownloadMediaFile(strUrl, pLogin, pPassword, pLocalWavFilePath);
+            return DownloadMediaFile(strUrl, pConnectionServer, pLocalWavFilePath);
 
         }
 
@@ -1134,11 +1119,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Full URL including https:// etc... for fetching the resrouce - can be a CUALS call, VMRest stream file or a CUMI message attachment
         /// construction.
         /// </param>
-        /// <param name="pLogin" type="string">
-        ///     The login name to use - the account used must have administrator rights (remote DB administration rights are not required).
-        /// </param>
-        /// <param name="pPassword" type="string">
-        ///     The password for the login account.
+        /// <param name="pConnectionServer">
+        /// ConnectonServer class instance
         /// </param>
         /// <param name="pLocalWavFilePath" type="string">
         ///     The full path to stored the downloaded WAV file locally.
@@ -1147,7 +1129,7 @@ namespace Cisco.UnityConnection.RestFunctions
         ///     An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
         ///     associiated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>    
-        private static WebCallResult DownloadMediaFile(string pFullUrl, string pLogin, string pPassword, string pLocalWavFilePath)
+        private static WebCallResult DownloadMediaFile(string pFullUrl, ConnectionServer pConnectionServer, string pLocalWavFilePath)
         {
 
             WebCallResult res = new WebCallResult();
@@ -1171,16 +1153,13 @@ namespace Cisco.UnityConnection.RestFunctions
                     //create a web request to the URL   
                     HttpWebRequest webReq = (HttpWebRequest)WebRequest.Create(pFullUrl);
 
-                    webReq.Credentials = new NetworkCredential(pLogin, pPassword);
+                    AddCredentialsAndTokens(ref webReq,pConnectionServer);
                     webReq.KeepAlive = false;
                     
-                    //always stick the authorization item in the header - the .NET library only does this on a challange
-                    //which wastes a trip
-                    string authInfo = pLogin + ":" + pPassword;
-                    authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
-                    webReq.Headers["Authorization"] = "Basic " + authInfo;
-
                     HttpWebResponse response = (HttpWebResponse)webReq.GetResponse();
+
+                    FetchCookieDetails(response, pConnectionServer);
+
                     Stream sourceStream = response.GetResponseStream();
 
                     //SourceStream has no ReadAll, so we must read data block-by-block   
@@ -1262,37 +1241,31 @@ namespace Cisco.UnityConnection.RestFunctions
         ///     password.
         /// </summary>
         /// <param name="pFullResourcePath" type="string">
-        ///     <para>
         ///         Path to the resource stream.  For instance a user's voice name resource path look something like:
         ///         https://ConnectionServer1.MyCompany.com:8443/vmrest/users/51e94483-2dec-43b1-974e-2b9320b86d78/voicename
-        ///     </para>
         /// </param>
-        /// <param name="pLogin" type="string">
-        ///     <para>
-        ///         The login name to use - the account used must have administrator rights (remote DB administration rights are not required).
-        ///     </para>
-        /// </param>
-        /// <param name="pPassword" type="string">
-        ///     <para>
-        ///         The password for the login account.
-        ///     </para>
+        /// <param name="pConnectionServer">
+        /// Instance of the ConnectionServer class
         /// </param>
         /// <param name="pLocalWavFilePath" type="string">
-        ///     <para>
-        ///         The full path to the local WAV file to upload to the remote Connection server.
-        ///     </para>
+        /// The full path to the local WAV file to upload to the remote Connection server.
         /// </param>
         /// <returns>
         ///     An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
         ///     associiated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        public static WebCallResult UploadWavFile(string pFullResourcePath, string pLogin, string pPassword, string pLocalWavFilePath)
+        public static WebCallResult UploadWavFile(string pFullResourcePath, ConnectionServer pConnectionServer, string pLocalWavFilePath)
         {
             WebCallResult res = new WebCallResult();
             byte[] buffer;
             FileStream streamTemp = null;
-
             res.Success = false;
+
+            if (pConnectionServer == null)
+            {
+                res.ErrorText = "Null ConnectionServer passed to UploadWavFile on HTTPFunctions.cs";
+                return res;
+            }
             
             //check the inputs up front
             if (File.Exists(pLocalWavFilePath) == false)
@@ -1305,13 +1278,6 @@ namespace Cisco.UnityConnection.RestFunctions
             if (string.IsNullOrEmpty(pFullResourcePath))
             {
                 res.ErrorText = "(error) invalid resource path passed to UploadWAVFile:" + pFullResourcePath;
-                RaiseErrorEvent(res.ErrorText);
-                return res;
-            }
-
-            if (string.IsNullOrEmpty(pLogin) | string.IsNullOrEmpty(pPassword))
-            {
-                res.ErrorText = "Empty login or password passed to UploadWavFile";
                 RaiseErrorEvent(res.ErrorText);
                 return res;
             }
@@ -1356,18 +1322,12 @@ namespace Cisco.UnityConnection.RestFunctions
                 RaiseDebugEvent("    Method: PUT");
                 RaiseDebugEvent("    ContentType:" + webReq.ContentLength);
 
-                webReq.Credentials = new NetworkCredential(pLogin, pPassword);
                 webReq.KeepAlive = false;
                 webReq.ServicePoint.Expect100Continue = false;
                 webReq.AllowWriteStreamBuffering = false;
                 webReq.PreAuthenticate = true;
 
-                //always stick the authorization item in the header - the .NET library only does this on a challange
-                //which wastes a trip
-                string authInfo = pLogin + ":" + pPassword;
-                authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
-                webReq.Headers["Authorization"] = "Basic " + authInfo;
-
+                AddCredentialsAndTokens(ref webReq, pConnectionServer);
 
                 //open a stream for writing the postvars
                 Stream postData = webReq.GetRequestStream();
@@ -1376,6 +1336,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
                 //GET the response handle
                 HttpWebResponse webResp = (HttpWebResponse)webReq.GetResponse();
+
+                FetchCookieDetails(webResp, pConnectionServer);
 
                 //Now, read the response (the string), and output it.
                 Stream answer = webResp.GetResponseStream();
@@ -1449,14 +1411,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// from it - you get a generic 400 "bad request" coming back - this is deeply unfortunate as it's a common configuration 
         /// error and somethign that should probably be addressed in the API at some point.
         /// </summary>
-        /// <param name="pServerName">
-        /// Server name or IP address of the Connection server to upload the broadcast message to.
-        /// </param>
-        /// <param name="pLogin">
-        /// Login name to authenticate against the server with - this account needs to have broadcast message send rights.
-        /// </param>
-        /// <param name="pPassword">
-        /// Password for account to authenticate against the server with.
+        /// <param name="pConnectionServer">
+        /// Instance of the ConnectionServer class
         /// </param>
         /// <param name="pWavFilePath">
         /// Full path on the local hard drive to a WAV file to use for the broadcast message.
@@ -1477,27 +1433,25 @@ namespace Cisco.UnityConnection.RestFunctions
         /// instance of the WebCallResult class - the "Misc" section will contain the path to the wav file uploaded and the start/end 
         /// date/times for the broadcast message.
         /// </returns>
-        public static WebCallResult UploadBroadcastMessage(string pServerName, string pLogin, string pPassword, string pWavFilePath, 
+        public static WebCallResult UploadBroadcastMessage(ConnectionServer pConnectionServer, string pWavFilePath, 
             DateTime pStartDate, DateTime pStartTime, DateTime pEndDate, DateTime pEndTime)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
 
+            if (pConnectionServer == null)
+            {
+                res.ErrorText = "Null ConnectionServer passed to UploadBroadcastMessage on HTTPFunctions.cs";
+                return res;
+            }
+
             //Disable Expect 100-Continue in header
             ServicePointManager.Expect100Continue = false;
 
-            string uri = "https://" + pServerName + "/vmrest/mailbox/broadcastmessages";
+            string uri = "https://" + pConnectionServer.ServerName + "/vmrest/mailbox/broadcastmessages";
 
             res.Url = uri;
             res.Method = "POST";
-
-            if (string.IsNullOrEmpty(pServerName) | string.IsNullOrEmpty(pLogin)| string.IsNullOrEmpty(pPassword) | string.IsNullOrEmpty(pWavFilePath))
-            {
-                res.ErrorText = "Invalid parameters passed to UploadBroadcastMessage on HTTPFunctions.cs";
-                RaiseErrorEvent(res.ErrorText);
-                return res;
-
-            }
 
             if (File.Exists(pWavFilePath)==false)
             {
@@ -1518,13 +1472,8 @@ namespace Cisco.UnityConnection.RestFunctions
             webrequest.Timeout = TimeoutSeconds * 1000;
             webrequest.ContentType = "multipart/form-data;boundary=" + boundary;
             webrequest.Method = "POST";
-            webrequest.Credentials = new NetworkCredential(pLogin, pPassword);
 
-            //always stick the authorization item in the header - the .NET library only does this on a challange
-            //which wastes a trip
-            string authInfo = pLogin + ":" + pPassword;
-            authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
-            webrequest.Headers["Authorization"] = "Basic " + authInfo;
+            AddCredentialsAndTokens(ref webrequest,pConnectionServer);
 
             //format the date/time so CUMI likes it.
             string strStartDate = string.Format("{0} {1}", pStartDate.ToString("yyyy-MM-dd"),pStartTime.ToString("HH:mm:ss.000"));
@@ -1617,6 +1566,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 {
                     if (webrequest.HaveResponse && response != null)
                     {
+                        FetchCookieDetails(response, pConnectionServer);
+
                         var oStream = response.GetResponseStream();
                         if (oStream == null)
                         {
@@ -1656,7 +1607,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             catch(Exception ex)
             {
-                res.ErrorText = string.Format("Failed sending broadcast message to {0}, error={1}", pServerName,ex);
+                res.ErrorText = string.Format("Failed sending broadcast message to {0}, error={1}", pConnectionServer.ServerName,ex);
                 RaiseErrorEvent(res.ErrorText);
             }
             return res;
@@ -1666,14 +1617,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <summary>
         /// Upload a new message to the Connection server using a local WAV file as the voice mail attachment.
         /// </summary>
-        /// <param name="pServerName">
-        /// Connection server the message is being uploaded to.
-        /// </param>
-        /// <param name="pLogin">
-        /// Login credentials to use to attach to Connection
-        /// </param>
-        /// <param name="pPassword">
-        /// Password credentials to use to attach to Connection
+        /// <param name="pConnectionServer">
+        /// Instance of the ConnectionServer class
         /// </param>
         /// <param name="pPathToLocalWav">
         /// The path to the local WAV file on the hard drive to include as the message attachment. 
@@ -1685,9 +1630,6 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pSenderUserObjectId">
         /// ObjectId of the subscriber (user with a mailbox) that the message will be sent on behalf of.
         /// </param>
-        /// <param name="pSessionCookie">
-        /// session cookie id to use (if any).
-        /// </param>
         /// <param name="pRecipientJsonString">
         /// Json format string for the list of recipients to address the message to - any number of TO, CC or BCC address types can be included.
         /// </param>
@@ -1698,23 +1640,22 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with details about the call and results recieved back from the server.
         /// </returns>
-        public static WebCallResult UploadVoiceMessageWav(string pServerName, string pLogin, string pPassword, string pPathToLocalWav,
-            string pMessageDetailsJsonString, string pSenderUserObjectId,string pSessionCookie, string pRecipientJsonString, 
+        public static WebCallResult UploadVoiceMessageWav(ConnectionServer pConnectionServer, string pPathToLocalWav,
+            string pMessageDetailsJsonString, string pSenderUserObjectId, string pRecipientJsonString, 
             string pUriConstruction="")
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
 
-            if (string.IsNullOrEmpty(pServerName) | string.IsNullOrEmpty(pLogin) | string.IsNullOrEmpty(pPassword) | string.IsNullOrEmpty(pPathToLocalWav))
+            if (pConnectionServer == null)
             {
-                res.ErrorText = "Invalid parameters passed to UploadVoiceMessageWav on HTTPFunctions.cs";
-                RaiseErrorEvent(res.ErrorText);
+                res.ErrorText = "Null ConnectionServer passed to UploadVoiceMessageWav on HTTPFunctions.cs";
                 return res;
             }
 
-            if (File.Exists(pPathToLocalWav) == false)
+            if (string.IsNullOrEmpty(pPathToLocalWav) || !File.Exists(pPathToLocalWav))
             {
-                res.ErrorText = "File not found in UploadVoiceMessageWav:" + pPathToLocalWav;
+                res.ErrorText = "Invalid path to local WAV passed to UploadVoiceMessageWav on HTTPFunctions.cs:"+pPathToLocalWav;
                 RaiseErrorEvent(res.ErrorText);
                 return res;
             }
@@ -1726,7 +1667,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string uri;
             if (string.IsNullOrEmpty(pUriConstruction))
             {
-                uri= "https://" + pServerName + "/vmrest/messages?userobjectid=" + pSenderUserObjectId;
+                uri= "https://" + pConnectionServer.ServerName + "/vmrest/messages?userobjectid=" + pSenderUserObjectId;
             }
             else
             {
@@ -1749,19 +1690,8 @@ namespace Cisco.UnityConnection.RestFunctions
             webrequest.Timeout = TimeoutSeconds * 1000;
             webrequest.ContentType = "multipart/form-data;boundary=" + boundary;
             webrequest.Method = "POST";
-            webrequest.Credentials = new NetworkCredential(pLogin, pPassword);
-
-            //always stick the authorization item in the header - the .NET library only does this on a challange
-            //which wastes a trip
-            string authInfo = pLogin + ":" + pPassword;
-            authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
-            webrequest.Headers["Authorization"] = "Basic " + authInfo;
-
-            //if a session ID is passed in, include it in the header
-            if (!string.IsNullOrEmpty(pSessionCookie))
-            {
-                webrequest.Headers["Cookie"] = pSessionCookie;
-            }
+            
+            AddCredentialsAndTokens(ref webrequest,pConnectionServer);
 
             // Build up the post message header
             StringBuilder sb = new StringBuilder();
@@ -1834,6 +1764,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 {
                     if (webrequest.HaveResponse && response != null)
                     {
+                        FetchCookieDetails(response, pConnectionServer);
+
                         var oStream = response.GetResponseStream();
                         if (oStream == null)
                         {
@@ -1873,7 +1805,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             catch (Exception ex)
             {
-                res.ErrorText = string.Format("Failed sending message to {0}, error={1}", pServerName, ex);
+                res.ErrorText = string.Format("Failed sending message to {0}, error={1}", pConnectionServer.ServerName, ex);
                 RaiseErrorEvent(res.ErrorText);
             }
             return res;
@@ -1884,14 +1816,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Create a new message using a resourceID for a stream already recorded on the Connection server - used when leveraging 
         /// CUTI to create new messages.
         /// </summary>
-        /// <param name="pServerName">
-        /// Connection server the message is being created on.
-        /// </param>
-        /// <param name="pLogin">
-        /// Login credentials to use to attach to Connection
-        /// </param>
-        /// <param name="pPassword">
-        /// Password credentials to use to attach to Connection
+        /// <param name="pConnectionServer">
+        /// ConnectionServer class instance.
         /// </param>
         /// <param name="pResourceId">
         /// The resourceId of the stream file to use for the voice message attachment
@@ -1903,9 +1829,6 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pSenderUserObjectId">
         /// ObjectId of the subscriber (user with a mailbox) that the message will be sent on behalf of.
         /// </param>
-        /// <param name="pSessionCookie">
-        /// session cookie id to use (if any).
-        /// </param>
         /// <param name="pRecipientJsonString">
         /// Json format string for the list of recipients to address the message to - any number of TO, CC or BCC address types can be included.
         /// </param>
@@ -1916,16 +1839,22 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with details about the call and results recieved back from the server.
         /// </returns>
-        public static WebCallResult UploadVoiceMessageResourceId(string pServerName, string pLogin, string pPassword, string pResourceId,
-            string pMessageDetailsJsonString, string pSenderUserObjectId, string pSessionCookie, string pRecipientJsonString,
+        public static WebCallResult UploadVoiceMessageResourceId(ConnectionServer pConnectionServer, string pResourceId,
+            string pMessageDetailsJsonString, string pSenderUserObjectId, string pRecipientJsonString,
              string pUriConstruction = "")
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
 
-            if (string.IsNullOrEmpty(pServerName) | string.IsNullOrEmpty(pLogin) | string.IsNullOrEmpty(pPassword) | string.IsNullOrEmpty(pResourceId))
+            if (pConnectionServer == null)
             {
-                res.ErrorText = "Invalid parameters passed to UploadVoiceMessageResourceId on HTTPFunctions.cs";
+                res.ErrorText = "Null ConnectionServer passed to UploadVoiceMessageResourceId on HttpFunctions.cs";
+                return res;
+            }
+
+            if (string.IsNullOrEmpty(pResourceId))
+            {
+                res.ErrorText = "Empty ResourceId passed to UploadVoiceMessageResourceId on HTTPFunctions.cs";
                 RaiseErrorEvent(res.ErrorText);
                 return res;
             }
@@ -1934,7 +1863,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string uri;
             if (string.IsNullOrEmpty(pUriConstruction))
             {
-                uri = "https://" + pServerName + "/vmrest/messages?userobjectid=" + pSenderUserObjectId;
+                uri = "https://" + pConnectionServer.ServerName + "/vmrest/messages?userobjectid=" + pSenderUserObjectId;
             }
             else
             {
@@ -1958,19 +1887,7 @@ namespace Cisco.UnityConnection.RestFunctions
             webrequest.ContentType = "multipart/form-data;boundary=" + boundary;
             webrequest.Method = "POST";
 
-            //always stick the authorization item in the header - the .NET library only does this on a challange
-            //which wastes a trip
-            string authInfo = pLogin + ":" + pPassword;
-            authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
-            webrequest.Headers["Authorization"] = "Basic " + authInfo;
-
-            webrequest.Credentials = new NetworkCredential(pLogin, pPassword);
-
-            //if a session ID is passed in, include it in the header
-            if (!string.IsNullOrEmpty(pSessionCookie))
-            {
-                webrequest.Headers["Cookie"] = pSessionCookie;
-            }
+            AddCredentialsAndTokens(ref webrequest,pConnectionServer);
 
             string strResourceIdXmlString=string.Format("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
                                                         "<CallControl>" +
@@ -2039,6 +1956,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 {
                     if (webrequest.HaveResponse && response != null)
                     {
+                        FetchCookieDetails(response, pConnectionServer);
+
                         var oStream = response.GetResponseStream();
                         if (oStream == null)
                         {
@@ -2078,7 +1997,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             catch (Exception ex)
             {
-                res.ErrorText = string.Format("Failed sending message to {0}, error={1}", pServerName, ex);
+                res.ErrorText = string.Format("Failed sending message to {0}, error={1}", pConnectionServer.ServerName, ex);
                 RaiseErrorEvent(res.ErrorText);
             }
             return res;
@@ -2127,7 +2046,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //now we need to upload the local WAV file to the slot we just allocated.
             string strUrl = string.Format("{0}voicefiles/{1}", pConnectionServer.BaseUrl,pConnectionStreamFileName);
 
-            res = UploadWavFile(strUrl, pConnectionServer.LoginName, pConnectionServer.LoginPw, pLocalWavFilePath);
+            res = UploadWavFile(strUrl, pConnectionServer, pLocalWavFilePath);
 
             return res;
         }
@@ -2154,8 +2073,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             string strUrl = string.Format("{0}voicefiles", pConnectionServer.BaseUrl);
             
-            WebCallResult res = GetCupiResponse(strUrl, MethodType.POST, pConnectionServer.LoginName, pConnectionServer.LoginPw, "",
-                pConnectionServer.LastSessionTokenIssued,false);
+            WebCallResult res = GetCupiResponse(strUrl, MethodType.POST, pConnectionServer, "",false);
 
             if (res.Success==false)
             {
