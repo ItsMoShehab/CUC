@@ -62,16 +62,16 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void UploadWavFile_Failure()
                 {
-                    WebCallResult res = HTTPFunctions.UploadWavFile("bogusresourcepath", "BogusLogin", "BogusPassword", "Dummy.wav");
+                    WebCallResult res = HTTPFunctions.UploadWavFile("bogusresourcepath", new ConnectionServer(), "Dummy.wav");
                     Assert.IsFalse(res.Success,"Invalid resource path should fail");
 
-                    res = HTTPFunctions.UploadWavFile("", "BogusLogin", "BogusPassword", "Dummy.wav");
+                    res = HTTPFunctions.UploadWavFile("", new ConnectionServer(), "Dummy.wav");
                     Assert.IsFalse(res.Success, "Empty resource path should fail");
 
-                    res = HTTPFunctions.UploadWavFile("bogusresourcepath", "", "BogusPassword", "Dummy.wav");
-                    Assert.IsFalse(res.Success, "empty login or password should fail");
+                    res = HTTPFunctions.UploadWavFile("bogusresourcepath", null, "Dummy.wav");
+                    Assert.IsFalse(res.Success, "null ConnectionServer should fail");
 
-                    res = HTTPFunctions.UploadWavFile("bogusresourcepath", "BogusLogin", "BogusPassword", "");
+                    res = HTTPFunctions.UploadWavFile("bogusresourcepath", new ConnectionServer(), "");
                     Assert.IsFalse(res.Success, "File path that does not exist should fail");
 
                 }

@@ -265,7 +265,7 @@ namespace ConnectionCUPIFunctionsTest
             GreetingStreamFile oStream;
 
             WebCallResult res = _tempHandler.GetGreeting("Alternate", out oGreeting);
-            Assert.IsTrue(res.Success, "Failed to get alternate greeting");
+            Assert.IsTrue(res.Success, "Failed to get alternate greeting" + res);
 
             //update the greeting propert and upload a wav file to it
             oGreeting.PlayWhat = (int)PlayWhatTypes.RecordedGreeting;
@@ -278,34 +278,34 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Uploading invalid WAV file should fail");
 
             res = oGreeting.SetGreetingWavFile(1033, "Dummy.wav", true);
-            Assert.IsTrue(res.Success, "Failed updating the greeting wav file for the alternate greeting:" + res.ToString());
+            Assert.IsTrue(res.Success, "Failed updating the greeting wav file for the alternate greeting:" + res);
 
             //use static greeting stream to set wav file instead
             res = GreetingStreamFile.SetGreetingWavFile(_connectionServer, _tempHandler.ObjectId, "Alternate", 1033, "Dummy.wav", true);
-            Assert.IsTrue(res.Success, "Updating voice name on new call handler failed: " + res.ToString());
+            Assert.IsTrue(res.Success, "Updating voice name on new call handler failed: " + res);
 
             //upload the wav file again, this time using an instance of the GreetingStreamFile object
             res = GreetingStreamFile.GetGreetingStreamFile(_connectionServer, _tempHandler.ObjectId, "Alternate", 1033, out oStream);
-            Assert.IsTrue(res.Success, "Failed to create GreetingStreamFile object");
+            Assert.IsTrue(res.Success, "Failed to create GreetingStreamFile object" + res);
 
             res = oStream.SetGreetingWavFile("Dummy.wav", true);
-            Assert.IsTrue(res.Success, "Failed to upload WAV file via GreetingStreamFile instance");
+            Assert.IsTrue(res.Success, "Failed to upload WAV file via GreetingStreamFile instance" + res);
 
             //check some failure resuls for GreetingStreamFile static calls while we're here since we know this greeting exists.
             res = GreetingStreamFile.GetGreetingWavFile(null, "temp.wav", _tempHandler.ObjectId, "Alternate", 1033);
-            Assert.IsFalse(res.Success, "Null connection server param should fail");
+            Assert.IsFalse(res.Success, "Null connection server param should fail" + res);
 
             res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", "", "Alternate", 1033);
-            Assert.IsFalse(res.Success, "Empty call handler object ID param should fail");
+            Assert.IsFalse(res.Success, "Empty call handler object ID param should fail" + res);
 
             res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", _tempHandler.ObjectId, "Bogus", 1033);
-            Assert.IsFalse(res.Success, "Invalid greeting type name should fail");
+            Assert.IsFalse(res.Success, "Invalid greeting type name should fail" + res);
 
             res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", _tempHandler.ObjectId, "Alternate", 10);
-            Assert.IsFalse(res.Success, "Invalid language code should fail");
+            Assert.IsFalse(res.Success, "Invalid language code should fail" + res);
 
             res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", _tempHandler.ObjectId, "Alternate", 1033);
-            Assert.IsTrue(res.Success, "Uploading WAV file to greeting via static GreetingStreamFile call failed");
+            Assert.IsTrue(res.Success, "Uploading WAV file to greeting via static GreetingStreamFile call failed:"+res);
 
             //get list of all greeting stream files
             List<GreetingStreamFile> oStreams = oGreeting.GetGreetingStreamFiles();
@@ -318,10 +318,10 @@ namespace ConnectionCUPIFunctionsTest
 
             //fetch the stream back out
             res = oGreeting.GetGreetingStreamFile(1033, out oStream);
-            Assert.IsTrue(res.Success, "Failed to fetch greeting stream file");
+            Assert.IsTrue(res.Success, "Failed to fetch greeting stream file:"+res);
 
             res = oGreeting.UpdateGreetingEnabledStatus(true, DateTime.Now.AddDays(1));
-            Assert.IsTrue(res.Success, "Failed updating greeting eneabled status for one day");
+            Assert.IsTrue(res.Success, "Failed updating greeting eneabled status for one day:"+res);
 
             //exercise the "auto fill" greeting, menu entry and transfer option interfaces
             List<Greeting> oGreetings = _tempHandler.GetGreetings();

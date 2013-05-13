@@ -112,7 +112,7 @@ namespace Cisco.UnityConnection.RestFunctions
  
             Dictionary<string, object> oResults;
 
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.POST, _homeServer.LoginName, _homeServer.LoginPw, oParams,out oResults);
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.POST, _homeServer, oParams,out oResults);
 
             if (res.Success==false)
             {
@@ -170,7 +170,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             Dictionary<string, object> oResults;
 
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.GET, _homeServer.LoginName, _homeServer.LoginPw,null, out oResults);
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.GET, _homeServer,null, out oResults);
 
             if (res.Success == false)
             {
@@ -201,7 +201,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             Dictionary<string, object> oResults;
 
-            HTTPFunctions.GetJsonResponse(strUrl, MethodType.DELETE, _homeServer.LoginName, _homeServer.LoginPw,null, out oResults);
+            HTTPFunctions.GetJsonResponse(strUrl, MethodType.DELETE, _homeServer,null, out oResults);
         }
 
 
@@ -227,7 +227,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //the results from the call are returned in a string/object pair dictionary
             Dictionary<string, object> oResults;
 
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.POST, _homeServer.LoginName, _homeServer.LoginPw, oParams, out oResults);
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.POST, _homeServer, oParams, out oResults);
 
             if (res.Success == false)
             {
@@ -316,7 +316,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //results are passed back in a string/object pair dictionary
             Dictionary<string, object> oResults;
 
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.POST, _homeServer.LoginName, _homeServer.LoginPw, oParams, out oResults);
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.POST, _homeServer, oParams, out oResults);
 
             if (res.Success == false)
             {
@@ -398,7 +398,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //results are passed back in a string/object pair dictionary
             Dictionary<string, object> oResults;
 
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.POST, _homeServer.LoginName, _homeServer.LoginPw, oParams, out oResults);
+            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.POST, _homeServer, oParams, out oResults);
 
             if (res.Success == false)
             {

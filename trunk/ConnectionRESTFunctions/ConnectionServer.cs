@@ -110,10 +110,10 @@ namespace Cisco.UnityConnection.RestFunctions
         public string BaseUrl { get; private set; }
 
         //keeps track of the last session cookie we got from this server via HTTPS
-        public string LastSessionTokenIssued { get; set; }
+        public string LastSessionCookie { get; set; }
 
         //keeps track of the last time we sent anything or got anything to/from this server via HTTPS
-        public DateTime LastSessionActivity { get; set; }
+        public DateTime TimeSessionCookieIssued { get; set; }
 
         //information about cluster servers (if any) filled in at login time.  If there is no cluster the list
         //will contain only the same server being attached to by this instance of ConnectionServer.
@@ -217,8 +217,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 throw new ArgumentException("Empty server name, login name or password provided on constructor");
             }
 
-            LastSessionTokenIssued = "";
-            LastSessionActivity = DateTime.MinValue;
+            LastSessionCookie = "";
+            TimeSessionCookieIssued = DateTime.MinValue;
 
             //validate login.  This fills in the version and primary location object ID details.
             if (LoginToConnectionServer(pServerName, pLoginName, pLoginPw, pLoginAsAdministrator).Success == false)

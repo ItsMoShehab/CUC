@@ -450,10 +450,8 @@ namespace Cisco.UnityConnection.RestFunctions
                                                                             false, pCallerId);
 
             //upload message
-            return HTTPFunctions.UploadVoiceMessageWav(pConnectionServer.ServerName, pConnectionServer.LoginName,
-                                                    pConnectionServer.LoginPw,pPathToLocalWavFile, strMessageJsonString,
-                                                    pSenderUserObjectId, pConnectionServer.LastSessionTokenIssued,
-                                                    strRecipientJsonString);
+            return HTTPFunctions.UploadVoiceMessageWav(pConnectionServer,pPathToLocalWavFile, strMessageJsonString,
+                                                    pSenderUserObjectId, strRecipientJsonString);
         }
 
 
@@ -542,10 +540,8 @@ namespace Cisco.UnityConnection.RestFunctions
                                                                             false, pCallerId);
 
             //upload message
-            return HTTPFunctions.UploadVoiceMessageResourceId(pConnectionServer.ServerName, pConnectionServer.LoginName,
-                                                    pConnectionServer.LoginPw, pResourceId, strMessageJsonString,
-                                                    pSenderUserObjectId, pConnectionServer.LastSessionTokenIssued,
-                                                    strRecipientJsonString);
+            return HTTPFunctions.UploadVoiceMessageResourceId(pConnectionServer, pResourceId, strMessageJsonString,
+                                                    pSenderUserObjectId, strRecipientJsonString);
         }
 
         /// <summary>
@@ -1019,8 +1015,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //go fetch the message attachment media file 
             res = HTTPFunctions.DownloadMessageAttachment(pConnectionServer.BaseUrl,
-                                                          pConnectionServer.LoginName,
-                                                          pConnectionServer.LoginPw,
+                                                          pConnectionServer,
                                                           pTargetLocalFilePath, 
                                                           pUserObjectId, 
                                                           pMessageObjectId,
@@ -1491,10 +1486,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 MsgId, UserObjectId);
             
             //forward message
-            return HTTPFunctions.UploadVoiceMessageWav(HomeServer.ServerName, HomeServer.LoginName,
-                                                    HomeServer.LoginPw, pPathToWavFile, strMessageJsonString,
-                                                    UserObjectId, HomeServer.LastSessionTokenIssued,strRecipientJsonString,
-                                                    strUri);
+            return HTTPFunctions.UploadVoiceMessageWav(HomeServer, pPathToWavFile, strMessageJsonString,
+                                                    UserObjectId,strRecipientJsonString,strUri);
         }
 
 
@@ -1561,10 +1554,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 MsgId, UserObjectId);
 
             //forward message
-            return HTTPFunctions.UploadVoiceMessageResourceId(HomeServer.ServerName, HomeServer.LoginName,
-                                                    HomeServer.LoginPw, pResourceId, strMessageJsonString,
-                                                    UserObjectId, HomeServer.LastSessionTokenIssued, strRecipientJsonString,
-                                                    strUri);
+            return HTTPFunctions.UploadVoiceMessageResourceId(HomeServer, pResourceId, strMessageJsonString,
+                                                    UserObjectId, strRecipientJsonString,strUri);
         }
 
         /// <summary>

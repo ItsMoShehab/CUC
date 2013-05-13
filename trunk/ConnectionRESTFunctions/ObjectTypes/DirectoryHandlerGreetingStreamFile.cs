@@ -451,13 +451,9 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //fetch the WAV file
-            res = HTTPFunctions.DownloadWavFile(pConnectionServer.ServerName,
-                                                pConnectionServer.LoginName,
-                                                pConnectionServer.LoginPw,
+            return HTTPFunctions.DownloadWavFile(pConnectionServer,
                                                 pTargetLocalFilePath,
                                                 pConnectionStreamFileName);
-
-            return res;
         }
 
 
