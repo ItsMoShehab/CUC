@@ -85,7 +85,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// True if the fetch goes through ok, false if there is an error.
         /// </returns>
-        public static bool GetCurrentComboBoxSelectionId<T>(ComboBox pComboBox, out T pObject)
+        public static bool GetCurrentComboBoxSelection<T>(ComboBox pComboBox, out T pObject)
         {
             pObject = default(T);
 
@@ -105,11 +105,13 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             catch (Exception ex)
             {
-                Console.WriteLine("(error) converting to target type in GetCurrentComboBoxSelectionId:"+ex);
+                Console.WriteLine("(error) converting to target type in GetCurrentComboBoxSelection:"+ex);
                 return false;
             }
 
             return true;
         }
     }
+
+   
 }
