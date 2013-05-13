@@ -24,7 +24,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// as all handlers associated with a tenant and setting additional COS and schedule objects to an existing 
     /// tenant.
     /// </summary>
-    public class Tenant
+    public class Tenant : IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -83,7 +83,11 @@ namespace Cisco.UnityConnection.RestFunctions
         #region Fields and Properties
 
         public ConnectionServer HomeServer { get; private set; }
-
+        
+        public string SelectionDisplayString { get { return Description; }}
+        
+        public string UniqueIdentifier { get { return ObjectId; } }
+        
         #endregion
 
 
@@ -1030,5 +1034,7 @@ namespace Cisco.UnityConnection.RestFunctions
         #endregion //related object methods
 
         #endregion //instance objects
+
+      
     }
 }

@@ -23,7 +23,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Class that provides methods for fetching, pdating, deleting and adding port groups in the Unity Connection
     /// directory.
     /// </summary>
-    public class PortGroup
+    public class PortGroup :IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -80,6 +80,12 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region Fields and Properties
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return DisplayName; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this object instance.
         public ConnectionServer HomeServer { get; private set; }

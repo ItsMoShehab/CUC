@@ -23,10 +23,16 @@ namespace Cisco.UnityConnection.RestFunctions
     /// cannot fetch individual member - only the full list of members associated with a list can be created and returned. 
     /// You can add/remove members from a list going through the DistributionList class.  The DistributionListMember class here is for presentation of the membership
     /// </summary>
-    public class DistributionListMember
+    public class DistributionListMember : IUnityDisplayInterface
     {
 
         #region Fields and Properties
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return DisplayName; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return ObjectId; } }
 
         /// <summary>
         /// Not in CUPI's data, this is derived locally in the class for ease of filtering/presentation.

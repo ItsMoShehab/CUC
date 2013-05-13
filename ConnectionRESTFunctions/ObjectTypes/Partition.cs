@@ -22,7 +22,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// The partition class is used only to provide an interface for user to select a partition from those configured on the Connection server.  You
     /// cannot create/edit/delete partitions through the ConnectionCUPIFunctions library. 
     /// </summary>
-    public class Partition
+    public class Partition :IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -66,6 +66,12 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region Fields and Properties 
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return Name; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this instance.
         public ConnectionServer HomeServer { get; set; }

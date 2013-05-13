@@ -22,7 +22,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Read only class for fetching and listing notification templates - these are used when creating HTML notification devices
     /// in Connection 9.0 and later systems.
     /// </summary>
-    public class NotificationTemplate
+    public class NotificationTemplate :IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -68,6 +68,13 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region Fields and Properties
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return NotificationTemplateName; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return NotificationTemplateId; } }
+
 
         public ConnectionServer HomeServer { get; private set; }
 

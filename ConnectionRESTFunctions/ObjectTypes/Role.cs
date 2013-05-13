@@ -19,7 +19,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Read only class for fetching all the roles defined on the Connection server and returning them as a generic list of 
     /// class objects.
     /// </summary>
-    public class Role
+    public class Role : IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -64,6 +64,13 @@ namespace Cisco.UnityConnection.RestFunctions
 
         //reference to the ConnectionServer object used to create this instance.
         public ConnectionServer HomeServer { get; private set; }
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return RoleName; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return ObjectId; } }
+
 
         #endregion
 

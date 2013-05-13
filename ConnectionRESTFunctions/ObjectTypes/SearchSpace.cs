@@ -20,7 +20,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// Class that contains methods for finding, fetching, adding, updating and deleting search space object in Connection
     /// </summary>
-    public class SearchSpace
+    public class SearchSpace :IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -64,6 +64,13 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region Fields and Properties 
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return Name; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return ObjectId; } }
+
 
         //reference to the ConnectionServer object used to create this instance.
         public ConnectionServer HomeServer { get; private set; }

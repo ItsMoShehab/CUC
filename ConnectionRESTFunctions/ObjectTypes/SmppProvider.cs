@@ -19,7 +19,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// The SMPP Provider class is used only to provide an interface for user to select which provider to use when creating new SMS notification 
     /// devices. 
     /// </summary>
-    public class SmppProvider
+    public class SmppProvider :IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -59,8 +59,20 @@ namespace Cisco.UnityConnection.RestFunctions
         #endregion
 
 
-        #region SmppProvider Properties 
-        
+        #region Fields and Properties
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return TextName; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return ObjectId; } }
+
+
+        #endregion
+
+
+        #region SmppProvider Properties
+
         [JsonProperty]
         public string TextName { get; private set; }
 

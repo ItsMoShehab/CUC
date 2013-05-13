@@ -23,7 +23,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// The phone system class provides methods for fetching, creating, updtaing and deleting phone system objects in the Unity 
     /// Connection directory
     /// </summary>
-    public class PhoneSystem
+    public class PhoneSystem :IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -79,6 +79,12 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region Fields and Properties
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return DisplayName; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this object instance.
         public ConnectionServer HomeServer { get; private set; }

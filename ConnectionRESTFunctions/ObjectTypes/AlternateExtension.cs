@@ -23,7 +23,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// via the CUPI interface.  This class also contains a number of static and instance methods for finding, deleting, editing and listing
     /// alternate extensions.
     /// </summary>
-    public class AlternateExtension
+    public class AlternateExtension : IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -90,6 +90,11 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Fields and Properties
 
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return DtmfAccessId; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this Alternate Extension instance.
         public ConnectionServer HomeServer { get; private set; }

@@ -23,7 +23,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// AddQuickSchedule static method that can add a schedule set associated schedule and associated schedule details to make
     /// a fully formed schedule set object and sub objects in one step for common scheduling needs.
     /// </summary>
-    public class ScheduleSet
+    public class ScheduleSet : IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -76,6 +76,12 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region Fields and Properties
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return DisplayName; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this Alternate Extension instance.
         public ConnectionServer HomeServer { get; private set; }

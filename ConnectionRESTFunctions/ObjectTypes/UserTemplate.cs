@@ -21,7 +21,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// The user template class provides the ability to enumerate, create, edit an delete user templates in the Connection directory.
     /// </summary>
-    public class UserTemplate
+    public class UserTemplate : IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -77,6 +77,12 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region Fields and Properties
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return DisplayName; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this object instance.
         public ConnectionServer HomeServer { get; private set; }
