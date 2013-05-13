@@ -17,7 +17,7 @@ using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
-    public class Schedule
+    public class Schedule :IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -76,6 +76,13 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region Fields and Properties
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return DisplayName; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return ObjectId; } }
+
 
         //reference to the ConnectionServer object used to create this Alternate Extension instance.
         public ConnectionServer HomeServer { get; private set; }

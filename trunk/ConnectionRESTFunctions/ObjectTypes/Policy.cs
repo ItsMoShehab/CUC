@@ -22,7 +22,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Class that provides methods for featching policies in Connection.  No adding/updating/deleting of policies
     /// is supported yet.
     /// </summary>
-    public class Policy
+    public class Policy 
     {
 
         #region Constructors and Destructors

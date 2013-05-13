@@ -22,7 +22,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// The Location class holds data about a Location.
     /// You cannot add/delete or edit locations - only search them - used mostly for finding other servers in a digital Connection network.
     /// </summary>
-    public class Location
+    public class Location : IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -79,6 +79,12 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region Fields and Properties
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return DisplayName; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this location instance.
         public ConnectionServer HomeServer { get; private set; }

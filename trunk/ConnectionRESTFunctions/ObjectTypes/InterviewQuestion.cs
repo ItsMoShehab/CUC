@@ -11,7 +11,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Class that provides methods to fetch and update questions associated with interview handlers (20 each).
     /// Includes methods to upload WAV file as recorded media for questions.
     /// </summary>
-    public class InterviewQuestion
+    public class InterviewQuestion : IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -55,6 +55,12 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region Fields and Properties
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return QuestionNumber.ToString(); } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return InterviewHandlerObjectId; } }
 
         //reference to the ConnectionServer object used to create this handlers instance.
         internal ConnectionServer HomeServer { get; private set; }

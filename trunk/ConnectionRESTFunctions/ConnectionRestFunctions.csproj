@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComboBoxHelper.cs" />
     <Compile Include="ObjectTypes\AlternateExtension.cs" />
     <Compile Include="ObjectTypes\CallHandler.cs" />
     <Compile Include="ConnectionServer.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="ObjectTypes\Tenant.cs" />
     <Compile Include="ObjectTypes\TimeZones.cs" />
     <Compile Include="ObjectTypes\TransferOption.cs" />
+    <Compile Include="ObjectTypes\IUnityDisplayInterface.cs" />
     <Compile Include="ObjectTypes\User.cs" />
     <Compile Include="ObjectTypes\UserMessage.cs">
       <SubType>Code</SubType>

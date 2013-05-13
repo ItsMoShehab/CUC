@@ -22,7 +22,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// The call handler template class is used only to provide an interface for user to select which template to use when creating new call 
     /// handlers.  
     /// </summary>
-    public class CallHandlerTemplate
+    public class CallHandlerTemplate : IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -76,6 +76,12 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region Fields and Properties
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return DisplayName; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return ObjectId; } }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;

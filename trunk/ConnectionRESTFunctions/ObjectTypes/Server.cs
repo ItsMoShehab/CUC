@@ -18,8 +18,18 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// simple read only class for values in a server instance that's returned as a member of a cluster
     /// </summary>
-    public class Server
+    public class Server : IUnityDisplayInterface
     {
+
+        #region Fields and Properties
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return Description; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return HostName; } }
+
+        #endregion
 
         #region Server Properties
 

@@ -21,7 +21,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// The restriction table class is used only to provide an interface for user to select restriction tables for assignment to COS 
     /// instances.  
     /// </summary>
-    public class RestrictionTable
+    public class RestrictionTable : IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -77,6 +77,13 @@ namespace Cisco.UnityConnection.RestFunctions
 
        
         #region Fields and Properties
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return DisplayName; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return ObjectId; } }
+
 
         public ConnectionServer HomeServer { get; private set; }
 

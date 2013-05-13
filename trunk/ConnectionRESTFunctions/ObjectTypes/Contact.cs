@@ -22,7 +22,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// Class for adding, editing, deleting and fetching/searching for contact objects in Connection.
     /// </summary>
-    public class Contact
+    public class Contact :IUnityDisplayInterface
     {
         
         #region Constructors and Destructors
@@ -79,6 +79,12 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region Fields and Properties
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return DisplayName; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this contact instance.
         public ConnectionServer HomeServer { get; private set; }

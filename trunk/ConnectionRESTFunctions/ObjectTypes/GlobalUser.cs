@@ -23,7 +23,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// You cannot add/delete or edit global users - only search them (alias/extension/first/last/display name etc...) to find their home server which 
     /// will then let you connection to that server for more robust API access to that user account. 
     /// </summary>
-    public class GlobalUser
+    public class GlobalUser :IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -80,6 +80,12 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region Fields and Properties
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return DisplayName; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this object instance.
         internal ConnectionServer HomeServer { get; private set; }

@@ -138,7 +138,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// you can.
     /// Functions for finding, deleting, editing etc... users with mailboxes.  
     /// </summary>
-    public class UserBase
+    public class UserBase :IUnityDisplayInterface
     {
 
         #region Constructors and Destructors
@@ -206,6 +206,12 @@ namespace Cisco.UnityConnection.RestFunctions
 
         //used to keep track of which properties have been updated
         internal ConnectionPropertyList _changedPropList;
+
+        //used for displaying in grids and drop downs
+        public string SelectionDisplayString { get { return DisplayName; } }
+
+        //used for displaying/selecting in grids/dropdowns
+        public string UniqueIdentifier { get { return ObjectId; } }
 
         #endregion
 
