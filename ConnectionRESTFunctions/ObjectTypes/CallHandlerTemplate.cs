@@ -650,7 +650,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (String.IsNullOrEmpty(pDisplayName) || string.IsNullOrEmpty(pMediaSwitchObjectId))
             {
-                res.ErrorText = "Empty value passed for display name or template objectId in AddCallHandlerTemplate";
+                res.ErrorText = "Empty value passed for display name or mediaSwitchObjectId in AddCallHandlerTemplate";
                 return res;
             }
 
@@ -741,7 +741,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
             {
-                //fetc the instance of the directory handler just created.
+                //fetc the instance of the template just created.
                 try
                 {
                     pCallHandlerTemplate = new CallHandlerTemplate(pConnectionServer, res.ReturnedObjectId);
@@ -933,13 +933,13 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// Fetch the ObjectId of a schedule by it's name.  Empty string returned if not match is found.
+        /// Fetch the ObjectId of a template by it's name.  Empty string returned if not match is found.
         /// </summary>
         /// <param name="pName">
-        /// Name of the schedule to find
+        /// Name of the template to find
         /// </param>
         /// <returns>
-        /// ObjectId of schedule if found or empty string if not.
+        /// ObjectId of template if found or empty string if not.
         /// </returns>
         private string GetObjectIdFromName(string pName)
         {

@@ -89,6 +89,7 @@
     <Compile Include="ObjectTypes\RestrictionPattern.cs" />
     <Compile Include="ObjectTypes\RestrictionTable.cs" />
     <Compile Include="ObjectTypes\Role.cs" />
+    <Compile Include="ObjectTypes\RoutingRule.cs" />
     <Compile Include="ObjectTypes\RtpCodecDef.cs" />
     <Compile Include="ObjectTypes\Schedule.cs" />
     <Compile Include="ObjectTypes\ScheduleDetail.cs" />
