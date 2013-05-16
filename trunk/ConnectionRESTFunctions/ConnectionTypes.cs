@@ -232,33 +232,50 @@ namespace Cisco.UnityConnection.RestFunctions
     public enum ConnectionObjectType
     {
         NoObjectType = 0,
-        SystemCallHandler = 1,
-        User = 3,
-        DistributionList = 4,
-        UserWithoutMailbox = 5,
-        VpimContact = 6,
-        BridgeContact = 7,
-        SystemContact = 8,
-        UnityContact = 9,
-        NameLookupHandler = 10,
-        InterviewHandler = 11,
-        GlobalUser = 12,
-        RoutingRuleDirect = 13,
-        RoutingRuleForwarded = 14,
-        SubscriberTemplate = 15,
-        CallHandlerTemplate = 16,
-        SmppProvider = 17,
-        Schedule = 18,
-        Partition = 19,
-        SearchSpace = 20,
-        Switch = 21,
-        PersonalCallTransferRule = 28,
-        Location = 22,
-        Cos = 50
+        SystemCallHandler = 3,
+        SystemContact = 33,
+        Cos = 8,
+        CredentialPolicy=11,
+        NameLookupHandler = 6,
+        DistributionList = 2,
+        InterviewHandler = 5,
+        Location = 9,
+        PersonalContact = 102,
+        PersonalDistributionList = 64,
+        Policy = 15,
+        RestrictionTable = 12,
+        Role = 13,
+        Schedule = 7,
+        Subscriber = 21,
+        User = 1,
+        SubscriberTemplate = 10,
+        RoutingRule = 103,
+        GlobalUser = 104,
+        Partition = 105,
+        SearchSpace = 106,
+        ScheduleSet = 49,
+        Handler = 134,
+        CallHandlerTemplate = 135,
+        PersonalCallTransferRule = 43,
+        RoutingRuleDirect = 800,
+        RoutingRuleForwarded = 801,
+        SmppProvider = 802,
+        UserWithoutMailbox = 803,
+        Switch = 804,
+        VpimContact = 805,
+        BridgeContact = 806,
+        UnityContact = 807,
     }
 
+    public enum RoutingRuleType { Unknown, Direct, Forwarded, System }
 
-   
+    public enum RoutingRuleFlag { Immutable, Deletable, Editable, EditableAndDeletable }
+
+    public enum RoutintRuleActionType { Ignore, Hangup, Goto, Error, TakeMsg, SkipGreeting, RestartGreeting, TransferAtContact, RouteFromNextRule }
+
+    public enum RoutingRuleCallType { Internal, External, Both }
+
+    public enum RoutingRuleState { Active, Inactive, Invalid }
 
     /// <summary>
     /// Definitions of the langauge type enum value from the data dictionary

@@ -967,9 +967,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
-        /// Allows one or more properties on a list to be udpated (for instance display name, DTMFAccessID etc...).  The caller needs to construct a list
-        /// of property names and new values using the ConnectionPropertyList class's "Add" method.  At least one property pair needs to be passed in 
-        /// but as many as are desired can be included in a single call.
+        /// Allows one or more properties on a list to be udpated (for instance display name, DTMFAccessID etc...).  
         /// </summary>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
@@ -982,8 +980,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return new WebCallResult
                     {
                         Success = false,
-                        ErrorText =
-                            string.Format("Update called but there are no pending changes for distribution list: {0}", this)
+                        ErrorText =string.Format("Update called but there are no pending changes for private list: {0}", this)
                     };
             }
 
