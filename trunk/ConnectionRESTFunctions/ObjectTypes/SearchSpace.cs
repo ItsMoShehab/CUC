@@ -11,6 +11,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using Newtonsoft.Json;
@@ -357,8 +358,13 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetSearchSpaces(ConnectionServer pConnectionServer, out List<SearchSpace> pSearchSpaces, int pPageNumber = 1, 
-            int pRowsPerPage = 20)
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
+        /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(FirstName startswith a)" in
+        /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+        /// </param>        
+        public static WebCallResult GetSearchSpaces(ConnectionServer pConnectionServer, out List<SearchSpace> pSearchSpaces, int pPageNumber = 1,
+            int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res;
             pSearchSpaces = null;
@@ -370,8 +376,21 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "searchspaces", "pageNumber=" + pPageNumber, 
-                "rowsPerPage=" + pRowsPerPage);
+            //tack on the paging items to the parameters list
+            List<string> temp;
+            if (pClauses == null)
+            {
+                temp = new List<string>();
+            }
+            else
+            {
+                temp = pClauses.ToList();
+            }
+
+            temp.Add("pageNumber=" + pPageNumber);
+            temp.Add("rowsPerPage=" + pRowsPerPage);
+
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "searchspaces", temp.ToArray());
 
             //issue the command to the CUPI interface
             res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
