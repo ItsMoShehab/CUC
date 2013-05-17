@@ -644,6 +644,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
+            int iHoldTotalCount = res.TotalObjectCount;
+
             List<TenantCos> oCoses;
             try
             {
@@ -667,6 +669,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
                 pClassesOfService.Add(oNewCos);
             }
+
+            res.TotalObjectCount = iHoldTotalCount;
 
             return res;
         }
@@ -744,6 +748,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
+            int iHoldTotalCount = res.TotalObjectCount;
+
             List<TenantPhoneSystem> pPhones;
             try
             {
@@ -768,6 +774,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 pPhoneSystems.Add(oNewPhoneSystem);
             }
 
+            res.TotalObjectCount = iHoldTotalCount;
             return res;
         }
 
@@ -821,6 +828,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
+            int iHoldTotalCount = res.TotalObjectCount;
+
             List<TenantScheduleSet> pSchedules;
             try
             {
@@ -844,7 +853,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
                 pScheduleSets.Add(oNewSchedule);
             }
-
+            res.TotalObjectCount = iHoldTotalCount;
             return res;
         }
 
