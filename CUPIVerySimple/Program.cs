@@ -33,7 +33,7 @@ namespace CUPIVerySimple
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
-                connectionServer = new ConnectionServer("192.168.0.194", "CCMAdministrator", "ecsbulab");
+                connectionServer = new ConnectionServer("192.168.0.186", "CCMAdministrator", "ecsbulab");
             }
 
             catch (Exception ex)
@@ -66,46 +66,13 @@ namespace CUPIVerySimple
 
             ConnectionPropertyList oProps = new ConnectionPropertyList();
 
-            RoutingRule oNewRule;
-            res = RoutingRule.AddRoutingRule(connectionServer, "Brand new rule5", oProps, out oNewRule);
+            UserFull oRedShirt;
+            res = UserBase.GetUser(out oRedShirt, connectionServer, "", "redshirt");
             if (res.Success == false)
             {
                 Console.WriteLine(res);
             }
-            Console.WriteLine(oNewRule);
 
-            try
-            {
-                oNewRule.CallType = 0;
-                oNewRule.LanguageCode = 1033;
-                oNewRule.RouteAction  = RoutintRuleActionType.Goto;
-                oNewRule.RouteTargetConversation = ConversationNames.PHGreeting.ToString();
-                oNewRule.RouteTargetHandlerObjectId = "00b11282-035c-430c-a5e3-50b5cb63e66b";
-
-                oNewRule.State = RoutingRuleState.Active;
-                oNewRule.Type = RoutingRuleType.System;
-                oNewRule.Undeletable = true;
-                oNewRule.UseCallLanguage = true;
-                oNewRule.UseDefaultLanguage = true;
-                res = oNewRule.Update();
-                if (res.Success == false)
-                {
-                    Console.WriteLine(res);
-                }
-                oNewRule.RefetchRoutingRuleData();
-
-            }
-            catch
-            {
-            }
-            finally
-            {
-                res = oNewRule.Delete();
-                if (res.Success == false)
-                {
-                    Console.WriteLine(res);
-                }
-            }
 
             //fetch user with alias of "jlindborg" - we will be sending the message from his 
             //mailbox.
@@ -117,6 +84,13 @@ namespace CUPIVerySimple
                 Console.WriteLine(res);
             }
 
+            res = oRedShirt.Delete();
+
+            Console.WriteLine(res);
+            
+            
+            
+            
             List<UserMessage> oUserMessages;
             res = UserMessage.GetMessages(connectionServer, oUserTestDude.ObjectId, out oUserMessages);
 
