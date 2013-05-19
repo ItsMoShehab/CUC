@@ -7,6 +7,9 @@ using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
+    /// <summary>
+    /// Class for fetching, adding, editing and deleting routing rules.
+    /// </summary>
     public class RoutingRule :IUnityDisplayInterface
     {
 
@@ -128,13 +131,13 @@ namespace Cisco.UnityConnection.RestFunctions
         [JsonProperty]
         public RoutingRuleFlag Flags { get; private set; }
 
-        private string _routeTargetConversation;
-        public string RouteTargetConversation
+        private ConversationNames _routeTargetConversation;
+        public ConversationNames RouteTargetConversation
         {
             get { return _routeTargetConversation; }
             set
             {
-                _changedPropList.Add("RouteTargetConversation", value);
+                _changedPropList.Add("RouteTargetConversation", value.ToString());
                 _routeTargetConversation = value;
             }
         }
@@ -629,6 +632,25 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             return strBuilder.ToString();
+        }
+
+        /// <summary>
+        /// Add a condition that must be met for this routing rule to fire.
+        /// </summary>
+        /// <param name="pOperator">
+        /// Operator to use (equals, less than etc...)
+        /// </param>
+        /// <param name="pParameter">
+        /// Which parameter to evaluate (calling number, dialed number etc...)
+        /// </param>
+        /// <param name="pOperand">
+        /// Value to apply the operator on against the parameter.
+        /// </param>
+        /// <returns></returns>
+        public WebCallResult AddRoutingRuleCondition(RoutingRuleConditionOperator pOperator, RoutingRuleConditionParameter pParameter,
+            string pOperand)
+        {
+            return RoutingRuleCondition.AddRoutingRuleCondition(HomeServer, ObjectId, pOperator, pParameter, pOperand);
         }
 
         /// <summary>

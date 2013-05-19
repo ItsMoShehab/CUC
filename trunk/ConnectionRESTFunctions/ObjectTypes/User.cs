@@ -1394,8 +1394,9 @@ namespace Cisco.UnityConnection.RestFunctions
                 res.ErrorText = "Null ConnectionServer referenced passed to DeleteUser";
                 return res;
             }
+            string strUrl = pConnectionServer.BaseUrl + "users/" + pObjectId;
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "users/" + pObjectId,MethodType.DELETE,pConnectionServer, "");
+            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.DELETE,pConnectionServer, "");
         }
 
 
@@ -1926,7 +1927,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public WebCallResult Delete()
+        public WebCallResult Delete(string pReplacementUserObjectId="")
         {
             //just call the static method with the info on the instance
             return DeleteUser(this.HomeServer, this.ObjectId);

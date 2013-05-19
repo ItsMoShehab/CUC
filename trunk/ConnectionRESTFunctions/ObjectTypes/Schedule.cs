@@ -207,7 +207,7 @@ namespace Cisco.UnityConnection.RestFunctions
         }
         
         /// <summary>
-        /// Fills the current instance of GetSchedule in with properties fetched from the server.  If both the display name and ObjectId
+        /// Fills the current instance of Schedule in with properties fetched from the server.  If both the display name and ObjectId
         /// parameters are provided, the ObjectId is used for the search.
         /// </summary>
         /// <param name="pObjectId">

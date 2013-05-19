@@ -11,6 +11,8 @@
 
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
@@ -277,6 +279,13 @@ namespace Cisco.UnityConnection.RestFunctions
 
     public enum RoutingRuleState { Active, Inactive, Invalid }
 
+    public enum RoutingRuleConditionOperator
+    {
+        Invalid, CallingNumber, DialedNumber, ForwardingStation, Origin, PortId, Reason,Schedule, TrunkId, PhoneSystem
+    }
+
+    public enum RoutingRuleConditionParameter { Invalid=0, In=1, Equals=2, GreaterThan=3, LessThan=4, LessThanOrEqual=5, GreaterThanOrEqual=6 }
+    
     /// <summary>
     /// Definitions of the langauge type enum value from the data dictionary
     /// </summary>
@@ -291,6 +300,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// Covnersation names that can be used as part of "action" values if the action is "goto"
     /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum ConversationNames
     {
         Ad,
