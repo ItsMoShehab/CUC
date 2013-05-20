@@ -153,13 +153,13 @@ namespace ConnectionCUPIFunctionsTest
             res = oMenu.Update();
             Assert.IsTrue(res.Success, "Failed updating menu entry");
 
-            oMenu.TargetConversation = "Bogus";
+            oMenu.TargetConversation = ConversationNames.Invalid;
             res = oMenu.Update();
             Assert.IsFalse(res.Success, "Update of a menu entry with invalid conversation should fail");
 
-            oMenu.TargetConversation = ConversationNames.PHTransfer.ToString();
+            oMenu.TargetConversation = ConversationNames.PHTransfer;
             oMenu.TargetHandlerObjectId = _callHandler.ObjectId;
-            oMenu.Action = (int) ActionTypes.GoTo;
+            oMenu.Action = ActionTypes.GoTo;
             res = oMenu.Update();
             Assert.IsTrue(res.Success,"Failed to update menu entry to point back to host call handler");
         }
@@ -225,10 +225,10 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success, "Failed fetching menu entry key");
 
             //add the transfer type to the menu and update it
-            oMenu.TransferType = (int)TransferTypes.Supervised;
+            oMenu.TransferType = TransferTypes.Supervised;
             oMenu.TransferNumber = "123";
             oMenu.TransferRings = 3;
-            oMenu.Action = (int)ActionTypes.TransferToAlternateContactNumber;
+            oMenu.Action = ActionTypes.TransferToAlternateContactNumber;
             res = oMenu.Update();
             Assert.IsTrue(res.Success, "Failed updating menu entry:"+res);
 

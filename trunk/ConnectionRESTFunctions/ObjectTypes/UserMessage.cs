@@ -17,6 +17,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
@@ -55,14 +57,30 @@ namespace Cisco.UnityConnection.RestFunctions
         Priority_Low = 1024
     }
 
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum MessageType
+    {
+        Dr = 16,
+        Email=1,
+        Fax=4,
+        Ndr = 8,
+        Rr = 32,
+        Voice=2,
+        Video=64,
+        Text=128,
+        Msg = 256
+    }
+
     /// <summary>
     /// Sensitivity settings for a message
     /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum SensitivityType { Normal, Personal, Private, Confidential }
     
     /// <summary>
     /// message priority (only normal and urgent supported here)
     /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum PriorityType { Normal, Urgent }
 
     /// <summary>
@@ -230,24 +248,59 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         //read only properties at the top level
-        public string MsgId { get; set; }
-        public bool Dispatch { get; set; }
-        public bool Secure { get; set; }
-        public string Priority { get; set; }
-        public string Sensitivity { get; set; }
-        public long ArrivalTime { get; set; }
-        public long Size { get; set; }
-        public long Duration { get; set; }
-        public bool FromSub { get; set; }
-        public string From_DtmfAccessId { get; set; }
-        public bool Flagged { get; set; }
-        public long IMAPUid { get; set; }
-        public long ModificationTime { get; set; }
-        public string MsgType { get; set; }
-        public bool IsDraft { get; set; }
-        public bool IsDeleted { get; set; }
-        public bool IsSent { get; set; }
-        public bool IsFuture { get; set; }
+        [JsonProperty]
+        public string MsgId { get; private set; }
+
+        [JsonProperty]
+        public bool Dispatch { get; private set; }
+
+        [JsonProperty]
+        public bool Secure { get; private set; }
+
+        [JsonProperty]
+        public PriorityType Priority { get; private set; }
+
+        [JsonProperty]
+        public SensitivityType Sensitivity { get; private set; }
+
+        [JsonProperty]
+        public long ArrivalTime { get; private set; }
+
+        [JsonProperty]
+        public long Size { get; private set; }
+
+        [JsonProperty]
+        public long Duration { get; private set; }
+
+        [JsonProperty]
+        public bool FromSub { get; private set; }
+
+        [JsonProperty]
+        public string From_DtmfAccessId { get; private set; }
+
+        [JsonProperty]
+        public bool Flagged { get; private set; }
+
+        [JsonProperty]
+        public long IMAPUid { get; private set; }
+
+        [JsonProperty]
+        public long ModificationTime { get; private set; }
+
+        [JsonProperty]
+        public MessageType MsgType { get; private set; }
+
+        [JsonProperty]
+        public bool IsDraft { get; private set; }
+
+        [JsonProperty]
+        public bool IsDeleted { get; private set; }
+
+        [JsonProperty]
+        public bool IsSent { get; private set; }
+
+        [JsonProperty]
+        public bool IsFuture { get; private set; }
 
   
         //complex types
@@ -389,7 +442,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public static WebCallResult CreateMessageLocalWav(ConnectionServer pConnectionServer, string pSenderUserObjectId,
                                                           string pSubject, string pPathToLocalWavFile, 
-                                                          bool pUrgent, bool pPrivate, bool pSecure, bool pDispatch,
+                                                          bool pUrgent, SensitivityType pSensitivity, bool pSecure, bool pDispatch,
                                                           bool pReadReceipt, bool pDeliveryReceipt,
                                                           CallerId pCallerId, bool pConvertToPcmFirst,
                                                           params MessageAddress[] pRecipients)
@@ -445,7 +498,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //construct the JSON strings needed in the message details and the message addressing sections of the upload message 
             //API call for Connection
             string strRecipientJsonString = ConstructRecipientJsonStringFromRecipients(pRecipients);
-            string strMessageJsonString = ConstructMessageDetailsJsonString(pSubject, pUrgent, pSecure, pPrivate,
+            string strMessageJsonString = ConstructMessageDetailsJsonString(pSubject, pUrgent, pSecure, pSensitivity,
                                                                             pDispatch, pReadReceipt, pDeliveryReceipt,
                                                                             false, pCallerId);
 
@@ -502,7 +555,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public static WebCallResult CreateMessageResourceId(ConnectionServer pConnectionServer, string pSenderUserObjectId,
                                                           string pSubject, string pResourceId,
-                                                          bool pUrgent, bool pPrivate, bool pSecure, bool pDispatch,
+                                                          bool pUrgent, SensitivityType pSensitivity, bool pSecure, bool pDispatch,
                                                           bool pReadReceipt, bool pDeliveryReceipt,
                                                           CallerId pCallerId, params MessageAddress[] pRecipients)
         {
@@ -535,7 +588,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //construct the JSON strings needed in the message details and the message addressing sections of the upload message 
             //API call for Connection
             string strRecipientJsonString = ConstructRecipientJsonStringFromRecipients(pRecipients);
-            string strMessageJsonString = ConstructMessageDetailsJsonString(pSubject, pUrgent, pSecure, pPrivate,
+            string strMessageJsonString = ConstructMessageDetailsJsonString(pSubject, pUrgent, pSecure, pSensitivity,
                                                                             pDispatch, pReadReceipt, pDeliveryReceipt,
                                                                             false, pCallerId);
 
@@ -629,7 +682,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// JSON formatted string
         /// </returns>
         private static string ConstructMessageDetailsJsonString(string pSubject, 
-                                                               bool pUrgent,bool pSecure, bool pPrivate, bool pDispatch,
+                                                               bool pUrgent,bool pSecure, SensitivityType pSensitivity, bool pDispatch,
                                                                bool pReadReceipt, bool pDeliveryReceipt,
                                                                bool pFromSub, CallerId pCallerId)
         {
@@ -660,10 +713,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 sb.Append(",\"Secure\":\"true\"");
             }
 
-            if (pPrivate)
-            {
-                sb.Append(",\"Sensitivity\":\"Personal\"");
-            }
+            sb.AppendFormat(",\"Sensitivity\":\"{0}\"", pSensitivity.Description());
 
             if (pReadReceipt)
             {
@@ -1433,7 +1483,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with the details of the call and results from the server.
         /// </returns>
-        public WebCallResult ForwardMessageLocalWav(string pSubject, bool pUrgent, bool pPrivate, bool pSecure, bool pReadReceipt,
+        public WebCallResult ForwardMessageLocalWav(string pSubject, bool pUrgent, SensitivityType pSensitivityType, bool pSecure, bool pReadReceipt,
             bool pDeliveryReceipt,string pPathToWavFile, bool pConvertToPcmFirst, params MessageAddress[] pRecipients)
         {
             WebCallResult res = new WebCallResult();
@@ -1477,7 +1527,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //construct the JSON strings needed in the message details and the message addressing sections of the upload message 
             //API call for Connection
             string strRecipientJsonString = ConstructRecipientJsonStringFromRecipients(pRecipients);
-            string strMessageJsonString = ConstructMessageDetailsJsonString(pSubject, pUrgent, pSecure, pPrivate,
+            string strMessageJsonString = ConstructMessageDetailsJsonString(pSubject, pUrgent, pSecure, pSensitivityType,
                                                                             false, pReadReceipt, pDeliveryReceipt,
                                                                             true, CallerId);
 
@@ -1523,7 +1573,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with the details of the call and results from the server.
         /// </returns>
-        public WebCallResult ForwardMessageResourceId(string pSubject, bool pUrgent, bool pPrivate, bool pSecure, bool pReadReceipt,
+        public WebCallResult ForwardMessageResourceId(string pSubject, bool pUrgent, SensitivityType pSensitivity, bool pSecure, bool pReadReceipt,
            bool pDeliveryReceipt, string pResourceId, params MessageAddress[] pRecipients)
         {
             WebCallResult res = new WebCallResult();
@@ -1545,7 +1595,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //construct the JSON strings needed in the message details and the message addressing sections of the upload message 
             //API call for Connection
             string strRecipientJsonString = ConstructRecipientJsonStringFromRecipients(pRecipients);
-            string strMessageJsonString = ConstructMessageDetailsJsonString(pSubject, pUrgent, pSecure, pPrivate,
+            string strMessageJsonString = ConstructMessageDetailsJsonString(pSubject, pUrgent, pSecure, pSensitivity,
                                                                             false, pReadReceipt, pDeliveryReceipt,
                                                                             true, CallerId);
 
@@ -1595,7 +1645,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with details of the call and result from the CUMI call.
         /// </returns>
-         public WebCallResult ReplyWithLocalWav(string pSubject, bool pUrgent, bool pPrivate, bool pSecure,bool pReadReceipt,
+         public WebCallResult ReplyWithLocalWav(string pSubject, bool pUrgent, SensitivityType pSensitivity, bool pSecure,bool pReadReceipt,
                                                      bool pDeliveryReceipt, string pPathToLocalWavFile,
                                                      bool pConvertToPcmFirst, bool pReplyToAll=false)
          {
@@ -1623,7 +1673,7 @@ namespace Cisco.UnityConnection.RestFunctions
              }
 
              //send the new message
-             return CreateMessageLocalWav(HomeServer, UserObjectId, pSubject, pPathToLocalWavFile, pUrgent, pPrivate, pSecure,
+             return CreateMessageLocalWav(HomeServer, UserObjectId, pSubject, pPathToLocalWavFile, pUrgent, pSensitivity, pSecure,
                                           false, pReadReceipt,pDeliveryReceipt, CallerId, pConvertToPcmFirst, oRecipients.ToArray());
          }
 
@@ -1661,7 +1711,7 @@ namespace Cisco.UnityConnection.RestFunctions
          /// <returns>
          /// Instance of the WebCallResult class with details of the call and result from the CUMI call.
          /// </returns>
-         public WebCallResult ReplyWithResourceId(string pSubject, string pResourceId, bool pUrgent, bool pPrivate,bool pSecure, 
+         public WebCallResult ReplyWithResourceId(string pSubject, string pResourceId, bool pUrgent, SensitivityType pSensitivity,bool pSecure, 
                                                    bool pReadReceipt, bool pDeliveryReceipt,bool pReplyToAll = false)
          {
              List<MessageAddress> oRecipients = new List<MessageAddress>();
@@ -1688,7 +1738,7 @@ namespace Cisco.UnityConnection.RestFunctions
              }
 
              //send the new message
-             return CreateMessageResourceId(HomeServer, UserObjectId, pSubject, pResourceId, pUrgent, pPrivate, pSecure,
+             return CreateMessageResourceId(HomeServer, UserObjectId, pSubject, pResourceId, pUrgent, pSensitivity, pSecure,
                                           false, pReadReceipt, pDeliveryReceipt, CallerId, oRecipients.ToArray());
          }
 

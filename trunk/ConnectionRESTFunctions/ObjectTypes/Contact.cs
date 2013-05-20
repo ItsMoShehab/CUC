@@ -219,14 +219,14 @@ namespace Cisco.UnityConnection.RestFunctions
 
         public string RemoteAddress { get; set; }
 
-        private int _transferType;
-        public int TransferType
+        private TransferTypes _transferType;
+        public TransferTypes TransferType
         {
             get { return _transferType; }
             set
             {
                 _transferType = value;
-                _changedPropList.Add("TransferType", value);
+                _changedPropList.Add("TransferType", (int) value);
             }
         }
 

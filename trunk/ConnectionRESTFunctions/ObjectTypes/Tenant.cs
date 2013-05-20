@@ -112,7 +112,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string AttributeObjectId { get; private set; }
 
         [JsonProperty]
-        public int AttributeType { get; private set; }
+        public TenantAttributeType AttributeType { get; private set; }
 
         [JsonProperty]
         public string MailboxStoreObjectId { get; private set; }

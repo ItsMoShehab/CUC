@@ -136,7 +136,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string DisplayName { get; private set; }
 
         [JsonProperty]
-        public int DestinationType { get; private set; }
+        public DestinationType DestinationType { get; private set; }
 
         [JsonProperty]
         public string DtmfName { get; private set; }

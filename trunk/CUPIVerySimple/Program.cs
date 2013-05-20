@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using Cisco.UnityConnection.RestFunctions;
 
 using SimpleLogger;
@@ -56,22 +57,9 @@ namespace CUPIVerySimple
 
             //the WebCallResult is the structure returned on most calls into the CUPIFunctions library.
             WebCallResult res;
-
-            List<RoutingRule> oRules;
-            res = RoutingRule.GetRoutingRules(connectionServer, out oRules);
-            foreach (var oRule in oRules)
-            {
-                Console.WriteLine(oRule.DumpAllProps("--->"));
-            }
-
-            ConnectionPropertyList oProps = new ConnectionPropertyList();
-
-            UserFull oRedShirt;
-            res = UserBase.GetUser(out oRedShirt, connectionServer, "", "redshirt");
-            if (res.Success == false)
-            {
-                Console.WriteLine(res);
-            }
+            UserFull oUserFull = new UserFull(connectionServer);
+            var oElement = XElement.Parse("<ConversationTui>SubMenu</ConversationTui>");
+            connectionServer.SafeXmlFetch(oUserFull, oElement);
 
 
             //fetch user with alias of "jlindborg" - we will be sending the message from his 
@@ -84,12 +72,6 @@ namespace CUPIVerySimple
                 Console.WriteLine(res);
             }
 
-            res = oRedShirt.Delete();
-
-            Console.WriteLine(res);
-            
-            
-            
             
             List<UserMessage> oUserMessages;
             res = UserMessage.GetMessages(connectionServer, oUserTestDude.ObjectId, out oUserMessages);
@@ -160,7 +142,7 @@ namespace CUPIVerySimple
             Console.WriteLine("   Schedule state right now="+oUserTestDude.PrimaryCallHandler().GetScheduleSet().GetScheduleState(DateTime.Now).ToString());
 
             TransferOption oTransferAlternateSmith;
-            res= oUserTestDude.PrimaryCallHandler().GetTransferOption(TransferOptionTypes.Alternate.ToString(), out oTransferAlternateSmith);
+            res= oUserTestDude.PrimaryCallHandler().GetTransferOption(TransferOptionTypes.Alternate, out oTransferAlternateSmith);
 
             //not a lot of reasons this would fail but just in case
             if (res.Success == false)
@@ -224,7 +206,7 @@ namespace CUPIVerySimple
 
             //update greeting
             Greeting oMyGreeting;
-            res=oUser.PrimaryCallHandler().GetGreeting("Alternate", out oMyGreeting);
+            res=oUser.PrimaryCallHandler().GetGreeting(GreetingTypes.Alternate , out oMyGreeting);
 
             if (res.Success==false)
             {
@@ -374,7 +356,7 @@ namespace CUPIVerySimple
             //Update the users alternate greeting to be active and update it's recording to play US English greeting WAV file we uplaod.
             //****
             Greeting oGreeting;
-            res = oUser.PrimaryCallHandler().GetGreeting("Alternate", out oGreeting);
+            res = oUser.PrimaryCallHandler().GetGreeting(GreetingTypes.Alternate, out oGreeting);
 
             if (res.Success == false)
             {
@@ -392,7 +374,7 @@ namespace CUPIVerySimple
 
             //By default the greeting is set to play the system generated greeting prompts - to play the custom recorded greeting we just 
             //uploaded you need to set the "PlayWhat" to "1" (which is wrapped in the PlayWhatTypes enum here for readability.
-            oGreeting.PlayWhat = (int)PlayWhatTypes.RecordedGreeting;
+            oGreeting.PlayWhat = PlayWhatTypes.RecordedGreeting;
             res = oGreeting.Update();
 
             if (res.Success == false)

@@ -271,7 +271,7 @@ namespace ConnectionCUPIFunctionsTest
             _tempContact.AltLastName = "altLast";
             _tempContact.AutoCreateCallHandler = false;
             _tempContact.ListInDirectory = true;
-            _tempContact.TransferType = 1;
+            _tempContact.TransferType = TransferTypes.Supervised;
             _tempContact.TransferRings = 4;
             _tempContact.TransferEnabled = false;
             _tempContact.TransferExtension = "";

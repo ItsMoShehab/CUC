@@ -56,7 +56,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pTransferOptionType">
         /// The transfer rule to fetch (Standard, Alternate, OffHours)
         /// </param>
-        public TransferOption(ConnectionServer pConnectionServer, string pCallHandlerObjectId, string pTransferOptionType = ""):this()
+        public TransferOption(ConnectionServer pConnectionServer, string pCallHandlerObjectId, 
+            TransferOptionTypes pTransferOptionType = TransferOptionTypes.Invalid):this()
         {
             if (pConnectionServer == null)
             {
@@ -69,14 +70,16 @@ namespace Cisco.UnityConnection.RestFunctions
                 throw new ArgumentException("Invalid CallHandlerObjectID passed to TransferOption constructor.");
             }
 
+            if (pTransferOptionType == TransferOptionTypes.Invalid)
+            {
+                throw new ArgumentException("Invalid TransferOption passed to TransferOption constructor.");
+            }
+
             HomeServer = pConnectionServer;
 
             //remember the objectID of the owner of the menu entry as the CUPI interface requires this in the URL construction
             //for operations editing them.
             CallHandlerObjectId = pCallHandlerObjectId;
-
-            //if the user passed in a specific ObjectId then go load that transfer option up, otherwise just return an empty instance.
-            if (pTransferOptionType.Length == 0) return;
 
             //if the TransferRule is passed in then fetch the data on the fly and fill out this instance
             WebCallResult res = GetTransferOption(pTransferOptionType);
@@ -106,17 +109,17 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region TransferOption Properties
 
-        private int _action;
+        private ActionTypes _action;
         /// <summary>
         /// A flag indicating whether Cisco Unity Connection transfers the call to the call handler greeting or attempts to transfer the call to an extension
         /// 0=PlayGreeting, 1=Transfer
         /// </summary>
-        public int Action
+        public ActionTypes Action
         {
             get { return _action; }
             set
             {
-                _changedPropList.Add("Action", value);
+                _changedPropList.Add("Action", (int)value);
                 _action = value;
             }
         }
@@ -197,18 +200,18 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private int _rnaAction;
+        private TransferActionTypes _rnaAction;
         /// <summary>
         /// The action Cisco Unity Connection takes for a "Ring-No-Answer" (RNA) condition. Cisco Unity Connection will either transfer the 
         /// call to the appropriate greeting or releases the call to the phone system.
         /// 0 is release, 1 is play greeting
         /// </summary>
-        public int RnaAction
+        public TransferActionTypes RnaAction
         {
             get { return _rnaAction; }
             set
             {
-                _changedPropList.Add("RnaAction", value);
+                _changedPropList.Add("RnaAction", (int)value);
                 _rnaAction = value;
             }
         }
@@ -281,17 +284,17 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private int _transferHoldingMode;
+        private ModeYesNoAsk _transferHoldingMode;
         /// <summary>
         /// The action Cisco Unity Connection will take when the extension is busy
         /// 2=Ask, 0=No, 1=Yes
         /// </summary>
-        public int TransferHoldingMode
+        public ModeYesNoAsk TransferHoldingMode
         {
             get { return _transferHoldingMode; }
             set
             {
-                _changedPropList.Add("TransferHoldingMode", value);
+                _changedPropList.Add("TransferHoldingMode", (int)value);
                 _transferHoldingMode = value;
             }
         }
@@ -336,18 +339,18 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        
-        private int _transferType;
+
+        private TransferTypes _transferType;
         /// <summary>
         /// The type of call transfer Cisco Unity Connection will perform - supervised or unsupervised (also referred to as "Release to Switch" transfer)
         /// 1=Supervised, 0=Unsupervised
         /// </summary>
-        public int TransferType
+        public TransferTypes TransferType
         {
             get { return _transferType; }
             set
             {
-                _changedPropList.Add("TransferType", value);
+                _changedPropList.Add("TransferType",(int) value);
                 _transferType = value;
             }
         }
@@ -356,7 +359,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// OffHours, Standard, Alternate - cannot be changed.
         /// </summary>
         [JsonProperty]
-        public string TransferOptionType { get; private set; }
+        public TransferOptionTypes TransferOptionType { get; private set; }
 
         private bool _usePrimaryExtension;
         /// <summary>
@@ -399,7 +402,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public static WebCallResult GetTransferOption(ConnectionServer pConnectionServer,
                                                         string pCallHandlerObjectId,
-                                                        string pTransferOptionType,
+                                                        TransferOptionTypes pTransferOptionType,
                                                         out  TransferOption pTransferOption)
         {
             WebCallResult res = new WebCallResult();
@@ -413,9 +416,9 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            if (string.IsNullOrEmpty(pCallHandlerObjectId) | string.IsNullOrEmpty(pTransferOptionType))
+            if (string.IsNullOrEmpty(pCallHandlerObjectId))
             {
-                res.ErrorText = "Empty CallHandlerObjectID or TransferOptionType passed to GetTransferOption";
+                res.ErrorText = "Empty CallHandlerObjectID passed to GetTransferOption";
                 return res;
             }
 
@@ -531,8 +534,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
         public static WebCallResult UpdateTransferOption(ConnectionServer pConnectionServer, 
-                                                        string pCallHandlerObjectId, 
-                                                        string pTransferOptionType, 
+                                                        string pCallHandlerObjectId,
+                                                        TransferOptionTypes pTransferOptionType, 
                                                         ConnectionPropertyList pPropList)
         {
             WebCallResult res = new WebCallResult();
@@ -563,7 +566,7 @@ namespace Cisco.UnityConnection.RestFunctions
             strBody += "</TransferOption>";
 
             return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, 
-                pTransferOptionType),MethodType.PUT,pConnectionServer,strBody,false);
+                pTransferOptionType.Description()),MethodType.PUT,pConnectionServer,strBody,false);
 
         }
 
@@ -603,7 +606,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns></returns>
         public static WebCallResult UpdateTransferOptionEnabledStatus(ConnectionServer pConnectionServer,
                                                         string pCallHandlerObjectId,
-                                                        string pTransferOptionType,
+                                                        TransferOptionTypes pTransferOptionType,
                                                         bool pEnabled,
                                                         DateTime? pTillDate = null)
         {
@@ -615,7 +618,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            if (string.IsNullOrEmpty(pCallHandlerObjectId) | string.IsNullOrEmpty(pTransferOptionType))
+            if (string.IsNullOrEmpty(pCallHandlerObjectId))
             {
                 res.ErrorText = "Empty handler ObjectId or TransferType passed to UpdateTransferOptionEnabledStatus";
                 return res;
@@ -623,7 +626,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //first make sure the user isn't trying to change the enabled status on the Standard transfer option - this will fail since that option needs to 
             //always be enabled on the server - fail it up front and pass back the WebCallResult with this information.
-            if (pTransferOptionType.Equals("Standard",StringComparison.InvariantCultureIgnoreCase))
+            if (pTransferOptionType == TransferOptionTypes.Standard)
             {
                 res.ErrorText = "Attempt made to modify Standard transfer option in UpdateTransferOptionEnabledStatus.";
                 return res;
@@ -678,7 +681,7 @@ namespace Cisco.UnityConnection.RestFunctions
             strBody += "</TransferOption>";
 
             return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, 
-                pTransferOptionType),MethodType.PUT,pConnectionServer,strBody,false);
+                pTransferOptionType.Description()),MethodType.PUT,pConnectionServer,strBody,false);
         }
 
 
@@ -734,19 +737,13 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public WebCallResult GetTransferOption(string pTransferOptionType)
+        public WebCallResult GetTransferOption(TransferOptionTypes pTransferOptionType)
         {
             WebCallResult res;
             
-            if (string.IsNullOrEmpty(pTransferOptionType))
-            {
-                res=new WebCallResult();
-                res.ErrorText = "Empty TransferOptionType passed to GetTransferOption";
-                return res;
-
-            }
-            
-            string strUrl = string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", HomeServer.BaseUrl, CallHandlerObjectId, pTransferOptionType);
+           
+            string strUrl = string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", HomeServer.BaseUrl, CallHandlerObjectId, 
+                pTransferOptionType.Description());
 
             //issue the command to the CUPI interface
             res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");

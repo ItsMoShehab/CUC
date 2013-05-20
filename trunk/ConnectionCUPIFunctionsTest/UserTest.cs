@@ -488,8 +488,8 @@ namespace ConnectionCUPIFunctionsTest
 
             _tempUser.ClearPendingChanges();
 
-            _tempUser.ExitAction = 44;
-            _tempUser.ExitTargetConversation = ConversationNames.PHInterview.ToString();
+            _tempUser.ExitAction = ActionTypes.Invalid;
+            _tempUser.ExitTargetConversation = ConversationNames.PHInterview;
             _tempUser.ExitTargetHandlerObjectId = _tempUser.ObjectId;
 
             res = _tempUser.Update();
@@ -497,16 +497,16 @@ namespace ConnectionCUPIFunctionsTest
 
             _tempUser.ClearPendingChanges();
 
-            _tempUser.ExitAction = (int)ActionTypes.GoTo;
-            _tempUser.ExitTargetConversation = ConversationNames.PHInterview.ToString();
+            _tempUser.ExitAction = ActionTypes.GoTo;
+            _tempUser.ExitTargetConversation = ConversationNames.PHInterview;
             _tempUser.ExitTargetHandlerObjectId = _tempUser.ObjectId;
             res = _tempUser.Update();
             Assert.IsFalse(res.Success, "Setting exit action to phInterview and an illegal objectId did not fail");
 
             _tempUser.ClearPendingChanges();
 
-            _tempUser.ExitAction = (int)ActionTypes.GoTo;
-            _tempUser.ExitTargetConversation = ConversationNames.PHGreeting.ToString();
+            _tempUser.ExitAction = ActionTypes.GoTo;
+            _tempUser.ExitTargetConversation = ConversationNames.PHGreeting;
             _tempUser.ExitTargetHandlerObjectId = _tempUser.PrimaryCallHandler().ObjectId;
             res = _tempUser.Update();
 

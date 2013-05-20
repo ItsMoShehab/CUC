@@ -106,15 +106,15 @@ namespace Cisco.UnityConnection.RestFunctions
         public string MediaPortGroupObjectId { get; private set; }
 
         [JsonProperty]
-        public int TelephonyIntegrationMethodEnum { get; private set; }
+        public TelephonyIntegrationMethodEnum TelephonyIntegrationMethodEnum { get; private set; }
 
-        private int _skinnySecurityModeEnum;
-        public int SkinnySecurityModeEnum
+        private SkinnySecurityModes _skinnySecurityModeEnum;
+        public SkinnySecurityModes SkinnySecurityModeEnum
         {
             get { return _skinnySecurityModeEnum; }
             set
             {
-                _changedPropList.Add("SkinnySecurityModeEnum", value);
+                _changedPropList.Add("SkinnySecurityModeEnum",(int) value);
                 _skinnySecurityModeEnum = value;
             }
         }

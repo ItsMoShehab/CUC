@@ -306,13 +306,13 @@ namespace Cisco.UnityConnection.RestFunctions
         public int PortCount { get; private set; }
 
 
-        public int _preferredCallControl;
-        public int PreferredCallControl
+        public PreferredTransport _preferredCallControl;
+        public PreferredTransport PreferredCallControl
         {
             get { return _preferredCallControl; }
             set
             {
-                _changedPropList.Add("PreferredCallControl", value);
+                _changedPropList.Add("PreferredCallControl", (int)value);
                 _preferredCallControl = value;
             }
         }
@@ -340,13 +340,13 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private int _resetStatusEnum;
-        public int ResetStatusEnum
+        private ResetStatusEnum _resetStatusEnum;
+        public ResetStatusEnum ResetStatusEnum
         {
             get { return _resetStatusEnum; }
             set
             {
-                _changedPropList.Add("ResetStatusEnum", value);
+                _changedPropList.Add("ResetStatusEnum", (int)value);
                 _resetStatusEnum = value;
             }
         }
@@ -408,13 +408,13 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
 
-        private int _sipPreferredMedia;
-        public int SipPreferredMedia
+        private PreferredTransport _sipPreferredMedia;
+        public PreferredTransport SipPreferredMedia
         {
             get { return _sipPreferredMedia; }
             set
             {
-                _changedPropList.Add("SipPreferredMedia", value);
+                _changedPropList.Add("SipPreferredMedia", (int) value);
                 _sipPreferredMedia = value;
             }
         }
@@ -432,24 +432,24 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
 
-        private int _sipTLSModeEnum;
-        public int SipTLSModeEnum
+        private SipTlsModes _sipTLSModeEnum;
+        public SipTlsModes SipTLSModeEnum
         {
             get { return _sipTLSModeEnum; }
             set
             {
-                _changedPropList.Add("SipTLSModeEnum", value);
+                _changedPropList.Add("SipTLSModeEnum",(int) value);
                 _sipTLSModeEnum = value;
             }
         }
 
-        private int _sipTransportProtocolEnum;
-        public int SipTransportProtocolEnum
+        private SipTransportEnum _sipTransportProtocolEnum;
+        public SipTransportEnum SipTransportProtocolEnum
         {
             get { return _sipTransportProtocolEnum; }
             set
             {
-                _changedPropList.Add("SipTransportProtocolEnum", value);
+                _changedPropList.Add("SipTransportProtocolEnum", (int)value);
                 _sipTransportProtocolEnum = value;
             }
         }
@@ -477,10 +477,8 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-
-
         [JsonProperty]
-        public int TelephonyIntegrationMethodEnum { get; private set; }
+        public TelephonyIntegrationMethodEnum TelephonyIntegrationMethodEnum { get; private set; }
 
 
         #endregion

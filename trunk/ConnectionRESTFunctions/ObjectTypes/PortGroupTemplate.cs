@@ -80,7 +80,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string TemplateDescriptionDefault { get; private set; }
 
         [JsonProperty]
-        public int CopyTelephonyIntegrationMethodEnum { get; private set; }
+        public TelephonyIntegrationMethodEnum CopyTelephonyIntegrationMethodEnum { get; private set; }
 
         #endregion
 
@@ -191,7 +191,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             foreach (var oTemplate in oList)
             {
-                if (oTemplate.CopyTelephonyIntegrationMethodEnum == (int)pIntegrationMethod)
+                if (oTemplate.CopyTelephonyIntegrationMethodEnum == pIntegrationMethod)
                 {
                     pPortGroupTemplateObjectId = oTemplate.ObjectId;
                     return res;

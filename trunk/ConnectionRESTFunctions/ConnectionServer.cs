@@ -463,7 +463,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pElement">
         /// XML Element that holds a value/name corresponding to a value in the object
         /// </param>
-        internal void SafeXmlFetch(Object pObject, XElement pElement)
+        public void SafeXmlFetch(Object pObject, XElement pElement)
         {
             //if this is a "complex" type, process the sub elements - this comes into play mostly for messages which got a little cute with 
             //complex types for numerous properties
@@ -558,8 +558,51 @@ namespace Cisco.UnityConnection.RestFunctions
 
                     pObject.GetType().GetProperty(pName).SetValue(pObject, dateValue, null);
                     break;
+                case "cisco.unityconnection.restfunctions.subscriberconversationtui":
+                    strValue = (pElement.Value == null) ? "" : pElement.Value.ToString();
+                    SubscriberConversationTui oConv;
+                    Enum.TryParse(strValue, true, out oConv);
+                    pObject.GetType().GetProperty(pName).SetValue(pObject, oConv, null);
+                    break;
+                case "cisco.unityconnection.restfunctions.transferoptiontypes":
+                    strValue = (pElement.Value == null) ? "" : pElement.Value.ToString();
+                    TransferOptionTypes oTran;
+                    Enum.TryParse(strValue, true, out oTran);
+                    pObject.GetType().GetProperty(pName).SetValue(pObject, oTran, null);
+                    break;
+                case "cisco.unityconnection.restfunctions.greetingtypes":
+                    strValue = (pElement.Value == null) ? "" : pElement.Value.ToString();
+                    GreetingTypes oGreet;
+                    Enum.TryParse(strValue, true, out oGreet);
+                    pObject.GetType().GetProperty(pName).SetValue(pObject, oGreet, null);
+                    break;
+                case "cisco.unityconnection.restfunctions.conversationnames":
+                    strValue = (pElement.Value == null) ? "" : pElement.Value.ToString();
+                    ConversationNames oConvName;
+                    Enum.TryParse(strValue, true, out oConvName);
+                    pObject.GetType().GetProperty(pName).SetValue(pObject, oConvName, null);
+                    break;
+                case "cisco.unityconnection.restfunctions.messagetype":
+                    strValue = (pElement.Value == null) ? "" : pElement.Value.ToString();
+                    MessageType oMsgType;
+                    Enum.TryParse(strValue, true, out oMsgType);
+                    pObject.GetType().GetProperty(pName).SetValue(pObject, oMsgType, null);
+                    break;
+                case "cisco.unityconnection.restfunctions.sensitivitytype":
+                    strValue = (pElement.Value == null) ? "" : pElement.Value.ToString();
+                    SensitivityType oSensitivityType;
+                    Enum.TryParse(strValue, true, out oSensitivityType);
+                    pObject.GetType().GetProperty(pName).SetValue(pObject, oSensitivityType, null);
+                    break;
+                case "cisco.unityconnection.restfunctions.prioritytype":
+                    strValue = (pElement.Value == null) ? "" : pElement.Value.ToString();
+                    PriorityType oPriorityType;
+                    Enum.TryParse(strValue, true, out oPriorityType);
+                    pObject.GetType().GetProperty(pName).SetValue(pObject, oPriorityType, null);
+                    break;
                 default:
                     if (Debugger.IsAttached) Debugger.Break();
+                    
                     Console.WriteLine("Unknown type encountered in GetXMLProperty on ConnectionServer.cs:"
                                    + pObject.GetType().GetProperty(pName).PropertyType.FullName.ToLower());
                     break;
@@ -641,64 +684,54 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Human readable string describing the action sequence for display/logging purposes.
         /// </returns>
-        public string GetActionDescription(int pAction, string pConversationName, string pTargetHandlerObjectId)
+        public string GetActionDescription(ActionTypes pAction, ConversationNames pConversationName, string pTargetHandlerObjectId)
         {
             switch (pAction)
             {
                     //Take care of the action types that do not reference any target or conversation name first.
-                case 0:
+                case ActionTypes.Ignore:
                     return "Ignore";
-                case 1:
+                case ActionTypes.Hangup:
                     return "Hang up.";
-                case 3:
+                case ActionTypes.Error:
                     return "Play error greeting.";
-                case 4:
+                case ActionTypes.TakeMessage:
                     return "Take message.";
-                case 5:
+                case ActionTypes.SkipGreeting:
                     return "Skip Greeting";
-                case 6:
+                case ActionTypes.RestartGreeting:
                     return "Repeat Greeting";
-                case 8:
+                case ActionTypes.RouteFromNextCallRoutingRule:
                     return "Route from next call routing rule";
-                case 7:
+                case ActionTypes.TransferToAlternateContactNumber:
                     return "Transfer to alternate contact number";
-                case 2:
+                case ActionTypes.GoTo:
                     {
-                        //2 is "goto" which requires a conversation name and, in many cases, also a target object to load up for 
-                        //that conversation (for instance PHGreeting is the greeting conversation that takes a call handler as a
-                        //target). 
-                        if (string.IsNullOrEmpty(pConversationName))
-                        {
-                            return "(error) invalid empty conversaton name passed to GetActionDescription ";
-                        }
 
                         WebCallResult ret;
                         CallHandler oHandler;
-                        switch (pConversationName.ToLower())
+                        switch (pConversationName)
                         {
-                            case "subsignin":
+                            case ConversationNames.SubSignIn:
                                 return "Route to user sign in";
-                            case "greetingsadministrator":
+                            case ConversationNames.GreetingsAdministrator:
                                 return "Route to Greetings administrator";
-                            case "convhotelcheckedout":
+                            case ConversationNames.ConvHotelCheckedOut:
                                 return "Route to checked out hotel guest conversation";
-                            case "convcvmmboxreset":
+                            case ConversationNames.ConvCvmMboxReset:
                                 return "Route to Community Voice Mail box reset";
-
                             //a few of these had different names in Unity versions - I leave the overloads in here
-                            case "avconvsystemtransfer":
-                            case "subsystransfer":
+                            case ConversationNames.SubSysTransfer: 
                                 return "Route to user system transfer";
-                            case "systemtransfer":
+                            case ConversationNames.SystemTransfer:
                                 return "Route to system transfer";
-                            case "avconveasysignin":
-                            case "easysignin":
+                            case ConversationNames.EasySignIn:
                                 return "Route to easy subscriber sign in";
-                            case "transferaltcontactnumber":
+                            case ConversationNames.TransferAltContactNumber:
                                 return "Alternate contact number";
-                            case "broadcastmessageadministrator":
+                            case ConversationNames.BroadcastMessageAdministrator:
                                 return "Broadcast message administrator";
-                            case "ad":
+                            case ConversationNames.Ad:
                                 {
                                     //Alpha Directory (what we used to call Name Lookup Handlers) - this requires a name lookup handler target 
                                     //to load - fetch that handler here so we can showt he display name here.
@@ -711,7 +744,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
                                     return "Route to name lookup handler: "+oDirHandler.DisplayName;
                                 }
-                            case "phtransfer":
+                            case ConversationNames.PHTransfer:
                                 {
                                     //PHTransfer is the transfer conversation entry point for a call handler (subscriber's primary call handler as well
                                     //of course).  It requires a valid target handler Object which we'll fetch here so we can include it's display name
@@ -728,7 +761,7 @@ namespace Cisco.UnityConnection.RestFunctions
                                     }
                                     return "Ring phone for call handler:" + oHandler.DisplayName;
                                 }
-                            case "phgreeting":
+                            case ConversationNames.PHGreeting: 
                                 {
                                     //PHGreeting is the greeting conversation entry point for a call handler (subscriber's primary call handler as well
                                     //of course).  It requires a valid target handler Object which we'll fetch here so we can include it's display name
@@ -745,9 +778,7 @@ namespace Cisco.UnityConnection.RestFunctions
                                     }
                                     return "Send to greeting for call handler:" + oHandler.DisplayName;
                                 }
-
-                            case "phinterview":
-                            case "chinterview":
+                            case ConversationNames.PHInterview:
                                 {
                                     //PHInterview or CHInterview (older style) is the conversation for an interview handler that requires a valid 
                                     //interview handler target to load.  Fetch it here so we can include it's display name in the output.

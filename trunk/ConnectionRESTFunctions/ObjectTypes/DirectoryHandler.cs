@@ -268,13 +268,13 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
             }
 
-            private int _searchScope;
-            public int SearchScope
+            private DirectoryHandlerSearchScope _searchScope;
+            public DirectoryHandlerSearchScope SearchScope
             {
                 get { return _searchScope; }
                 set
                 {
-                    _changedPropList.Add("SearchScope", value);
+                    _changedPropList.Add("SearchScope", (int)value);
                     _searchScope = value;
                 }
             }
@@ -430,24 +430,24 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //all exit methods
 
-            private int _exitAction;
-            public int ExitAction
+            private ActionTypes _exitAction;
+            public ActionTypes ExitAction
             {
                 get { return _exitAction; }
                 set
                 {
-                    _changedPropList.Add("ExitAction", value);
+                    _changedPropList.Add("ExitAction", (int)value);
                     _exitAction = value;
                 }
             }
 
-            private string _exitTargetConversation;
-            public string ExitTargetConversation
+            private ConversationNames _exitTargetConversation;
+            public ConversationNames ExitTargetConversation
             {
                 get { return _exitTargetConversation; }
                 set
                 {
-                    _changedPropList.Add("ExitTargetConversation", value);
+                    _changedPropList.Add("ExitTargetConversation", value.Description());
                     _exitTargetConversation = value;
                 }
             }
@@ -463,24 +463,24 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
             }
 
-            private int _noInputAction;
-            public int NoInputAction
+            private ActionTypes _noInputAction;
+            public ActionTypes NoInputAction
             {
                 get { return _noInputAction; }
                 set
                 {
-                    _changedPropList.Add("NoInputAction", value);
+                    _changedPropList.Add("NoInputAction", (int) value);
                     _noInputAction = value;
                 }
             }
 
-            private string _noInputTargetConversation;
-            public string NoInputTargetConversation
+            private ConversationNames _noInputTargetConversation;
+            public ConversationNames NoInputTargetConversation
             {
                 get { return _noInputTargetConversation; }
                 set
                 {
-                    _changedPropList.Add("NoInputTargetConversation", value);
+                    _changedPropList.Add("NoInputTargetConversation", value.Description());
                     _noInputTargetConversation = value;
                 }
             }
@@ -496,24 +496,24 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
             }
 
-            private int _noSelectionAction;
-            public int NoSelectionAction
+            private ActionTypes _noSelectionAction;
+            public ActionTypes NoSelectionAction
             {
                 get { return _noSelectionAction; }
                 set
                 {
-                    _changedPropList.Add("NoSelectionAction", value);
+                    _changedPropList.Add("NoSelectionAction",(int) value);
                     _noSelectionAction = value;
                 }
             }
 
-            private string _noSelectionTargetConversation;
-            public string NoSelectionTargetConversation
+            private ConversationNames _noSelectionTargetConversation;
+            public ConversationNames NoSelectionTargetConversation
             {
                 get { return _noSelectionTargetConversation; }
                 set
                 {
-                    _changedPropList.Add("NoSelectionTargetConversation", value);
+                    _changedPropList.Add("NoSelectionTargetConversation", value.Description());
                     _noSelectionTargetConversation = value;
                 }
             }
@@ -529,24 +529,24 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
             }
 
-            private int _zeroAction;
-            public int ZeroAction
+            private ActionTypes _zeroAction;
+            public ActionTypes ZeroAction
             {
                 get { return _zeroAction; }
                 set
                 {
-                    _changedPropList.Add("ZeroAction", value);
+                    _changedPropList.Add("ZeroAction", (int)value);
                     _zeroAction = value;
                 }
             }
 
-            private string _zeroTargetConversation;
-            public string ZeroTargetConversation
+            private ConversationNames _zeroTargetConversation;
+            public ConversationNames ZeroTargetConversation
             {
                 get { return _zeroTargetConversation; }
                 set
                 {
-                    _changedPropList.Add("ZeroTargetConversation", value);
+                    _changedPropList.Add("ZeroTargetConversation", value.Description());
                     _zeroTargetConversation = value;
                 }
             }
@@ -562,8 +562,6 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
             }
 
-
-         
 
             #endregion
 

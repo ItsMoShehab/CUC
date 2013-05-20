@@ -55,7 +55,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pLanguageCode">
         /// The language of the greeting stream file to return (i.e. 1033 is US English).
         /// </param>
-        public GreetingStreamFile(ConnectionServer pConnectionServer, string pCallHandlerObjectId, string pGreetingType,
+        public GreetingStreamFile(ConnectionServer pConnectionServer, string pCallHandlerObjectId, GreetingTypes pGreetingType,
                                   int pLanguageCode = -1)
         {
             if (pConnectionServer == null)
@@ -118,7 +118,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Alternate, Busy, Standard, Error, Internal, Holiday, Off Hours
         /// </summary>
         [JsonProperty]
-        public string GreetingType { get; private set; }
+        public GreetingTypes GreetingType { get; private set; }
 
         /// <summary>
         /// The Windows Locale ID (LCID) identifying the language in which this stream was recorded:
@@ -318,7 +318,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public static WebCallResult GetGreetingStreamFile(ConnectionServer pConnectionServer,
                                                           string pCallHandlerObjectId,
-                                                          string pGreetingType,
+                                                          GreetingTypes pGreetingType,
                                                           int pLanguageCode,
                                                           out GreetingStreamFile pGreetingStreamFile)
         {
@@ -374,7 +374,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public static WebCallResult GetGreetingStreamFiles(ConnectionServer pConnectionServer,
                                                            string pCallHandlerObjectId,
-                                                           string pGreetingType,
+                                                           GreetingTypes pGreetingType,
                                                            out List<GreetingStreamFile> pGreetingStreamFiles)
         {
             WebCallResult res = new WebCallResult();
@@ -382,7 +382,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pGreetingStreamFiles = null;
 
-            if (string.IsNullOrEmpty(pCallHandlerObjectId) | string.IsNullOrEmpty(pGreetingType))
+            if (string.IsNullOrEmpty(pCallHandlerObjectId))
             {
                 res.ErrorText = "Empty CallHandlerObjectId or GreetingType passed to GetGreetingSTreamFiles";
                 return res;
@@ -395,7 +395,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/greetings/{2}/greetingstreamfiles",
-                                          pConnectionServer.BaseUrl, pCallHandlerObjectId, pGreetingType);
+                                          pConnectionServer.BaseUrl, pCallHandlerObjectId, pGreetingType.Description());
 
             //issue the command to the CUPI interface
             res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
@@ -511,7 +511,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public static WebCallResult GetGreetingWavFile(ConnectionServer pConnectionServer,
                                                        string pTargetLocalFilePath,
                                                        string pCallHandlerObjectId,
-                                                        string pGreetingType,
+                                                        GreetingTypes pGreetingType,
                                                         int pLanguageCode)
         {
 
@@ -589,7 +589,7 @@ namespace Cisco.UnityConnection.RestFunctions
       /// </returns>
         public static WebCallResult SetGreetingWavFile(ConnectionServer pConnectionServer,
                                                             string pCallHandlerObjectId,
-                                                            string pGreetingType,
+                                                            GreetingTypes pGreetingType,
                                                             int pLanguageCode,
                                                             string pSourceLocalFilePath,
                                                             bool pConvertToPcmFirst = false)
@@ -657,10 +657,10 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public WebCallResult GetGreetingStreamFile(string pCallHandlerObjectId, string pGreetingType, int pLanguageCode)
+        public WebCallResult GetGreetingStreamFile(string pCallHandlerObjectId, GreetingTypes pGreetingType, int pLanguageCode)
         {
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/greetings/{2}/greetingstreamfiles/{3}", 
-                                         HomeServer.BaseUrl, pCallHandlerObjectId, pGreetingType,pLanguageCode);
+                                         HomeServer.BaseUrl, pCallHandlerObjectId, pGreetingType.Description(),pLanguageCode);
 
             //issue the command to the CUPI interface
             WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
