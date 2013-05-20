@@ -128,7 +128,7 @@ namespace ConnectionCUPIFunctionsTest
             //string
             oElement = XElement.Parse("<ConversationTui>SubMenu</ConversationTui>");
             _connectionServer.SafeXmlFetch(oUserFull, oElement);
-            Assert.AreEqual(oUserFull.ConversationTui, "SubMenu", "SubMenu string did not insert properly");
+            Assert.AreEqual(oUserFull.ConversationTui.Description(), "SubMenu", "SubMenu string did not insert properly");
 
             //boolean
             oElement = XElement.Parse("<IsTemplate>false</IsTemplate>");
@@ -203,36 +203,30 @@ namespace ConnectionCUPIFunctionsTest
         public void ActionStringConstructions()
         {
             //terminal action types
-            Console.WriteLine(_connectionServer.GetActionDescription(0, "", ""));
-            Console.WriteLine(_connectionServer.GetActionDescription(1,"",""));
-            Console.WriteLine(_connectionServer.GetActionDescription(3, "", ""));
-            Console.WriteLine(_connectionServer.GetActionDescription(4, "", ""));
-            Console.WriteLine(_connectionServer.GetActionDescription(5, "", ""));
-            Console.WriteLine(_connectionServer.GetActionDescription(6, "", ""));
-            Console.WriteLine(_connectionServer.GetActionDescription(7, "", ""));
-            Console.WriteLine(_connectionServer.GetActionDescription(8, "", ""));
-
-            //invalid
-            Console.WriteLine(_connectionServer.GetActionDescription(99, "", ""));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.Ignore, ConversationNames.Invalid, ""));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.Hangup, ConversationNames.Invalid, ""));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.Error,ConversationNames.Invalid, ""));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.TakeMessage, ConversationNames.Invalid, ""));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.SkipGreeting, ConversationNames.Invalid, ""));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.RestartGreeting, ConversationNames.Invalid, ""));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.TransferToAlternateContactNumber, ConversationNames.Invalid, ""));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.RouteFromNextCallRoutingRule, ConversationNames.Invalid, ""));
 
             //goto actions
             //Converstaion names
-            Console.WriteLine(_connectionServer.GetActionDescription(2, "greetingsadministrator", ""));
-            Console.WriteLine(_connectionServer.GetActionDescription(2, "convhotelcheckedout", ""));
-            Console.WriteLine(_connectionServer.GetActionDescription(2, "convcvmmboxreset", ""));
-            Console.WriteLine(_connectionServer.GetActionDescription(2, "subsystransfer", ""));
-            Console.WriteLine(_connectionServer.GetActionDescription(2, "easysignin", ""));
-            Console.WriteLine(_connectionServer.GetActionDescription(2, "transferaltcontactnumber", ""));
-            Console.WriteLine(_connectionServer.GetActionDescription(2, "broadcastmessageadministrator", ""));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.GoTo, ConversationNames.GreetingsAdministrator, ""));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.GoTo, ConversationNames.ConvHotelCheckedOut, ""));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.GoTo, ConversationNames.ConvCvmMboxReset, ""));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.GoTo, ConversationNames.SubSysTransfer, ""));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.GoTo, ConversationNames.EasySignIn, ""));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.GoTo, ConversationNames.TransferAltContactNumber, ""));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.GoTo, ConversationNames.BroadcastMessageAdministrator, ""));
             
             //route to object types
-            Console.WriteLine(_connectionServer.GetActionDescription(2, "ad", "blah"));
-            Console.WriteLine(_connectionServer.GetActionDescription(2, "phtransfer", "blah"));
-            Console.WriteLine(_connectionServer.GetActionDescription(2, "phgreeting", "blah"));
-            Console.WriteLine(_connectionServer.GetActionDescription(2, "phinterview", "blah"));
-            Console.WriteLine(_connectionServer.GetActionDescription(2, "blah", "blah"));
-            
-
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.GoTo,ConversationNames.Ad , "blah"));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.GoTo,ConversationNames.PHTransfer, "blah"));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.GoTo, ConversationNames.PHGreeting, "blah"));
+            Console.WriteLine(_connectionServer.GetActionDescription(ActionTypes.GoTo, ConversationNames.PHInterview, "blah"));
         }
     }
 }

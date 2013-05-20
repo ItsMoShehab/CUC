@@ -111,7 +111,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public bool DoesntExpire { get; private set; }
 
         [JsonProperty]
-        public int EncryptionType { get; private set; }
+        public EncryptionType EncryptionType { get; private set; }
 
         [JsonProperty]
         public int HackCount { get; private set; }

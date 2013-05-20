@@ -361,17 +361,17 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private int _addressMode;
+        private AddressingMode _addressMode;
         /// <summary>
         /// The default method the subscriber will use to address messages to other subscribers.
         /// 1=Extension, 2=FirstNameFirst, 0=LastNameFirst
         /// </summary>
-        public int AddressMode
+        public AddressingMode AddressMode
         {
             get { return _addressMode; }
             set
             {
-                _changedPropList.Add("AddressMode", value);
+                _changedPropList.Add("AddressMode",(int) value);
                 _addressMode = value;
             }
         }
@@ -453,17 +453,17 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
 
-        private int _clockMode;
+        private ClockMode _clockMode;
         /// <summary>
         /// The time format used for the message timestamps that the subscriber hears when they listen to their messages over the phone.
         /// 1=HourClock12, 2=HourClock24, 0=SystemDefaultClock
         /// </summary>
-        public int ClockMode
+        public ClockMode ClockMode
         {
             get { return _clockMode; }
             set
             {
-                _changedPropList.Add("ClockMode", value);
+                _changedPropList.Add("ClockMode", (int)value);
                 _clockMode = value;
             }
         }
@@ -538,16 +538,16 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private string _conversationTui;
+        private SubscriberConversationTui _conversationTui;
         /// <summary>
         /// The name of the conversation the subscriber uses to set up, send, and retrieve messages when using touch tones
         /// </summary>
-        public string ConversationTui
+        public SubscriberConversationTui ConversationTui
         {
             get { return _conversationTui; }
             set
             {
-                _changedPropList.Add("ConversationTui", value);
+                _changedPropList.Add("ConversationTui", value.Description());
                 _conversationTui = value;
             }
         }
@@ -619,17 +619,17 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private int _deletedMessageSortOrder;
+        private CxnSortOrder _deletedMessageSortOrder;
         /// <summary>
         /// The order in which Cisco Unity Connection presents deleted messages to the subscriber.
         /// 2=FIFO, 1=LIFO
         /// </summary>
-        public int DeletedMessageSortOrder
+        public CxnSortOrder DeletedMessageSortOrder
         {
             get { return _deletedMessageSortOrder; }
             set
             {
-                _changedPropList.Add("DeletedMessageSortOrder", value);
+                _changedPropList.Add("DeletedMessageSortOrder", value.Description());
                 _deletedMessageSortOrder = value;
             }
         }
@@ -646,13 +646,13 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
 
-        private int _displayNameRule;
-        public int DisplayNameRule
+        private DisplayNameRule _displayNameRule;
+        public DisplayNameRule DisplayNameRule
         {
             get { return _displayNameRule; }
             set
             {
-                _changedPropList.Add("DisplayNameRule", value);
+                _changedPropList.Add("DisplayNameRule",(int) value);
                 _displayNameRule = value;
             }
         }
@@ -823,17 +823,17 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private int _exitAction;
+        private ActionTypes _exitAction;
         /// <summary>
         /// The type of call action to take, e.g., hang-up, goto another object, etc
         /// 3=Error, 2=Goto, 1=Hangup, 0=Ignore, 5=SkipGreeting, 4=TakeMsg, 6=RestartGreeting, 7=TransferAltContact, 8=RouteFromNextRule
         /// </summary>
-        public int ExitAction
+        public ActionTypes ExitAction
         {
             get { return _exitAction; }
             set
             {
-                _changedPropList.Add("ExitAction", value);
+                _changedPropList.Add("ExitAction", (int)value);
                 _exitAction = value;
             }
         }
@@ -849,13 +849,13 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private string _exitTargetConversation;
-        public string ExitTargetConversation
+        private ConversationNames _exitTargetConversation;
+        public ConversationNames ExitTargetConversation
         {
             get { return _exitTargetConversation; }
             set
             {
-                _changedPropList.Add("ExitTargetConversation", value);
+                _changedPropList.Add("ExitTargetConversation", value.Description());
                 _exitTargetConversation = value;
             }
         }
@@ -1036,7 +1036,7 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         [JsonProperty]
-        public int LdapType { get; private set; }
+        public LdapType LdapType { get; private set; }
 
 
         private string _mailboxStoreObjectId;
@@ -1077,8 +1077,6 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        
-
         private string _messageAgingPolicyObjectId;
         public string MessageAgingPolicyObjectId
         {
@@ -1091,17 +1089,17 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
 
-        private int _messageLocatorSortOrder;
+        private CxnSortOrder _messageLocatorSortOrder;
         /// <summary>
         /// The order in which Cisco Unity Connection will sort messages when the "Message Locator" feature is enabled.
         /// 2=FIFO, 1=LIFO
         /// </summary>
-        public int MessageLocatorSortOrder
+        public CxnSortOrder MessageLocatorSortOrder
         {
             get { return _messageLocatorSortOrder; }
             set
             {
-                _changedPropList.Add("MessageLocatorSortOrder", value);
+                _changedPropList.Add("MessageLocatorSortOrder",(int) value);
                 _messageLocatorSortOrder = value;
             }
         }
@@ -1136,17 +1134,17 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private int _newMessageSortOrder;
+        private CxnSortOrder _newMessageSortOrder;
         /// <summary>
         /// The order in which Cisco Unity Connection will sort new messages.
         /// 2=FIFO, 1=LIFO
         /// </summary>
-        public int NewMessageSortOrder
+        public CxnSortOrder NewMessageSortOrder
         {
             get { return _newMessageSortOrder; }
             set
             {
-                _changedPropList.Add("NewMessageSortOrder", value);
+                _changedPropList.Add("NewMessageSortOrder",(int) value);
                 _newMessageSortOrder = value;
             }
         }
@@ -1338,17 +1336,17 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private int _savedMessageSortOrder;
+        private CxnSortOrder _savedMessageSortOrder;
         /// <summary>
         /// The order in which Cisco Unity Connection will sort saved messages
         /// 2=FIFO, 1=LIFO
         /// </summary>
-        public int SavedMessageSortOrder
+        public CxnSortOrder SavedMessageSortOrder
         {
             get { return _savedMessageSortOrder; }
             set
             {
-                _changedPropList.Add("SavedMessageSortOrder", value);
+                _changedPropList.Add("SavedMessageSortOrder", (int)value);
                 _savedMessageSortOrder = value;
             }
         }
@@ -1673,18 +1671,18 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private int _sendMessageOnHangup;
+        private SendMessageOnHangup _sendMessageOnHangup;
         /// <summary>
         /// An enum indicating when hanging up while addressing a message that has a recording and at least one recipient, whether the message is discarded, 
         /// sent or saved as a draft message if the subscriber explicitly issues the command to send the message either via DTMF or voice input.
         /// 0=Discard, 1=Send, 2=Save
         /// </summary>
-        public int SendMessageOnHangup
+        public SendMessageOnHangup SendMessageOnHangup
         {
             get { return _sendMessageOnHangup; }
             set
             {
-                _changedPropList.Add("SendMessageOnHangup", value);
+                _changedPropList.Add("SendMessageOnHangup", (int)value);
                 _sendMessageOnHangup = value;
             }
         }

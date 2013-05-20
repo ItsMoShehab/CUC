@@ -80,24 +80,20 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailures_UpdateTransferOptionEnabledStatus()
         {
             //hit some invalid calls for updating the enabled status for transfer options
-            WebCallResult res = TransferOption.UpdateTransferOptionEnabledStatus(null, _callHandler.ObjectId, "Alternate", true);
+            WebCallResult res = TransferOption.UpdateTransferOptionEnabledStatus(null, _callHandler.ObjectId, TransferOptionTypes.Alternate, true);
             Assert.IsFalse(res.Success, "Null ConnectionServer parameter should fail");
 
-            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, "aaa", "Alternate", true);
+            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, "aaa", TransferOptionTypes.Alternate, true);
             Assert.IsFalse(res.Success, "Invalid ObjectId for call handler should fail");
 
-            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, _callHandler.ObjectId, "Standard", false);
+            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, _callHandler.ObjectId, TransferOptionTypes.Standard, false);
             Assert.IsFalse(res.Success, "Disabling the standard transfer option should fail");
 
-            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, _callHandler.ObjectId, "Alternate", false, DateTime.Now.AddDays(1));
+            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, _callHandler.ObjectId, TransferOptionTypes.Alternate, false, DateTime.Now.AddDays(1));
             Assert.IsFalse(res.Success, "Disabing a transfer option with a date in the past should fail");
 
-            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, _callHandler.ObjectId, "aaa", true);
-            Assert.IsFalse(res.Success, "Invalid TransferOption type name should fail");
-
-            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, _callHandler.ObjectId, "Alternate", true, DateTime.Now.AddDays(-1));
+            res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, _callHandler.ObjectId, TransferOptionTypes.Alternate, true, DateTime.Now.AddDays(-1));
             Assert.IsFalse(res.Success, "Enabling rule with date in the past should fail");
-
 
         }
 
@@ -108,10 +104,10 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailures_UpdateTransferOption()
         {
             //check manually editing properties on transfer options failure cases
-            WebCallResult res = TransferOption.UpdateTransferOption(null, _callHandler.ObjectId, "Alternate", null);
+            WebCallResult res = TransferOption.UpdateTransferOption(null, _callHandler.ObjectId, TransferOptionTypes.Alternate, null);
             Assert.IsFalse(res.Success, "Updating transfer options with null ConnectionServer param should fail");
 
-            res = TransferOption.UpdateTransferOption(_connectionServer, _callHandler.ObjectId, "Alternate", null);
+            res = TransferOption.UpdateTransferOption(_connectionServer, _callHandler.ObjectId, TransferOptionTypes.Alternate, null);
             Assert.IsFalse(res.Success, "Calling update for transfer options with no parameters should fail");
 
         }
@@ -139,21 +135,18 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailures_GetTransferOption()
         {
             TransferOption oTransfer;
-
-            WebCallResult res = TransferOption.GetTransferOption(_connectionServer, _callHandler.ObjectId, "", out oTransfer);
-            Assert.IsFalse(res.Success, "Empty transfer option type should fail");
-
-            res = TransferOption.GetTransferOption(_connectionServer, _callHandler.ObjectId, "Bogus", out oTransfer);
+            
+            var res = TransferOption.GetTransferOption(_connectionServer, _callHandler.ObjectId, TransferOptionTypes.Invalid , out oTransfer);
             Assert.IsFalse(res.Success, "Invalid transfer option type should fail");
 
-            res = TransferOption.GetTransferOption(null, "", "", out oTransfer);
+            res = TransferOption.GetTransferOption(null, "", TransferOptionTypes.Alternate , out oTransfer);
             Assert.IsFalse(res.Success, "Null ConnectionServer parameter should fail");
 
-            res = TransferOption.GetTransferOption(_connectionServer, "", "", out oTransfer);
+            res = TransferOption.GetTransferOption(_connectionServer, "", TransferOptionTypes.Standard , out oTransfer);
             Assert.IsFalse(res.Success, "Empty ObjectId should should fail");
 
             //make sure invalid Connection server param is caught
-            res = TransferOption.GetTransferOption(null, _callHandler.ObjectId, "Alterante", out oTransfer);
+            res = TransferOption.GetTransferOption(null, _callHandler.ObjectId, TransferOptionTypes.Alternate , out oTransfer);
             Assert.IsFalse(res.Success, "Null ConnectionServer parameter should fail");
 
         }
@@ -168,12 +161,8 @@ namespace ConnectionCUPIFunctionsTest
         {
             TransferOption oTransfer;
 
-            //first, test getting a bogus transfer option
-            WebCallResult res = _callHandler.GetTransferOption("bogus", out oTransfer);
-            Assert.IsFalse(res.Success, "GetTransferOption should fail with invalid transfer option name");
-
             //now get the off hours transfer rule and enable it for a month.
-            res = _callHandler.GetTransferOption("Off Hours", out oTransfer);
+           var res = _callHandler.GetTransferOption(TransferOptionTypes.OffHours , out oTransfer);
             Assert.IsTrue(res.Success, "Failed to get off hours transfer option");
 
             oTransfer.ClearPendingChanges();
@@ -197,17 +186,26 @@ namespace ConnectionCUPIFunctionsTest
                 Console.WriteLine(oTransferOption.DumpAllProps());
             }
 
-            //construct the transfer rule object class and manually fetch option with failure cases
-            oTransfer = new TransferOption(_connectionServer, _callHandler.ObjectId);
-            res = oTransfer.GetTransferOption("");
-            Assert.IsFalse(res.Success, "Empty transfer option type should fail");
-
-            res = oTransfer.GetTransferOption("Bogus");
-            Assert.IsFalse(res.Success, "Invalid transfer option type should fail.");
+            res = oTransfer.GetTransferOption(TransferOptionTypes.Invalid);
+            Assert.IsFalse(res.Success, "Fetching invalid transfer option should fail");
 
             //now fetch it properly
-            res = oTransfer.GetTransferOption("Alternate");
+            res = oTransfer.GetTransferOption(TransferOptionTypes.Alternate);
             Assert.IsTrue(res.Success, "Fetching alternate transfer option failed");
+
+            res = oTransfer.GetTransferOption(TransferOptionTypes.OffHours);
+            Assert.IsTrue(res.Success, "Fetching off hours transfer option failed");
+
+            //construct the transfer rule object class and manually fetch option with failure cases
+            try
+            {
+                oTransfer = new TransferOption(_connectionServer, _callHandler.ObjectId);
+                Assert.Fail("Invalid transfer option type should fail.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Expected failure on construction with invalid transfer option:" + ex);
+            }
 
         }
 

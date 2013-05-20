@@ -140,23 +140,23 @@ namespace ConnectionCUPIFunctionsTest
             
             //CreateMessageResourceId
             var res = UserMessage.CreateMessageResourceId(null, "userobjectId", "subject", "resourceId", false,
-                                                      false, false, false, false, false, null, oRecipient, oRecipient2, oRecipient3);
+                                                      SensitivityType.Normal, false, false, false, false, null, oRecipient, oRecipient2, oRecipient3);
             Assert.IsFalse(res.Success, "Call to CreateMessageResourceId with null ConnectionServer did not fail.");
 
             res = UserMessage.CreateMessageResourceId(_connectionServer, "userobjectId", "subject", "resourceId", false,
-                  false, false, false, false, false, null);
+                  SensitivityType.Normal, false, false, false, false, null);
             Assert.IsFalse(res.Success, "Call to CreateMessageResourceId with empty recipients list did not fail.");
 
             res = UserMessage.CreateMessageResourceId(_connectionServer, "userobjectId", "", "resourceId", false,
-                              false, false, false, false, false, null, oRecipient, oRecipient2, oRecipient3);
+                              SensitivityType.Normal, false, false, false, false, null, oRecipient, oRecipient2, oRecipient3);
             Assert.IsFalse(res.Success, "Call to CreateMessageResourceId with empty subject did not fail.");
 
             res = UserMessage.CreateMessageResourceId(_connectionServer, "userobjectId", "subject", "", false,
-                              false, false, false, false, false, null, oRecipient, oRecipient2, oRecipient3);
+                              SensitivityType.Normal, false, false, false, false, null, oRecipient, oRecipient2, oRecipient3);
             Assert.IsFalse(res.Success, "Call to CreateMessageResourceId with empty resourceId did not fail.");
 
             res = UserMessage.CreateMessageResourceId(_connectionServer, "userobjectId", "subject", "resourceId", true,
-                  true, true, true, true, true, new CallerId(), oRecipient, oRecipient2, oRecipient3);
+                  SensitivityType.Private, true, true, true, true, new CallerId(), oRecipient, oRecipient2, oRecipient3);
             Assert.IsFalse(res.Success, "Call to CreateMessageResourceId with invalid resourceId did not fail.");
         }
 
@@ -264,27 +264,27 @@ namespace ConnectionCUPIFunctionsTest
             oRecipient3.AddressType = MessageAddressType.CC;
 
             WebCallResult res = UserMessage.CreateMessageLocalWav(null, "userobjectID", "subject", "dummy.wav", false,
-                                                                  false, false, false, false, false, null, false, oRecipient, oRecipient2, oRecipient3);
+                                                                  SensitivityType.Normal, false, false, false, false, null, false, oRecipient, oRecipient2, oRecipient3);
             Assert.IsFalse(res.Success, "Call to CreateMessageLocalWav with null ConnectionServer did not fail.");
 
             res = UserMessage.CreateMessageLocalWav(_connectionServer, "", "subject", "dummy.wav", false,
-                                                    false, false, false, false, false, null, false, oRecipient, oRecipient2, oRecipient3);
+                                                    SensitivityType.Normal, false, false, false, false, null, false, oRecipient, oRecipient2, oRecipient3);
             Assert.IsFalse(res.Success, "Call to CreateMessageLocalWav with empty user obejectID did not fail.");
 
             res = UserMessage.CreateMessageLocalWav(_connectionServer, "userobjectID", "subject", "bogus.wav", false,
-                                        false, false, false, false, false, null, false, oRecipient, oRecipient2, oRecipient3);
+                                        SensitivityType.Normal, false, false, false, false, null, false, oRecipient, oRecipient2, oRecipient3);
             Assert.IsFalse(res.Success, "Call to CreateMessageLocalWav with invalid WAV path did not fail.");
 
             res = UserMessage.CreateMessageLocalWav(_connectionServer, "userobjectID", "subject", "dummy.wav", false,
-                            false, false, false, false, false, null, false);
+                            SensitivityType.Normal, false, false, false, false, null, false);
             Assert.IsFalse(res.Success, "Call to CreateMessageLocalWav with no recipient did not fail.");
 
             res = UserMessage.CreateMessageLocalWav(_connectionServer, "userobjectID", "subject", "dummy.wav", false,
-                                        false, false, false, false, false, null, true, oRecipient, oRecipient2, oRecipient3);
+                                        SensitivityType.Normal, false, false, false, false, null, true, oRecipient, oRecipient2, oRecipient3);
             Assert.IsFalse(res.Success, "Call to CreateMessageLocalWav with invalid UserObjectId did not fail.");
 
             res = UserMessage.CreateMessageLocalWav(_connectionServer, "userobjectID", "", "dummy.wav", false,
-                                        false, false, false, false, false, null, false, oRecipient, oRecipient2, oRecipient3);
+                                        SensitivityType.Normal, false, false, false, false, null, false, oRecipient, oRecipient2, oRecipient3);
             Assert.IsFalse(res.Success, "Call to CreateMessageLocalWav with empty subject did not fail.");
 
         }
@@ -328,7 +328,7 @@ namespace ConnectionCUPIFunctionsTest
             oRecipient.AddressType = MessageAddressType.TO;
             oRecipient.SmtpAddress = _tempUser.SmtpAddress;
             res = UserMessage.CreateMessageLocalWav(_connectionServer, _tempUser.ObjectId, "test subject", "dummy.wav", false,
-                                                   false, false, false, false, false, new CallerId { CallerNumber = "1234" },
+                                                   SensitivityType.Normal, false, false, false, false, new CallerId { CallerNumber = "1234" },
                                                    true, oRecipient);
             Assert.IsTrue(res.Success, "Failed to create new message from WAV file:" + res);
 
@@ -411,41 +411,41 @@ namespace ConnectionCUPIFunctionsTest
             }
 
             //forward it to mailbox
-            res = oMessage.ForwardMessageLocalWav("FW:" + oMessage.Subject, true, true, true, true, true, "dummy.wav", true, oRecipient);
+            res = oMessage.ForwardMessageLocalWav("FW:" + oMessage.Subject, true, SensitivityType.Private, true, true, true, "dummy.wav", true, oRecipient);
             Assert.IsTrue(res.Success, "Failed to forward message");
 
             //Forward failures
-            res = oMessage.ForwardMessageLocalWav("FW:" + oMessage.Subject, true, true, true, false, false, "dummy.wav", true);
+            res = oMessage.ForwardMessageLocalWav("FW:" + oMessage.Subject, true, SensitivityType.Private, true, false, false, "dummy.wav", true);
             Assert.IsFalse(res.Success, "Forwarding with wav with no address did not fail");
 
-            res = oMessage.ForwardMessageLocalWav("FW:" + oMessage.Subject, true, true, true, false, false, "bogus.wav", true, oRecipient);
+            res = oMessage.ForwardMessageLocalWav("FW:" + oMessage.Subject, true, SensitivityType.Private, true, false, false, "bogus.wav", true, oRecipient);
             Assert.IsFalse(res.Success, "Forwarding with wav with invalid WAV file did not fail");
 
-            res = oMessage.ForwardMessageResourceId("FW:" + oMessage.Subject, true, true, true, false, false, "", oRecipient);
+            res = oMessage.ForwardMessageResourceId("FW:" + oMessage.Subject, true, SensitivityType.Private, true, false, false, "", oRecipient);
             Assert.IsFalse(res.Success, "Forwarding with empty resource Id did not fail");
 
-            res = oMessage.ForwardMessageResourceId("FW:" + oMessage.Subject, true, true, true, false, false, "bogus");
+            res = oMessage.ForwardMessageResourceId("FW:" + oMessage.Subject, true, SensitivityType.Private, true, false, false, "bogus");
             Assert.IsFalse(res.Success, "Forwarding resourceId with no addresses did not fail");
 
-            res = oMessage.ForwardMessageResourceId("FW:" + oMessage.Subject, true, true, true, false, false, "bogus", oRecipient);
+            res = oMessage.ForwardMessageResourceId("FW:" + oMessage.Subject, true, SensitivityType.Private, true, false, false, "bogus", oRecipient);
             Assert.IsFalse(res.Success, "Forwarding resourceId with invalid resource Id did not fail");
 
             //reply
-            res = oMessage.ReplyWithLocalWav("RE:" + oMessage.Subject, true, true, true, false, false, "dummy.wav", true);
+            res = oMessage.ReplyWithLocalWav("RE:" + oMessage.Subject, true, SensitivityType.Private, true, false, false, "dummy.wav", true);
             Assert.IsTrue(res.Success, "Failed to reply");
 
             //reply to all
-            res = oMessage.ReplyWithLocalWav("RE:" + oMessage.Subject, true, true, true, false, false, "dummy.wav", true, true);
+            res = oMessage.ReplyWithLocalWav("RE:" + oMessage.Subject, true, SensitivityType.Private, true, false, false, "dummy.wav", true, true);
             Assert.IsTrue(res.Success, "Failed to reply to all");
 
             //reply failures
-            res = oMessage.ReplyWithResourceId("RE:" + oMessage.Subject, "", true, true, true, false, false, true);
+            res = oMessage.ReplyWithResourceId("RE:" + oMessage.Subject, "", true, SensitivityType.Private, true, false, false, true);
             Assert.IsFalse(res.Success, "Reply with empty resource ID did not fail");
 
-            res = oMessage.ReplyWithResourceId("RE:" + oMessage.Subject, "bogus", true, true, true, false, false, true);
+            res = oMessage.ReplyWithResourceId("RE:" + oMessage.Subject, "bogus", true, SensitivityType.Private, true, false, false, true);
             Assert.IsFalse(res.Success, "Reply to all with bogus resource ID did not fail");
 
-            res = oMessage.ReplyWithResourceId("RE:" + oMessage.Subject, "bogus", true, true, true, false, false);
+            res = oMessage.ReplyWithResourceId("RE:" + oMessage.Subject, "bogus", true, SensitivityType.Private, true, false, false);
             Assert.IsFalse(res.Success, "Reply with bogus resource ID did not fail");
 
             //delete it
@@ -472,6 +472,77 @@ namespace ConnectionCUPIFunctionsTest
 
             res = UserMessage.RestoreDeletedMessage(_connectionServer, _tempUser.ObjectId, "bugus");
             Assert.IsFalse(res.Success, "Calling RestoreDeletedMessage with invalid messae Id did not fail");
+        }
+
+
+        [TestMethod]
+        public void UserMessageSendFetchCompare()
+        {
+            List<UserMessage> oMessages;
+
+            var res = UserMessage.GetMessages(_connectionServer, _tempUser.ObjectId, out oMessages);
+            Assert.IsTrue(res.Success, "Failed fetching messages on new user");
+            
+            foreach (var oTemp in oMessages)
+            {
+                res = oTemp.Delete(true);
+                if (res.Success == false)
+                {
+                    Assert.Fail("Failed deleting messages from test inbox:"+res);
+                }
+            }
+
+
+            //create a new message
+            MessageAddress oRecipient = new MessageAddress();
+            oRecipient.AddressType = MessageAddressType.TO;
+            oRecipient.SmtpAddress = _tempUser.SmtpAddress;
+
+            //send urgent, secure, private
+            res = UserMessage.CreateMessageLocalWav(_connectionServer, _tempUser.ObjectId, "test subject", "dummy.wav",true,SensitivityType.Private, 
+                true,false,false,false,new CallerId { CallerNumber = "1234" },true, oRecipient);
+            Assert.IsTrue(res.Success, "Failed to create new message from WAV file:" + res);
+
+            Thread.Sleep(1000);
+
+            //fetch the message
+            res = UserMessage.GetMessages(_connectionServer, _tempUser.ObjectId, out oMessages);
+            Assert.IsTrue(res.Success, "Failed fetching messages on new user");
+            Assert.IsTrue(oMessages.Count==1,"1 message should be fetched from store, instead messages returned ="+oMessages.Count);
+
+            //compare
+            UserMessage oMessage = oMessages[0];
+            Assert.IsTrue(oMessage.Sensitivity == SensitivityType.Private,"Message is not flagged as private and it should be");
+            Assert.IsTrue(oMessage.Priority == PriorityType.Urgent,"Message not marked urgent and it should be" );
+            Assert.IsTrue(oMessage.Secure,"Message not marked secure and it should be");
+            
+            //delete
+            res = oMessage.Delete(true);
+            Assert.IsTrue(res.Success,"Failed deleting messages from test inbox:" + res);
+
+            //send NOT secure, private, urgent
+            res = UserMessage.CreateMessageLocalWav(_connectionServer, _tempUser.ObjectId, "test subject", "dummy.wav", false, SensitivityType.Normal, 
+                false, false, false, false,new CallerId { CallerNumber = "3456" }, true, oRecipient);
+            Assert.IsTrue(res.Success, "Failed to create new message from WAV file:" + res);
+
+            Thread.Sleep(1000);
+            
+            //fetch the message
+            res = UserMessage.GetMessages(_connectionServer, _tempUser.ObjectId, out oMessages);
+            Assert.IsTrue(res.Success, "Failed fetching messages on new user");
+            Assert.IsTrue(oMessages.Count == 1, "1 message should be fetched from store, instead messages returned =" + oMessages.Count);
+
+            //compare
+            oMessage = oMessages[0];
+            Assert.IsTrue(oMessage.Sensitivity == SensitivityType.Normal, "Message is not flagged as not private and it should be");
+            Assert.IsTrue(oMessage.Priority == PriorityType.Normal, "Message not marked normal priority and it should be");
+            Assert.IsTrue(!oMessage.Secure, "Message marked secure and it should not be");
+            
+            //delete
+            res = oMessage.Delete(true);
+            Assert.IsTrue(res.Success,"Failed deleting messages from test inbox:" + res);
+
+
         }
 
     }

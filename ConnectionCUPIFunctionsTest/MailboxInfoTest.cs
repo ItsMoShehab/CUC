@@ -148,8 +148,8 @@ namespace ConnectionCUPIFunctionsTest
             MessageAddress oRecipient = new MessageAddress();
             oRecipient.AddressType = MessageAddressType.TO;
             oRecipient.SmtpAddress = _tempUser.SmtpAddress;
-            res = UserMessage.CreateMessageLocalWav(_connectionServer, _tempUser.ObjectId, "test subject", "dummy.wav", false,
-                                                   false, false, false, false, false, new CallerId { CallerNumber = "1234" },
+            res = UserMessage.CreateMessageLocalWav(_connectionServer, _tempUser.ObjectId, "test subject", "dummy.wav", false, SensitivityType.Normal
+                                                   , false, false, false, false, new CallerId { CallerNumber = "1234" },
                                                    true, oRecipient);
             Assert.IsTrue(res.Success, "Failed to create new message from WAV file:" + res);
 

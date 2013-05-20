@@ -172,17 +172,10 @@ namespace ConnectionCUPIFunctionsTest
 
             _tempHandler.ClearPendingChanges();
 
-            _tempHandler.AfterMessageAction = 33;
-            _tempHandler.AfterMessageTargetConversation = ConversationNames.PHGreeting.ToString();
-            _tempHandler.AfterMessageTargetHandlerObjectId = _tempHandler.ObjectId;
-            res = _tempHandler.Update();
-
-            Assert.IsFalse(res.Success,"Setting after message action on handler to invalid action number did not fail");
-
             _tempHandler.ClearPendingChanges();
 
-            _tempHandler.AfterMessageAction = (int)ActionTypes.GoTo;
-            _tempHandler.AfterMessageTargetConversation = ConversationNames.PHTransfer.ToString();
+            _tempHandler.AfterMessageAction = ActionTypes.GoTo;
+            _tempHandler.AfterMessageTargetConversation = ConversationNames.PHTransfer;
             _tempHandler.AfterMessageTargetHandlerObjectId = _tempHandler.ObjectId;
             res = _tempHandler.Update();
 
@@ -229,7 +222,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success,"Failed to update transfer rule");
 
             oTransferOption.UsePrimaryExtension = true;
-            oTransferOption.Action = 99;
+            oTransferOption.Action = ActionTypes.Invalid;
             res = oTransferOption.Update();
             Assert.IsFalse(res.Success,"Setting transfer option to invalid action did not fail");
         }
@@ -245,13 +238,13 @@ namespace ConnectionCUPIFunctionsTest
             WebCallResult res = oMenuEntry.Update();
             Assert.IsFalse(res.Success,"Calling update of menu entry with no pending changes did not fail");
 
-            oMenuEntry.Action = 99;
+            oMenuEntry.Action = ActionTypes.Invalid;
             res = oMenuEntry.Update();
             Assert.IsFalse(res.Success, "Setting menu entry to invalid action value did not fail");
 
-            oMenuEntry.Action = (int) ActionTypes.GoTo;
+            oMenuEntry.Action = ActionTypes.GoTo;
             oMenuEntry.Locked = true;
-            oMenuEntry.TargetConversation = ConversationNames.PHGreeting.ToString();
+            oMenuEntry.TargetConversation = ConversationNames.PHGreeting;
             oMenuEntry.TargetHandlerObjectId = oMenuEntry.CallHandlerObjectId;
 
             res = oMenuEntry.Update();
@@ -264,11 +257,11 @@ namespace ConnectionCUPIFunctionsTest
             Greeting oGreeting;
             GreetingStreamFile oStream;
 
-            WebCallResult res = _tempHandler.GetGreeting("Alternate", out oGreeting);
+            WebCallResult res = _tempHandler.GetGreeting(GreetingTypes.Alternate , out oGreeting);
             Assert.IsTrue(res.Success, "Failed to get alternate greeting" + res);
 
             //update the greeting propert and upload a wav file to it
-            oGreeting.PlayWhat = (int)PlayWhatTypes.RecordedGreeting;
+            oGreeting.PlayWhat = PlayWhatTypes.RecordedGreeting;
             oGreeting.TimeExpiresSetNull();
 
             res = oGreeting.Update();
@@ -281,30 +274,30 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success, "Failed updating the greeting wav file for the alternate greeting:" + res);
 
             //use static greeting stream to set wav file instead
-            res = GreetingStreamFile.SetGreetingWavFile(_connectionServer, _tempHandler.ObjectId, "Alternate", 1033, "Dummy.wav", true);
+            res = GreetingStreamFile.SetGreetingWavFile(_connectionServer, _tempHandler.ObjectId,GreetingTypes.Alternate, 1033, "Dummy.wav", true);
             Assert.IsTrue(res.Success, "Updating voice name on new call handler failed: " + res);
 
             //upload the wav file again, this time using an instance of the GreetingStreamFile object
-            res = GreetingStreamFile.GetGreetingStreamFile(_connectionServer, _tempHandler.ObjectId, "Alternate", 1033, out oStream);
+            res = GreetingStreamFile.GetGreetingStreamFile(_connectionServer, _tempHandler.ObjectId, GreetingTypes.Alternate, 1033, out oStream);
             Assert.IsTrue(res.Success, "Failed to create GreetingStreamFile object" + res);
 
             res = oStream.SetGreetingWavFile("Dummy.wav", true);
             Assert.IsTrue(res.Success, "Failed to upload WAV file via GreetingStreamFile instance" + res);
 
             //check some failure resuls for GreetingStreamFile static calls while we're here since we know this greeting exists.
-            res = GreetingStreamFile.GetGreetingWavFile(null, "temp.wav", _tempHandler.ObjectId, "Alternate", 1033);
+            res = GreetingStreamFile.GetGreetingWavFile(null, "temp.wav", _tempHandler.ObjectId, GreetingTypes.Alternate, 1033);
             Assert.IsFalse(res.Success, "Null connection server param should fail" + res);
 
-            res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", "", "Alternate", 1033);
+            res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", "", GreetingTypes.Alternate, 1033);
             Assert.IsFalse(res.Success, "Empty call handler object ID param should fail" + res);
 
-            res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", _tempHandler.ObjectId, "Bogus", 1033);
+            res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", _tempHandler.ObjectId, GreetingTypes.Invalid, 1033);
             Assert.IsFalse(res.Success, "Invalid greeting type name should fail" + res);
 
-            res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", _tempHandler.ObjectId, "Alternate", 10);
+            res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", _tempHandler.ObjectId, GreetingTypes.Alternate, 10);
             Assert.IsFalse(res.Success, "Invalid language code should fail" + res);
 
-            res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", _tempHandler.ObjectId, "Alternate", 1033);
+            res = GreetingStreamFile.GetGreetingWavFile(_connectionServer, "temp.wav", _tempHandler.ObjectId, GreetingTypes.Alternate, 1033);
             Assert.IsTrue(res.Success, "Uploading WAV file to greeting via static GreetingStreamFile call failed:"+res);
 
             //get list of all greeting stream files
@@ -313,7 +306,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(oStreams.Count > 0, "Empty list of greeting streams returned");
 
             //create a new greeting and fetch the stream files we just uploaded for it
-            oGreeting = new Greeting(_connectionServer, _tempHandler.ObjectId, "Alternate");
+            oGreeting = new Greeting(_connectionServer, _tempHandler.ObjectId, GreetingTypes.Alternate);
             Assert.IsNotNull(oGreeting, "Failed to create new greeting object");
 
             //fetch the stream back out

@@ -119,13 +119,13 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private string _mediaRemoteServiceEnum;
-        public string MediaRemoteServiceEnum
+        private MediaRemoteServiceEnum _mediaRemoteServiceEnum;
+        public MediaRemoteServiceEnum MediaRemoteServiceEnum
         {
             get { return _mediaRemoteServiceEnum; }
             set
             {
-                _changedPropList.Add("MediaRemoteServiceEnum", value);
+                _changedPropList.Add("MediaRemoteServiceEnum",(int) value);
                 _mediaRemoteServiceEnum = value;
             }
         }
@@ -170,13 +170,13 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private string _skinnyStateMachineEnum;
-        public string SkinnyStateMachineEnum
+        private SkinnyStateMachineEnum _skinnyStateMachineEnum;
+        public SkinnyStateMachineEnum SkinnyStateMachineEnum
         {
             get { return _skinnyStateMachineEnum; }
             set
             {
-                _changedPropList.Add("SkinnyStateMachineEnum", value);
+                _changedPropList.Add("SkinnyStateMachineEnum",(int) value);
                 _skinnyStateMachineEnum = value;
             }
         }
@@ -202,8 +202,6 @@ namespace Cisco.UnityConnection.RestFunctions
                 _displayName = value;
             }
         }
-
-
 
         #endregion
 

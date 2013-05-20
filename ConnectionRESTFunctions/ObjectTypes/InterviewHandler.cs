@@ -124,24 +124,24 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Interview Handler Properties
 
-        private int _afterMessageAction;
-        public int AfterMessageAction
+        private ActionTypes _afterMessageAction;
+        public ActionTypes AfterMessageAction
         {
             get { return _afterMessageAction; }
             set
             {
-                _changedPropList.Add("_afterMessageAction", value);
+                _changedPropList.Add("_afterMessageAction",(int) value);
                 _afterMessageAction = value;
             }
         }
 
-        private string _afterMessageTargetConversation;
-        public string AfterMessageTargetConversation
+        private ConversationNames _afterMessageTargetConversation;
+        public ConversationNames AfterMessageTargetConversation
         {
             get { return _afterMessageTargetConversation; }
             set
             {
-                _changedPropList.Add("AfterMessageTargetConversation", value);
+                _changedPropList.Add("AfterMessageTargetConversation", value.Description());
                 _afterMessageTargetConversation = value;
             }
         }
@@ -240,13 +240,13 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private int _sendUrgentMsg;
-        public int SendUrgentMsg
+        private ModeYesNoAsk _sendUrgentMsg;
+        public ModeYesNoAsk SendUrgentMsg
         {
             get { return _sendUrgentMsg; }
             set
             {
-                _changedPropList.Add("SendUrgentMsg", value);
+                _changedPropList.Add("SendUrgentMsg", (int)value);
                 _sendUrgentMsg = value;
             }
         }

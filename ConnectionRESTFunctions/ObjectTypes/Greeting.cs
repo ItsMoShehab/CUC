@@ -52,7 +52,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pGreetingType">
         /// The greeting rule to fetch (Standard, Alternate, OffHours, Busy, Internal, Error, Holdiay)
         /// </param>
-        public Greeting(ConnectionServer pConnectionServer, string pCallHandlerObjectId, string pGreetingType = ""):this()
+        public Greeting(ConnectionServer pConnectionServer, string pCallHandlerObjectId, GreetingTypes pGreetingType = GreetingTypes.Invalid ):this()
             {
             if (pConnectionServer == null)
             {
@@ -76,7 +76,7 @@ namespace Cisco.UnityConnection.RestFunctions
             TimeExpires = DateTime.Parse("2200/1/1");
 
             //if the user passed in a specific ObjectId then go load that greeting up, otherwise just return an empty instance.
-            if (pGreetingType.Length == 0) return;
+            if (pGreetingType == GreetingTypes.Invalid) return;
 
             //if the GreetingType is passed in then fetch the data on the fly and fill out this instance
             WebCallResult res = GetGreeting(pCallHandlerObjectId, pGreetingType);
@@ -95,7 +95,7 @@ namespace Cisco.UnityConnection.RestFunctions
         #region Fields and Properties
 
         //used for displaying in grids and drop downs
-        public string SelectionDisplayString { get { return GreetingType; } }
+        public string SelectionDisplayString { get { return GreetingType.Description(); } }
 
         //used for displaying/selecting in grids/dropdowns
         public string UniqueIdentifier { get { return ObjectId; } }
@@ -111,29 +111,29 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Greeting Properties
 
-        private int _afterGreetingAction;
+        private ActionTypes _afterGreetingAction;
 
         /// <summary>
         /// type of call action to take, e.g., hang-up, goto another object, etc
         /// 3=Error, 2=Goto, 1=Hangup, 0=Ignore, 5=SkipGreeting, 4=TakeMsg, 6=RestartGreeting, 7=TransferAltContact, 8=RouteFromNextRule
         /// </summary>
-        public int AfterGreetingAction
+        public ActionTypes AfterGreetingAction
         {
             get { return _afterGreetingAction; }
             set
             {
-                _changedPropList.Add("AfterGreetingAction", value);
+                _changedPropList.Add("AfterGreetingAction", (int)value);
                 _afterGreetingAction = value;
             }
         }
 
-        private string _afterGreetingTargetConversation;
-        public string AfterGreetingTargetConversation
+        private ConversationNames _afterGreetingTargetConversation;
+        public ConversationNames AfterGreetingTargetConversation
         {
             get { return _afterGreetingTargetConversation; }
             set
             {
-                _changedPropList.Add("AfterGreetingTargetConversation", value);
+                _changedPropList.Add("AfterGreetingTargetConversation", value.Description());
                 _afterGreetingTargetConversation = value;
             }
         }
@@ -179,7 +179,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// This value cannot be changed after greeting creation.
         /// </summary>
         [JsonProperty]
-        public string GreetingType { get; private set; }
+        public GreetingTypes GreetingType { get; private set; }
 
         private bool _ignoreDigits;
         /// <summary>
@@ -217,18 +217,18 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private int _playWhat;
+        private PlayWhatTypes _playWhat;
 
         /// <summary>
         /// The source for the greeting when this greeting is active.
         /// 2=NoGreeting, 1=RecordedGreeting, 0=SystemGreeting
         /// </summary>
-        public int PlayWhat
+        public PlayWhatTypes PlayWhat
         {
             get { return _playWhat; }
             set
             {
-                _changedPropList.Add("PlayWhat", value);
+                _changedPropList.Add("PlayWhat", (int)value);
                 _playWhat = value;
             }
         }
@@ -328,7 +328,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public static WebCallResult GetGreeting(ConnectionServer pConnectionServer,
                                                         string pCallHandlerObjectId,
-                                                        string pGreetingType,
+                                                        GreetingTypes pGreetingType,
                                                         out  Greeting pGreeting)
         {
             WebCallResult res = new WebCallResult();
@@ -339,6 +339,12 @@ namespace Cisco.UnityConnection.RestFunctions
             if (pConnectionServer == null)
             {
                 res.ErrorText = "Null Connection server object passed to GetGreeting";
+                return res;
+            }
+
+            if (pGreetingType == GreetingTypes.Invalid)
+            {
+                res.ErrorText = "Invalid greeting type passed to GetGreeting";
                 return res;
             }
 
@@ -457,7 +463,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public static WebCallResult UpdateGreeting(ConnectionServer pConnectionServer,
                                                         string pCallHandlerObjectId,
-                                                        string pGreetingType,
+                                                        GreetingTypes pGreetingType,
                                                         ConnectionPropertyList pPropList)
         {
             WebCallResult res = new WebCallResult();
@@ -487,8 +493,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</Greeting>";
 
-            return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, pGreetingType),
-                                            MethodType.PUT,pConnectionServer,strBody,false);
+            return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, 
+                pGreetingType.Description()),MethodType.PUT,pConnectionServer,strBody,false);
 
         }
 
@@ -530,7 +536,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public static WebCallResult UpdateGreetingEnabledStatus(ConnectionServer pConnectionServer,
                                                         string pCallHandlerObjectId,
-                                                        string pGreetingType,
+                                                        GreetingTypes pGreetingType,
                                                         bool pEnabled,
                                                         DateTime? pTillDate = null)
         {
@@ -542,7 +548,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            if (string.IsNullOrEmpty(pCallHandlerObjectId) | string.IsNullOrEmpty(pGreetingType))
+            if (string.IsNullOrEmpty(pCallHandlerObjectId))
             {
                 res.ErrorText = "Empty handler ObjectId or GreetingType passed to ChangeGreetingEnabledStatus";
                 return res;
@@ -550,14 +556,14 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //first make sure the user isn't trying to change the enabled status on the Standard greeting - this will fail since that option needs to 
             //always be enabled on the server - fail it up front and pass back the WebCallResult with this information.
-            if (pGreetingType.Equals("Standard", StringComparison.InvariantCultureIgnoreCase))
+            if (pGreetingType == GreetingTypes.Standard)
             {
                 res.ErrorText = "Attempt made to modify Standard greeting in ChangeGreetingEnabledStatus.";
                 return res;
             }
 
             //error greetings cannot be turned off either
-            if (pGreetingType.Equals("Error", StringComparison.InvariantCultureIgnoreCase))
+            if (pGreetingType == GreetingTypes.Error)
             {
                 res.ErrorText = "Attempt made to modify Error greeting in ChangeGreetingEnabledStatus.";
                 return res;
@@ -613,7 +619,7 @@ namespace Cisco.UnityConnection.RestFunctions
             strBody += "</Greeting>";
 
             return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, 
-                pGreetingType),MethodType.PUT,pConnectionServer,strBody,false);
+                pGreetingType.Description()),MethodType.PUT,pConnectionServer,strBody,false);
         }
 
 
@@ -649,7 +655,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public static WebCallResult SetGreetingWavFile(ConnectionServer pConnectionServer,
                                                         string pSourceLocalFilePath,
                                                         string pCallHandlerObjectId,
-                                                        string pGreetingType,
+                                                        GreetingTypes pGreetingType,
                                                         int pLanguageId,
                                                         bool pConvertToPcmFirst = false)
         {
@@ -695,7 +701,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //new construction - requires 8.5 or later and is done in one step to send the greeting to the server.
             string strGreetingStreamUriPath= string.Format("https://{0}:8443/vmrest/handlers/callhandlers/{1}/greetings/{2}/greetingstreamfiles/{3}/audio",
-                                         pConnectionServer.ServerName, pCallHandlerObjectId, pGreetingType, pLanguageId);
+                                         pConnectionServer.ServerName, pCallHandlerObjectId, pGreetingType.Description(), pLanguageId);
 
             return HTTPFunctions.UploadWavFile(strGreetingStreamUriPath, pConnectionServer, pSourceLocalFilePath);
         }
@@ -789,13 +795,13 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         private static bool DoesGreetingStreamExist(ConnectionServer pConnectionServer,
                                                         string pCallHandlerObjectId,
-                                                        string pGreetingType,
+                                                        GreetingTypes pGreetingType,
                                                         int pLanguageId)
         {
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/greetings/{2}/greetingstreamfiles/{3}",
                                           pConnectionServer.BaseUrl, 
                                           pCallHandlerObjectId, 
-                                          pGreetingType, 
+                                          pGreetingType.Description(), 
                                           pLanguageId);
             
             WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
@@ -865,9 +871,9 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public WebCallResult GetGreeting(string pCallHandlerObjectId, string pGreetingType)
+        public WebCallResult GetGreeting(string pCallHandlerObjectId, GreetingTypes pGreetingType)
         {
-            string strUrl = string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", HomeServer.BaseUrl, pCallHandlerObjectId, pGreetingType);
+            string strUrl = string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", HomeServer.BaseUrl, pCallHandlerObjectId, pGreetingType.Description());
 
             //issue the command to the CUPI interface
             WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");

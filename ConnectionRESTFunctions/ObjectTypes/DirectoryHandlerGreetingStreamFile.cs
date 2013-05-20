@@ -98,7 +98,7 @@ namespace Cisco.UnityConnection.RestFunctions
         #endregion
 
 
-        #region DirectoryHandlerGreetingSTreamFile Properties
+        #region DirectoryHandlerGreetingStreamFile Properties
 
         /// <summary>
         /// Reference to the directory handler that owns this greeting.

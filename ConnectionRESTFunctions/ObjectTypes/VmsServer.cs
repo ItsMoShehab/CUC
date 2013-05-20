@@ -75,7 +75,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// 0  - Primary, 1 – First secondary
         /// </summary>
         [JsonProperty]
-        public int ClusterMemberId { get; private set; }
+        public ClusterMemberId ClusterMemberId { get; private set; }
 
         [JsonProperty]
         public string HostName { get; private set; }
@@ -117,7 +117,7 @@ namespace Cisco.UnityConnection.RestFunctions
         ///Value: 24 Name: Shutdown
         /// </summary>
         [JsonProperty]
-        public int ServerState { get; private set; }
+        public ServerState ServerState { get; private set; }
 
         /// <summary>
         ///Value: 1 Name: DOWN
@@ -129,7 +129,7 @@ namespace Cisco.UnityConnection.RestFunctions
         ///Value: 7 Name: IN_SBR
         /// </summary>
         [JsonProperty]
-        public int ServerDisplayState { get; private set; }
+        public ServerDisplayState ServerDisplayState { get; private set; }
 
         [JsonProperty]
         public bool SubToPerformReplicationRole { get; private set; }

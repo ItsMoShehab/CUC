@@ -441,8 +441,8 @@ namespace ConnectionCUPIFunctionsTest
             res = _tempHandler.Update();
             Assert.IsTrue(res.Success,"Failed to update interview handler display name:"+res);
 
-            _tempHandler.AfterMessageAction = (int)ActionTypes.GoTo;
-            _tempHandler.AfterMessageTargetConversation = ConversationNames.PHInterview.ToString();
+            _tempHandler.AfterMessageAction = ActionTypes.GoTo;
+            _tempHandler.AfterMessageTargetConversation = ConversationNames.PHInterview;
             _tempHandler.AfterMessageTargetHandlerObjectId = _tempHandler.ObjectId;
             res = _tempHandler.Update();
             Assert.IsTrue(res.Success,"Failed to update interview handler after message action");

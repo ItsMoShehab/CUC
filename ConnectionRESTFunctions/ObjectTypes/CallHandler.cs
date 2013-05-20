@@ -104,26 +104,26 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Call Handler Properties
 
-        private int _afterMessageAction;
+        private ActionTypes _afterMessageAction;
         /// <summary>
         /// 0 =Ignore , 1=Hangup,2=Goto, 3=Error, 5=SkipGreeting, 4=TakeMsg, 6=RestartGreeting, 7=TransferAltContact, 8=RouteFromNextRule
         /// </summary>
-        public int AfterMessageAction { 
+        public ActionTypes AfterMessageAction { 
             get { return _afterMessageAction; } 
             set
             {
-                _changedPropList.Add("AfterMessageAction",value);
+                _changedPropList.Add("AfterMessageAction", (int)value);
                 _afterMessageAction = value;
             } 
         }
 
-        private string _afterMessageTargetConversation;
-        public string AfterMessageTargetConversation
+        private ConversationNames _afterMessageTargetConversation;
+        public ConversationNames AfterMessageTargetConversation
         {
             set 
             {
                 _afterMessageTargetConversation = value;
-                _changedPropList.Add("AfterMessageTargetConversation", value);
+                _changedPropList.Add("AfterMessageTargetConversation", value.Description());
             }
             get { return _afterMessageTargetConversation; }
         }
@@ -309,26 +309,26 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private int _playAfterMessage;
-        public int PlayAfterMessage
+        private PlayAfterMessageTypes _playAfterMessage;
+        public PlayAfterMessageTypes PlayAfterMessage
         {
             get { return _playAfterMessage; }
             set
             {
                 _playAfterMessage = value;
-                _changedPropList.Add("PlayAfterMessage", value);
+                _changedPropList.Add("PlayAfterMessage", (int)value);
             }
         }
 
 
-        private int _playPostGreetingRecording;
-        public int PlayPostGreetingRecording
+        private PlayPostGreetingRecordingTypes _playPostGreetingRecording;
+        public PlayPostGreetingRecordingTypes PlayPostGreetingRecording
         {
             get { return _playPostGreetingRecording; }
             set
             {
                 _playPostGreetingRecording = value;
-                _changedPropList.Add("PlayPostGreetingRecording", value);
+                _changedPropList.Add("PlayPostGreetingRecording", (int)value);
             }
         }
 
@@ -403,17 +403,17 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
 
-        private int _sendPrivateMsg;
+        private ModeYesNoAsk _sendPrivateMsg;
         /// <summary>
         /// A flag indicating whether an unidentified caller can mark a message as secure.
         /// </summary>
-        public int SendPrivateMsg
+        public ModeYesNoAsk SendPrivateMsg
         {
             get { return _sendPrivateMsg; }
             set
             {
                 _sendPrivateMsg = value;
-                _changedPropList.Add("SendPrivateMsg", value);
+                _changedPropList.Add("SendPrivateMsg",(int) value);
             }
         }
 
@@ -432,18 +432,18 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private int _sendUrgentMsg;
+        private ModeYesNoAsk _sendUrgentMsg;
         /// <summary>
         /// A flag indicating whether an unidentified caller can mark a message as urgent.
         /// 1=Always, 2=Ask, 0=Never
         /// </summary>
-        public int SendUrgentMsg
+        public ModeYesNoAsk SendUrgentMsg
         {
             get { return _sendUrgentMsg; }
             set
             {
                 _sendUrgentMsg = value;
-                _changedPropList.Add("SendUrgentMsg", value);
+                _changedPropList.Add("SendUrgentMsg",(int) value);
             }
         }
 
@@ -1442,7 +1442,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public WebCallResult GetTransferOption(string pTransferOptionType, out TransferOption pTransferOption)
+        public WebCallResult GetTransferOption(TransferOptionTypes pTransferOptionType, out TransferOption pTransferOption)
         {
             WebCallResult res;
 
@@ -1465,8 +1465,7 @@ namespace Cisco.UnityConnection.RestFunctions
             
             foreach (TransferOption oOption in _transferOptions)
             {
-                //do a case insensitive search just for grins
-                if (oOption.TransferOptionType.Equals(pTransferOptionType,StringComparison.InvariantCultureIgnoreCase))
+                if (oOption.TransferOptionType == pTransferOptionType)
                 {
                     pTransferOption = oOption;
                     res.Success = true;
@@ -1567,7 +1566,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public WebCallResult GetGreeting(string pGreetingType, out Greeting pGreeting)
+        public WebCallResult GetGreeting(GreetingTypes pGreetingType, out Greeting pGreeting)
         {
             WebCallResult res;
 
@@ -1591,7 +1590,7 @@ namespace Cisco.UnityConnection.RestFunctions
             foreach (Greeting oGreeting in _greetings)
             {
                 //do a case insensitive search just for grins
-                if (oGreeting.GreetingType.Equals(pGreetingType, StringComparison.InvariantCultureIgnoreCase))
+                if (oGreeting.GreetingType == pGreetingType)
                 {
                     pGreeting = oGreeting;
                     res.Success = true;

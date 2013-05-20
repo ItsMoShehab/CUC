@@ -11,6 +11,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -32,7 +34,8 @@ namespace Cisco.UnityConnection.RestFunctions
         SkipGreeting,
         RestartGreeting,
         TransferToAlternateContactNumber,
-        RouteFromNextCallRoutingRule
+        RouteFromNextCallRoutingRule,
+        Invalid=99
     }
 
     /// <summary>
@@ -75,6 +78,7 @@ namespace Cisco.UnityConnection.RestFunctions
         UserAdded10
     }
 
+    public enum CcmIdType{EndUser, ApplicationUser, DirectoryNumber, LdapUser, InactiveLdapUser}
 
     /// <summary>
     /// The clock mode for users can be whatever the system default setting is, 12 hour (AM/PM) or 24 hour mode.
@@ -85,6 +89,8 @@ namespace Cisco.UnityConnection.RestFunctions
         HourClock12,
         HourClock24
     }
+
+    public enum ClusterMemberId {Primary, Secondary}
 
     /// <summary>
     /// The ConnectionObjectPropertyPair is a very simple name/value pair construct that gets used for passing lists of property values 
@@ -269,23 +275,6 @@ namespace Cisco.UnityConnection.RestFunctions
         UnityContact = 807,
     }
 
-    public enum RoutingRuleType { Unknown, Direct, Forwarded, System }
-
-    public enum RoutingRuleFlag { Immutable, Deletable, Editable, EditableAndDeletable }
-
-    public enum RoutintRuleActionType { Ignore, Hangup, Goto, Error, TakeMsg, SkipGreeting, RestartGreeting, TransferAtContact, RouteFromNextRule }
-
-    public enum RoutingRuleCallType { Internal, External, Both }
-
-    public enum RoutingRuleState { Active, Inactive, Invalid }
-
-    public enum RoutingRuleConditionOperator
-    {
-        Invalid, CallingNumber, DialedNumber, ForwardingStation, Origin, PortId, Reason,Schedule, TrunkId, PhoneSystem
-    }
-
-    public enum RoutingRuleConditionParameter { Invalid=0, In=1, Equals=2, GreaterThan=3, LessThan=4, LessThanOrEqual=5, GreaterThanOrEqual=6 }
-    
     /// <summary>
     /// Definitions of the langauge type enum value from the data dictionary
     /// </summary>
@@ -311,10 +300,13 @@ namespace Cisco.UnityConnection.RestFunctions
         GreetingsAdministrator,
         SubSignIn,
         SubSysTransfer,
-        SystemTransfer
+        SystemTransfer,
+        ConvHotelCheckedOut,
+        ConvCvmMboxReset,
+        EasySignIn,
+        TransferAltContactNumber,
+        Invalid
     }
-
-   
 
     /// <summary>
     /// Credential types used by CUPI (3=GUI Password, 4 = Phone PIN.  Other types (Domino, Windows...) do not get used in CUPI.
@@ -325,7 +317,16 @@ namespace Cisco.UnityConnection.RestFunctions
         Pin = 4
     }
 
-    
+    public enum CxnSortOrder { Lifo = 1, Fifo = 2 }
+
+    /// <summary>
+    /// Destination types for Unity Connection locations
+    /// </summary>
+    public enum DestinationType {Unknown =0, Connection=1, Unity =2, Bridge = 7, Vpim=8, Branch=9}
+
+    public enum DirectoryHandlerSearchScope{Vms, DialingDomain, Global, Location, DistributionList, Cos, SearchSpace, Inherit, Invalid}
+
+    public enum DisplayNameRule {FirstLast=1, LastFirst=2}
 
     /// <summary>
     /// For human readable output of distribution list member types
@@ -338,18 +339,24 @@ namespace Cisco.UnityConnection.RestFunctions
         DistributionList
     }
 
+    public enum EncryptionType{Unknown, HashMd5, HashSha1,HashIms, Reversible, None}
+
     /// <summary>
     /// The 7 types of greetings allowed in Connection
     /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum GreetingTypes
     {
         Standard,
+        [EnumMember(Value = "Off Hours")]
+        [Description("Off Hours")]
         OffHours,
         Alternate,
         Busy,
         Holiday,
         Internal,
-        Error
+        Error,
+        Invalid
     }
 
     /// <summary>
@@ -539,6 +546,14 @@ namespace Cisco.UnityConnection.RestFunctions
         EnglishIndian = 16393,
     }
 
+    public enum LdapType {None, Sync, Authenticate, Unknown, Inactive}
+    
+    public enum MediaRemoteServiceEnum{AsrMediaServer=105,CCM=100, CcmAxl=103, CcmTftp=101,Pimg=104,SipProxy=102,TtsMediaServer=106}
+
+    /// <summary>
+    /// Used in many places such as holding mode, mark private, mark setcure etc...
+    /// </summary>
+    public enum ModeYesNoAsk { No, Yes, Ask }
 
     /// <summary>
     /// List of notification device types.  Be aware that MP3 is a defined type but is not supported or used in Connection.
@@ -552,7 +567,6 @@ namespace Cisco.UnityConnection.RestFunctions
         Sms = 6,
         Smtp = 4
     }
-
 
     /// <summary>
     /// All possible event notification types that can be set on a notificaiton device.  Note that you cannot mix "AllMessage" and other types
@@ -569,6 +583,17 @@ namespace Cisco.UnityConnection.RestFunctions
         UrgentDispatchMessage,
     }
 
+
+    /// <summary>
+    /// Used for playing the "sent message" prompt referenced by the post greeting recording
+    /// </summary>
+    public enum PlayAfterMessageTypes{No, Default, Recorded}
+    
+    /// <summary>
+    /// Setting for handler indicating if post greetin
+    /// </summary>
+    public enum PlayPostGreetingRecordingTypes {Never, Always, ExternalCallersOnly}
+
     /// <summary>
     /// Greetings setting to determine which greeting plays.
     /// 2=NoGreeting, 1=RecordedGreeting, 0=SystemGreeting
@@ -579,6 +604,8 @@ namespace Cisco.UnityConnection.RestFunctions
         RecordedGreeting,
         NoGreeting
     }
+
+    public enum PreferredTransport { Ipv4, Ipv6, Ipv4V6 }
 
     /// <summary>
     /// Make the private list member type enum more human readable in output.
@@ -591,10 +618,66 @@ namespace Cisco.UnityConnection.RestFunctions
         PrivateList
     }
 
+    public enum ResetStatusEnum{NotRequired=0, Required=100, InProgress=101}
+
+    public enum RoutingRuleType { Unknown, Direct, Forwarded, System }
+
+    public enum RoutingRuleFlag { Immutable, Deletable, Editable, EditableAndDeletable }
+
+    public enum RoutintRuleActionType { Ignore, Hangup, Goto, Error, TakeMsg, SkipGreeting, RestartGreeting, TransferAtContact, RouteFromNextRule }
+
+    public enum RoutingRuleCallType { Internal, External, Both }
+
+    public enum RoutingRuleState { Active, Inactive, Invalid }
+
+    public enum RoutingRuleConditionOperator
+    {
+        Invalid, CallingNumber, DialedNumber, ForwardingStation, Origin, PortId, Reason, Schedule, TrunkId, PhoneSystem
+    }
+
+    public enum RoutingRuleConditionParameter { Invalid = 0, In = 1, Equals = 2, GreaterThan = 3, LessThan = 4, LessThanOrEqual = 5, GreaterThanOrEqual = 6 }
+
     /// <summary>
     /// A schedule can be be in one of 3 states - active (on) inactive (off) or active for a holiday.
     /// </summary>
     public enum ScheduleState { INACTIVE, ACTIVE, HOLIDAY }
+
+    public enum SendMessageOnHangup {Discard, Send, Save}
+    
+    public enum ServerDisplayState {Unknown, Down, Initalizing, Primary, Secondary, Idle, InDbSnc, InSbr}
+
+    public enum ServerState
+    {
+        Pri_Init,
+        Pri_Active,
+        Pri_Act_Secondary,
+        Pri_Idle,
+        Pri_Failover,
+        Pri_Takeover,
+        Pri_SBR,
+        Sec_Init,
+        Sec_Active,
+        Sec_Act_Primary,
+        Sec_Idle,
+        Sec_Takeover,
+        Sec_Failover,
+        Sec_SBR,
+        Db_Sync,
+        Set_Peer_Idle,
+        Undefined,
+        Pri_Active_Disconnected,
+        Pri_Connecting,
+        Pri_Choose_Role,
+        Pri_Single_Server,
+        Sec_Act_Primary_Disconnected,
+        Sec_Connecting,
+        Sec_Choose_Role,
+        Shutdown
+    }
+
+    public enum SipTlsModes {Authenticated=10, Encrypted=11}
+
+    public enum SipTransportEnum {Tcp=11, Udp=10}
 
     /// <summary>
     /// SCCP ports can be configured for 1 of 3 security modes
@@ -606,12 +689,15 @@ namespace Cisco.UnityConnection.RestFunctions
         Encrypted
     }
 
+    public enum SkinnyStateMachineEnum {Ccm=10, Ccme=20}
+
     /// <summary>
     /// All the valid conversations a subscriber can be assigned to for their inbox conversation (i.e. what they hear when they call 
     /// in to check messages).  This list has remained static since 7.0(2) thorugh 8.6.
     /// Note, the naming convention on these values must remain as is with underscores or they will not match what comes out of the 
     /// database for string matching.
     /// </summary>
+     [JsonConverter(typeof(StringEnumConverter))]
     public enum SubscriberConversationTui
     {
         SubMenu,
@@ -629,14 +715,20 @@ namespace Cisco.UnityConnection.RestFunctions
         SubMenuOpt1
     }
 
+     public enum TenantAttributeType { Partition, PhoneSystem, Cos, ScheduleSet }
+
     /// <summary>
     /// The 3 transfer option types in Connection
     /// </summary>
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum TransferOptionTypes
     {
         Standard,
+        [EnumMember(Value = "Off Hours")]
+        [Description("Off Hours")]
         OffHours,
-        Alternate
+        Alternate,
+        Invalid
     }
 
     
@@ -656,8 +748,8 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public enum TransferActionTypes
     {
-        PlayGreeting,
-        Transfer
+        Transfer,
+        PlayGreeting
     }
 
     /// <summary>

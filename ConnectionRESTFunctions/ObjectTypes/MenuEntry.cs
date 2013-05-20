@@ -106,17 +106,17 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region MenuEntry Properties
 
-        private int _action;
+        private ActionTypes _action;
         /// <summary>
         /// The type of call action to take, e.g., hang-up, goto another object, etc
         /// 3=Error, 2=Goto, 1=Hangup, 0=Ignore, 5=SkipGreeting, 4=TakeMsg, 6=RestartGreeting, 7=TransferAltContact, 8=RouteFromNextRule
         /// </summary>
-        public int Action
+        public ActionTypes Action
         {
             get { return _action; }
             set
             {
-                _changedPropList.Add("Action", value);
+                _changedPropList.Add("Action",(int) value);
                 _action = value;
             }
         }
@@ -144,16 +144,16 @@ namespace Cisco.UnityConnection.RestFunctions
         [JsonProperty]
         public string ObjectId { get; private set; }
 
-        private string _targetConversation;
+        private ConversationNames _targetConversation;
         /// <summary>
         /// The name of the conversation to which the caller is routed
         /// </summary>
-        public string TargetConversation
+        public ConversationNames TargetConversation
         {
             get { return _targetConversation; }
             set
             {
-                _changedPropList.Add("TargetConversation", value);
+                _changedPropList.Add("TargetConversation", value.Description());
                 _targetConversation = value;
             }
         }
@@ -196,17 +196,17 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private int _transferType;
+        private TransferTypes _transferType;
         /// <summary>
         /// The type of call transfer Cisco Unity Connection will perform - supervised or unsupervised (also referred to as "Release to Switch" transfer).
         /// 1=Supervised, 0=Unsupervised
         /// </summary>
-        public int TransferType
+        public TransferTypes TransferType
         {
             get { return _transferType; }
             set
             {
-                _changedPropList.Add("TransferType", value);
+                _changedPropList.Add("TransferType",(int) value);
                 _transferType = value;
             }
         }
