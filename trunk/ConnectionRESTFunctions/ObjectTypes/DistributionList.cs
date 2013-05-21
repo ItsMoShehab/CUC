@@ -386,7 +386,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pDistributionLists = HTTPFunctions.GetObjectsFromJson<DistributionList>(res.ResponseText);
 
-            if (pDistributionLists == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pDistributionLists == null || (pDistributionLists.Count == 1 && string.IsNullOrEmpty(pDistributionLists[0].ObjectId)))
             {
                 pDistributionLists = new List<DistributionList>();
                 return res;

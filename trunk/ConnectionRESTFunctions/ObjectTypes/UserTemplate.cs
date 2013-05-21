@@ -2537,7 +2537,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pUserTemplates = HTTPFunctions.GetObjectsFromJson<UserTemplate>(res.ResponseText);
 
-            if (pUserTemplates == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pUserTemplates == null || (pUserTemplates.Count == 1 && string.IsNullOrEmpty(pUserTemplates[0].ObjectId)))
             {
                 pUserTemplates = new List<UserTemplate>();
                 return res;

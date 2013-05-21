@@ -415,7 +415,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pGreetingStreamFiles = HTTPFunctions.GetObjectsFromJson<GreetingStreamFile>(res.ResponseText);
 
-            if (pGreetingStreamFiles == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pGreetingStreamFiles == null || (pGreetingStreamFiles.Count == 1 && string.IsNullOrEmpty(pGreetingStreamFiles[0].StreamFile)))
             {
                 pGreetingStreamFiles = new List<GreetingStreamFile>();
                 return res;

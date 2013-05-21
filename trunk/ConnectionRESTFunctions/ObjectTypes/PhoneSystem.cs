@@ -555,7 +555,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pPhoneSystems = HTTPFunctions.GetObjectsFromJson<PhoneSystem>(res.ResponseText);
 
-            if (pPhoneSystems == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pPhoneSystems == null || (pPhoneSystems.Count == 1 && string.IsNullOrEmpty(pPhoneSystems[0].ObjectId)))
             {
                 pPhoneSystems = new List<PhoneSystem>();
                 return res;
@@ -843,7 +844,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pAssociations = HTTPFunctions.GetObjectsFromJson<PhoneSystemAssociation>(res.ResponseText);
 
-            if (pAssociations == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pAssociations == null || (pAssociations.Count == 1 && string.IsNullOrEmpty(pAssociations[0].Alias)))
             {
                 pAssociations = new List<PhoneSystemAssociation>();
             }

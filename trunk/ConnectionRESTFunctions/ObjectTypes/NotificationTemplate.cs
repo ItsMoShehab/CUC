@@ -220,8 +220,10 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pTemplates = HTTPFunctions.GetObjectsFromJson<NotificationTemplate>(res.ResponseText);
 
-            if (pTemplates == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pTemplates == null || (pTemplates.Count == 1 && string.IsNullOrEmpty(pTemplates[0].NotificationTemplateId)))
             {
+                pTemplates=new List<NotificationTemplate>();
                 return res;
             }
 

@@ -222,7 +222,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pUsers = HTTPFunctions.GetObjectsFromJson<GlobalUser>(res.ResponseText);
 
-            if (pUsers == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pUsers == null || (pUsers.Count == 1 && string.IsNullOrEmpty(pUsers[0].ObjectId)))
             {
                 pUsers = new List<GlobalUser>();
                 return res;

@@ -271,7 +271,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pAlternateExtensions = HTTPFunctions.GetObjectsFromJson<AlternateExtension>(res.ResponseText);
 
-            if (pAlternateExtensions == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pAlternateExtensions == null||(pAlternateExtensions.Count == 1 && string.IsNullOrEmpty(pAlternateExtensions[0].ObjectId)))
             {
                 pAlternateExtensions = new List<AlternateExtension>();
                 return res;

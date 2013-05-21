@@ -331,7 +331,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pContacts = HTTPFunctions.GetObjectsFromJson<Contact>(res.ResponseText);
 
-            if (pContacts == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pContacts == null || (pContacts.Count == 1 && string.IsNullOrEmpty(pContacts[0].ObjectId)))
             {
                 pContacts = new List<Contact>();
                 return res;
@@ -966,7 +967,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strObjectId = pObjectId;
             if (string.IsNullOrEmpty(pObjectId))
             {
-                strObjectId = GetObjectIdAlias(pAlias);
+                strObjectId = GetObjectIdByAlias(pAlias);
                 if (string.IsNullOrEmpty(strObjectId))
                 {
                     return new WebCallResult
@@ -1019,7 +1020,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// ObjectId of contact if found or empty string if not.
         /// </returns>
-        private string GetObjectIdAlias(string pAlias)
+        private string GetObjectIdByAlias(string pAlias)
         {
             string strUrl = string.Format("{0}contacts/?query=(Alias is {1})", HomeServer.BaseUrl, pAlias);
 

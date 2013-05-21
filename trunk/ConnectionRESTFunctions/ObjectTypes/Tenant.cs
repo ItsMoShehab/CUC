@@ -185,8 +185,9 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pTenants = HTTPFunctions.GetObjectsFromJson<Tenant>(res.ResponseText);
 
-            if (pTenants == null)
+            if (pTenants == null || (pTenants.Count == 1 && string.IsNullOrEmpty(pTenants[0].ObjectId)))
             {
+                pTenants = new List<Tenant>();
                 return res;
             }
 

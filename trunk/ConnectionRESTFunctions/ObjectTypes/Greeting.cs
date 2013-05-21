@@ -290,8 +290,12 @@ namespace Cisco.UnityConnection.RestFunctions
 
         //greeting stream files are fetched on the fly if referenced
         private List<GreetingStreamFile> _greetingStreamFiles;
-        public List<GreetingStreamFile> GetGreetingStreamFiles()
+        public List<GreetingStreamFile> GetGreetingStreamFiles(bool pRefetch=false)
         {
+            if (pRefetch)
+            {
+                _greetingStreamFiles = null;
+            }
             //fetch greeting options only if they are referenced
             if (_greetingStreamFiles == null)
             {

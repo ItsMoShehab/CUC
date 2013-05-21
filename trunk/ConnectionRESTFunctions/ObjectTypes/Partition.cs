@@ -343,7 +343,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pPartitions = HTTPFunctions.GetObjectsFromJson<Partition>(res.ResponseText);
 
-            if (pPartitions == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pPartitions == null || (pPartitions.Count == 1 && string.IsNullOrEmpty(pPartitions[0].ObjectId)))
             {
                 pPartitions = new List<Partition>();
                 return res;

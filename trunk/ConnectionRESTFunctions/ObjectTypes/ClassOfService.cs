@@ -736,7 +736,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pClassOfServices = HTTPFunctions.GetObjectsFromJson<ClassOfService>(res.ResponseText,"cos");
 
-            if (pClassOfServices == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pClassOfServices == null || (pClassOfServices.Count == 1 && string.IsNullOrEmpty(pClassOfServices[0].ObjectId)))
             {
                 pClassOfServices = new List<ClassOfService>();
                 return res;

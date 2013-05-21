@@ -242,7 +242,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pRoles = HTTPFunctions.GetObjectsFromJson<Role>(res.ResponseText);
 
-            if (pRoles == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pRoles == null || (pRoles.Count == 1 && string.IsNullOrEmpty(pRoles[0].ObjectId)))
             {
                 pRoles = new List<Role>();
                 return res;

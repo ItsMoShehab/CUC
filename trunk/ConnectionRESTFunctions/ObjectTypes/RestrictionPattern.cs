@@ -247,7 +247,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pRestrictionPatterns = HTTPFunctions.GetObjectsFromJson<RestrictionPattern>(res.ResponseText);
 
-            if (pRestrictionPatterns == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pRestrictionPatterns == null || (pRestrictionPatterns.Count == 1 && string.IsNullOrEmpty(pRestrictionPatterns[0].ObjectId)))
             {
                 pRestrictionPatterns = new List<RestrictionPattern>();
                 return res;

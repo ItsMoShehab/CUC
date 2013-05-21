@@ -627,7 +627,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
                 pDirectoryHandlers = HTTPFunctions.GetObjectsFromJson<DirectoryHandler>(res.ResponseText);
 
-                if (pDirectoryHandlers == null)
+                //special case - Json.Net always creates an object even when there's no data for it.
+                if (pDirectoryHandlers == null || (pDirectoryHandlers.Count == 1 && string.IsNullOrEmpty(pDirectoryHandlers[0].ObjectId)))
                 {
                     return res;
                 }

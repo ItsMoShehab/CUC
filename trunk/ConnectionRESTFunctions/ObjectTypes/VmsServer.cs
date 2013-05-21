@@ -261,7 +261,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pServers = HTTPFunctions.GetObjectsFromJson<VmsServer>(res.ResponseText);
 
-            if (pServers == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pServers == null || (pServers.Count == 1 && string.IsNullOrEmpty(pServers[0].ObjectId)))
             {
                 pServers = new List<VmsServer>();
                 return res;

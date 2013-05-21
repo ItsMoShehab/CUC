@@ -350,7 +350,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pInterviewHandlers = HTTPFunctions.GetObjectsFromJson<InterviewHandler>(res.ResponseText);
 
-            if (pInterviewHandlers == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pInterviewHandlers == null || (pInterviewHandlers.Count == 1 && string.IsNullOrEmpty(pInterviewHandlers[0].ObjectId)))
             {
                 pInterviewHandlers = new List<InterviewHandler>();
                 return res;

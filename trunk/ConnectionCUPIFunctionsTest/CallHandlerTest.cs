@@ -301,7 +301,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success, "Uploading WAV file to greeting via static GreetingStreamFile call failed:"+res);
 
             //get list of all greeting stream files
-            List<GreetingStreamFile> oStreams = oGreeting.GetGreetingStreamFiles();
+            List<GreetingStreamFile> oStreams = oGreeting.GetGreetingStreamFiles(true);
             Assert.IsNotNull(oStreams, "Null list of greeting streams returned from greeting streams fetch");
             Assert.IsTrue(oStreams.Count > 0, "Empty list of greeting streams returned");
 

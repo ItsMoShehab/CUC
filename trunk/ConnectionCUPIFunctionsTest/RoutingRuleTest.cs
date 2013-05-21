@@ -236,34 +236,34 @@ namespace ConnectionCUPIFunctionsTest
              RoutingRuleCondition oRule;
 
              var res = RoutingRuleCondition.AddRoutingRuleCondition(null, "objectId",
-                                                                    RoutingRuleConditionOperator.ForwardingStation,
-                                                                    RoutingRuleConditionParameter.Equals, "value",out oRule);
+                                                                    RoutingRuleConditionOperator.Equals,
+                                                                    RoutingRuleConditionParameter.ForwardingStation, "value", out oRule);
              Assert.IsFalse(res.Success, "Calling AddRoutingRuleCondition with null ConnectionServer should fail");
 
              res = RoutingRuleCondition.AddRoutingRuleCondition(_connectionServer, "",
-                                                                    RoutingRuleConditionOperator.ForwardingStation,
-                                                                    RoutingRuleConditionParameter.Equals, "value", out oRule);
+                                                                    RoutingRuleConditionOperator.Equals,
+                                                                    RoutingRuleConditionParameter.ForwardingStation, "value", out oRule);
              Assert.IsFalse(res.Success, "Calling AddRoutingRuleCondition with empty objectId should fail");
 
              res = RoutingRuleCondition.AddRoutingRuleCondition(_connectionServer, "objectId",
-                                                       RoutingRuleConditionOperator.ForwardingStation,
-                                                       RoutingRuleConditionParameter.Equals, "value", out oRule);
+                                                       RoutingRuleConditionOperator.Equals    ,
+                                                       RoutingRuleConditionParameter.ForwardingStation, "value", out oRule);
              Assert.IsFalse(res.Success, "Calling AddRoutingRuleCondition with invalid objectId should fail");
 
 
              res = RoutingRuleCondition.AddRoutingRuleCondition(_connectionServer, "objectId",
                                                                     RoutingRuleConditionOperator.Invalid,
-                                                                    RoutingRuleConditionParameter.Equals, "value", out oRule);
+                                                                    RoutingRuleConditionParameter.ForwardingStation, "value", out oRule);
              Assert.IsFalse(res.Success, "Calling AddRoutingRuleCondition with invalid operator should fail");
 
              res = RoutingRuleCondition.AddRoutingRuleCondition(_connectionServer, "objectId",
-                                                                    RoutingRuleConditionOperator.ForwardingStation,
+                                                                    RoutingRuleConditionOperator.Equals,
                                                                     RoutingRuleConditionParameter.Invalid, "value", out oRule);
              Assert.IsFalse(res.Success, "Calling AddRoutingRuleCondition with invalid parameter should fail");
 
              res = RoutingRuleCondition.AddRoutingRuleCondition(_connectionServer, "objectId",
-                                                                    RoutingRuleConditionOperator.ForwardingStation,
-                                                                    RoutingRuleConditionParameter.Equals, "", out oRule);
+                                                                    RoutingRuleConditionOperator.Equals,
+                                                                    RoutingRuleConditionParameter.ForwardingStation, "", out oRule);
              Assert.IsFalse(res.Success, "Calling AddRoutingRuleCondition with empty value should fail");
 
          }
@@ -351,8 +351,8 @@ namespace ConnectionCUPIFunctionsTest
              res = _tempRule.Update();
              Assert.IsTrue(res.Success,"Failed to update routing rule:"+res);
 
-             res= _tempRule.AddRoutingRuleCondition(RoutingRuleConditionOperator.CallingNumber,
-                                               RoutingRuleConditionParameter.Equals, "1234");
+             res= _tempRule.AddRoutingRuleCondition(RoutingRuleConditionOperator.Equals,
+                                               RoutingRuleConditionParameter.CallingNumber, "1234");
 
              Assert.IsTrue(res.Success,"Failed to add a routing rule condition to rule:"+res);
 
@@ -380,8 +380,8 @@ namespace ConnectionCUPIFunctionsTest
              res = oCondition.Delete();
              Assert.IsTrue(res.Success, "Failed to delete condition:" + res);
 
-             res = RoutingRuleCondition.AddRoutingRuleCondition(_connectionServer,_tempRule.ObjectId, 
-                 RoutingRuleConditionOperator.DialedNumber,RoutingRuleConditionParameter.GreaterThan, "1234",out oTestCondition);
+             res = RoutingRuleCondition.AddRoutingRuleCondition(_connectionServer,_tempRule.ObjectId,
+                 RoutingRuleConditionOperator.GreaterThan, RoutingRuleConditionParameter.DialedNumber, "1234", out oTestCondition);
              Assert.IsTrue(res.Success,"Failed to create new routing rule condition:"+res);
 
              res = oTestCondition.Delete();

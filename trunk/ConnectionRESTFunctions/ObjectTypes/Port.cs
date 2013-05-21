@@ -403,7 +403,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pPorts = HTTPFunctions.GetObjectsFromJson<Port>(res.ResponseText);
 
-            if (pPorts == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pPorts == null || (pPorts.Count == 1 && string.IsNullOrEmpty(pPorts[0].ObjectId)))
             {
                 pPorts = new List<Port>();
                 return res;

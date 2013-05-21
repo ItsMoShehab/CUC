@@ -121,12 +121,8 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-
         [JsonProperty]
         public int RuleIndex { get; private set; }
-
-        
-       
 
         [JsonProperty]
         public RoutingRuleFlag Flags { get; private set; }
@@ -316,10 +312,13 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pRoutingRules = HTTPFunctions.GetObjectsFromJson<RoutingRule>(res.ResponseText);
 
-            if (pRoutingRules == null)
+            if (pRoutingRules==null ||(pRoutingRules.Count == 1 && string.IsNullOrEmpty(pRoutingRules[0].ObjectId)))
             {
+                //special case - Json.Net always creates an object even when there's no data for it.
+                pRoutingRules=new List<RoutingRule>();
                 return res;
             }
+
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
@@ -598,6 +597,55 @@ namespace Cisco.UnityConnection.RestFunctions
 
         }
 
+        /// <summary>
+        /// To reorder routing rules you must list ALL the routing rules in the order you wish them to be and it's done as 
+        /// a single operation.  
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Connection server being updated
+        /// </param>
+        /// <param name="pParams">
+        /// List of the routing rule ObjectIds (all of them) in the order you want the rules sorted
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResult class with details of the output of the operation
+        /// </returns>
+        public static WebCallResult UpdateOrderOfAllRoutingRules(ConnectionServer pConnectionServer,
+                                                                 params string[] pParams)
+        {
+            if (pConnectionServer == null)
+            {
+                return new WebCallResult
+                    {
+                        Success = false,
+                        ErrorText = "Null ConnectionServer passed to UpdateOrderOfAllRoutingRules"
+                    };
+            }
+
+            if (pParams == null || pParams.Length < 1)
+            {
+                return new WebCallResult
+                {
+                    Success = false,
+                    ErrorText = "Empty parameter list passed to UpdateOrderOfAllRoutingRules"
+                };
+
+            }
+
+            StringBuilder strBody = new StringBuilder("<RoutingRules>");
+
+            foreach (string pParam in pParams)
+            {
+                strBody.AppendFormat("<{0}><ObjectId>{1}</ObjectId></{0}>", "RoutingRule", pParam);
+            }
+            strBody.AppendFormat("</RoutingRules>");
+
+
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "routingrules", MethodType.PUT,
+                                                 pConnectionServer,
+                                                 strBody.ToString(), false);
+        }
+
 
         #endregion
 
@@ -606,7 +654,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
         public override string ToString()
         {
-            return string.Format("{0} [{1}]", DisplayName, ObjectId);
+            return string.Format("[{2}]: {0} [{1}]", DisplayName, ObjectId,RuleIndex);
         }
 
         /// <summary>
