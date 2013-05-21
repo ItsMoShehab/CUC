@@ -51,6 +51,7 @@
     <Compile Include="AlternateExtensionTest.cs" />
     <Compile Include="CallHandlerTemplateTest.cs" />
     <Compile Include="CallHandlerTest.cs" />
+    <Compile Include="ComboBoxHelperTest.cs" />
     <Compile Include="ConnectionServerTest.cs" />
     <Compile Include="CredentialTest.cs" />
     <Compile Include="DirectoryHandlerTest.cs" />
@@ -72,6 +73,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="RoutingRuleTest.cs" />
     <Compile Include="RtpCodecDefTest.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SmppProviderTest.cs" />
