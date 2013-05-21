@@ -172,6 +172,7 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
+
         [TestMethod]
         public void Tenant_SetTests()
         {

@@ -43,6 +43,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             HomeServer = pConnectionServer;
+            RoutingRuleObjectId = pRoutingRuleObjectId;
 
             //if the user passed in a specific ObjectId or display name then go load that condition up, otherwise just return an empty instance.
             if ((string.IsNullOrEmpty(pObjectId))) return;
@@ -180,8 +181,14 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <summary>
         /// returns a single RoutingRuleCondition object from an ObjectId string passed in.
         /// </summary>
+        /// <param name="pCondition">
+        /// The resulting condition is pulled out on this out param
+        /// </param>
         /// <param name="pConnectionServer">
         /// Connection server that the rule condition is homed on.
+        /// </param>
+        /// <param name="pRoutingRuleObjectId">
+        /// The routing rule that owns teh condition to fetch
         /// </param>
         /// <param name="pObjectId">
         /// The ObjectId of the condition to load
@@ -204,13 +211,13 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //you need an objectID and/or a display name - both being blank is not acceptable
-            if ((pObjectId.Length == 0))
+            if (string.IsNullOrEmpty(pObjectId))
             {
                 res.ErrorText = "Empty objectId passed to GetRoutingRuleCondition";
                 return res;
             }
 
-            if ((pRoutingRuleObjectId.Length == 0))
+            if (string.IsNullOrEmpty(pRoutingRuleObjectId))
             {
                 res.ErrorText = "Empty RoutingRuleObjectId passed to GetRoutingRuleCondition";
                 return res;
@@ -292,15 +299,15 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</RoutingRuleCondition>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "routingrules/"+pRoutingRuleObjectId, MethodType.POST, 
+            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "routingrules/"+pRoutingRuleObjectId+"/routingruleconditions", MethodType.POST, 
                 pConnectionServer, strBody, false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
             {
-                if (res.ResponseText.Contains(@"/vmrest/routingrules/"+pRoutingRuleObjectId+"/"))
+                if (res.ResponseText.Contains(@"/vmrest/routingrules/"+pRoutingRuleObjectId+"/routingruleconditions/"))
                 {
-                    res.ReturnedObjectId = res.ResponseText.Replace(@"/vmrest/routingrules/"+pRoutingRuleObjectId+"/", "").Trim();
+                    res.ReturnedObjectId = res.ResponseText.Replace(@"/vmrest/routingrules/"+pRoutingRuleObjectId+"/routingruleconditions/", "").Trim();
                 }
             }
 
@@ -375,7 +382,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "routingrules/" + pRoutingRuleObjectId+"/"+pObjectId,
+            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "routingrules/" + pRoutingRuleObjectId+"/routingruleconditions/"+pObjectId,
                                             MethodType.DELETE, pConnectionServer, "");
         }
 
@@ -438,7 +445,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 };
             }
 
-            string strUrl = string.Format("{0}routingrules/{1}/{2}", HomeServer.BaseUrl, RoutingRuleObjectId, strObjectId);
+            string strUrl = string.Format("{0}routingrules/{1}/routingruleconditions/{2}", HomeServer.BaseUrl, RoutingRuleObjectId, strObjectId);
 
             //issue the command to the CUPI interface
             WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");

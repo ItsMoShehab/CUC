@@ -110,6 +110,31 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTemp);
         }
 
+        [TestMethod]
+        [ExpectedException(typeof(UnityConnectionRestException))]
+        public void ClassCreationFailure4()
+        {
+            RoutingRuleCondition oTemp = new RoutingRuleCondition(_connectionServer, "bogus", "bogus");
+            Console.WriteLine(oTemp);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void ClassCreationFailure5()
+        {
+            RoutingRuleCondition oTemp = new RoutingRuleCondition(null, "bogus", "bogus");
+            Console.WriteLine(oTemp);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void ClassCreationFailure6()
+        {
+            RoutingRuleCondition oTemp = new RoutingRuleCondition(_connectionServer, "", "bogus");
+            Console.WriteLine(oTemp);
+        }
+
+        
         #endregion
 
 
@@ -187,7 +212,8 @@ namespace ConnectionCUPIFunctionsTest
 
          #endregion
 
-         #region Routing Rule Condition Static Failure Tests
+
+        #region Routing Rule Condition Static Failure Tests
 
          [TestMethod]
          public void StaticMethodFailure_GetRoutingRuleConditions()
@@ -207,36 +233,39 @@ namespace ConnectionCUPIFunctionsTest
          [TestMethod]
          public void StaticMethodFailure_AddRoutingRuleCondition()
          {
+             RoutingRuleCondition oRule;
+
              var res = RoutingRuleCondition.AddRoutingRuleCondition(null, "objectId",
                                                                     RoutingRuleConditionOperator.ForwardingStation,
-                                                                    RoutingRuleConditionParameter.Equals, "value");
+                                                                    RoutingRuleConditionParameter.Equals, "value",out oRule);
              Assert.IsFalse(res.Success, "Calling AddRoutingRuleCondition with null ConnectionServer should fail");
 
              res = RoutingRuleCondition.AddRoutingRuleCondition(_connectionServer, "",
                                                                     RoutingRuleConditionOperator.ForwardingStation,
-                                                                    RoutingRuleConditionParameter.Equals, "value");
+                                                                    RoutingRuleConditionParameter.Equals, "value", out oRule);
              Assert.IsFalse(res.Success, "Calling AddRoutingRuleCondition with empty objectId should fail");
 
              res = RoutingRuleCondition.AddRoutingRuleCondition(_connectionServer, "objectId",
                                                        RoutingRuleConditionOperator.ForwardingStation,
-                                                       RoutingRuleConditionParameter.Equals, "value");
+                                                       RoutingRuleConditionParameter.Equals, "value", out oRule);
              Assert.IsFalse(res.Success, "Calling AddRoutingRuleCondition with invalid objectId should fail");
 
 
              res = RoutingRuleCondition.AddRoutingRuleCondition(_connectionServer, "objectId",
                                                                     RoutingRuleConditionOperator.Invalid,
-                                                                    RoutingRuleConditionParameter.Equals, "value");
+                                                                    RoutingRuleConditionParameter.Equals, "value", out oRule);
              Assert.IsFalse(res.Success, "Calling AddRoutingRuleCondition with invalid operator should fail");
 
              res = RoutingRuleCondition.AddRoutingRuleCondition(_connectionServer, "objectId",
                                                                     RoutingRuleConditionOperator.ForwardingStation,
-                                                                    RoutingRuleConditionParameter.Invalid, "value");
+                                                                    RoutingRuleConditionParameter.Invalid, "value", out oRule);
              Assert.IsFalse(res.Success, "Calling AddRoutingRuleCondition with invalid parameter should fail");
 
              res = RoutingRuleCondition.AddRoutingRuleCondition(_connectionServer, "objectId",
                                                                     RoutingRuleConditionOperator.ForwardingStation,
-                                                                    RoutingRuleConditionParameter.Equals, "");
+                                                                    RoutingRuleConditionParameter.Equals, "", out oRule);
              Assert.IsFalse(res.Success, "Calling AddRoutingRuleCondition with empty value should fail");
+
          }
          
          [TestMethod]
@@ -273,6 +302,7 @@ namespace ConnectionCUPIFunctionsTest
          }
 
          #endregion
+
 
          #region Live Tests
 
@@ -321,25 +351,41 @@ namespace ConnectionCUPIFunctionsTest
              res = _tempRule.Update();
              Assert.IsTrue(res.Success,"Failed to update routing rule:"+res);
 
-             //cannot yet create conditions via API - coming soon.
-             //res= _tempRule.AddRoutingRuleCondition(RoutingRuleConditionOperator.CallingNumber,
-             //                                  RoutingRuleConditionParameter.Equals, "1234");
+             res= _tempRule.AddRoutingRuleCondition(RoutingRuleConditionOperator.CallingNumber,
+                                               RoutingRuleConditionParameter.Equals, "1234");
 
-             //Assert.IsTrue(res.Success,"Failed to add a routing rule condition to rule:"+res);
+             Assert.IsTrue(res.Success,"Failed to add a routing rule condition to rule:"+res);
 
              List<RoutingRuleCondition> oConditions;
              res = RoutingRuleCondition.GetRoutingRuleConditions(_connectionServer, _tempRule.ObjectId, out oConditions);
              Assert.IsTrue(res.Success,"Failed fetching routing rule conditions:"+res);
-             //Assert.IsTrue(oConditions.Count==1,"1 Condition should be returned, instead count="+oConditions.Count);
+             Assert.IsTrue(oConditions.Count == 1, "1 Condition should be returned, instead count=" + oConditions.Count);
 
-             //RoutingRuleCondition oCondition = oConditions[0];
+             RoutingRuleCondition oCondition = oConditions[0];
 
-             //Console.WriteLine(oCondition.ToString());
-             //Console.WriteLine(oCondition.DumpAllProps("-->"));
+             Console.WriteLine(oCondition.ToString());
+             Console.WriteLine(oCondition.DumpAllProps("-->"));
 
-             //res = oCondition.Delete();
-             //Assert.IsTrue(res.Success,"Failed to delete condition:"+res);
+             //fetch by objectid
+             RoutingRuleCondition oTestCondition;
+             res = RoutingRuleCondition.GetRoutingRuleCondition(out oTestCondition, _connectionServer,
+                                                                oCondition.RoutingRuleObjectId,
+                                                                oCondition.ObjectId);
+             Assert.IsTrue(res.Success,"Failed to fetch routing rule condition using valid ObjectId:"+res);
+             Assert.IsTrue(oTestCondition.ObjectId==oCondition.ObjectId,"Fetched condition does not match ObjectId of existin condition");
 
+             res = oTestCondition.RefetchRoutingRuleConditionData();
+             Assert.IsTrue(res.Success,"Failed to refetch the routing rule condition items:"+res);
+
+             res = oCondition.Delete();
+             Assert.IsTrue(res.Success, "Failed to delete condition:" + res);
+
+             res = RoutingRuleCondition.AddRoutingRuleCondition(_connectionServer,_tempRule.ObjectId, 
+                 RoutingRuleConditionOperator.DialedNumber,RoutingRuleConditionParameter.GreaterThan, "1234",out oTestCondition);
+             Assert.IsTrue(res.Success,"Failed to create new routing rule condition:"+res);
+
+             res = oTestCondition.Delete();
+             Assert.IsTrue(res.Success, "Failed to delete condition:" + res);
          }
 
 
