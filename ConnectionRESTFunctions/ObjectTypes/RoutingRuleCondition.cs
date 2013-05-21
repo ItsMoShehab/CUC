@@ -140,8 +140,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "routingrules/"+pRoutingRuleObjectId, "pageNumber=" + pPageNumber,
-                "rowsPerPage=" + pRowsPerPage);
+            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "routingrules/"+pRoutingRuleObjectId+"/routingruleconditions", 
+                "pageNumber=" + pPageNumber,"rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
             res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
@@ -152,11 +152,10 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that means an error in this case - should always be at least one template
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            //if this is empty that does not mean an error - routing rules don't need conditions
+            if (string.IsNullOrEmpty(res.ResponseText) || (res.TotalObjectCount==0))
             {
                 pRoutingRuleConditions = new List<RoutingRuleCondition>();
-                res.Success = false;
                 return res;
             }
 

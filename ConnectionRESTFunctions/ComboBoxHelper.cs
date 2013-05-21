@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Cisco.UnityConnection.RestFunctions
@@ -38,7 +39,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            if (pObjects == null)
+            if (pObjects == null || !pObjects.Any())
             {
                 res.ErrorText = "Empty list of items passed to FillDropDownWithObjects";
                 return res;
@@ -66,7 +67,10 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //force the first item in the list to be selected - we know there's at least one item in the list at
             //this point so this should be a safe operation
-            pComboBox.SelectedIndex = 0;
+            if (pComboBox.Items.Count > 0)
+            {
+                pComboBox.SelectedIndex = 0;
+            }
             res.Success = true;
             return res;
         }

@@ -1,9 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Xml.Linq;
 using Cisco.UnityConnection.RestFunctions;
-
 using SimpleLogger;
 
 namespace CUPIVerySimple
@@ -18,8 +16,17 @@ namespace CUPIVerySimple
     /// </summary>
     class Program
     {
-        //To keep things simple we'll just do this all in a long Main method here.
-        private static void Main(string[] args)
+        //To keep things simple we'll just do this all in a long method called of main here.
+        private static void Main()
+        {
+            Console.WriteLine("Starting tests");
+            RunTests();
+            Console.WriteLine("Hit enter to continue");
+            Console.ReadLine();
+        }
+
+
+        private static void RunTests()
         {
             //you can attach to multiple different Connection servers an interact with them in the same program easily by just creating
             //new instances of ConnectionServer objects - all objects "know" which server they are associated with.  This example, of course, 
@@ -57,10 +64,6 @@ namespace CUPIVerySimple
 
             //the WebCallResult is the structure returned on most calls into the CUPIFunctions library.
             WebCallResult res;
-            UserFull oUserFull = new UserFull(connectionServer);
-            var oElement = XElement.Parse("<ConversationTui>SubMenu</ConversationTui>");
-            connectionServer.SafeXmlFetch(oUserFull, oElement);
-
 
             //fetch user with alias of "jlindborg" - we will be sending the message from his 
             //mailbox.
@@ -70,6 +73,7 @@ namespace CUPIVerySimple
             if (res.Success == false)
             {
                 Console.WriteLine(res);
+                return;
             }
 
             
