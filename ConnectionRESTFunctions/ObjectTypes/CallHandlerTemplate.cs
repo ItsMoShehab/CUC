@@ -527,7 +527,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pCallHandlerTemplates = HTTPFunctions.GetObjectsFromJson<CallHandlerTemplate>(res.ResponseText);
 
-            if (pCallHandlerTemplates == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pCallHandlerTemplates == null || (pCallHandlerTemplates.Count == 1 && string.IsNullOrEmpty(pCallHandlerTemplates[0].ObjectId)))
             {
                 return res;
             }

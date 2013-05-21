@@ -323,7 +323,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pRestrictionTables = HTTPFunctions.GetObjectsFromJson<RestrictionTable>(res.ResponseText);
 
-            if (pRestrictionTables == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pRestrictionTables == null || (pRestrictionTables.Count == 1 && string.IsNullOrEmpty(pRestrictionTables[0].ObjectId)))
             {
                 pRestrictionTables = new List<RestrictionTable>();
                 return res;

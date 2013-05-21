@@ -790,7 +790,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pUsers = HTTPFunctions.GetObjectsFromJson<UserBase>(res.ResponseText,"User");
 
-            if (pUsers == null)
+            if (pUsers == null || (pUsers.Count == 1 && string.IsNullOrEmpty(pUsers[0].ObjectId)))
             {
                 pUsers = new List<UserBase>();
                 return res;

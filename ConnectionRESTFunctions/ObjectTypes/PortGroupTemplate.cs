@@ -251,7 +251,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pTemplates = HTTPFunctions.GetObjectsFromJson<PortGroupTemplate>(res.ResponseText);
 
-            if (pTemplates == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pTemplates == null || (pTemplates.Count == 1 && string.IsNullOrEmpty(pTemplates[0].ObjectId)))
             {
                 pTemplates = new List<PortGroupTemplate>();
                 return res;

@@ -632,10 +632,13 @@ namespace Cisco.UnityConnection.RestFunctions
 
     public enum RoutingRuleConditionOperator
     {
-        Invalid, CallingNumber, DialedNumber, ForwardingStation, Origin, PortId, Reason, Schedule, TrunkId, PhoneSystem
+        Invalid = 0, In = 1, Equals = 2, GreaterThan = 3, LessThan = 4, LessThanOrEqual = 5, GreaterThanOrEqual = 6
     }
 
-    public enum RoutingRuleConditionParameter { Invalid = 0, In = 1, Equals = 2, GreaterThan = 3, LessThan = 4, LessThanOrEqual = 5, GreaterThanOrEqual = 6 }
+    public enum RoutingRuleConditionParameter
+    {
+        Invalid, CallingNumber, DialedNumber, ForwardingStation, Origin, PortId, Reason, Schedule, TrunkId, PhoneSystem
+    }
 
     /// <summary>
     /// A schedule can be be in one of 3 states - active (on) inactive (off) or active for a holiday.

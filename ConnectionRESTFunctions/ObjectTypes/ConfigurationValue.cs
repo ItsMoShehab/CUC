@@ -173,7 +173,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pConfigurationValues = HTTPFunctions.GetObjectsFromJson<ConfigurationValue>(res.ResponseText);
 
-            if (pConfigurationValues == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pConfigurationValues == null || (pConfigurationValues.Count == 1 && string.IsNullOrEmpty(pConfigurationValues[0].FullName)))
             {
                 pConfigurationValues = new List<ConfigurationValue>();
                 return res;

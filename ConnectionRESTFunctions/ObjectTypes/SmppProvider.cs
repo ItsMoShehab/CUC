@@ -185,7 +185,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pSMppProviders = HTTPFunctions.GetObjectsFromJson<SmppProvider>(res.ResponseText);
 
-            if (pSMppProviders == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pSMppProviders == null || (pSMppProviders.Count == 1 && string.IsNullOrEmpty(pSMppProviders[0].ObjectId)))
             {
                 pSMppProviders = new List<SmppProvider>();
                 return res;

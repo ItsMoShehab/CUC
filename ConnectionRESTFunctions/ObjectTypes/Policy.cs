@@ -229,7 +229,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pPolicies = HTTPFunctions.GetObjectsFromJson<Policy>(res.ResponseText);
 
-            if (pPolicies == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pPolicies == null || (pPolicies.Count == 1 && string.IsNullOrEmpty(pPolicies[0].ObjectId)))
             {
                 pPolicies = new List<Policy>();
                 return res;

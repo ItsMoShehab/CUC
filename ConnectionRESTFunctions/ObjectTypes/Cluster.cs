@@ -114,7 +114,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             Servers = HTTPFunctions.GetObjectsFromJson<Server>(res.ResponseText);
 
-            if (Servers == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (Servers == null || (Servers.Count == 1 && string.IsNullOrEmpty(Servers[0].HostName)))
             {
                 Servers = new List<Server>();
                 return res;

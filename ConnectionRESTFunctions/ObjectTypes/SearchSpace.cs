@@ -466,12 +466,29 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pPartitions = HTTPFunctions.GetObjectsFromJson<Partition>(res.ResponseText);
+            List<SearchSpaceMember> oMembers;
 
-            if (pPartitions == null)
+            oMembers = HTTPFunctions.GetObjectsFromJson<SearchSpaceMember>(res.ResponseText);
+
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (oMembers == null || (oMembers.Count == 1 && string.IsNullOrEmpty(oMembers[0].ObjectId)))
             {
                 pPartitions = new List<Partition>();
                 return res;
+            }
+
+            //create an instance of each partition found in the membership list
+            foreach (var oMember in oMembers)
+            {
+                try
+                {
+                    Partition oPartition = new Partition(pConnectionServer, oMember.PartitionObjectId);
+                    pPartitions.Add(oPartition);
+                }
+                catch (UnityConnectionRestException ex)
+                {
+                    return ex.WebCallResult;
+                }
             }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 

@@ -664,7 +664,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pCallHandlers = HTTPFunctions.GetObjectsFromJson<CallHandler>(res.ResponseText);
 
-            if (pCallHandlers == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pCallHandlers == null || (pCallHandlers.Count == 1 && string.IsNullOrEmpty(pCallHandlers[0].ObjectId)))
             {
                 pCallHandlers = new List<CallHandler>();
                 return res;

@@ -301,7 +301,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pLocations = HTTPFunctions.GetObjectsFromJson<Location>(res.ResponseText,"ConnectionLocation");
 
-            if (pLocations == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pLocations == null || (pLocations.Count == 1 && string.IsNullOrEmpty(pLocations[0].ObjectId)))
             {
                 pLocations = new List<Location>();
                 return res;

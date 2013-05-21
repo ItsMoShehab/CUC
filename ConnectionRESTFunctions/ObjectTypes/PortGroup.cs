@@ -753,7 +753,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pPortGroups = HTTPFunctions.GetObjectsFromJson<PortGroup>(res.ResponseText);
 
-            if (pPortGroups == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pPortGroups == null || (pPortGroups.Count == 1 && string.IsNullOrEmpty(pPortGroups[0].ObjectId)))
             {
                 pPortGroups = new List<PortGroup>();
                 return res;

@@ -359,7 +359,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pScheduleDetails = HTTPFunctions.GetObjectsFromJson<ScheduleDetail>(res.ResponseText);
 
-            if (pScheduleDetails == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pScheduleDetails == null || (pScheduleDetails.Count == 1 && string.IsNullOrEmpty(pScheduleDetails[0].ObjectId)))
             {
                 pScheduleDetails = new List<ScheduleDetail>();
                 return res;

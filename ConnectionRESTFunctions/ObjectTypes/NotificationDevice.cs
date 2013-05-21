@@ -707,7 +707,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pNotificationDevices = HTTPFunctions.GetObjectsFromJson<NotificationDevice>(res.ResponseText);
 
-            if (pNotificationDevices == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pNotificationDevices == null || (pNotificationDevices.Count == 1 && string.IsNullOrEmpty(pNotificationDevices[0].ObjectId)))
             {
                 pNotificationDevices = new List<NotificationDevice>();
                 return res;

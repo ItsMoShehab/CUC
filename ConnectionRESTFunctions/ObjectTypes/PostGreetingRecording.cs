@@ -358,7 +358,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pPostGreetingRecordings = HTTPFunctions.GetObjectsFromJson<PostGreetingRecording>(res.ResponseText);
 
-            if (pPostGreetingRecordings == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pPostGreetingRecordings == null || (pPostGreetingRecordings.Count == 1 && string.IsNullOrEmpty(pPostGreetingRecordings[0].ObjectId)))
             {
                 pPostGreetingRecordings = new List<PostGreetingRecording>();
                 return res;

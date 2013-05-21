@@ -127,7 +127,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pMemberList = HTTPFunctions.GetObjectsFromJson<PrivateListMember>(res.ResponseText);
 
-            if (pMemberList == null)
+            //special case - Json.Net always creates an object even when there's no data for it.
+            if (pMemberList == null || (pMemberList.Count == 1 && string.IsNullOrEmpty(pMemberList[0].ObjectId)))
             {
                 return res;
             }
