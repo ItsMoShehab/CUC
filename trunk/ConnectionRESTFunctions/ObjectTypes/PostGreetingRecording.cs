@@ -177,7 +177,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = HomeServer.BaseUrl + "postgreetingrecordings/" + strObjectId;
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -186,7 +186,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -337,11 +337,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "postgreetingrecordings", 
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "postgreetingrecordings", 
                 "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -356,7 +356,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pPostGreetingRecordings = HTTPFunctions.GetObjectsFromJson<PostGreetingRecording>(res.ResponseText);
+            pPostGreetingRecordings = pConnectionServer.GetObjectsFromJson<PostGreetingRecording>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pPostGreetingRecordings == null || (pPostGreetingRecordings.Count == 1 && string.IsNullOrEmpty(pPostGreetingRecordings[0].ObjectId)))
@@ -510,7 +510,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</PostGreetingRecording>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "postgreetingrecordings", MethodType.POST, pConnectionServer, 
+            res = pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "postgreetingrecordings", MethodType.POST,
                 strBody, false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
@@ -556,8 +556,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "postgreetingrecordings/" + pPostGreetingRecordingObjectId,
-                                            MethodType.DELETE, pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "postgreetingrecordings/" + pPostGreetingRecordingObjectId,
+                                            MethodType.DELETE, "");
         }
 
 
@@ -602,8 +602,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</PostGreetingRecording>";
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "postgreetingrecordings/" + pObjectId, 
-                MethodType.PUT, pConnectionServer, strBody, false);
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "postgreetingrecordings/" + pObjectId, 
+                MethodType.PUT, strBody, false);
         }
 
 
@@ -678,10 +678,11 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //new construction - requires 8.5 or later and is done in one step to send the greeting to the server.
-            string strGreetingStreamUriPath = string.Format("https://{0}:8443/vmrest/postgreetingrecordings/{1}/postgreetingrecordingstreamfiles/{2}/audio",
-                                         pConnectionServer.ServerName, pPostGreetingRecordingObjectId, pLanguageId);
+            string strGreetingStreamUriPath = 
+                string.Format("https://{0}:8443/vmrest/postgreetingrecordings/{1}/postgreetingrecordingstreamfiles/{2}/audio",
+                pConnectionServer.ServerName, pPostGreetingRecordingObjectId, pLanguageId);
 
-            return HTTPFunctions.UploadWavFile(strGreetingStreamUriPath, pConnectionServer, pSourceLocalFilePath);
+            return pConnectionServer.UploadWavFile(strGreetingStreamUriPath, pSourceLocalFilePath);
         }
 
         /// <summary>
@@ -741,7 +742,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.PUT, pConnectionServer, oParams);
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.PUT, oParams);
         }
 
         #endregion

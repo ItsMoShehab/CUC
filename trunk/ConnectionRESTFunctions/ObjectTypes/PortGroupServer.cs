@@ -97,25 +97,25 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region PortGroupServer Properties
 
-        private string _hostOrIPAddress;
-        public string HostOrIPAddress
+        private string _hostOrIpAddress;
+        public string HostOrIpAddress
         {
-            get { return _hostOrIPAddress; }
+            get { return _hostOrIpAddress; }
             set
             {
                 _changedPropList.Add("HostOrIPAddress", value);
-                _hostOrIPAddress = value;
+                _hostOrIpAddress = value;
             }
         }
 
-        private string _hostOrIPAddressV6;
-        public string HostOrIPAddressV6
+        private string _hostOrIpAddressV6;
+        public string HostOrIpAddressV6
         {
-            get { return _hostOrIPAddressV6; }
+            get { return _hostOrIpAddressV6; }
             set
             {
                 _changedPropList.Add("HostOrIPAddressV6", value);
-                _hostOrIPAddressV6 = value;
+                _hostOrIpAddressV6 = value;
             }
         }
 
@@ -267,7 +267,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}portgroups/{1}/portgroupservers/{2}", HomeServer.BaseUrl,pPortGroupObjectId, pObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -276,7 +276,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -375,11 +375,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(string.Format("{0}portgroups/{1}/portgroupservers", pConnectionServer.BaseUrl,pPortGroupObjectId), 
+            string strUrl = ConnectionServer.AddClausesToUri(string.Format("{0}portgroups/{1}/portgroupservers", pConnectionServer.BaseUrl,pPortGroupObjectId), 
                 "pageNumber=" + pPageNumber,"rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -393,7 +393,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pPortGroupServers = HTTPFunctions.GetObjectsFromJson<PortGroupServer>(res.ResponseText);
+            pPortGroupServers = pConnectionServer.GetObjectsFromJson<PortGroupServer>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pPortGroupServers == null || (pPortGroupServers.Count == 1 && string.IsNullOrEmpty(pPortGroupServers[0].ObjectId)))
@@ -519,8 +519,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</PortGroupServer>";
 
-            return HTTPFunctions.GetCupiResponse(string.Format("{0}portgroups/{1}/portgroupservers/{2}", pConnectionServer.BaseUrl, pPortGroupObjectId,pObjectId),
-                MethodType.PUT, pConnectionServer, strBody, false);
+            return pConnectionServer.GetCupiResponse(string.Format("{0}portgroups/{1}/portgroupservers/{2}", pConnectionServer.BaseUrl, 
+                pPortGroupObjectId, pObjectId),MethodType.PUT, strBody, false);
 
         }
 
@@ -580,8 +580,8 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             strBody += "</PortGroupServer>";
 
-            res = HTTPFunctions.GetCupiResponse(string.Format("{0}portgroups/{1}/portgroupservers", pConnectionServer.BaseUrl,pPortGroupObjectId),
-                    MethodType.POST, pConnectionServer, strBody, false);
+            res = pConnectionServer.GetCupiResponse(string.Format("{0}portgroups/{1}/portgroupservers", pConnectionServer.BaseUrl, 
+                    pPortGroupObjectId),MethodType.POST, strBody, false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -657,8 +657,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return new WebCallResult { ErrorText = "Null ConnectionServer referenced passed to DeletePortGroupServer" };
             }
 
-            return HTTPFunctions.GetCupiResponse(string.Format("{0}portgroups/{1}/portgroupservers/{2}",pConnectionServer.BaseUrl ,pPortGroupObjectId, pObjectId),
-                                            MethodType.DELETE, pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(string.Format("{0}portgroups/{1}/portgroupservers/{2}", pConnectionServer.BaseUrl, 
+                    pPortGroupObjectId, pObjectId),MethodType.DELETE, "");
         }
 
         #endregion

@@ -41,8 +41,9 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                _connectionServer = new ConnectionServer(mySettings.ConnectionServer, mySettings.ConnectionLogin, mySettings.ConnectionPW);
-                HTTPFunctions.DebugMode = mySettings.DebugOn;
+                _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                   mySettings.ConnectionPW);
+                _connectionServer.DebugMode = mySettings.DebugOn;
             }
 
             catch (Exception ex)
@@ -74,7 +75,7 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
-            TimeZones oTest = new TimeZones(new ConnectionServer());
+            TimeZones oTest = new TimeZones(new ConnectionServer(new RestTransportFunctions()));
             Console.WriteLine(oTest);
         }
 

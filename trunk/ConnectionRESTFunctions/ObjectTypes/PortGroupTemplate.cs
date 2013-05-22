@@ -136,7 +136,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = HomeServer.BaseUrl + "portgrouptemplates/" + pObjectId;
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -145,7 +145,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -231,10 +231,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "portgrouptemplates");
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "portgrouptemplates");
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -249,7 +249,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pTemplates = HTTPFunctions.GetObjectsFromJson<PortGroupTemplate>(res.ResponseText);
+            pTemplates = pConnectionServer.GetObjectsFromJson<PortGroupTemplate>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pTemplates == null || (pTemplates.Count == 1 && string.IsNullOrEmpty(pTemplates[0].ObjectId)))

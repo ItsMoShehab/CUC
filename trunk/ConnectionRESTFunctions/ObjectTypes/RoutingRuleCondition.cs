@@ -141,11 +141,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "routingrules/"+pRoutingRuleObjectId+"/routingruleconditions", 
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "routingrules/"+pRoutingRuleObjectId+"/routingruleconditions", 
                 "pageNumber=" + pPageNumber,"rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -160,7 +160,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pRoutingRuleConditions = HTTPFunctions.GetObjectsFromJson<RoutingRuleCondition>(res.ResponseText);
+            pRoutingRuleConditions = pConnectionServer.GetObjectsFromJson<RoutingRuleCondition>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pRoutingRuleConditions == null || (pRoutingRuleConditions.Count == 1 && string.IsNullOrEmpty(pRoutingRuleConditions[0].ObjectId)))
@@ -300,15 +300,16 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</RoutingRuleCondition>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "routingrules/"+pRoutingRuleObjectId+"/routingruleconditions", MethodType.POST, 
-                pConnectionServer, strBody, false);
+            res = pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "routingrules/" + pRoutingRuleObjectId + 
+                "/routingruleconditions", MethodType.POST, strBody, false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
             {
                 if (res.ResponseText.Contains(@"/vmrest/routingrules/"+pRoutingRuleObjectId+"/routingruleconditions/"))
                 {
-                    res.ReturnedObjectId = res.ResponseText.Replace(@"/vmrest/routingrules/"+pRoutingRuleObjectId+"/routingruleconditions/", "").Trim();
+                    res.ReturnedObjectId = res.ResponseText.Replace(@"/vmrest/routingrules/"+pRoutingRuleObjectId+
+                        "/routingruleconditions/", "").Trim();
                 }
             }
 
@@ -383,8 +384,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "routingrules/" + pRoutingRuleObjectId+"/routingruleconditions/"+pObjectId,
-                                            MethodType.DELETE, pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "routingrules/" + pRoutingRuleObjectId + 
+                "/routingruleconditions/" + pObjectId,MethodType.DELETE, "");
         }
 
         #endregion
@@ -449,7 +450,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}routingrules/{1}/routingruleconditions/{2}", HomeServer.BaseUrl, RoutingRuleObjectId, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -458,7 +459,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

@@ -104,7 +104,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = HomeServer.BaseUrl + "rtpcodecdefs/" + pObjectId;
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -113,7 +113,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -153,10 +153,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "rtpcodecdefs");
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "rtpcodecdefs");
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -171,7 +171,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pCodecDefs = HTTPFunctions.GetObjectsFromJson<RtpCodecDef>(res.ResponseText);
+            pCodecDefs = pConnectionServer.GetObjectsFromJson<RtpCodecDef>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pCodecDefs == null || (pCodecDefs.Count == 1 && string.IsNullOrEmpty(pCodecDefs[0].ObjectId)))

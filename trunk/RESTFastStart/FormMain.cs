@@ -160,7 +160,7 @@ namespace CUPIFastStart
 
         /// <summary>
         /// If the user wants to monitor HTTP traffic on the fly then open a floating window for them to do it with a rich text box control on it 
-        /// and pass a handle to that RTE to the HTTPFunctions class so it knows to dump inbound and outbound data to that control.
+        /// and pass a handle to that RTE to the RestTransportFunctions class so it knows to dump inbound and outbound data to that control.
         /// </summary>
         private void showHTTPTrafficToolStripMenuItem_Click(object sender, EventArgs e)
         {

@@ -43,8 +43,9 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                _connectionServer = new ConnectionServer(mySettings.ConnectionServer, mySettings.ConnectionLogin, mySettings.ConnectionPW);
-                HTTPFunctions.DebugMode = mySettings.DebugOn;
+                _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                   mySettings.ConnectionPW);
+                _connectionServer.DebugMode = mySettings.DebugOn;
             }
 
             catch (Exception ex)
@@ -53,8 +54,8 @@ namespace ConnectionCUPIFunctionsTest
             }
 
             //create new handler with GUID in the name to ensure uniqueness
-            String strName = "Tenant_"+ Guid.NewGuid().ToString().Replace("-", "").Substring(0,13);
-
+            //String strName = "Tenant_"+ Guid.NewGuid().ToString().Replace("-", "").Substring(0,13);
+            string strName = "too long to keep test from running" + Guid.NewGuid().ToString();
             WebCallResult res = Tenant.AddTenant(_connectionServer, strName, strName+".org", strName, out _tempTenant);
             Assert.IsTrue(res.Success, "Failed creating temporary tenant:" + res.ToString());
         }

@@ -42,8 +42,9 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                _connectionServer = new ConnectionServer(mySettings.ConnectionServer, mySettings.ConnectionLogin, mySettings.ConnectionPW);
-                HTTPFunctions.DebugMode = mySettings.DebugOn;
+                _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                    mySettings.ConnectionPW);
+                _connectionServer.DebugMode = mySettings.DebugOn;
             }
 
             catch (Exception ex)
@@ -75,7 +76,7 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
-            Port oPort = new Port(new ConnectionServer(),"blah");
+            Port oPort = new Port(new ConnectionServer(new RestTransportFunctions()),"blah");
             Console.WriteLine(oPort);
         }
 
@@ -183,7 +184,7 @@ namespace ConnectionCUPIFunctionsTest
             res = Port.GetPorts(null, out oPorts);
             Assert.IsFalse(res.Success, "Fetching ports via static class with null Connection server should fail");
 
-            res = Port.GetPorts(new ConnectionServer(), out oPorts);
+            res = Port.GetPorts(new ConnectionServer(new RestTransportFunctions()), out oPorts);
             Assert.IsFalse(res.Success, "Fetching ports via static class with invalid Connection server should fail");
 
         }

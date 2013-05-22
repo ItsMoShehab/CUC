@@ -95,7 +95,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = pConnectionServer.BaseUrl + "cluster";
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            WebCallResult res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET,  "");
 
             if (res.Success == false)
             {
@@ -112,7 +112,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            Servers = HTTPFunctions.GetObjectsFromJson<Server>(res.ResponseText);
+            Servers = pConnectionServer.GetObjectsFromJson<Server>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (Servers == null || (Servers.Count == 1 && string.IsNullOrEmpty(Servers[0].HostName)))

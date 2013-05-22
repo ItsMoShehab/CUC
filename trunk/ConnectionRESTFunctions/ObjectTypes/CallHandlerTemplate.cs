@@ -507,10 +507,10 @@ namespace Cisco.UnityConnection.RestFunctions
             temp.Add("pageNumber=" + pPageNumber);
             temp.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "callhandlertemplates", temp.ToArray());
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "callhandlertemplates", temp.ToArray());
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -525,7 +525,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pCallHandlerTemplates = HTTPFunctions.GetObjectsFromJson<CallHandlerTemplate>(res.ResponseText);
+            pCallHandlerTemplates = pConnectionServer.GetObjectsFromJson<CallHandlerTemplate>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pCallHandlerTemplates == null || (pCallHandlerTemplates.Count == 1 && string.IsNullOrEmpty(pCallHandlerTemplates[0].ObjectId)))
@@ -627,9 +627,15 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pDisplayName">
         /// Display Name of the new call handler template - must be unique.
         /// </param>
+        /// <param name="pRecipientUserId">
+        /// If a user is a recipient, pass the objectId in here - must pass either recipient or distribution list
+        /// </param>
         /// <param name="pPropList">
         /// List ConnectionProperty pairs that identify a property name and a new value for that property to apply to the template being created.
         /// This is passed in as a ConnectionPropertyList instance which contains 1 or more ConnectionProperty instances.  Can be passed as null here.
+        /// </param>
+        /// <param name="pRecipientDistributionListId">
+        /// If a list is a recipient, pass the objectId in here - must pass either recipient or distribution list
         /// </param>
         /// <returns>
         /// Instance of the WebCallResult class.
@@ -686,9 +692,8 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             strBody += "</CallhandlerTemplate>";
-            
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "callhandlertemplates", 
-                MethodType.POST, pConnectionServer, strBody, false);
+
+            res = pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "callhandlertemplates", MethodType.POST, strBody, false);
 
             //fetch the objectId of the newly created object off the return
             if (res.Success)
@@ -708,11 +713,11 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pConnectionServer">
         /// Connection server being edited
         /// </param>
-        /// <param name="pTemplateObjectId">
-        /// Unique identifier for template to base new template off of
-        /// </param>
         /// <param name="pDisplayName">
         /// Display Name of the new call handler template - must be unique.
+        /// </param>
+        /// <param name="pRecipientUserId">
+        /// If a user is a recipient, pass the objectId in here - must pass either recipient or distribution list
         /// </param>
         /// <param name="pPropList">
         /// List ConnectionProperty pairs that identify a property name and a new value for that property to apply to the template being created.
@@ -720,6 +725,12 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </param>
         /// <param name="pCallHandlerTemplate">
         /// Newly created call handler template instance is passed back in this out parameter
+        /// </param>
+        /// <param name="pMediaSwitchObjectId">
+        /// Phone system the interviewer will be associated with.
+        /// </param>
+        /// <param name="pRecipientDistributionListId">
+        /// If a list is a recipient, pass the objectId in here - must pass either recipient or distribution list
         /// </param>
         /// <returns>
         /// Instance of the WebCallResult class.
@@ -810,8 +821,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</CallHandlerTemplate>";
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "callhandlertemplates/" + pObjectId,
-                                            MethodType.PUT, pConnectionServer, strBody, false);
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "callhandlertemplates/" + pObjectId,
+                                            MethodType.PUT, strBody, false);
 
         }
 
@@ -837,8 +848,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "callhandlertemplates/" + pObjectId,
-                                            MethodType.DELETE, pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "callhandlertemplates/" + pObjectId,
+                                            MethodType.DELETE, "");
         }
 
 
@@ -910,7 +921,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}callhandlertemplates/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -919,7 +930,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -945,14 +956,14 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}callhandlertemplates/?query=(DisplayName is {1})", HomeServer.BaseUrl, pName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false || res.TotalObjectCount ==0)
             {
                 return "";
             }
 
-            List<CallHandlerTemplate> oTemplates = HTTPFunctions.GetObjectsFromJson<CallHandlerTemplate>(res.ResponseText);
+            List<CallHandlerTemplate> oTemplates = HomeServer.GetObjectsFromJson<CallHandlerTemplate>(res.ResponseText);
 
             foreach (var oTemplate in oTemplates)
             {

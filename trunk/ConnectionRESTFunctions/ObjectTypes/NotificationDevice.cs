@@ -690,7 +690,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}users/{1}/notificationdevices", pConnectionServer.BaseUrl, pUserObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -705,7 +705,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pNotificationDevices = HTTPFunctions.GetObjectsFromJson<NotificationDevice>(res.ResponseText);
+            pNotificationDevices = pConnectionServer.GetObjectsFromJson<NotificationDevice>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pNotificationDevices == null || (pNotificationDevices.Count == 1 && string.IsNullOrEmpty(pNotificationDevices[0].ObjectId)))
@@ -795,9 +795,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</SmtpDevice>";
 
-            res =
-                HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/notificationdevices/smtpdevices", pConnectionServer.BaseUrl, pUserObjectId),
-                    MethodType.POST,pConnectionServer,strBody,false);
+            res =pConnectionServer.GetCupiResponse(string.Format("{0}users/{1}/notificationdevices/smtpdevices", pConnectionServer.BaseUrl, 
+                pUserObjectId),MethodType.POST,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -886,8 +885,8 @@ namespace Cisco.UnityConnection.RestFunctions
             strBody += "</HtmlDevice>";
 
             res =
-                HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/notificationdevices/htmldevices", pConnectionServer.BaseUrl, pUserObjectId),
-                    MethodType.POST, pConnectionServer, strBody,false);
+                pConnectionServer.GetCupiResponse(string.Format("{0}users/{1}/notificationdevices/htmldevices", pConnectionServer.BaseUrl, 
+                pUserObjectId),MethodType.POST, strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -986,8 +985,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</SmsDevice>";
 
-            res =HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/notificationdevices/smsdevices", pConnectionServer.BaseUrl, pUserObjectId),
-                    MethodType.POST,pConnectionServer,strBody,false);
+            res = pConnectionServer.GetCupiResponse(string.Format("{0}users/{1}/notificationdevices/smsdevices", pConnectionServer.BaseUrl, 
+                pUserObjectId),MethodType.POST,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -1075,8 +1074,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</PhoneDevice>";
 
-            res = HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/notificationdevices/phonedevices", pConnectionServer.BaseUrl, pUserObjectId),
-                    MethodType.POST,pConnectionServer,strBody,false);
+            res = pConnectionServer.GetCupiResponse(string.Format("{0}users/{1}/notificationdevices/phonedevices", pConnectionServer.BaseUrl, 
+                pUserObjectId),MethodType.POST,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -1164,8 +1163,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</PagerDevice>";
 
-            res = HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/notificationdevices/pagerdevices", pConnectionServer.BaseUrl, pUserObjectId),
-                    MethodType.POST,pConnectionServer,strBody,false);
+            res = pConnectionServer.GetCupiResponse(string.Format("{0}users/{1}/notificationdevices/pagerdevices", pConnectionServer.BaseUrl, 
+                pUserObjectId),MethodType.POST,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -1224,7 +1223,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.DELETE,pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.DELETE, "");
         }
 
 
@@ -1296,7 +1295,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += string.Format("</{0}>", pDeviceType.ToString());
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.PUT,pConnectionServer,strBody,false);
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.PUT, strBody, false);
         }
 
 
@@ -1452,7 +1451,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}users/{1}/notificationdevices/{2}", HomeServer.BaseUrl, pUserObjectId, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -1461,8 +1460,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "NotificationDevice"), this,
-                    HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(ConnectionServer.StripJsonOfObjectWrapper(res.ResponseText, "NotificationDevice"), this,
+                    RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

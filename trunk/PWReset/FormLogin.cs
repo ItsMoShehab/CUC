@@ -66,7 +66,7 @@ namespace PWReset
 
             try
             {
-                GlobalItems.CurrentConnectionServer = new ConnectionServer(txtServerName.Text, txtUserName.Text, txtPassword.Text);
+                GlobalItems.CurrentConnectionServer = new ConnectionServer(new RestTransportFunctions(), txtServerName.Text, txtUserName.Text, txtPassword.Text);
             }
             catch
             {

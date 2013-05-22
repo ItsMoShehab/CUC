@@ -224,11 +224,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(string.Format("{0}users/{1}/privatelists", pConnectionServer.BaseUrl, pOwnerUserObjectId),
+            string strUrl = ConnectionServer.AddClausesToUri(string.Format("{0}users/{1}/privatelists", pConnectionServer.BaseUrl, pOwnerUserObjectId),
                 "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -243,7 +243,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pPrivateLists = HTTPFunctions.GetObjectsFromJson<PrivateList>(res.ResponseText);
+            pPrivateLists = pConnectionServer.GetObjectsFromJson<PrivateList>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pPrivateLists == null || (pPrivateLists.Count == 1 && string.IsNullOrEmpty(pPrivateLists[0].ObjectId)))
@@ -327,8 +327,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</PrivateList>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("users/{0}/privatelists",pUserOwnerObjectId), MethodType.POST,
-                                            pConnectionServer,strBody,false);
+            res = pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("users/{0}/privatelists", 
+                pUserOwnerObjectId), MethodType.POST,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -516,9 +516,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</PrivateList>";
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("users/{0}/privatelists/{1}", pUserOwnerObjectId, pObjectId),
-                                            MethodType.PUT,pConnectionServer,strBody,false);
-
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("users/{0}/privatelists/{1}", 
+                pUserOwnerObjectId, pObjectId),MethodType.PUT,strBody,false);
         }
 
 
@@ -546,8 +545,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("users/{0}/privatelists/{1}",pUserOwnerObjectId, pObjectId),
-                                            MethodType.DELETE,pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("users/{0}/privatelists/{1}", 
+                pUserOwnerObjectId, pObjectId),MethodType.DELETE, "");
         }
 
 
@@ -601,9 +600,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //fetch the WAV file
-            return HTTPFunctions.DownloadWavFile(pConnectionServer,
-                                                pTargetLocalFilePath,
-                                                pConnectionWavFileName);
+            return pConnectionServer.DownloadWavFile(pTargetLocalFilePath,pConnectionWavFileName);
         }
 
 
@@ -681,7 +678,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strResourcePath = string.Format(@"{0}users/{1}/privatelists/{2}/voicename", pConnectionServer.BaseUrl, pUserObjectId, pObjectId);
 
             //upload the WAV file to the server.
-            return HTTPFunctions.UploadWavFile(strResourcePath, pConnectionServer, pSourceLocalFilePath);
+            return pConnectionServer.UploadWavFile(strResourcePath, pSourceLocalFilePath);
         }
 
 
@@ -728,7 +725,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class.
         /// </returns>
-        public static WebCallResult AddMemberUser(ConnectionServer pConnectionServer, string pPrivateListObjectId, string pUserObjectId, string pOwnerUserObjectId)
+        public static WebCallResult AddMemberUser(ConnectionServer pConnectionServer, string pPrivateListObjectId, string pUserObjectId, 
+            string pOwnerUserObjectId)
         {
             if (pConnectionServer == null)
             {
@@ -748,7 +746,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 };
             }
 
-            string strUrl = string.Format("{0}users/{1}/privatelists/{2}/privatelistmembers", pConnectionServer.BaseUrl, pOwnerUserObjectId, pPrivateListObjectId);
+            string strUrl = string.Format("{0}users/{1}/privatelists/{2}/privatelistmembers", pConnectionServer.BaseUrl, 
+                pOwnerUserObjectId, pPrivateListObjectId);
 
             string strBody = "<PrivateListMember>\n\r";
 
@@ -756,7 +755,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</PrivateListMember>\n\r";
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.POST,pConnectionServer, strBody,false);
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.POST, strBody, false);
         }
 
 
@@ -807,7 +806,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</PrivateListMember>\n\r";
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.POST,pConnectionServer, strBody,false);
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.POST, strBody, false);
         }
 
 
@@ -830,7 +829,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult RemoveMember(ConnectionServer pConnectionServer, string pPrivateListObjectId, string pMemberObjectId, string pOwnerUserObjectId)
+        public static WebCallResult RemoveMember(ConnectionServer pConnectionServer, string pPrivateListObjectId, string pMemberObjectId, 
+            string pOwnerUserObjectId)
         {
             string strUrl = string.Format("{0}users/{1}/privatelists/{2}/privatelistmembers/{3}",
                         pConnectionServer.BaseUrl,
@@ -838,7 +838,7 @@ namespace Cisco.UnityConnection.RestFunctions
                         pPrivateListObjectId,
                         pMemberObjectId);
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.DELETE,pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.DELETE, "");
         }
 
 
@@ -941,7 +941,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 string strUrl = string.Format("{0}users/{1}/privatelists/{2}", HomeServer.BaseUrl,_userOwnerObjectId, pObjectId);
 
                 //issue the command to the CUPI interface
-                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer,"");
+                res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
                 if (res.Success == false)
                 {
@@ -950,7 +950,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
                 try
                 {
-                    JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                    JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
                 }
                 catch (Exception ex)
                 {

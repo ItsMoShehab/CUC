@@ -292,10 +292,10 @@ namespace Cisco.UnityConnection.RestFunctions
             temp.Add("pageNumber=" + pPageNumber);
             temp.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "routingrules", temp.ToArray());
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "routingrules", temp.ToArray());
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -310,7 +310,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pRoutingRules = HTTPFunctions.GetObjectsFromJson<RoutingRule>(res.ResponseText);
+            pRoutingRules = pConnectionServer.GetObjectsFromJson<RoutingRule>(res.ResponseText);
 
             if (pRoutingRules==null ||(pRoutingRules.Count == 1 && string.IsNullOrEmpty(pRoutingRules[0].ObjectId)))
             {
@@ -452,8 +452,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</RoutingRule>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "routingrules",
-                MethodType.POST, pConnectionServer, strBody, false);
+            res = pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "routingrules",
+                MethodType.POST, strBody, false);
 
             //fetch the objectId of the newly created object off the return
             if (res.Success)
@@ -534,8 +534,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "routingrules/" + pObjectId,
-                                            MethodType.DELETE, pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "routingrules/" + pObjectId,
+                                            MethodType.DELETE, "");
         }
 
         /// <summary>
@@ -592,8 +592,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</RoutingRule>";
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("routingrules/{0}", pObjectId),
-                                            MethodType.PUT, pConnectionServer, strBody, false);
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("routingrules/{0}", pObjectId),
+                                            MethodType.PUT, strBody, false);
 
         }
 
@@ -641,9 +641,7 @@ namespace Cisco.UnityConnection.RestFunctions
             strBody.AppendFormat("</RoutingRules>");
 
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "routingrules", MethodType.PUT,
-                                                 pConnectionServer,
-                                                 strBody.ToString(), false);
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "routingrules", MethodType.PUT,strBody.ToString(), false);
         }
 
 
@@ -733,7 +731,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}routingrules/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -742,7 +740,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -768,14 +766,14 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}routingrules/?query=(DisplayName is {1})", HomeServer.BaseUrl, pName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false || res.TotalObjectCount == 0)
             {
                 return "";
             }
 
-            List<RoutingRule> oRules = HTTPFunctions.GetObjectsFromJson<RoutingRule>(res.ResponseText);
+            List<RoutingRule> oRules = HomeServer.GetObjectsFromJson<RoutingRule>(res.ResponseText);
 
             foreach (var oRule in oRules)
             {

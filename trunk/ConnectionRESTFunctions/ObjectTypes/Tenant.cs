@@ -165,10 +165,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "tenants", pClauses);
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "tenants", pClauses);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -183,7 +183,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pTenants = HTTPFunctions.GetObjectsFromJson<Tenant>(res.ResponseText);
+            pTenants = pConnectionServer.GetObjectsFromJson<Tenant>(res.ResponseText);
 
             if (pTenants == null || (pTenants.Count == 1 && string.IsNullOrEmpty(pTenants[0].ObjectId)))
             {
@@ -365,7 +365,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</Tenant>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "tenants", MethodType.POST, pConnectionServer, strBody, false);
+            res = pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "tenants", MethodType.POST, strBody, false);
 
             //fetch the objectId of the newly created object off the return
             if (res.Success)
@@ -448,8 +448,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "tenants/" + pObjectId,
-                                            MethodType.DELETE, pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "tenants/" + pObjectId,
+                                            MethodType.DELETE, "");
         }
 
         #endregion
@@ -521,7 +521,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}tenants/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -537,7 +537,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -562,14 +562,14 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}tenants/?query=(Alias is {1})", HomeServer.BaseUrl, pAlias);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false || res.TotalObjectCount == 0)
             {
                 return "";
             }
 
-            List<Tenant> oTenants = HTTPFunctions.GetObjectsFromJson<Tenant>(res.ResponseText);
+            List<Tenant> oTenants = HomeServer.GetObjectsFromJson<Tenant>(res.ResponseText);
 
             foreach (var oTenant in oTenants)
             {
@@ -630,7 +630,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //fetch the ObjectIds
             string strUrl = string.Format("{0}tenants/{1}/coses", HomeServer.BaseUrl, ObjectId);
 
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -650,7 +650,7 @@ namespace Cisco.UnityConnection.RestFunctions
             List<TenantCos> oCoses;
             try
             {
-              oCoses= HTTPFunctions.GetObjectsFromJson<TenantCos>(res.ResponseText, "TenantCos");
+                oCoses = HomeServer.GetObjectsFromJson<TenantCos>(res.ResponseText, "TenantCos");
             }
             catch (Exception ex)
             {
@@ -697,7 +697,7 @@ namespace Cisco.UnityConnection.RestFunctions
             strBody += "</TenantCos>";
 
             string strUrl = string.Format("{0}tenants/{1}/coses", HomeServer.BaseUrl, ObjectId);
-            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, HomeServer,strBody, false);
+            return HomeServer.GetCupiResponse(strUrl, MethodType.POST, strBody, false);
         }
 
         #endregion
@@ -734,7 +734,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //fetch the ObjectIds
             string strUrl = string.Format("{0}tenants/{1}/phonesystems", HomeServer.BaseUrl, ObjectId);
 
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -754,7 +754,7 @@ namespace Cisco.UnityConnection.RestFunctions
             List<TenantPhoneSystem> pPhones;
             try
             {
-                pPhones = HTTPFunctions.GetObjectsFromJson<TenantPhoneSystem>(res.ResponseText, "TenantPhoneSystem");
+                pPhones = HomeServer.GetObjectsFromJson<TenantPhoneSystem>(res.ResponseText, "TenantPhoneSystem");
             }
             catch (Exception ex)
             {
@@ -814,7 +814,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //fetch the ObjectIds
             string strUrl = string.Format("{0}tenants/{1}/schedulesets", HomeServer.BaseUrl, ObjectId);
 
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -834,7 +834,7 @@ namespace Cisco.UnityConnection.RestFunctions
             List<TenantScheduleSet> pSchedules;
             try
             {
-                pSchedules = HTTPFunctions.GetObjectsFromJson<TenantScheduleSet>(res.ResponseText, "TenantScheduleSet");
+                pSchedules = HomeServer.GetObjectsFromJson<TenantScheduleSet>(res.ResponseText, "TenantScheduleSet");
             }
             catch (Exception ex)
             {
@@ -879,7 +879,7 @@ namespace Cisco.UnityConnection.RestFunctions
             strBody += "</TenantScheduleSet>";
 
             string strUrl = string.Format("{0}tenants/{1}/schedulesets", HomeServer.BaseUrl, ObjectId);
-            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, HomeServer, strBody, false);
+            return HomeServer.GetCupiResponse(strUrl, MethodType.POST, strBody, false);
         }
 
 

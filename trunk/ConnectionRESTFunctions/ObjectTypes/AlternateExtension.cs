@@ -254,7 +254,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}users/{1}/alternateextensions", pConnectionServer.BaseUrl, pUserObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -269,7 +269,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pAlternateExtensions = HTTPFunctions.GetObjectsFromJson<AlternateExtension>(res.ResponseText);
+            pAlternateExtensions = pConnectionServer.GetObjectsFromJson<AlternateExtension>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pAlternateExtensions == null||(pAlternateExtensions.Count == 1 && string.IsNullOrEmpty(pAlternateExtensions[0].ObjectId)))
@@ -350,9 +350,8 @@ namespace Cisco.UnityConnection.RestFunctions
             strBody += "</AlternateExtension>";
 
             res =
-                HTTPFunctions.GetCupiResponse(
-                    string.Format("{0}users/{1}/alternateextensions", pConnectionServer.BaseUrl, pUserObjectId),
-                    MethodType.POST,pConnectionServer,strBody,false);
+                pConnectionServer.GetCupiResponse(string.Format("{0}users/{1}/alternateextensions", 
+                pConnectionServer.BaseUrl, pUserObjectId),MethodType.POST,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -435,8 +434,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/alternateextensions/{2}",pConnectionServer.BaseUrl,pUserObjectId, pObjectId),
-                                            MethodType.DELETE,pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(string.Format("{0}users/{1}/alternateextensions/{2}", pConnectionServer.BaseUrl, pUserObjectId, 
+                                                    pObjectId),MethodType.DELETE,"");
         }
 
         /// <summary>
@@ -490,8 +489,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</AlternateExtension>";
 
-            return HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/alternateextensions/{2}", pConnectionServer.BaseUrl, pUserObjectId, pObjectId),
-                                            MethodType.PUT,pConnectionServer,strBody,false);
+            return pConnectionServer.GetCupiResponse(string.Format("{0}users/{1}/alternateextensions/{2}", pConnectionServer.BaseUrl, pUserObjectId, pObjectId),
+                                            MethodType.PUT,strBody,false);
 
         }
 
@@ -615,7 +614,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}users/{1}/alternateextensions/{2}", HomeServer.BaseUrl,UserObjectId, pObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -624,8 +623,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "AlternateExtension"), this,
-                    HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(ConnectionServer.StripJsonOfObjectWrapper(res.ResponseText, "AlternateExtension"), this,
+                    RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

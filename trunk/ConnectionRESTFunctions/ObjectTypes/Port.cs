@@ -254,7 +254,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}ports/{1}", HomeServer.BaseUrl, pObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -263,7 +263,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -383,10 +383,10 @@ namespace Cisco.UnityConnection.RestFunctions
             temp.Add("pageNumber=" + pPageNumber);
             temp.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "ports", temp.ToArray());
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "ports", temp.ToArray());
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -401,7 +401,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pPorts = HTTPFunctions.GetObjectsFromJson<Port>(res.ResponseText);
+            pPorts = pConnectionServer.GetObjectsFromJson<Port>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pPorts == null || (pPorts.Count == 1 && string.IsNullOrEmpty(pPorts[0].ObjectId)))
@@ -545,8 +545,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</Port>";
 
-            return HTTPFunctions.GetCupiResponse(string.Format("{0}ports/{1}", pConnectionServer.BaseUrl, pPortObjectId),
-                MethodType.PUT, pConnectionServer, strBody, false);
+            return pConnectionServer.GetCupiResponse(string.Format("{0}ports/{1}", pConnectionServer.BaseUrl, pPortObjectId),
+                MethodType.PUT, strBody, false);
 
         }
 
@@ -618,8 +618,8 @@ namespace Cisco.UnityConnection.RestFunctions
             
             strBody += "</Port>";
 
-            res = HTTPFunctions.GetCupiResponse(string.Format("{0}ports", pConnectionServer.BaseUrl),
-                    MethodType.POST, pConnectionServer, strBody, false);
+            res = pConnectionServer.GetCupiResponse(string.Format("{0}ports", pConnectionServer.BaseUrl),
+                    MethodType.POST, strBody, false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -656,8 +656,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "ports/" + pObjectId,
-                                            MethodType.DELETE, pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "ports/" + pObjectId,
+                                            MethodType.DELETE, "");
         }
         #endregion
 

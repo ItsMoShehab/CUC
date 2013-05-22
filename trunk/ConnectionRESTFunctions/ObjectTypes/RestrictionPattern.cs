@@ -159,7 +159,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}restrictiontables/{1}/restrictionpatterns/{2}", HomeServer.BaseUrl,RestrictionTableObjectId, pObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -168,7 +168,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -225,11 +225,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(string.Format("{0}restrictiontables/{1}/restrictionpatterns", pConnectionServer.BaseUrl, 
+            string strUrl = ConnectionServer.AddClausesToUri(string.Format("{0}restrictiontables/{1}/restrictionpatterns", pConnectionServer.BaseUrl, 
                 pRestrictionTableObjectId), "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -245,7 +245,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pRestrictionPatterns = HTTPFunctions.GetObjectsFromJson<RestrictionPattern>(res.ResponseText);
+            pRestrictionPatterns = pConnectionServer.GetObjectsFromJson<RestrictionPattern>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pRestrictionPatterns == null || (pRestrictionPatterns.Count == 1 && string.IsNullOrEmpty(pRestrictionPatterns[0].ObjectId)))

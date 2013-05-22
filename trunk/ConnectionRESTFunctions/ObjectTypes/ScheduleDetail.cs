@@ -278,7 +278,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}schedules/{1}/scheduledetails/{2}", HomeServer.BaseUrl, pScheduleObjectId,pScheduleDetailObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -287,7 +287,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -325,8 +325,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetScheduleDetails(ConnectionServer pConnectionServer, string pScheduleObjectId, out List<ScheduleDetail> pScheduleDetails, 
-            int pPageNumber = 1, int pRowsPerPage = 20)
+        public static WebCallResult GetScheduleDetails(ConnectionServer pConnectionServer, string pScheduleObjectId, 
+            out List<ScheduleDetail> pScheduleDetails, int pPageNumber = 1, int pRowsPerPage = 20)
         {
             WebCallResult res;
             pScheduleDetails = new List<ScheduleDetail>();
@@ -338,11 +338,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(string.Format("{0}schedules/{1}/scheduledetails", pConnectionServer.BaseUrl, pScheduleObjectId),
-                "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
+            string strUrl = ConnectionServer.AddClausesToUri(string.Format("{0}schedules/{1}/scheduledetails", pConnectionServer.BaseUrl, 
+                pScheduleObjectId),"pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -357,7 +357,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pScheduleDetails = HTTPFunctions.GetObjectsFromJson<ScheduleDetail>(res.ResponseText);
+            pScheduleDetails = pConnectionServer.GetObjectsFromJson<ScheduleDetail>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pScheduleDetails == null || (pScheduleDetails.Count == 1 && string.IsNullOrEmpty(pScheduleDetails[0].ObjectId)))
@@ -411,8 +411,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("schedules/{0}/scheduledetails/{1}",
-                pScheduleObjectId, pScheduleDetailObjectId),MethodType.DELETE, pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("schedules/{0}/scheduledetails/{1}",
+                pScheduleObjectId, pScheduleDetailObjectId),MethodType.DELETE, "");
         }
 
 

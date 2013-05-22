@@ -205,7 +205,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = HomeServer.BaseUrl + "searchspaces/" + strObjectId;
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -214,7 +214,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -239,14 +239,14 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = HomeServer.BaseUrl + string.Format("searchspaces/?query=(Name is {0})", pName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false || res.TotalObjectCount == 0)
             {
                 return "";
             }
 
-            List<SearchSpace> oSearchSpaces = HTTPFunctions.GetObjectsFromJson<SearchSpace>(res.ResponseText);
+            List<SearchSpace> oSearchSpaces = HomeServer.GetObjectsFromJson<SearchSpace>(res.ResponseText);
 
             foreach (var oSpace in oSearchSpaces)
             {
@@ -390,10 +390,10 @@ namespace Cisco.UnityConnection.RestFunctions
             temp.Add("pageNumber=" + pPageNumber);
             temp.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "searchspaces", temp.ToArray());
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "searchspaces", temp.ToArray());
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -409,7 +409,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pSearchSpaces = HTTPFunctions.GetObjectsFromJson<SearchSpace>(res.ResponseText);
+            pSearchSpaces = pConnectionServer.GetObjectsFromJson<SearchSpace>(res.ResponseText);
 
             if (pSearchSpaces == null)
             {
@@ -450,7 +450,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = pConnectionServer.BaseUrl + string.Format("searchspaces/{0}/searchspacemembers",pSearchSpaceObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            WebCallResult res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -466,9 +466,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            List<SearchSpaceMember> oMembers;
-
-            oMembers = HTTPFunctions.GetObjectsFromJson<SearchSpaceMember>(res.ResponseText);
+            List<SearchSpaceMember> oMembers = pConnectionServer.GetObjectsFromJson<SearchSpaceMember>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (oMembers == null || (oMembers.Count == 1 && string.IsNullOrEmpty(oMembers[0].ObjectId)))
@@ -606,7 +604,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</SearchSpace>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "searchspaces", MethodType.POST,pConnectionServer,strBody,false);
+            res = pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "searchspaces", MethodType.POST, strBody, false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -651,8 +649,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "searchspaces/" + pSearchSpaceObjectId,
-                                            MethodType.DELETE,pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "searchspaces/" + pSearchSpaceObjectId,
+                                            MethodType.DELETE, "");
         }
 
 
@@ -710,8 +708,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</SearchSpace>";
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "searchspaces/" + pObjectId,
-                                            MethodType.PUT,pConnectionServer,strBody,false);
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "searchspaces/" + pObjectId,
+                                            MethodType.PUT,strBody,false);
 
         }
 
@@ -761,8 +759,8 @@ namespace Cisco.UnityConnection.RestFunctions
             strBody += string.Format("<{0}>{1}</{0}>", "SortOrder", pSortOrder);
             strBody += "</SearchSpaceMember>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("searchspaces/{0}/searchspacemembers",pSearchSpaceObjectId), 
-                                            MethodType.POST,pConnectionServer,strBody,false);
+            res = pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("searchspaces/{0}/searchspacemembers", 
+                pSearchSpaceObjectId), MethodType.POST,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -821,9 +819,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl +
-                                            string.Format("searchspaces/{0}/searchspacemembers/{1}", pSearchSpaceObjectId, strObjectId),
-                                            MethodType.DELETE,pConnectionServer,"");
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl +
+                      string.Format("searchspaces/{0}/searchspacemembers/{1}", pSearchSpaceObjectId, strObjectId),MethodType.DELETE,"");
         }
 
 
@@ -851,14 +848,14 @@ namespace Cisco.UnityConnection.RestFunctions
                 pConnectionServer.BaseUrl, pSearchSpaceObjectId, pPartitionObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            WebCallResult res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false || res.TotalObjectCount ==0)
             {
                 return "";
             }
 
-            List<SearchSpaceMember> oMembers = HTTPFunctions.GetObjectsFromJson<SearchSpaceMember>(res.ResponseText);
+            List<SearchSpaceMember> oMembers = pConnectionServer.GetObjectsFromJson<SearchSpaceMember>(res.ResponseText);
 
             foreach (var oMap in oMembers)
             {

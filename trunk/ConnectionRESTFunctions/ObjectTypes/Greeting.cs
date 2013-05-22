@@ -405,7 +405,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/greetings", pConnectionServer.BaseUrl, pCallHandlerObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -421,7 +421,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pGreetings = HTTPFunctions.GetObjectsFromJson<Greeting>(res.ResponseText);
+            pGreetings = pConnectionServer.GetObjectsFromJson<Greeting>(res.ResponseText);
 
             if (pGreetings == null)
             {
@@ -497,8 +497,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</Greeting>";
 
-            return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, 
-                pGreetingType.Description()),MethodType.PUT,pConnectionServer,strBody,false);
+            return pConnectionServer.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, 
+                pGreetingType.Description()),MethodType.PUT,strBody,false);
 
         }
 
@@ -622,8 +622,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</Greeting>";
 
-            return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, 
-                pGreetingType.Description()),MethodType.PUT,pConnectionServer,strBody,false);
+            return pConnectionServer.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, 
+                pGreetingType.Description()),MethodType.PUT,strBody,false);
         }
 
 
@@ -707,7 +707,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strGreetingStreamUriPath= string.Format("https://{0}:8443/vmrest/handlers/callhandlers/{1}/greetings/{2}/greetingstreamfiles/{3}/audio",
                                          pConnectionServer.ServerName, pCallHandlerObjectId, pGreetingType.Description(), pLanguageId);
 
-            return HTTPFunctions.UploadWavFile(strGreetingStreamUriPath, pConnectionServer, pSourceLocalFilePath);
+            return pConnectionServer.UploadWavFile(strGreetingStreamUriPath, pSourceLocalFilePath);
         }
 
 
@@ -772,7 +772,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.PUT, pConnectionServer, oParams);
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.PUT, oParams);
         }
 
         #endregion
@@ -840,7 +840,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/greetings/{2}", HomeServer.BaseUrl, pCallHandlerObjectId, pGreetingType.Description());
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -849,8 +849,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "Greeting"), this,
-                    HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(ConnectionServer.StripJsonOfObjectWrapper(res.ResponseText, "Greeting"), this,
+                    RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

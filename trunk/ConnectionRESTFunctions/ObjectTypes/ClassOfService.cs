@@ -716,10 +716,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "coses", pClauses);
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "coses", pClauses);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -734,7 +734,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pClassOfServices = HTTPFunctions.GetObjectsFromJson<ClassOfService>(res.ResponseText,"cos");
+            pClassOfServices = pConnectionServer.GetObjectsFromJson<ClassOfService>(res.ResponseText, "cos");
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pClassOfServices == null || (pClassOfServices.Count == 1 && string.IsNullOrEmpty(pClassOfServices[0].ObjectId)))
@@ -914,7 +914,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</Cos>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "coses", MethodType.POST,pConnectionServer,strBody,false);
+            res = pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "coses", MethodType.POST, strBody, false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -1018,8 +1018,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</Cos>";
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "coses/" + pObjectId,
-                                            MethodType.PUT,pConnectionServer,strBody,false);
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "coses/" + pObjectId,
+                                            MethodType.PUT,strBody,false);
 
         }
 
@@ -1045,7 +1045,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "coses/" + pObjectId,MethodType.DELETE,pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "coses/" + pObjectId, MethodType.DELETE, "");
         }
 
 
@@ -1148,7 +1148,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}coses/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -1157,7 +1157,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -1187,14 +1187,14 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}coses/?query=(DisplayName is {1})", HomeServer.BaseUrl, pCosName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
                 return "";
             }
 
-            List<ClassOfService> oCoses = HTTPFunctions.GetObjectsFromJson<ClassOfService>(res.ResponseText,"Cos");
+            List<ClassOfService> oCoses = HomeServer.GetObjectsFromJson<ClassOfService>(res.ResponseText, "Cos");
 
             foreach (var oCos in oCoses)
             {

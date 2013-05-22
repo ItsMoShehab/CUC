@@ -191,7 +191,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = HomeServer.BaseUrl + "vmsservers/" + pObjectId;
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -200,7 +200,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -241,10 +241,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "vmsservers");
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "vmsservers");
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -259,7 +259,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pServers = HTTPFunctions.GetObjectsFromJson<VmsServer>(res.ResponseText);
+            pServers = pConnectionServer.GetObjectsFromJson<VmsServer>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pServers == null || (pServers.Count == 1 && string.IsNullOrEmpty(pServers[0].ObjectId)))

@@ -33,15 +33,12 @@ namespace CUPIVerySimple
             //just attaches to one server.
             ConnectionServer connectionServer = null;
 
-            //turn on "chatty" output to console
-            HTTPFunctions.DebugMode = true;
-
             Logger.Log("Starting log output");
 
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
-                connectionServer = new ConnectionServer("192.168.0.186", "CCMAdministrator", "ecsbulab");
+                connectionServer = new ConnectionServer(new RestTransportFunctions(), "lindborgload3", "CCMAdministrator", "ecsbulab");
             }
 
             catch (Exception ex)
@@ -51,6 +48,9 @@ namespace CUPIVerySimple
                 Console.Read();
                 Environment.Exit(1);
             }
+
+            //turn on "chatty" output to console
+            connectionServer.DebugMode = true;
 
             //the Connection server object spits out the server name and version number in the ToString function.
             Console.WriteLine("Attached to Connection server: " + connectionServer);
@@ -333,7 +333,7 @@ namespace CUPIVerySimple
             //pass the optional flags for forcing change, not expiring etc... if these are not passed the current values for the credential settings
             //will be left alone.  You can pass just these flags and a blank PIN string if you want - the PIN will NOT be set to blank (that is not 
             //allowed in this class library).  If you wish to force a blank password (assuming such a thing is allowed in your configuration which is
-            //not advisable) then you will have to do so manually calling the credential update on your own via the HTTPFunctions library.
+            //not advisable) then you will have to do so manually calling the credential update on your own via the RestTransportFunctions library.
             res=oUser.ResetPin("123454321", false, false, false, true);
 
             if (res.Success==false)

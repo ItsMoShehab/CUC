@@ -43,8 +43,9 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                _connectionServer = new ConnectionServer(mySettings.ConnectionServer, mySettings.ConnectionLogin, mySettings.ConnectionPW);
-                HTTPFunctions.DebugMode = mySettings.DebugOn;
+                _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                    mySettings.ConnectionPW);
+                _connectionServer.DebugMode = mySettings.DebugOn;
             }
 
             catch (Exception ex)
@@ -78,7 +79,7 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
-            PortGroup oPorts = new PortGroup(new ConnectionServer(), "blah");
+            PortGroup oPorts = new PortGroup(new ConnectionServer(new RestTransportFunctions()), "blah");
             Console.WriteLine(oPorts);
         }
 
@@ -104,7 +105,7 @@ namespace ConnectionCUPIFunctionsTest
             WebCallResult res = PortGroup.GetPortGroups(null, out oPortGroups);
             Assert.IsFalse(res.Success, "Fetching port groups with null Connection server should fail.");
 
-            res = PortGroup.GetPortGroups(new ConnectionServer(), out oPortGroups);
+            res = PortGroup.GetPortGroups(new ConnectionServer(new RestTransportFunctions()), out oPortGroups);
             Assert.IsFalse(res.Success, "Fetching port groups with invalid Connection server should fail.");
         }
 
