@@ -16,7 +16,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Windows.Forms;
 using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
@@ -28,7 +27,6 @@ namespace Cisco.UnityConnection.RestFunctions
     public class UserComparer : IComparer<UserBase>
     {
         readonly string _memberName = string.Empty; // specifies the member name to be sorted
-        readonly SortOrder _sortOrder = SortOrder.None; // Specifies the SortOrder.  Not used here.
 
         /// <summary>
         /// constructor to set the sort column and sort order.
@@ -36,13 +34,9 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pMemberName">
         /// Property name to compare by (i.e. Alias)
         /// </param>
-        /// <param name="pSortOrder">
-        /// Sort order to use - defaults to Ascending
-        /// </param>
-        public UserComparer(string pMemberName, SortOrder pSortOrder = SortOrder.Ascending)
+        public UserComparer(string pMemberName)
         {
             _memberName = pMemberName;
-            _sortOrder = pSortOrder;
         }
 
         
@@ -1672,7 +1666,6 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format(@"{0}users/{1}/voicename", pConnectionServer.BaseUrl,pObjectId);
 
             Dictionary<string, string> oParams = new Dictionary<string, string>();
-            Dictionary<string, object> oOutput;
 
             oParams.Add("op", "RECORD");
             oParams.Add("ResourceType", "STREAM");
@@ -1682,7 +1675,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.PUT, pConnectionServer, oParams, out oOutput);
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.PUT, pConnectionServer, oParams);
 
             return res;
         }

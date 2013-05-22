@@ -948,7 +948,6 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format(@"{0}distributionlists/{1}/voicename", pConnectionServer.BaseUrl, pObjectId);
 
             Dictionary<string, string> oParams = new Dictionary<string, string>();
-            Dictionary<string, object> oOutput;
 
             oParams.Add("op", "RECORD");
             oParams.Add("ResourceType", "STREAM");
@@ -958,7 +957,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.PUT, pConnectionServer, oParams, out oOutput);
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.PUT, pConnectionServer, oParams);
 
             return res;
         }

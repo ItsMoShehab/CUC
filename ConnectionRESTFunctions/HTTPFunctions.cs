@@ -23,99 +23,100 @@ using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
-    #region Related Classes and Enums
+//    #region Related Classes and Enums
 
-    /// <summary>
-    /// Structure used as a return code for all calls fetching or setting data via the REST interface.  The ResponseText is is what's 
-    /// returned from the HTTP call and the ErrorText is if there's an execution error (for instance the server name does not resolve). 
-    /// One or the other or both can be empty depending on 
-    /// </summary>
-    public struct WebCallResult
-    {
-        public bool Success;
-        public string ResponseText; //raw text returned from the server's HTTP interface.
-        public string ErrorText;    //human readable error reason (if any)
-        public int StatusCode;      //HTTP status code = 200 (OK), 204 (accepted) etc...
-        public string StatusDescription;  //Additional status info sent by server (if any)
-        public XElement XmlElement;  //raw text result parsed into XML elements for easy processing.
-        public int TotalObjectCount; //for GET operations, even if returing only some users via paging, the total number is always returned.
-        public string Url;           //Full URL that was sent to the server.
-        public string Method;        //Method used (POST, PUT, GET...)
-        public string RequestBody;   //Request body that was sent to the server.
-        public string Misc;         //string to hold other data the calling/caller may wish to log such as full paths to file names processed and such.
-        public string ReturnedObjectId; //for all new object creation the objectID of the new object is returned here.
+//    /// <summary>
+//    /// Structure used as a return code for all calls fetching or setting data via the REST interface.  The ResponseText is is what's 
+//    /// returned from the HTTP call and the ErrorText is if there's an execution error (for instance the server name does not resolve). 
+//    /// One or the other or both can be empty depending on 
+//    /// </summary>
+//    public struct WebCallResult
+//    {
+//        public bool Success;
+//        public string ResponseText; //raw text returned from the server's HTTP interface.
+//        public string ErrorText;    //human readable error reason (if any)
+//        public int StatusCode;      //HTTP status code = 200 (OK), 204 (accepted) etc...
+//        public string StatusDescription;  //Additional status info sent by server (if any)
+//        public XElement XmlElement;  //raw text result parsed into XML elements for easy processing.
+//        public Dictionary<string, object> JsonDictionary; //raw text result parsed into dictionary if the response is JSON.
+//        public int TotalObjectCount; //for GET operations, even if returing only some users via paging, the total number is always returned.
+//        public string Url;           //Full URL that was sent to the server.
+//        public string Method;        //Method used (POST, PUT, GET...)
+//        public string RequestBody;   //Request body that was sent to the server.
+//        public string Misc;         //string to hold other data the calling/caller may wish to log such as full paths to file names processed and such.
+//        public string ReturnedObjectId; //for all new object creation the objectID of the new object is returned here.
 
-        /// <summary>
-        /// dumps the entire contents of the WebCallREsult excpept for the XElement object (which is just a parsed version of the ResponseText) and
-        /// returns it as a formatted string for logging and display purposes.
-        /// </summary>
-        public override string ToString()
-        {
-            StringBuilder strRet=new StringBuilder();
+//        /// <summary>
+//        /// dumps the entire contents of the WebCallREsult excpept for the XElement object (which is just a parsed version of the ResponseText) and
+//        /// returns it as a formatted string for logging and display purposes.
+//        /// </summary>
+//        public override string ToString()
+//        {
+//            StringBuilder strRet=new StringBuilder();
 
-            strRet.AppendLine("    WebCallResults contents:");
-            strRet.AppendLine("    URL Sent: " + Url);
-            strRet.AppendLine("    Method Sent: " + Method);
-            strRet.AppendLine("    Body Sent: " + RequestBody);
-            strRet.AppendLine("    Success returned: " + Success);
-            strRet.AppendLine(String.Format("    Status returned {0}:{1}", StatusCode, Enum.ToObject(typeof(HTTPStatusCode), StatusCode)));
-            strRet.AppendLine("    Error Text: " + ErrorText);
-            strRet.AppendLine("    Raw Response Text: " + ResponseText);
-            strRet.AppendLine("    Total object count: " + TotalObjectCount);
-            strRet.AppendLine("    Status description: " + StatusDescription);
+//            strRet.AppendLine("    WebCallResults contents:");
+//            strRet.AppendLine("    URL Sent: " + Url);
+//            strRet.AppendLine("    Method Sent: " + Method);
+//            strRet.AppendLine("    Body Sent: " + RequestBody);
+//            strRet.AppendLine("    Success returned: " + Success);
+//            strRet.AppendLine(String.Format("    Status returned {0}:{1}", StatusCode, Enum.ToObject(typeof(HTTPStatusCode), StatusCode)));
+//            strRet.AppendLine("    Error Text: " + ErrorText);
+//            strRet.AppendLine("    Raw Response Text: " + ResponseText);
+//            strRet.AppendLine("    Total object count: " + TotalObjectCount);
+//            strRet.AppendLine("    Status description: " + StatusDescription);
             
-            if (!string.IsNullOrEmpty(ReturnedObjectId))
-                strRet.AppendLine("    Returned ObjectId: " + ReturnedObjectId);
+//            if (!string.IsNullOrEmpty(ReturnedObjectId))
+//                strRet.AppendLine("    Returned ObjectId: " + ReturnedObjectId);
             
-            if (!string.IsNullOrEmpty(Misc))
-                strRet.AppendLine("    Misc data:" + Misc);
+//            if (!string.IsNullOrEmpty(Misc))
+//                strRet.AppendLine("    Misc data:" + Misc);
 
-            return strRet.ToString();
-        }
-    }
+//            return strRet.ToString();
+//        }
+//    }
 
-    /// <summary>
-    /// wrap an exception type so we can pass back the WebCallResult class in an exception when necessary
-    /// </summary>
-    public class UnityConnectionRestException : Exception
-    {
-        public UnityConnectionRestException(WebCallResult pWebCallResult, string pDescription=""):base(pDescription)
-        {
-            WebCallResult = pWebCallResult;
-            Description = pDescription;
-        }
+//    /// <summary>
+//    /// wrap an exception type so we can pass back the WebCallResult class in an exception when necessary
+//    /// </summary>
+//    public class UnityConnectionRestException : Exception
+//    {
+//        public UnityConnectionRestException(WebCallResult pWebCallResult, string pDescription=""):base(pDescription)
+//        {
+//            WebCallResult = pWebCallResult;
+//            Description = pDescription;
+//        }
 
-        public WebCallResult WebCallResult { get; private set; }
-        public string Description { get; private set; }
-    }
+//        public WebCallResult WebCallResult { get; private set; }
+//        public string Description { get; private set; }
+//    }
 
-    /// <summary>
-    /// list of possible methods supported by CUPI for getting/setting properties. 
-    /// </summary>
-    public enum MethodType {PUT, POST, GET, DELETE}
+//    /// <summary>
+//    /// list of possible methods supported by CUPI for getting/setting properties. 
+//    /// </summary>
+//    public enum MethodType {PUT, POST, GET, DELETE}
 
-    /// <summary>
-    /// List of common HTTP status codes used in providing diagnoostic/log output and such.
-    /// </summary>
-    public enum HTTPStatusCode
-    {
-        OK = 200,
-        Created = 201,
-        Change_Accepted = 204,
-        Moved_Permanently = 301,
-        Moved_Temporarily = 302,
-        Bad_Request = 400,
-        Unauthorized_User = 401,
-        Forbidden = 403,
-        Page_Not_Found = 404,
-        Method_Not_Allowed = 405,
-        Not_Acceptable = 406,
-        Gone = 410,
-        Unsupported_Media_Type = 415,
-        Server_Error = 500
-    }
+//    /// <summary>
+//    /// List of common HTTP status codes used in providing diagnoostic/log output and such.
+//    /// </summary>
+//    public enum HTTPStatusCode
+//    {
+//        OK = 200,
+//        Created = 201,
+//        Change_Accepted = 204,
+//        Moved_Permanently = 301,
+//        Moved_Temporarily = 302,
+//        Bad_Request = 400,
+//        Unauthorized_User = 401,
+//        Forbidden = 403,
+//        Page_Not_Found = 404,
+//        Method_Not_Allowed = 405,
+//        Not_Acceptable = 406,
+//        Gone = 410,
+//        Unsupported_Media_Type = 415,
+//        Server_Error = 500
+//    }
 
-    #endregion
+//    #endregion
 
     /// <summary>
     /// Internal class used by the ConnectionServer class for communicating via HTTP to target Connection servers.  This single static class
@@ -123,7 +124,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// application is NOT designed to be thread safe so it's assumed you are communicating to one server at a time.  That said there is basic
     /// thread locking functionality put into the GetResponse method to prevent messy accidents.
     /// </summary>
-    public static class HTTPFunctions
+    public static class HTTPFunctions 
     {
 
         #region Fields and Properties
@@ -174,8 +175,13 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             // allows for validation of SSL conversations
             DebugMode = false;
+
+            //handle self signed certificates
             ServicePointManager.ServerCertificateValidationCallback += ValidateRemoteCertificate;
             ServicePointManager.Expect100Continue = false;
+            
+            //Json serializer settings - we hook the event message for errors that is exposed via the errorevent we we can log missing properties
+            //situations and the like.
             JsonSerializerSettings = new JsonSerializerSettings();
             JsonSerializerSettings.Error += JsonSerializerErrorEvent;
             JsonSerializerSettings.MissingMemberHandling = MissingMemberHandling.Error;
@@ -184,7 +190,7 @@ namespace Cisco.UnityConnection.RestFunctions
         #endregion
 
 
-        #region Events 
+        #region Logging and Error Events 
 
         /// <summary>
         /// Event handle for external clients to register with so they can get logging events on errors and warnings that happen
@@ -579,7 +585,6 @@ namespace Cisco.UnityConnection.RestFunctions
                         string pRequestBody, bool pIsJson = false)
         {
             WebCallResult res = new WebCallResult();
-            StreamReader reader = null;
             HttpWebResponse response = null;
 
             //store the request parts in the resonse structure for ease of reference for error logging and such.
@@ -721,7 +726,6 @@ namespace Cisco.UnityConnection.RestFunctions
                 finally
                 {
                     //clean up on the way out of town.
-                    if (reader != null) reader.Dispose();
                     if (response != null) response.Close();
                 }
             }
@@ -731,8 +735,64 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
-        /// Primary method for sending/fetching data to and from the Connection server via CUPI - tries to parse results returned into XML format.
-        /// Use the GetJsonResponse if you're sending/recieving data in JSON format instead.
+        /// Overload for the GetCupiResponse that takes a simple string/string dictionary that is assumed to be the body of a 
+        /// JSON based CUPI request - the dictionary is constructed into a simple json string and inserted into the body of the 
+        /// request.
+        /// </summary>
+        /// <param name="pUrl">
+        /// Full URL to send to Connection - format should look like:
+        /// https://{Connection Server Name}:8443/vmrest/users
+        /// </param>
+        /// <param name="pMethod">
+        /// GET, PUT, POST, DELETE method type
+        /// </param>
+        /// <param name="pConnectionServer">
+        /// Instance of the ConnectionServer object
+        /// </param>
+        /// <param name="pRequestDictionary">
+        /// a string/string dictionary containing the parameters to send in the body of the request formatted for JSON
+        /// </param>
+        /// <returns>
+        /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
+        /// with the call so the calling party can easily log details in the event of a failure.
+        /// </returns>
+        public static WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServer pConnectionServer,
+                                                    Dictionary<string,string> pRequestDictionary)
+        {
+            StringBuilder strRequestBody = new StringBuilder();
+
+            //construct the JSON format request body based on name/value pairs passed in via dictionary
+            if (pRequestDictionary != null && pRequestDictionary.Count > 0)
+            {
+                strRequestBody.Append("{");
+                bool pFirstPair = true;
+                foreach (KeyValuePair<string, string> oPair in pRequestDictionary)
+                {
+                    if (pFirstPair)
+                    {
+                        pFirstPair = false;
+                    }
+                    else
+                    {
+                        strRequestBody.Append(",");
+                    }
+
+                    strRequestBody.Append("\"");
+                    strRequestBody.Append(oPair.Key);
+                    strRequestBody.Append("\":");
+                    strRequestBody.Append("\"");
+                    strRequestBody.Append(oPair.Value);
+                    strRequestBody.Append("\"");
+                }
+                strRequestBody.Append("}");
+            }
+
+            return GetCupiResponse(pUrl, pMethod, pConnectionServer, strRequestBody.ToString());
+        }
+
+        /// <summary>
+        /// Primary method for sending/fetching data to and from the Connection server via CUPI - tries to parse results returned into XML format
+        /// if XML response is used (pass pJsonResponse = true to skip that).  Results are contained in the WebCallResult class returned.
         /// </summary>
         /// <param name="pUrl">
         /// Full URL to send to Connection - format should look like:
@@ -770,6 +830,7 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res = GetHttpResponse(pUrl, pMethod, pConnectionServer, pRequestBody, pJsonResponse);
             
             res.TotalObjectCount = 0;
+
             //if we get a result text blob back, try and parse it out and check for a "total" item in there.  This gets used for 
             //paging scenarios and such.
             if (res.Success == false || string.IsNullOrEmpty(res.ResponseText))
@@ -781,69 +842,25 @@ namespace Cisco.UnityConnection.RestFunctions
             //body is.
             if (pJsonResponse)
             {
-                //if the query was a list the total number of telements will be given at the front of the response text like this:
-                //{"@total":"2",
-                //just manually parse it for a total attribute rather than spending the cycles putting the entire response into a 
-                //dictionary first
-                if (!string.IsNullOrEmpty(res.ResponseText))
-                {
-                    //unfortunately the different interfaces send counts back differently - check for both
-                    int iPos = res.ResponseText.IndexOf("{\"@total\":\"");
-                    if (iPos < 0 | iPos > 10)
-                    {
-                        iPos = res.ResponseText.IndexOf("{\"@total\"=\"");
-                        if (iPos < 0 | iPos > 10)
-                        {
-                            //not a valid position or missing
-                            return res;
-                        }
-                    }
-
-                    //account for length of "total" token
-                    iPos += 11;
-
-                    int iPos2 = res.ResponseText.IndexOf(",", iPos, StringComparison.InvariantCulture);
-                    if (iPos2 <= iPos | iPos2 > 20)
-                    {
-                        //check for 2nd construction
-                        iPos2 = res.ResponseText.IndexOf("}", iPos, StringComparison.InvariantCulture);
-                        if (iPos2 <= iPos | iPos2 > 20)
-                        {
-                            //invalid
-                            return res;
-                        }
-                    }
-
-                    string strCount = res.ResponseText.Substring(iPos, iPos2-iPos).TrimEnd('\"').TrimStart('\"');
-                    int iTemp;
-                    if (int.TryParse(strCount, out iTemp))
-                    {
-                        res.TotalObjectCount = iTemp;
-                    }
-                    else
-                    {
-                        if (Debugger.IsAttached) Debugger.Break();
-                        RaiseErrorEvent("Failed converting count to integer in GetCupiResponse:" + strCount);
-                    }
-                    return res;
-                }
+                res.JsonDictionary = GetDictionaryFromString(res.ResponseText);
+                res.TotalObjectCount = GetTotalObjectCountFromJsonResponse(res.ResponseText);
+                return res;
             }
-            else
-            {
-                //return the results as an XML set if there's anything provided.
-                res.XmlElement = GetXElementFromString(res.ResponseText);
-                //if we're doing a GET query there will be a "total" attribute on the returned XML indicating how many objects matched on the server
-                //side which may be more than the result set being returned if we're paging results (which we must on large systems).  Fetch this 
-                //value off and include it in the result set if its there.
-                res.TotalObjectCount = 0;
 
-                if ((res.XmlElement != null) && res.XmlElement.Attribute("total") != null)
+            //return the results as an XML set if there's anything provided.
+            res.XmlElement = GetXElementFromString(res.ResponseText);
+
+            //if we're doing a GET query there will be a "total" attribute on the returned XML indicating how many objects matched on the server
+            //side which may be more than the result set being returned if we're paging results (which we must on large systems).  Fetch this 
+            //value off and include it in the result set if its there.
+            res.TotalObjectCount = 0;
+
+            if ((res.XmlElement != null) && res.XmlElement.Attribute("total") != null)
+            {
+                var xAttribute = res.XmlElement.Attribute("total");
+                if (xAttribute != null)
                 {
-                    var xAttribute = res.XmlElement.Attribute("total");
-                    if (xAttribute != null)
-                    {
-                        res.TotalObjectCount = int.Parse(xAttribute.Value);
-                    }
+                    res.TotalObjectCount = int.Parse(xAttribute.Value);
                 }
             }
 
@@ -852,96 +869,69 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
-        /// Primary method for sending/fetching data to and from the Connection server via CUMI - tries to parse results returned into JSON format.
-        /// Use the GetCupiResponse if you're sending/recieving data in CUPI/XML format instead.
+        /// The total object count (used for paging through long lists of items) is presented in the response body in a couple
+        /// different ways for different interfaces on Connection - this method checks for them both and digs out the total object
+        /// count to pass back in the WebCallResult.
         /// </summary>
-        /// <param name="pUrl">
-        /// Full URL to send to Connection - format should look like:
-        /// https://{Connection Server Name}:8443/vmrest/users
+        /// <param name="pJsonResponse">
+        /// Test of the HTTP response from a call returning JSON
         /// </param>
-        /// <param name="pMethod">
-        /// GET, PUT, POST, DELETE method type
-        /// </param>
-        /// <param name="pConnectionServer">
-        /// Instance of the ConnectionServer class
-        /// </param>
-        /// <param name="pJsonParams">
-        /// Dictionary of name/value pairs as strings - this method will construct it into a JSON body and include it with the request.  You can 
-        /// pass NULL for this value if the call does not require a body.
-        /// </param>
-        /// <param name="pResults">
-        /// Results (if any) are passed back as a string/object dictionary - you must always pass this in even if you don't expect the server 
-        /// to return any results.
-        ///  </param>
         /// <returns>
-        /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
-        /// with the call so the calling party can easily log details in the event of a failure.
+        /// Total object count - 0 is returned if there's a problem parsing the response (or it simply does not contain a total object
+        /// count element)
         /// </returns>
-        public static WebCallResult GetJsonResponse(string pUrl, MethodType pMethod, ConnectionServer pConnectionServer,
-                                                    Dictionary<string, string> pJsonParams, out Dictionary<string, object> pResults)
+        private static int GetTotalObjectCountFromJsonResponse(string pJsonResponse)
         {
-            pResults = new Dictionary<string, object>();
-
-            if (pConnectionServer == null)
+            if (string.IsNullOrEmpty(pJsonResponse))
             {
-                return new WebCallResult
-                    {
-                        Success = false,
-                        ErrorText = "Null ConnectionServer passed to GetJsonResponse on HTTPFunctions.cs"
-                    };
+                return 0;
             }
 
-            StringBuilder strRequestBody = new StringBuilder();
-            //construct the JSON format request body based on name/value pairs passed in via dictionary
-            if (pJsonParams != null && pJsonParams.Count > 0)
+            //if the query was a list the total number of telements will be given at the front of the response text like this:
+            //{"@total":"2",
+            //just manually parse it for a total attribute rather than spending the cycles putting the entire response into a 
+            //dictionary first
+            if (!string.IsNullOrEmpty(pJsonResponse))
             {
-                strRequestBody.Append("{");
-                bool pFirstPair = true;
-                foreach (KeyValuePair<string, string> oPair in pJsonParams)
+                //unfortunately the different interfaces send counts back differently - check for both
+                int iPos = pJsonResponse.IndexOf("{\"@total\":\"");
+                if (iPos < 0 | iPos > 10)
                 {
-                    if (pFirstPair)
+                    iPos = pJsonResponse.IndexOf("{\"@total\"=\"");
+                    if (iPos < 0 | iPos > 10)
                     {
-                        pFirstPair = false;
+                        //not a valid position or missing
+                        return 0;
                     }
-                    else
-                    {
-                        strRequestBody.Append(",");
-                    }
-
-                    strRequestBody.Append("\"");
-                    strRequestBody.Append(oPair.Key);
-                    strRequestBody.Append("\":");
-                    strRequestBody.Append("\"");
-                    strRequestBody.Append(oPair.Value);
-                    strRequestBody.Append("\"");
                 }
-                strRequestBody.Append("}");
-            }
 
-            //fetch the raw results from the Connection server - anything returned by the server will be stored in the ResponseText
-            //in the WebCallResult instance.
-            WebCallResult res = GetHttpResponse(pUrl, pMethod, pConnectionServer, strRequestBody.ToString(), true);
+                //account for length of "total" token
+                iPos += 11;
 
-            //if we get a result text blob back, try and parse it out and check for a "total" item in there.  This gets used for 
-            //paging scenarios and such.
-            if (res.Success == false || string.IsNullOrEmpty(res.ResponseText))
-            {
-                return res;
-            }
+                int iPos2 = pJsonResponse.IndexOf(",", iPos, StringComparison.InvariantCulture);
+                if (iPos2 <= iPos | iPos2 > 20)
+                {
+                    //check for 2nd construction
+                    iPos2 = pJsonResponse.IndexOf("}", iPos, StringComparison.InvariantCulture);
+                    if (iPos2 <= iPos | iPos2 > 20)
+                    {
+                        //invalid
+                        return 0;
+                    }
+                }
 
-            //use the JavaScriptSerializer to dump what's in the returned text into the string/object dictionary.  
-            try
-            {
-                //var jss = new JavaScriptSerializer();
-                //pResults = jss.Deserialize<Dictionary<string, object>>(res.ResponseText);
-                pResults = JsonConvert.DeserializeObject<Dictionary<string, object>>(res.ResponseText);
+                string strCount = pJsonResponse.Substring(iPos, iPos2 - iPos).TrimEnd('\"').TrimStart('\"');
+                int iTemp;
+                if (int.TryParse(strCount, out iTemp))
+                {
+                    return iTemp;
+                }
+
+                RaiseErrorEvent("Failed converting count to integer in GetTotalObjectCountFromJsonResponse:" + strCount);
             }
-            catch (Exception ex)
-            {
-                RaiseErrorEvent("Failed to parse JSON response:" + ex);
-            }
-            return res;
+            return 0;
         }
+
 
         /// <summary>
         /// helper function to fetch the resonse text stream off a HTTPWebResponse object - this gets used to both get the response back from the server
@@ -973,6 +963,8 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             catch (Exception ex)
             {
+                //the error will be returned in the WebCallResult but also raise an error event here
+                RaiseDebugEvent("Failure getting stream reader from response stream in GetResponseText on HTTPFunctions.cs:" + ex.Message);
                 return "Failure getting stream reader from response stream in GetResponseText on HTTPFunctions.cs:" + ex.Message;
             }
 
@@ -1002,11 +994,41 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                return XElement.Parse(pString);
             }
-            catch
+            catch (Exception ex)
             {
                 //not all responses can be parsed into XML - so this isn't an error condition
+                RaiseDebugEvent("Could not parse XML response body into XElements:"+ex+", body="+pString);
                 return null;
             }
+        }
+
+
+        /// <summary>
+        /// If the response from a call using JSON contains a text representing a dictionary (common) this will parse it into
+        /// a simple string/object name value pair construction that is passed back on the WebCallResult class if the calling
+        /// party wishes to use it.
+        /// </summary>
+        /// <param name="pResponse">
+        /// Text of the response body to parse
+        /// </param>
+        /// <returns>
+        /// String/object dictionary - can be empty
+        /// </returns>
+        private static Dictionary<string, object> GetDictionaryFromString(string pResponse)
+        {
+            Dictionary<string, object> oDict;
+            try
+            {
+                oDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(pResponse);
+            }
+            catch (Exception ex)
+            {
+                //not all response bodies will be parsable - not an error event, just raise a debug event
+                RaiseDebugEvent("Failure parsing Json response into dictionary:" + ex+", body="+pResponse);
+                return new Dictionary<string, object>();
+            }
+
+            return oDict;
         }
 
         #endregion
@@ -2005,9 +2027,10 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
-        /// This routine will generate a temporary WAV file name on Connecton and uplaod the local WAV file to that location.  If it completes the Connection stream file name
-        /// will be returned and can be assigned as the stream file property for a voice name, greeting or interview handler question.  Note that these wav files can NOT be used
-        /// for messages (regular or dispatch).
+        /// This routine will generate a temporary WAV file name on Connecton and uplaod the local WAV file to that location.  If it completes the Connection 
+        /// stream file name will be returned and can be assigned as the stream file property for a voice name, greeting or interview handler question.  
+        /// Note that these wav files can NOT be used for messages (regular or dispatch).
+        /// This is an older construction and is only needed for interview handler questions currently.
         /// </summary>
         /// <param name="pConnectionServer">
         /// Instance of the ConnectionServer class

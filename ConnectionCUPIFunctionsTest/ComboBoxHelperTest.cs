@@ -94,7 +94,7 @@ namespace ConnectionCUPIFunctionsTest
             ComboBox oComboBox = new ComboBox();
 
             List<CallHandler> oHandlers;
-            var res = CallHandler.GetCallHandlers(_connectionServer, out oHandlers);
+            var res = CallHandler.GetCallHandlers(_connectionServer, out oHandlers,1,10);
             Assert.IsTrue(res.Success,"Failed to fetch call handlers:"+res);
             Assert.IsTrue(oHandlers.Count>0,"No handlers fetched:"+res);
 
