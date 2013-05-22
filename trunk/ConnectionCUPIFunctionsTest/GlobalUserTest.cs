@@ -100,7 +100,7 @@ namespace ConnectionCUPIFunctionsTest
             GlobalUser oNewUser;
             List<GlobalUser> oUsers;
 
-            WebCallResult res = GlobalUser.GetUsers(_connectionServer, out oUsers);
+            WebCallResult res = GlobalUser.GetUsers(_connectionServer, out oUsers,1,20);
             
             Assert.IsTrue(res.Success, "Failed to fetch global users");
             Assert.IsTrue(oUsers.Count > 0, "No global users returned on fetch");
@@ -129,7 +129,7 @@ namespace ConnectionCUPIFunctionsTest
             List<GlobalUser> oNewUsers;
 
             List<GlobalUser> oUsers;
-            WebCallResult res = GlobalUser.GetUsers(_connectionServer, out oUsers);
+            WebCallResult res = GlobalUser.GetUsers(_connectionServer, out oUsers,1,20);
             Assert.IsTrue(res.Success, "Failed to fetch global users");
             Assert.IsTrue(oUsers.Count > 0, "No global users returned on fetch");
 

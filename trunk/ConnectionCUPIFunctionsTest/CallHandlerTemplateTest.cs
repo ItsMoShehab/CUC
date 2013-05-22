@@ -127,32 +127,20 @@ namespace ConnectionCUPIFunctionsTest
         public void CallHandlerTemplate_AddDeleteTest()
         {
             List<CallHandlerTemplate> oTemplates;
-            WebCallResult res = CallHandlerTemplate.GetCallHandlerTemplates(_connectionServer, out oTemplates);
+            WebCallResult res = CallHandlerTemplate.GetCallHandlerTemplates(_connectionServer, out oTemplates,1,20);
             Assert.IsTrue(res.Success, "Failed to get call handler templates");
             Assert.IsNotNull(oTemplates, "Null call handler template returned");
             Assert.IsTrue(oTemplates.Count > 0, "Empty list of templates returned");
 
             CallHandlerTemplate oTemp = oTemplates[0];
 
-            string strRecipientUser = "";
-            string strRecipientList = "";
             string strMediaSwitchId = oTemp.MediaSwitchObjectId;
-
-            //fish the recipient off the template
-            if (string.IsNullOrEmpty(oTemp.RecipientSubscriberObjectId))
-            {
-                strRecipientList = oTemp.RecipientSubscriberObjectId;
-            }
-            else
-            {
-                strRecipientUser = oTemp.RecipientSubscriberObjectId;
-            }
 
             string strName = "Temp_" + Guid.NewGuid().ToString();
 
             CallHandlerTemplate oTemplate;
             res = CallHandlerTemplate.AddCallHandlerTemplate(_connectionServer, strName, strMediaSwitchId,
-                strRecipientList, strRecipientUser, null, out oTemplate);
+                oTemp.RecipientDistributionListObjectId, oTemp.RecipientSubscriberObjectId, null, out oTemplate);
 
             Assert.IsTrue(res.Success, "Failed creating new call handler template:" + res);
 

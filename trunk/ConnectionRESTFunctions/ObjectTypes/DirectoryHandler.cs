@@ -1077,7 +1077,6 @@ namespace Cisco.UnityConnection.RestFunctions
                         pConnectionServer.BaseUrl, pDirectoryHandlerObjectId, pLanguageId);
 
                 Dictionary<string, string> oParams = new Dictionary<string, string>();
-                Dictionary<string, object> oOutput;
 
                 oParams.Add("op", "RECORD");
                 oParams.Add("ResourceType", "STREAM");
@@ -1087,7 +1086,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 oParams.Add("volume", "100");
                 oParams.Add("startPosition", "0");
 
-                return HTTPFunctions.GetJsonResponse(strUrl, MethodType.PUT, pConnectionServer, oParams, out oOutput);
+                return HTTPFunctions.GetCupiResponse(strUrl, MethodType.PUT, pConnectionServer, oParams);
             }
 
 

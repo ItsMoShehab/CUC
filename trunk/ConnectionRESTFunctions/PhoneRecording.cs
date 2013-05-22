@@ -110,10 +110,8 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("number",_phoneNumber);
             oParams.Add("maximumRings", _rings.ToString());
  
-            Dictionary<string, object> oResults;
-
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.POST, _homeServer, oParams,out oResults);
-
+            //res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.POST, _homeServer, oParams,out oResults);
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, _homeServer, oParams);
             if (res.Success==false)
             {
                 return res;
@@ -168,10 +166,10 @@ namespace Cisco.UnityConnection.RestFunctions
 
             string strUrl = string.Format("{0}calls/{1}", _homeServer.BaseUrl,_callId);
 
-            Dictionary<string, object> oResults;
+            //Dictionary<string, object> oResults;
 
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.GET, _homeServer,null, out oResults);
-
+            //res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.GET, _homeServer,null, out oResults);
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, _homeServer, "");
             if (res.Success == false)
             {
                 return false;
@@ -179,7 +177,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             object oValue;
 
-            if (oResults.TryGetValue("connected", out oValue))
+            if (res.JsonDictionary.TryGetValue("connected", out oValue))
             {
                 if (oValue.ToString().Equals("true"))
                 {
@@ -199,9 +197,7 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             string strUrl = string.Format("{0}calls/{1}", _homeServer.BaseUrl, _callId);
 
-            Dictionary<string, object> oResults;
-
-            HTTPFunctions.GetJsonResponse(strUrl, MethodType.DELETE, _homeServer,null, out oResults);
+            HTTPFunctions.GetCupiResponse(strUrl, MethodType.DELETE, _homeServer,"");
         }
 
 
@@ -216,8 +212,6 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public WebCallResult RecordStreamFile()
         {
-            WebCallResult res;
-
             string strUrl = string.Format("{0}calls/{1}", _homeServer.BaseUrl,_callId);
 
             Dictionary<string, string> oParams = new Dictionary<string, string>();
@@ -225,9 +219,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("op", "RECORD");
 
             //the results from the call are returned in a string/object pair dictionary
-            Dictionary<string, object> oResults;
-
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.POST, _homeServer, oParams, out oResults);
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, _homeServer, oParams);
 
             if (res.Success == false)
             {
@@ -238,14 +230,14 @@ namespace Cisco.UnityConnection.RestFunctions
             // the "lastResult and "resourceId" values returned or we'll consider it a failure.
             object oValue;
 
-            if (oResults.ContainsKey("lastResult")==false | oResults.ContainsKey("resourceId")==false)
+            if (res.JsonDictionary.ContainsKey("lastResult") == false | res.JsonDictionary.ContainsKey("resourceId") == false)
             {
                 res.Success = false;
                 res.ErrorText = "No Result or resoruce ID returned from play in the response text";
                 return res;
             }
 
-            oResults.TryGetValue("lastResult", out oValue);
+            res.JsonDictionary.TryGetValue("lastResult", out oValue);
             if (oValue == null || oValue.ToString().Equals("0")==false)
             {
                 res.Success = false;
@@ -253,7 +245,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            oResults.TryGetValue("resourceId", out oValue);
+            res.JsonDictionary.TryGetValue("resourceId", out oValue);
             if (oValue==null || string.IsNullOrEmpty(oValue.ToString()))
             {
                 res.Success = false;
@@ -313,10 +305,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("startPosition", "0");
             oParams.Add("lastResult", "0");
 
-            //results are passed back in a string/object pair dictionary
-            Dictionary<string, object> oResults;
-
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.POST, _homeServer, oParams, out oResults);
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, _homeServer, oParams);
 
             if (res.Success == false)
             {
@@ -326,11 +315,18 @@ namespace Cisco.UnityConnection.RestFunctions
             //the only value we're interested in here is the lastResult - if it's 0 then playback finished ok.  
             object oValue;
 
-            oResults.TryGetValue("lastResult", out oValue);
-            if (oValue.ToString().Equals("0") == false)
+            res.JsonDictionary.TryGetValue("lastResult", out oValue);
+            if (oValue==null || oValue.ToString().Equals("0") == false)
             {
                 res.Success = false;
-                res.ErrorText = "Result returned from play=" + oValue.ToString();
+                if (oValue != null)
+                {
+                    res.ErrorText = "Result returned from play=" + oValue.ToString();
+                }
+                else
+                {
+                    res.ErrorText = "Empty result returned from play";
+                }
                 return res;
             }
 
@@ -395,10 +391,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("startPosition", pStartPosition.ToString());
             oParams.Add("lastResult", "0");
 
-            //results are passed back in a string/object pair dictionary
-            Dictionary<string, object> oResults;
-
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.POST, _homeServer, oParams, out oResults);
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, _homeServer, oParams);
 
             if (res.Success == false)
             {
@@ -408,7 +401,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //the only value we're interested in here is the lastResult - if it's 0 then playback finished ok.  
             object oValue;
 
-            oResults.TryGetValue("lastResult", out oValue);
+            res.JsonDictionary.TryGetValue("lastResult", out oValue);
             if (oValue==null)
             {
                 Console.WriteLine("Null value returned for last result");   
@@ -424,7 +417,7 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        ///     issue a hangup before disposing an instance.  No error is thrown here if there is no active call.
+        /// issue a hangup before disposing an instance.  No error is thrown here if there is no active call.
         /// </summary>
         public void Dispose()
         {

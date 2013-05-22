@@ -317,7 +317,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success, "Failed to add user to private list:" + res);
 
             List<DistributionList> oPublicLists;
-            res = DistributionList.GetDistributionLists(_connectionServer, out oPublicLists);
+            res = DistributionList.GetDistributionLists(_connectionServer, out oPublicLists,1,20);
             Assert.IsTrue(res.Success, "Failed to fetch public lists:" + res);
             Assert.IsTrue(oPublicLists.Count>0,"No public lists found");
 

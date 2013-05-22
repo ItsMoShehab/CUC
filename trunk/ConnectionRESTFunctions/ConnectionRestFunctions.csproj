@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="ComboBoxHelper.cs" />
     <Compile Include="EnumExtensions.cs" />
+    <Compile Include="IConnectionRestCalls.cs" />
     <Compile Include="ObjectTypes\AlternateExtension.cs" />
     <Compile Include="ObjectTypes\CallHandler.cs" />
     <Compile Include="ConnectionServer.cs" />

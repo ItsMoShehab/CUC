@@ -546,7 +546,6 @@ namespace Cisco.UnityConnection.RestFunctions
                 pObjectId, pQuestionNumber);
 
             Dictionary<string, string> oParams = new Dictionary<string, string>();
-            Dictionary<string, object> oOutput;
 
             oParams.Add("op", "RECORD");
             oParams.Add("ResourceType", "STREAM");
@@ -556,7 +555,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.PUT, pConnectionServer, oParams, out oOutput);
+            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.PUT, pConnectionServer, oParams);
 
             return res;
         }
@@ -614,8 +613,6 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         private WebCallResult GetInterviewQuestion(string pInterviewHandlerObjectId, int pQuestionNumber)
         {
-            WebCallResult res;
-
             if (string.IsNullOrEmpty(pInterviewHandlerObjectId))
             {
                 return new WebCallResult
@@ -628,7 +625,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}handlers/interviewhandlers/{1}/interviewquestions/{2}", HomeServer.BaseUrl, pInterviewHandlerObjectId,pQuestionNumber);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
 
             if (res.Success == false)
             {

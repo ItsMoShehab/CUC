@@ -763,7 +763,6 @@ namespace Cisco.UnityConnection.RestFunctions
                     pConnectionServer.BaseUrl,pCallHandlerObjectId, pGreetingType, pLanguageId);
 
             Dictionary<string, string> oParams = new Dictionary<string, string>();
-            Dictionary<string, object> oOutput;
 
             oParams.Add("op", "RECORD");
             oParams.Add("ResourceType", "STREAM");
@@ -773,47 +772,8 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            return HTTPFunctions.GetJsonResponse(strUrl, MethodType.PUT, pConnectionServer, oParams, out oOutput);
+            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.PUT, pConnectionServer, oParams);
         }
-
-
-
-        /// <summary>
-        /// When updating a greeting wav file you need to do a POST if it's not there already and a PUT if there is - so we need a quick way to indicate if 
-        /// a streamfile for a particular greeting exists or not.
-        /// </summary>
-        /// <param name="pConnectionServer">
-        /// Connection server that owns the greeting being checked.
-        /// </param>
-        /// <param name="pCallHandlerObjectId">
-        /// GUID that identifies call handler that owns the greeting being checked.
-        /// </param>
-        /// <param name="pGreetingType">
-        /// Greeting type (Standard, Off Hours, Busy, Internal, Alternate, Holiday, Error).
-        /// </param>
-        /// <param name="pLanguageId">
-        /// Language ID of the stream file to check for (i.e. English US = 1033)
-        /// </param>
-        /// <returns>
-        /// True if the greeting stream already exists, false if it does not.
-        /// </returns>
-        private static bool DoesGreetingStreamExist(ConnectionServer pConnectionServer,
-                                                        string pCallHandlerObjectId,
-                                                        GreetingTypes pGreetingType,
-                                                        int pLanguageId)
-        {
-            string strUrl = string.Format("{0}handlers/callhandlers/{1}/greetings/{2}/greetingstreamfiles/{3}",
-                                          pConnectionServer.BaseUrl, 
-                                          pCallHandlerObjectId, 
-                                          pGreetingType.Description(), 
-                                          pLanguageId);
-            
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
-
-            //the only reason this will fail is if it doesn't exists - return that here
-            return res.Success;
-        }
-
 
         #endregion
 
@@ -833,7 +793,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //determine if we're active based on that.
             bool bActive = this.TimeExpires>DateTime.Now;
 
-            return string.Format("Greeting type={0}, Play What={1} ({2}), enabled={3}", GreetingType, PlayWhat, (PlayWhatTypes)PlayWhat,bActive);
+            return string.Format("Greeting type={0}, Play What={1} ({2}), enabled={3}", GreetingType, (int)PlayWhat, PlayWhat.ToString(),bActive);
         }
 
 
