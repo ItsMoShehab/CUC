@@ -47,8 +47,9 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                _connectionServer = new ConnectionServer(mySettings.ConnectionServer, mySettings.ConnectionLogin, mySettings.ConnectionPW);
-                HTTPFunctions.DebugMode = mySettings.DebugOn;
+                 _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                   mySettings.ConnectionPW);
+                _connectionServer.DebugMode = mySettings.DebugOn;
             }
 
             catch (Exception ex)
@@ -71,7 +72,7 @@ namespace ConnectionCUPIFunctionsTest
         public void ClassCreationFailure()
         {
             //invalid login value - empty server name
-            ConnectionServer oTestServer = new ConnectionServer("", "login", "Pw");
+            ConnectionServer oTestServer = new ConnectionServer(new RestTransportFunctions(), "", "login", "Pw");
             Console.WriteLine(oTestServer);
         }
 
@@ -79,10 +80,10 @@ namespace ConnectionCUPIFunctionsTest
         /// Make sure an Exception is thrown if 
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
+        [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailureBadLogin()
         {
-            ConnectionServer oTestServer = new ConnectionServer("badservername", "badloginname", "badpassword");
+            ConnectionServer oTestServer = new ConnectionServer(new RestTransportFunctions(),  "badservername", "badloginname", "badpassword");
             Console.WriteLine(oTestServer);
         }
 
@@ -162,7 +163,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void ConstructorPlain()
         {
-            ConnectionServer oTestServer = new ConnectionServer();
+            ConnectionServer oTestServer = new ConnectionServer(new RestTransportFunctions());
             Console.WriteLine(oTestServer);
         }
 
@@ -174,7 +175,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void ParseVersionString_Failure()
         {
-            ConnectionServer oTempServer = new ConnectionServer();
+            ConnectionServer oTempServer = new ConnectionServer(new RestTransportFunctions());
 
             Assert.IsFalse(oTempServer.ParseVersionString(""), "Empty string");
             Assert.IsFalse(oTempServer.ParseVersionString("1"), "Invalid number of version parts");

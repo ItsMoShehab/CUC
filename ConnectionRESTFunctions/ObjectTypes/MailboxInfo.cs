@@ -170,7 +170,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}mailbox?userobjectid={1}", HomeServer.BaseUrl,pUserObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -179,7 +179,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -218,13 +218,13 @@ namespace Cisco.UnityConnection.RestFunctions
             pSentItemsCount = 0;
             pDeletedItemsCount = 0;
 
-            WebCallResult res = GetFolderCount(FolderTypes.inbox, out pInboxCount);
+            WebCallResult res = GetFolderCount(FolderTypes.Inbox, out pInboxCount);
             if (res.Success == false) return res;
 
-            res = GetFolderCount(FolderTypes.deleted, out pDeletedItemsCount);
+            res = GetFolderCount(FolderTypes.Deleted, out pDeletedItemsCount);
             if (res.Success == false) return res;
 
-            res = GetFolderCount(FolderTypes.sent, out pSentItemsCount);
+            res = GetFolderCount(FolderTypes.Sent, out pSentItemsCount);
             return res;
         }
 
@@ -240,7 +240,7 @@ namespace Cisco.UnityConnection.RestFunctions
             public int MessageCount { get; private set; }
         }
 
-        private enum FolderTypes {inbox, deleted, sent}
+        private enum FolderTypes {Inbox, Deleted, Sent}
 
         /// <summary>
         /// Returns the message count for a specific folder type (inbox, sent, deleted)
@@ -260,7 +260,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}mailbox/folders/{1}?userobjectid={2}", HomeServer.BaseUrl, pFolder.ToString(), UserObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -270,7 +270,7 @@ namespace Cisco.UnityConnection.RestFunctions
             Folder oFolder;
             try
             {
-                oFolder= HTTPFunctions.GetObjectFromJson<Folder>(res.ResponseText, "Folder");
+                oFolder = HomeServer.GetObjectFromJson<Folder>(res.ResponseText, "Folder");
             }
             catch (Exception ex)
             {

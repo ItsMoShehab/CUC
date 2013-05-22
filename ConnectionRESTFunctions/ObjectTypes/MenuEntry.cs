@@ -303,7 +303,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/menuentries", pConnectionServer.BaseUrl, pCallHandlerObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -319,7 +319,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pMenuEntries = HTTPFunctions.GetObjectsFromJson<MenuEntry>(res.ResponseText);
+            pMenuEntries = pConnectionServer.GetObjectsFromJson<MenuEntry>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pMenuEntries == null || (pMenuEntries.Count == 1 && string.IsNullOrEmpty(pMenuEntries[0].ObjectId)))
@@ -400,8 +400,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</MenuEntry>";
 
-            return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/menuentries/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, pKeyName),
-                                            MethodType.PUT,pConnectionServer,strBody,false);
+            return pConnectionServer.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/menuentries/{2}", pConnectionServer.BaseUrl, 
+                pCallHandlerObjectId, pKeyName),MethodType.PUT,strBody,false);
 
         }
 
@@ -418,7 +418,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public override string ToString()
         {
-            return string.Format("Key name={0} Action={1} ({2}), locked={3}", TouchtoneKey,Action,(ActionTypes)Action,Locked);
+            return string.Format("Key name={0} Action={1} ({2}), locked={3}", TouchtoneKey,(int)Action,Action.ToString(),Locked);
         }
 
 
@@ -474,7 +474,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/menuentries/{2}", HomeServer.BaseUrl, CallHandlerObjectId, pKey);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -483,8 +483,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "MenuEntry"), this, 
-                    HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(ConnectionServer.StripJsonOfObjectWrapper(res.ResponseText, "MenuEntry"), this, 
+                    RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

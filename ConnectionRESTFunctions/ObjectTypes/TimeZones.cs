@@ -126,7 +126,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = pConnectionServer.BaseUrl + "timezones";
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            WebCallResult res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -141,7 +141,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            List<ConnectionTimeZone> oTimeZones = HTTPFunctions.GetObjectsFromJson<ConnectionTimeZone>(res.ResponseText,"TimeZone");
+            List<ConnectionTimeZone> oTimeZones = pConnectionServer.GetObjectsFromJson<ConnectionTimeZone>(res.ResponseText, "TimeZone");
 
             if (oTimeZones == null || oTimeZones.Count == 0)
             {

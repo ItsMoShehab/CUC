@@ -138,7 +138,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = HomeServer.BaseUrl + "roles/" + strObjectId;
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -147,7 +147,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -175,14 +175,14 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = pConnectionServer.BaseUrl + string.Format("roles/?query=(RoleName is {0})", pRoleName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            WebCallResult res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false || res.TotalObjectCount == 0)
             {
                 return "";
             }
 
-            List<Role> oTemplates = HTTPFunctions.GetObjectsFromJson<Role>(res.ResponseText);
+            List<Role> oTemplates = pConnectionServer.GetObjectsFromJson<Role>(res.ResponseText);
 
             foreach (var oTemplate in oTemplates)
             {
@@ -224,7 +224,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = pConnectionServer.BaseUrl + "roles";
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -240,7 +240,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pRoles = HTTPFunctions.GetObjectsFromJson<Role>(res.ResponseText);
+            pRoles = pConnectionServer.GetObjectsFromJson<Role>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pRoles == null || (pRoles.Count == 1 && string.IsNullOrEmpty(pRoles[0].ObjectId)))

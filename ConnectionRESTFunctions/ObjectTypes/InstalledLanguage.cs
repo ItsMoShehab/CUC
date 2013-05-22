@@ -9,7 +9,6 @@
 
 #endregion
 
-using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
@@ -124,7 +123,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = HomeServer.BaseUrl + "installedlanguages";
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -140,7 +139,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            InstalledLanguages = HTTPFunctions.GetObjectsFromJson<InstalledLanguage>(res.ResponseText);
+            InstalledLanguages = HomeServer.GetObjectsFromJson<InstalledLanguage>(res.ResponseText);
 
             if (InstalledLanguages == null || InstalledLanguages.Count==0)
             {

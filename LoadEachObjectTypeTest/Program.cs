@@ -33,13 +33,9 @@ namespace LoadEachObjectTypeTest
         /// </summary>
         static void Main()
         {
-            HTTPFunctions.JsonSerializerSettings.Error += JsonSerializerError;
-
-            HTTPFunctions.ErrorEvents += HttpFunctionsOnErrorEvents;
-
             try
             {
-                _server = new ConnectionServer("192.168.0.185", "CCMAdministrator", "ecsbulab");
+                _server = new ConnectionServer(new RestTransportFunctions(), "192.168.0.185", "CCMAdministrator", "ecsbulab");
             }
             catch (Exception ex)
             {
@@ -47,6 +43,10 @@ namespace LoadEachObjectTypeTest
                 Console.WriteLine("Press enter to exit");
                 Console.WriteLine();
             }
+
+            RestTransportFunctions.JsonSerializerSettings.Error += JsonSerializerError;
+
+            _server.ErrorEvents += HttpFunctionsOnErrorEvents;
 
             //test user that has private lists, notification devices, mwis, alternate extensions and messages
             _userAliasToUse = "jlindborg";
@@ -63,7 +63,7 @@ namespace LoadEachObjectTypeTest
         }
 
 
-        private static void HttpFunctionsOnErrorEvents(object sender, HTTPFunctions.LogEventArgs logEventArgs)
+        private static void HttpFunctionsOnErrorEvents(object sender, RestTransportFunctions.LogEventArgs logEventArgs)
         {
             Console.WriteLine(logEventArgs.Line);
         }

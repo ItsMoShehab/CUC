@@ -2116,7 +2116,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}usertemplates/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -2125,8 +2125,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "UserTemplate"), this,
-                    HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(ConnectionServer.StripJsonOfObjectWrapper(res.ResponseText, "UserTemplate"), this,
+                    RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -2154,14 +2154,14 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}usertemplates?query=(Alias is {1})", HomeServer.BaseUrl, pAlias);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
                 return "";
             }
 
-            List<UserTemplate> oTemplates = HTTPFunctions.GetObjectsFromJson<UserTemplate>(res.ResponseText);
+            List<UserTemplate> oTemplates = HomeServer.GetObjectsFromJson<UserTemplate>(res.ResponseText);
 
             if (oTemplates.Count != 1)
             {
@@ -2517,10 +2517,10 @@ namespace Cisco.UnityConnection.RestFunctions
             temp.Add("pageNumber=" + pPageNumber);
             temp.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "usertemplates", temp.ToArray());
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "usertemplates", temp.ToArray());
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -2535,7 +2535,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pUserTemplates = HTTPFunctions.GetObjectsFromJson<UserTemplate>(res.ResponseText);
+            pUserTemplates = pConnectionServer.GetObjectsFromJson<UserTemplate>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pUserTemplates == null || (pUserTemplates.Count == 1 && string.IsNullOrEmpty(pUserTemplates[0].ObjectId)))
@@ -2622,8 +2622,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</UserTemplate>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "usertemplates?templateAlias=" + pTemplateAlias, MethodType.POST, pConnectionServer, 
-                strBody,false);
+            res = pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "usertemplates?templateAlias=" + pTemplateAlias, 
+                MethodType.POST, strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -2709,7 +2709,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "usertemplates/" + pObjectId, MethodType.DELETE, pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "usertemplates/" + pObjectId, MethodType.DELETE, "");
         }
 
         /// <summary>
@@ -2760,7 +2760,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</UserTemplate>";
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "usertemplates/" + pObjectId, MethodType.PUT, pConnectionServer, 
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "usertemplates/" + pObjectId, MethodType.PUT, 
                 strBody,false);
         }
 
@@ -2925,7 +2925,6 @@ namespace Cisco.UnityConnection.RestFunctions
                 strBody += string.Format("<{0}>{1}</{2}>", oPair.PropertyName, oPair.PropertyValue, oPair.PropertyName);
             }
 
-
             strBody += "</Credential>";
 
             //the only difference between setting a PIN vs. Password is the URL path used.  The body/property names are identical
@@ -2940,7 +2939,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 strUrl = pConnectionServer.BaseUrl + "usertemplates/" + pObjectId + "/credential/password";
             }
 
-            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.PUT, pConnectionServer, strBody,false);
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.PUT, strBody, false);
         }
 
 

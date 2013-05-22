@@ -131,7 +131,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}handlers/interviewhandlers/{1}/interviewquestions", pConnectionServer.BaseUrl, pInterviewHandlerObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -146,7 +146,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pInterviewQuestions = HTTPFunctions.GetObjectsFromJson<InterviewQuestion>(res.ResponseText);
+            pInterviewQuestions = pConnectionServer.GetObjectsFromJson<InterviewQuestion>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pInterviewQuestions == null|| (pInterviewQuestions.Count == 1 && 
@@ -231,7 +231,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUri = string.Format("{0}handlers/interviewhandlers/{1}/interviewquestions/{2}",
                                           pConnectionServer.BaseUrl, pInterviewHandlerObjectId, pInterviewQuestionNumber);
 
-            return HTTPFunctions.GetCupiResponse(strUri,MethodType.PUT, pConnectionServer, strBody, false);
+            return pConnectionServer.GetCupiResponse(strUri, MethodType.PUT, strBody, false);
 
         }
 
@@ -378,9 +378,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 pConnectionWavFileName = oInterviewHandler.VoiceName;
             }
             //fetch the WAV file
-            return HTTPFunctions.DownloadWavFile(pConnectionServer,
-                                                pTargetLocalFilePath,
-                                                pConnectionWavFileName);
+            return pConnectionServer.DownloadWavFile(pTargetLocalFilePath,pConnectionWavFileName);
         }
 
 
@@ -457,7 +455,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //need to do this via the older "two part" method - upload the file, get the ID back and then do another 
             //update of the object to save the stream file name
             string strStreamFileName;
-            res = HTTPFunctions.UploadWavFileToStreamLibrary(pConnectionServer,pSourceLocalFilePath, out strStreamFileName);
+            res = pConnectionServer.UploadWavFileToStreamLibrary(pSourceLocalFilePath, out strStreamFileName);
 
             if (res.Success == false)
             {
@@ -471,10 +469,10 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUri = string.Format("{0}handlers/interviewhandlers/{1}/interviewquestions/{2}",
                                           pConnectionServer.BaseUrl, pObjectId, pQuestionNumber);
 
-            res= HTTPFunctions.GetCupiResponse(strUri, MethodType.PUT, pConnectionServer, strBody, false);
+            res= pConnectionServer.GetCupiResponse(strUri, MethodType.PUT, strBody, false);
 
             //upload the WAV file to the server.
-            //res = HTTPFunctions.UploadWavFile(strResourcePath, pConnectionServer.LoginName, pConnectionServer.LoginPw, pSourceLocalFilePath);
+            //res = RestTransportFunctions.UploadWavFile(strResourcePath, pConnectionServer.LoginName, pConnectionServer.LoginPw, pSourceLocalFilePath);
 
             //if we converted a file to G711 in the process clean up after ourselves here. Only delete it if the upload was good - otherwise
             //keep it around as it may be useful for diagnostic purposes.
@@ -555,7 +553,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.PUT, pConnectionServer, oParams);
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.PUT, oParams);
 
             return res;
         }
@@ -625,7 +623,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}handlers/interviewhandlers/{1}/interviewquestions/{2}", HomeServer.BaseUrl, pInterviewHandlerObjectId,pQuestionNumber);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -634,8 +632,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "InterviewQuestion"), this,
-                    HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(ConnectionServer.StripJsonOfObjectWrapper(res.ResponseText, "InterviewQuestion"), this,
+                    RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

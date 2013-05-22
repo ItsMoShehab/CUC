@@ -71,7 +71,8 @@ namespace PWResetASP.Account
 
             try
             {
-                currentConnectionServer = new ConnectionServer(TextBoxServerName.Text.Trim(), TextBoxName.Text.Trim(), TextBoxPassword.Text.Trim());
+                currentConnectionServer = new ConnectionServer(new RestTransportFunctions(), TextBoxServerName.Text.Trim(), TextBoxName.Text.Trim(), 
+                    TextBoxPassword.Text.Trim());
             }
             catch
             {

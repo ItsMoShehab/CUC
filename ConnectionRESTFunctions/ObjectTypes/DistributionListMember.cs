@@ -122,11 +122,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(string.Format("{0}distributionlists/{1}/distributionlistmembers", pConnectionServer.BaseUrl, 
+            string strUrl = ConnectionServer.AddClausesToUri(string.Format("{0}distributionlists/{1}/distributionlistmembers", pConnectionServer.BaseUrl, 
                 pDistributionListObjectId), "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -142,7 +142,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pMemberList = HTTPFunctions.GetObjectsFromJson<DistributionListMember>(res.ResponseText);
+            pMemberList = pConnectionServer.GetObjectsFromJson<DistributionListMember>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pMemberList == null || (pMemberList.Count == 1 && string.IsNullOrEmpty(pMemberList[0].ObjectId)))

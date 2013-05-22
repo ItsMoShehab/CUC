@@ -369,7 +369,7 @@ namespace Cisco.UnityConnection.RestFunctions
                                           pConnectionServer.BaseUrl, pDirectoryHandlerObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET,  "");
 
             if (res.Success == false)
             {
@@ -384,7 +384,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pGreetingStreamFiles = HTTPFunctions.GetObjectsFromJson<DirectoryHandlerGreetingStreamFile>(res.ResponseText,"DirectoryHandlerStreamFile");
+            pGreetingStreamFiles = pConnectionServer.GetObjectsFromJson<DirectoryHandlerGreetingStreamFile>(res.ResponseText, "DirectoryHandlerStreamFile");
 
             if (pGreetingStreamFiles == null)
             {
@@ -451,9 +451,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //fetch the WAV file
-            return HTTPFunctions.DownloadWavFile(pConnectionServer,
-                                                pTargetLocalFilePath,
-                                                pConnectionStreamFileName);
+            return pConnectionServer.DownloadWavFile(pTargetLocalFilePath,pConnectionStreamFileName);
         }
 
 
@@ -629,7 +627,7 @@ namespace Cisco.UnityConnection.RestFunctions
                                          HomeServer.BaseUrl, pDirectoryHandlerObjectId, pLanguageCode);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -638,7 +636,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

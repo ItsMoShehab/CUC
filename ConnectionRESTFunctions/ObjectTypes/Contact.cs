@@ -311,10 +311,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "contacts", pClauses);
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "contacts", pClauses);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -329,7 +329,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pContacts = HTTPFunctions.GetObjectsFromJson<Contact>(res.ResponseText);
+            pContacts = pConnectionServer.GetObjectsFromJson<Contact>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pContacts == null || (pContacts.Count == 1 && string.IsNullOrEmpty(pContacts[0].ObjectId)))
@@ -532,8 +532,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</Contact>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "contacts?templateAlias="+pContactTemplateAlias, MethodType.POST,
-                                            pConnectionServer,strBody,false);
+            res = pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "contacts?templateAlias=" + pContactTemplateAlias, 
+                    MethodType.POST,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -623,7 +623,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "contacts/" + pObjectId,MethodType.DELETE,pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "contacts/" + pObjectId, MethodType.DELETE, "");
         }
 
 
@@ -675,8 +675,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</Contact>";
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "contacts/" + pObjectId,
-                                            MethodType.PUT,pConnectionServer,strBody,false);
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "contacts/" + pObjectId,
+                                            MethodType.PUT,strBody,false);
 
         }
 
@@ -753,9 +753,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 pConnectionWavFileName = oContact.VoiceName;
             }
             //fetch the WAV file
-            return HTTPFunctions.DownloadWavFile(pConnectionServer,
-                                                pTargetLocalFilePath,
-                                                pConnectionWavFileName);
+            return pConnectionServer.DownloadWavFile(pTargetLocalFilePath,pConnectionWavFileName);
         }
 
 
@@ -825,7 +823,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strResourcePath = string.Format(@"{0}contacts/{1}/voicename", pConnectionServer.BaseUrl, pObjectId);
 
             //upload the WAV file to the server.
-            res = HTTPFunctions.UploadWavFile(strResourcePath, pConnectionServer, pSourceLocalFilePath);
+            res = pConnectionServer.UploadWavFile(strResourcePath, pSourceLocalFilePath);
 
             //if we converted a file to G711 in the process clean up after ourselves here. Only delete it if the upload was good - otherwise
             //keep it around as it may be useful for diagnostic purposes.
@@ -902,7 +900,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.PUT, pConnectionServer, oParams);
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.PUT, oParams);
 
             return res;
         }
@@ -980,7 +978,7 @@ namespace Cisco.UnityConnection.RestFunctions
              string strUrl = string.Format("{0}contacts/{1}", HomeServer.BaseUrl, strObjectId);
             
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+             WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -989,7 +987,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -1024,14 +1022,14 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}contacts/?query=(Alias is {1})", HomeServer.BaseUrl, pAlias);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET,  "");
 
             if (res.Success == false || res.TotalObjectCount==0)
             {
                 return "";
             }
 
-            List<Contact> oContacts = HTTPFunctions.GetObjectsFromJson<Contact>(res.ResponseText);
+            List<Contact> oContacts = HomeServer.GetObjectsFromJson<Contact>(res.ResponseText);
 
             foreach (var oContact in oContacts)
             {

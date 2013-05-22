@@ -211,7 +211,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}restrictiontables/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -220,7 +220,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -244,14 +244,14 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}restrictiontables/?query=(DisplayName is {1})", HomeServer.BaseUrl, pName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false || res.TotalObjectCount ==0)
             {
                 return "";
             }
 
-            List<RestrictionTable> oTables = HTTPFunctions.GetObjectsFromJson<RestrictionTable>(res.ResponseText);
+            List<RestrictionTable> oTables = HomeServer.GetObjectsFromJson<RestrictionTable>(res.ResponseText);
 
             foreach (var oTable in oTables)
             {
@@ -301,11 +301,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "restrictiontables", "pageNumber=" + pPageNumber, 
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "restrictiontables", "pageNumber=" + pPageNumber, 
                 "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET,  "");
 
             if (res.Success == false)
             {
@@ -321,7 +321,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pRestrictionTables = HTTPFunctions.GetObjectsFromJson<RestrictionTable>(res.ResponseText);
+            pRestrictionTables = pConnectionServer.GetObjectsFromJson<RestrictionTable>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pRestrictionTables == null || (pRestrictionTables.Count == 1 && string.IsNullOrEmpty(pRestrictionTables[0].ObjectId)))

@@ -179,7 +179,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = HomeServer.BaseUrl + "partitions/" + strObjectId;
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -188,7 +188,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -215,14 +215,14 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = HomeServer.BaseUrl + string.Format("partitions/?query=(Name is {0})", pName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false || res.TotalObjectCount==0)
             {
                 return "";
             }
 
-            List<Partition> oPartitions = HTTPFunctions.GetObjectsFromJson<Partition>(res.ResponseText);
+            List<Partition> oPartitions = HomeServer.GetObjectsFromJson<Partition>(res.ResponseText);
 
             foreach (var oPartition in oPartitions)
             {
@@ -322,10 +322,10 @@ namespace Cisco.UnityConnection.RestFunctions
             temp.Add("pageNumber=" + pPageNumber);
             temp.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "partitions", temp.ToArray());
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "partitions", temp.ToArray());
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -341,7 +341,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pPartitions = HTTPFunctions.GetObjectsFromJson<Partition>(res.ResponseText);
+            pPartitions = pConnectionServer.GetObjectsFromJson<Partition>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pPartitions == null || (pPartitions.Count == 1 && string.IsNullOrEmpty(pPartitions[0].ObjectId)))
@@ -467,7 +467,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
              strBody += "</Partition>";
 
-             res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "partitions", MethodType.POST,pConnectionServer,strBody,false);
+             res = pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "partitions", MethodType.POST, strBody, false);
 
              //if the call went through then the ObjectId will be returned in the URI form.
              if (res.Success)
@@ -513,8 +513,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "partitions/" + pPartitionObjectId,
-                                            MethodType.DELETE,pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "partitions/" + pPartitionObjectId,
+                                            MethodType.DELETE,"");
         }
 
 
@@ -571,7 +571,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</Partition>";
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "partitions/" + pObjectId,MethodType.PUT,pConnectionServer,strBody,false);
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "partitions/" + pObjectId, MethodType.PUT, strBody, false);
         }
 
         #endregion

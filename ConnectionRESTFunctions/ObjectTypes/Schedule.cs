@@ -239,7 +239,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}schedules/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -248,7 +248,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -273,14 +273,14 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}schedules/?query=(DisplayName is {1})", HomeServer.BaseUrl, pName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false || res.TotalObjectCount == 0)
             {
                 return "";
             }
 
-            List<Schedule> oSchedules = HTTPFunctions.GetObjectsFromJson<Schedule>(res.ResponseText);
+            List<Schedule> oSchedules = HomeServer.GetObjectsFromJson<Schedule>(res.ResponseText);
 
             foreach (var oSchedule in oSchedules)
             {
@@ -400,11 +400,11 @@ namespace Cisco.UnityConnection.RestFunctions
                     };
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "schedules", "pageNumber=" + pPageNumber, 
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "schedules", "pageNumber=" + pPageNumber, 
                 "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            WebCallResult res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET,  "");
             
             if (res.Success == false)
             {
@@ -420,7 +420,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pSchedules = HTTPFunctions.GetObjectsFromJson<Schedule>(res.ResponseText);
+            pSchedules = pConnectionServer.GetObjectsFromJson<Schedule>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pSchedules == null || (pSchedules.Count == 1 && string.IsNullOrEmpty(pSchedules[0].ObjectId)))
@@ -519,7 +519,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</Schedule>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "schedules", MethodType.POST, pConnectionServer, strBody,false);
+            res = pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "schedules", MethodType.POST, strBody, false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -724,7 +724,7 @@ namespace Cisco.UnityConnection.RestFunctions
             strBody += "</ScheduleDetail>";
 
             string strPath = string.Format("schedules/{0}/scheduledetails", pScheduleObjectId);
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + strPath, MethodType.POST, pConnectionServer, strBody,false);
+            res = pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + strPath, MethodType.POST, strBody, false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             strPath += "/";
@@ -786,8 +786,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "schedules/" + pScheduleObjectId,
-                                            MethodType.DELETE, pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "schedules/" + pScheduleObjectId,
+                                            MethodType.DELETE, "");
         }
 
         #endregion

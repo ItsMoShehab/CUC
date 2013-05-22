@@ -409,8 +409,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pUrgent">
         /// Pass as true to send message with urgent flag.
         /// </param>
-        /// <param name="pPrivate">
-        /// Pass as true to send message with personal flag (cannot be forwarded)
+        /// <param name="pSensitivity">
+        /// sensitivity of the message (personal, confidential)
         /// </param>
         /// <param name="pSecure">
         /// Pass as true to set the message as secure (cannot be downloaded from server).
@@ -503,7 +503,7 @@ namespace Cisco.UnityConnection.RestFunctions
                                                                             false, pCallerId);
 
             //upload message
-            return HTTPFunctions.UploadVoiceMessageWav(pConnectionServer,pPathToLocalWavFile, strMessageJsonString,
+            return pConnectionServer.UploadVoiceMessageWav(pPathToLocalWavFile, strMessageJsonString,
                                                     pSenderUserObjectId, strRecipientJsonString);
         }
 
@@ -526,8 +526,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pUrgent">
         /// Pass as true to send message with urgent flag.
         /// </param>
-        /// <param name="pPrivate">
-        /// Pass as true to send message with personal flag (cannot be forwarded)
+        /// <param name="pSensitivity">
+        ///  Message sensitivity (private/confidential)
         /// </param>
         /// <param name="pSecure">
         /// Pass as true to set the message as secure (cannot be downloaded from server).
@@ -593,7 +593,7 @@ namespace Cisco.UnityConnection.RestFunctions
                                                                             false, pCallerId);
 
             //upload message
-            return HTTPFunctions.UploadVoiceMessageResourceId(pConnectionServer, pResourceId, strMessageJsonString,
+            return pConnectionServer.UploadVoiceMessageResourceId(pResourceId, strMessageJsonString,
                                                     pSenderUserObjectId, strRecipientJsonString);
         }
 
@@ -658,8 +658,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pSecure">
         /// True marks message as secure
         /// </param>
-        /// <param name="pPrivate">
-        /// True marks message as Personal.
+        /// <param name="pSensitivity">
+        /// message sensitivity setting
         /// </param>
         /// <param name="pDispatch">
         /// True marks message for dispatch - only practical if the addressing target is a list.
@@ -790,7 +790,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //we need to get the message details which includes an attachment collection
             string strUrl = string.Format(@"{0}messages/{1}?userobjectid={2}", pConnectionServer.BaseUrl, pMessageObjectId, pUserObjectId);
 
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "",false);
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "", false);
 
             if (res.Success == false)
             {
@@ -941,10 +941,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 strUrl+="mailbox/folders/sent/messages";
             }
             
-            strUrl = HTTPFunctions.AddClausesToUri(strUrl, oParams.ToArrayOfStrings());
+            strUrl = ConnectionServer.AddClausesToUri(strUrl, oParams.ToArrayOfStrings());
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "",false);
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "", false);
 
             if (res.Success == false)
             {
@@ -1064,8 +1064,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //go fetch the message attachment media file 
-            res = HTTPFunctions.DownloadMessageAttachment(pConnectionServer.BaseUrl,
-                                                          pConnectionServer,
+            res = pConnectionServer.DownloadMessageAttachment(pConnectionServer.BaseUrl,
                                                           pTargetLocalFilePath, 
                                                           pUserObjectId, 
                                                           pMessageObjectId,
@@ -1110,7 +1109,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}messages/{1}?userobjectid={2}&{3}",pConnectionServer.BaseUrl,pMessageObjectId,
                 pUserObjectId,strHardDelete);
 
-            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.DELETE, pConnectionServer,"",false);
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.DELETE, "", false);
         }
 
 
@@ -1166,7 +1165,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             string strUrl = string.Format("{0}messages/{1}?userobjectid={2}", pConnectionServer.BaseUrl,pMessageObjectId, pUserObjectId);
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.PUT, pConnectionServer, strBody,false);
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.PUT, strBody, false);
         }
 
 
@@ -1192,7 +1191,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}mailbox/folders/deleted/messages?method=empty&userobjectid={1}",
                                           pConnectionServer.BaseUrl, pUserObjectId);
 
-            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, pConnectionServer, "",false);
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.POST, "", false);
         }
 
 
@@ -1226,7 +1225,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}messages/{1}/recall?userobjectid={2}",
                                           pConnectionServer.BaseUrl, pMessageObjectId, pUserObjectId);
 
-            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, pConnectionServer, "",false);
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.POST, "", false);
         }
 
 
@@ -1256,7 +1255,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}messages/{1}?method=undelete&userobjectid={2}",
                                           pConnectionServer.BaseUrl, pMessageObjectId, pUserObjectId);
 
-            return HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, pConnectionServer, "",false);
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.POST, "", false);
         }
 
 
@@ -1307,7 +1306,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}messages/{1}/?userobjectid={2}", HomeServer.BaseUrl, pMessageObjectId, pUserObjectId);
 
             //issue the command to the CUMI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "",false);
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "", false);
 
             if (res.Success == false)
             {
@@ -1460,8 +1459,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pUrgent">
         /// Pass as true to send message with urgent flag.
         /// </param>
-        /// <param name="pPrivate">
-        /// Pass as true to send message with personal flag (cannot be forwarded)
+        /// <param name="pSensitivityType">
+        /// Message sensitivity (private/confidential)
         /// </param>
         /// <param name="pSecure">
         /// Pass as true to set the message as secure (cannot be downloaded from server).
@@ -1536,8 +1535,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 MsgId, UserObjectId);
             
             //forward message
-            return HTTPFunctions.UploadVoiceMessageWav(HomeServer, pPathToWavFile, strMessageJsonString,
-                                                    UserObjectId,strRecipientJsonString,strUri);
+            return HomeServer.UploadVoiceMessageWav(pPathToWavFile, strMessageJsonString,UserObjectId,strRecipientJsonString,strUri);
         }
 
 
@@ -1554,8 +1552,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pUrgent">
         /// Pass as true to send message with urgent flag.
         /// </param>
-        /// <param name="pPrivate">
-        /// Pass as true to send message with personal flag (cannot be forwarded)
+        /// <param name="pSensitivity">
+        /// Message sensitivity
         /// </param>
         /// <param name="pSecure">
         /// Pass as true to set the message as secure (cannot be downloaded from server).
@@ -1604,7 +1602,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 MsgId, UserObjectId);
 
             //forward message
-            return HTTPFunctions.UploadVoiceMessageResourceId(HomeServer, pResourceId, strMessageJsonString,
+            return HomeServer.UploadVoiceMessageResourceId(pResourceId, strMessageJsonString,
                                                     UserObjectId, strRecipientJsonString,strUri);
         }
 
@@ -1623,8 +1621,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pUrgent">
         /// Pass as true to send message with urgent flag.
         /// </param>
-        /// <param name="pPrivate">
-        /// Pass as true to send message with personal flag (cannot be forwarded)
+        /// <param name="pSensitivity">
+        /// Message sensitivity
         /// </param>
         /// <param name="pSecure">
         /// Pass as true to set the message as secure (cannot be downloaded from server).
@@ -1692,8 +1690,8 @@ namespace Cisco.UnityConnection.RestFunctions
          /// <param name="pUrgent">
          /// Pass as true to send message with urgent flag.
          /// </param>
-         /// <param name="pPrivate">
-         /// Pass as true to send message with personal flag (cannot be forwarded)
+         /// <param name="pSensitivity">
+         /// Message sensitivity
          /// </param>
          /// <param name="pSecure">
          /// Pass as true to set the message as secure (cannot be downloaded from server).

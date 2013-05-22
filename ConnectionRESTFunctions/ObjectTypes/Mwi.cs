@@ -341,7 +341,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}users/{1}/mwis", pConnectionServer.BaseUrl, pUserObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -357,7 +357,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pMwiDevices = HTTPFunctions.GetObjectsFromJson<Mwi>(res.ResponseText);
+            pMwiDevices = pConnectionServer.GetObjectsFromJson<Mwi>(res.ResponseText);
 
             if (pMwiDevices == null)
             {
@@ -445,8 +445,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</Mwi>";
 
-            res = HTTPFunctions.GetCupiResponse(string.Format("{0}users/{1}/mwis", pConnectionServer.BaseUrl, pUserObjectId),
-                MethodType.POST,pConnectionServer,strBody,false);
+            res = pConnectionServer.GetCupiResponse(string.Format("{0}users/{1}/mwis", pConnectionServer.BaseUrl, pUserObjectId),
+                MethodType.POST,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -500,7 +500,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.DELETE,pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.DELETE, "");
         }
 
 
@@ -562,7 +562,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</Mwi>";
 
-            return HTTPFunctions.GetCupiResponse(strUrl,MethodType.PUT,pConnectionServer,strBody,false);
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.PUT, strBody, false);
         }
 
 
@@ -668,7 +668,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}users/{1}/mwis/{2}", HomeServer.BaseUrl,pUserObjectId, pObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -677,7 +677,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

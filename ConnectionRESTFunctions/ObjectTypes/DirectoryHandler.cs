@@ -607,10 +607,10 @@ namespace Cisco.UnityConnection.RestFunctions
                     return res;
                 }
 
-                string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "handlers/directoryhandlers",pClauses);
+                string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "handlers/directoryhandlers",pClauses);
 
                 //issue the command to the CUPI interface
-                res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+                res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
                 if (res.Success == false)
                 {
@@ -625,7 +625,7 @@ namespace Cisco.UnityConnection.RestFunctions
                     return res;
                 }
 
-                pDirectoryHandlers = HTTPFunctions.GetObjectsFromJson<DirectoryHandler>(res.ResponseText);
+                pDirectoryHandlers = pConnectionServer.GetObjectsFromJson<DirectoryHandler>(res.ResponseText);
 
                 //special case - Json.Net always creates an object even when there's no data for it.
                 if (pDirectoryHandlers == null || (pDirectoryHandlers.Count == 1 && string.IsNullOrEmpty(pDirectoryHandlers[0].ObjectId)))
@@ -851,7 +851,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
                 strBody += "</DirectoryHandler>";
 
-                res= HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/directoryhandlers", MethodType.POST,pConnectionServer,strBody,false);
+                res = pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/directoryhandlers", MethodType.POST, strBody, false);
 
                 //fetch the objectId of the newly created object off the return
                 if (res.Success)
@@ -886,8 +886,8 @@ namespace Cisco.UnityConnection.RestFunctions
                     return res;
                 }
 
-                return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/directoryhandlers/" + pObjectId,
-                                                MethodType.DELETE,pConnectionServer, "");
+                return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/directoryhandlers/" + pObjectId,
+                                                MethodType.DELETE,"");
             }
 
 
@@ -945,8 +945,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
                 strBody += "</DirectoryHandler>";
 
-                return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/directoryhandlers/" + pObjectId,
-                                                MethodType.PUT,pConnectionServer,strBody,false);
+                return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/directoryhandlers/" + pObjectId,
+                                                MethodType.PUT,strBody,false);
 
             }
 
@@ -1026,7 +1026,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 string strGreetingStreamUriPath = string.Format("https://{0}:8443/vmrest/handlers/directoryhandlers/{1}/directoryhandlerstreamfiles/{2}/audio",
                                              pConnectionServer.ServerName, pDirectoryHandlerObjectId, pLanguageId);
 
-                return HTTPFunctions.UploadWavFile(strGreetingStreamUriPath, pConnectionServer, pSourceLocalFilePath);
+                return pConnectionServer.UploadWavFile(strGreetingStreamUriPath, pSourceLocalFilePath);
             }
 
             /// <summary>
@@ -1086,7 +1086,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 oParams.Add("volume", "100");
                 oParams.Add("startPosition", "0");
 
-                return HTTPFunctions.GetCupiResponse(strUrl, MethodType.PUT, pConnectionServer, oParams);
+                return pConnectionServer.GetCupiResponse(strUrl, MethodType.PUT, oParams);
             }
 
 
@@ -1175,7 +1175,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 string strUrl = string.Format("{0}handlers/directoryhandlers/{1}", HomeServer.BaseUrl, strObjectId);
 
                 //issue the command to the CUPI interface
-                WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+                WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
                 if (res.Success == false)
                 {
@@ -1191,7 +1191,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
                 try
                 {
-                    JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                    JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
                 }
                 catch (Exception ex)
                 {
@@ -1220,14 +1220,14 @@ namespace Cisco.UnityConnection.RestFunctions
                 string strUrl = string.Format("{0}handlers/directoryhandlers/?query=(DisplayName is {1})", HomeServer.BaseUrl, pName);
 
                 //issue the command to the CUPI interface
-                WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+                WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
                 if (res.Success == false || res.TotalObjectCount == 0)
                 {
                     return "";
                 }
 
-                List<DirectoryHandler> oHandlers = HTTPFunctions.GetObjectsFromJson<DirectoryHandler>(res.ResponseText);
+                List<DirectoryHandler> oHandlers = HomeServer.GetObjectsFromJson<DirectoryHandler>(res.ResponseText);
 
                 foreach (var oHandler in oHandlers)
                 {

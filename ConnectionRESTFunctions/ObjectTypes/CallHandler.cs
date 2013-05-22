@@ -644,10 +644,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl= HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "handlers/callhandlers", pClauses);
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "handlers/callhandlers", pClauses);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -662,7 +662,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pCallHandlers = HTTPFunctions.GetObjectsFromJson<CallHandler>(res.ResponseText);
+            pCallHandlers = pConnectionServer.GetObjectsFromJson<CallHandler>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pCallHandlers == null || (pCallHandlers.Count == 1 && string.IsNullOrEmpty(pCallHandlers[0].ObjectId)))
@@ -813,8 +813,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</Callhandler>";
 
-            res = HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/callhandlers?templateObjectId=" + pTemplateObjectId, MethodType.POST,
-                                            pConnectionServer,strBody,false);
+            res = pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/callhandlers?templateObjectId=" + pTemplateObjectId, 
+                            MethodType.POST,strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -907,8 +907,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/callhandlers/" + pObjectId,
-                                            MethodType.DELETE,pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/callhandlers/" + pObjectId,
+                                            MethodType.DELETE, "");
         }
 
 
@@ -960,8 +960,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</CallHandler>";
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/callhandlers/" + pObjectId,
-                                            MethodType.PUT,pConnectionServer,strBody,false);
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/callhandlers/" + pObjectId,
+                                            MethodType.PUT,strBody,false);
 
         }
 
@@ -1039,9 +1039,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 pConnectionWavFileName = oCallHandler.VoiceName;
             }
             //fetch the WAV file
-            return HTTPFunctions.DownloadWavFile(pConnectionServer,
-                                                pTargetLocalFilePath,
-                                                pConnectionWavFileName);
+            return pConnectionServer.DownloadWavFile(pTargetLocalFilePath,pConnectionWavFileName);
         }
 
 
@@ -1113,7 +1111,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strResourcePath = string.Format(@"{0}handlers/callhandlers/{1}/voicename", pConnectionServer.BaseUrl, pObjectId);
 
             //upload the WAV file to the server.
-            res = HTTPFunctions.UploadWavFile(strResourcePath, pConnectionServer, pSourceLocalFilePath);
+            res = pConnectionServer.UploadWavFile(strResourcePath, pSourceLocalFilePath);
 
             //if we converted a file to G711 in the process clean up after ourselves here. Only delete it if the upload was good - otherwise
             //keep it around as it may be useful for diagnostic purposes.
@@ -1190,7 +1188,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("volume", "100");
             oParams.Add("startPosition", "0");
 
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.PUT, pConnectionServer, oParams);
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.PUT, oParams);
 
             return res;
         }
@@ -1282,7 +1280,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -1291,8 +1289,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(HTTPFunctions.StripJsonOfObjectWrapper(res.ResponseText, "Callhandler"), this,
-                    HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(ConnectionServer.StripJsonOfObjectWrapper(res.ResponseText, "Callhandler"), this,
+                    RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

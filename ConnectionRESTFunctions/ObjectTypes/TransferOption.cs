@@ -473,7 +473,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/transferoptions", pConnectionServer.BaseUrl, pCallHandlerObjectId);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -489,7 +489,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pTransferOptions = HTTPFunctions.GetObjectsFromJson<TransferOption>(res.ResponseText);
+            pTransferOptions = pConnectionServer.GetObjectsFromJson<TransferOption>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pTransferOptions == null || (pTransferOptions.Count == 1 && string.IsNullOrEmpty(pTransferOptions[0].ObjectId)))
@@ -566,8 +566,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</TransferOption>";
 
-            return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, 
-                pTransferOptionType.Description()),MethodType.PUT,pConnectionServer,strBody,false);
+            return pConnectionServer.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", 
+                pConnectionServer.BaseUrl, pCallHandlerObjectId, pTransferOptionType.Description()),MethodType.PUT,strBody,false);
 
         }
 
@@ -681,8 +681,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</TransferOption>";
 
-            return HTTPFunctions.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", pConnectionServer.BaseUrl, pCallHandlerObjectId, 
-                pTransferOptionType.Description()),MethodType.PUT,pConnectionServer,strBody,false);
+            return pConnectionServer.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", 
+                pConnectionServer.BaseUrl, pCallHandlerObjectId, pTransferOptionType.Description()),MethodType.PUT,strBody,false);
         }
 
 
@@ -740,14 +740,11 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public WebCallResult GetTransferOption(TransferOptionTypes pTransferOptionType)
         {
-            WebCallResult res;
-            
-           
             string strUrl = string.Format("{0}handlers/callhandlers/{1}/transferoptions/{2}", HomeServer.BaseUrl, CallHandlerObjectId, 
                 pTransferOptionType.Description());
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -756,7 +753,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {

@@ -363,7 +363,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}phonesystems/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -372,7 +372,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this, HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -401,14 +401,14 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}phonesystems/?query=(DisplayName is {1})", HomeServer.BaseUrl, pPhoneSystemName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false || res.TotalObjectCount==0)
             {
                 return "";
             }
 
-            List<PhoneSystem> oPhoneSystems = HTTPFunctions.GetObjectsFromJson<PhoneSystem>(res.ResponseText);
+            List<PhoneSystem> oPhoneSystems = HomeServer.GetObjectsFromJson<PhoneSystem>(res.ResponseText);
 
             foreach (var oPhoneSystem in oPhoneSystems)
             {
@@ -534,11 +534,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "phonesystems", "pageNumber=" + pPageNumber, 
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "phonesystems", "pageNumber=" + pPageNumber, 
                 "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -553,7 +553,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pPhoneSystems = HTTPFunctions.GetObjectsFromJson<PhoneSystem>(res.ResponseText);
+            pPhoneSystems = pConnectionServer.GetObjectsFromJson<PhoneSystem>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pPhoneSystems == null || (pPhoneSystems.Count == 1 && string.IsNullOrEmpty(pPhoneSystems[0].ObjectId)))
@@ -677,8 +677,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</PhoneSystem>";
 
-            return HTTPFunctions.GetCupiResponse(string.Format("{0}phonesystems/{1}", pConnectionServer.BaseUrl, pMediaSwitchObjectId), 
-                MethodType.PUT, pConnectionServer, strBody, false);
+            return pConnectionServer.GetCupiResponse(string.Format("{0}phonesystems/{1}", pConnectionServer.BaseUrl, pMediaSwitchObjectId), 
+                MethodType.PUT, strBody, false);
 
         }
 
@@ -719,8 +719,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</PhoneSystem>";
 
-            res =HTTPFunctions.GetCupiResponse(string.Format("{0}phonesystems", pConnectionServer.BaseUrl),
-                    MethodType.POST, pConnectionServer, strBody, false);
+            res = pConnectionServer.GetCupiResponse(string.Format("{0}phonesystems", pConnectionServer.BaseUrl),
+                    MethodType.POST, strBody, false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
             if (res.Success)
@@ -787,8 +787,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            return HTTPFunctions.GetCupiResponse(pConnectionServer.BaseUrl + "phonesystems/" + pObjectId,
-                                            MethodType.DELETE, pConnectionServer, "");
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "phonesystems/" + pObjectId,
+                                            MethodType.DELETE, "");
         }
 
 
@@ -825,10 +825,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl =HTTPFunctions.AddClausesToUri(string.Format("{0}phonesystems/{1}/phonesystemassociations", pConnectionServer.BaseUrl, pObjectId),
+            string strUrl =ConnectionServer.AddClausesToUri(string.Format("{0}phonesystems/{1}/phonesystemassociations", pConnectionServer.BaseUrl, pObjectId),
                     "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
-            res= HTTPFunctions.GetCupiResponse(strUrl,MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -842,7 +842,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pAssociations = HTTPFunctions.GetObjectsFromJson<PhoneSystemAssociation>(res.ResponseText);
+            pAssociations = pConnectionServer.GetObjectsFromJson<PhoneSystemAssociation>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pAssociations == null || (pAssociations.Count == 1 && string.IsNullOrEmpty(pAssociations[0].Alias)))

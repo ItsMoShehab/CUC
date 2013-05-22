@@ -35,13 +35,13 @@ namespace Cisco.UnityConnection.RestFunctions
         public string MediaSwitchObjectId { get; private set; }
 
         [JsonProperty]
-        public int numNoitificationDevice { get; private set; }
+        public int NumNoitificationDevice { get; private set; }
 
         [JsonProperty]
-        public int numNotificationMWI { get; private set; }
+        public int NumNotificationMwi { get; private set; }
 
         [JsonProperty]
-        public int numPrimaryCallHandler { get; private set; }
+        public int NumPrimaryCallHandler { get; private set; }
 
         #endregion
 

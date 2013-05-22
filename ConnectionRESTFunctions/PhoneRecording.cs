@@ -24,9 +24,9 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Fields and Properties
 
-        private ConnectionServer _homeServer;
-        private string _phoneNumber;
-        private int _rings = 4;
+        private readonly ConnectionServer _homeServer;
+        private readonly string _phoneNumber;
+        private readonly int _rings = 4;
         private int _callId;
 
         /// <summary>
@@ -57,8 +57,6 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </param>
         public PhoneRecording(ConnectionServer pConnectionServer, string pPhoneNumberToDial, int pRings=4)
         {
-            WebCallResult res;
-
             if (pConnectionServer == null)
             {
                 throw new ArgumentException("Null Connection Server passed to the PhoneRecording constructor");
@@ -73,7 +71,7 @@ namespace Cisco.UnityConnection.RestFunctions
             _phoneNumber = pPhoneNumberToDial;
             _rings = pRings;
 
-            res = AttachToPhone();
+            WebCallResult res = AttachToPhone();
 
             if (res.Success)
             {
@@ -101,8 +99,6 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         private WebCallResult AttachToPhone()
         {
-            WebCallResult res = new WebCallResult();
-
             string strUrl = string.Format("{0}calls", _homeServer.BaseUrl);
 
             Dictionary<string,string> oParams = new Dictionary<string, string>();
@@ -110,8 +106,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("number",_phoneNumber);
             oParams.Add("maximumRings", _rings.ToString());
  
-            //res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.POST, _homeServer, oParams,out oResults);
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, _homeServer, oParams);
+            WebCallResult res = _homeServer.GetCupiResponse(strUrl, MethodType.POST, oParams);
             if (res.Success==false)
             {
                 return res;
@@ -162,14 +157,9 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public bool IsCallConnected()
         {
-            WebCallResult res = new WebCallResult();
-
             string strUrl = string.Format("{0}calls/{1}", _homeServer.BaseUrl,_callId);
 
-            //Dictionary<string, object> oResults;
-
-            //res = HTTPFunctions.GetJsonResponse(strUrl, MethodType.GET, _homeServer,null, out oResults);
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, _homeServer, "");
+            WebCallResult res = _homeServer.GetCupiResponse(strUrl, MethodType.GET, "");
             if (res.Success == false)
             {
                 return false;
@@ -197,7 +187,7 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             string strUrl = string.Format("{0}calls/{1}", _homeServer.BaseUrl, _callId);
 
-            HTTPFunctions.GetCupiResponse(strUrl, MethodType.DELETE, _homeServer,"");
+            _homeServer.GetCupiResponse(strUrl, MethodType.DELETE, "");
         }
 
 
@@ -219,7 +209,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("op", "RECORD");
 
             //the results from the call are returned in a string/object pair dictionary
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, _homeServer, oParams);
+            WebCallResult res = _homeServer.GetCupiResponse(strUrl, MethodType.POST, oParams);
 
             if (res.Success == false)
             {
@@ -281,8 +271,6 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             WebCallResult res = new WebCallResult();
 
-            string strStreamFileId;
-
             if (string.IsNullOrEmpty(pStreamFileId) && string.IsNullOrEmpty(RecordingResourceId))
             {
                 res.Success = false;
@@ -291,7 +279,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            strStreamFileId = string.IsNullOrEmpty(pStreamFileId) ? RecordingResourceId : pStreamFileId;
+            string strStreamFileId = string.IsNullOrEmpty(pStreamFileId) ? RecordingResourceId : pStreamFileId;
 
             string strUrl = string.Format("{0}calls/{1}", _homeServer.BaseUrl, _callId);
 
@@ -305,7 +293,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("startPosition", "0");
             oParams.Add("lastResult", "0");
 
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, _homeServer, oParams);
+            res = _homeServer.GetCupiResponse(strUrl, MethodType.POST, oParams);
 
             if (res.Success == false)
             {
@@ -391,7 +379,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("startPosition", pStartPosition.ToString());
             oParams.Add("lastResult", "0");
 
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.POST, _homeServer, oParams);
+            res = _homeServer.GetCupiResponse(strUrl, MethodType.POST, oParams);
 
             if (res.Success == false)
             {

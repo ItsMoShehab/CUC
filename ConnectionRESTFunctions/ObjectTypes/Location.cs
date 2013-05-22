@@ -121,7 +121,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public int DefaultLanguage { get; private set; }
 
         [JsonProperty]
-        public int DefaultTTSLanguage { get; private set; }
+        public int DefaultTtsLanguage { get; private set; }
 
         [JsonProperty]
         public string DefaultPartitionObjectId { get; private set; }
@@ -154,13 +154,13 @@ namespace Cisco.UnityConnection.RestFunctions
         public bool IsPrimary { get; private set; }
 
         [JsonProperty]
-        public int LastUSNAck { get; private set; }
+        public int LastUsnAck { get; private set; }
 
         [JsonProperty]
-        public int LastUSNSent { get; private set; }
+        public int LastUsnSent { get; private set; }
 
         [JsonProperty]
-        public int LastUSNReceived { get; private set; }
+        public int LastUsnReceived { get; private set; }
 
         [JsonProperty]
         public int KeypadMapId { get; private set; }
@@ -196,13 +196,13 @@ namespace Cisco.UnityConnection.RestFunctions
         public int ReplicationSetOutgoing { get; private set; }
 
         [JsonProperty]
-        public string SkinnyLocalCACertificate { get; private set; }
+        public string SkinnyLocalCaCertificate { get; private set; }
 
         [JsonProperty]
-        public string SkinnyLocalCAPrivateKey { get; private set; }
+        public string SkinnyLocalCaPrivateKey { get; private set; }
 
         [JsonProperty]
-        public string SkinnyLocalCACertificateFileName { get; private set; }
+        public string SkinnyLocalCaCertificateFileName { get; private set; }
 
         [JsonProperty]
         public string SmtpDomain { get; private set; }
@@ -281,10 +281,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 res.ErrorText = "Null Connection server object passed to GetLocations";
                 return res;
             }
-            string strUrl = HTTPFunctions.AddClausesToUri(pConnectionServer.BaseUrl + "locations/connectionlocations",pClauses);
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "locations/connectionlocations",pClauses);
 
             //issue the command to the CUPI interface
-            res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, pConnectionServer, "");
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -299,7 +299,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pLocations = HTTPFunctions.GetObjectsFromJson<Location>(res.ResponseText,"ConnectionLocation");
+            pLocations = pConnectionServer.GetObjectsFromJson<Location>(res.ResponseText, "ConnectionLocation");
 
             //special case - Json.Net always creates an object even when there's no data for it.
             if (pLocations == null || (pLocations.Count == 1 && string.IsNullOrEmpty(pLocations[0].ObjectId)))
@@ -484,7 +484,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}locations/connectionlocations/{1}", HomeServer.BaseUrl, strObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -493,7 +493,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(res.ResponseText, this,HTTPFunctions.JsonSerializerSettings);
+                JsonConvert.PopulateObject(res.ResponseText, this,RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
             {
@@ -519,14 +519,14 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}locations/connectionlocations/?query=(DisplayName is {1})", HomeServer.BaseUrl, pName);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HTTPFunctions.GetCupiResponse(strUrl, MethodType.GET, HomeServer, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false || res.TotalObjectCount == 0)
             {
                 return "";
             }
 
-            List<CallHandlerTemplate> oLocations = HTTPFunctions.GetObjectsFromJson<CallHandlerTemplate>(res.ResponseText,"ConnectionLocation");
+            List<CallHandlerTemplate> oLocations = HomeServer.GetObjectsFromJson<CallHandlerTemplate>(res.ResponseText, "ConnectionLocation");
 
             foreach (var oLocation in oLocations)
             {
