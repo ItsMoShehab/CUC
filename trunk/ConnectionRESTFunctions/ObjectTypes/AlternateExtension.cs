@@ -119,6 +119,18 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
+        private string _displayName;
+
+        public string DisplayName
+        {
+            get { return _displayName; }
+            set
+            {
+                _changedPropList.Add("DisplayName", value);
+                _displayName = value;
+            }
+        }
+
         private string _dtmfAccessId;
 
         public string DtmfAccessId

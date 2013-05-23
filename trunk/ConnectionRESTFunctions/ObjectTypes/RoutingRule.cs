@@ -154,7 +154,8 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        
+        [JsonProperty]
+        public string RouteTargetHandlerDisplayName { get; private set; }
 
         private RoutintRuleActionType _routeAction;
         public RoutintRuleActionType RouteAction

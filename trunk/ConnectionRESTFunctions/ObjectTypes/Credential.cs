@@ -129,6 +129,9 @@ namespace Cisco.UnityConnection.RestFunctions
         public DateTime TimeChanged { get; private set; }
 
         [JsonProperty]
+        public DateTime TimeLastHack { get; private set; }
+
+        [JsonProperty]
         public string UserObjectId { get; private set; }
 
         #endregion
