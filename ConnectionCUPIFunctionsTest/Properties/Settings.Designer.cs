@@ -25,7 +25,7 @@ namespace ConnectionCUPIFunctionsTest.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("lindborgload3.cisco.com")]
+        [global::System.Configuration.DefaultSettingValueAttribute("192.168.0.186")]
         public string ConnectionServer {
             get {
                 return ((string)(this["ConnectionServer"]));
@@ -52,7 +52,7 @@ namespace ConnectionCUPIFunctionsTest.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1003")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1001")]
         public string ExtensionToDial {
             get {
                 return ((string)(this["ExtensionToDial"]));

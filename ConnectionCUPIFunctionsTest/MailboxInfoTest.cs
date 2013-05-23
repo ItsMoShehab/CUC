@@ -135,10 +135,12 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oInfo.ToString());
 
             int iInboxCount, iDeletedCount, iSentCount;
+            
             //check counts
             WebCallResult res = oInfo.GetFolderMessageCounts(out iInboxCount, out iDeletedCount, out iSentCount);
             Assert.IsTrue(res.Success,"Failed to fetch message folder counts off empty mailbox:"+res);
             Assert.IsTrue(iInboxCount==0,"New mailbox reporting more than 0 inbox messages");
+
 
             Assert.IsTrue(oInfo.CurrentSizeInBytes==0,"Newly created mailbox reporting non empty mailbox");
             Assert.IsTrue(oInfo.IsMailboxMounted,"Newly created mailbox reporting it's not mounted");

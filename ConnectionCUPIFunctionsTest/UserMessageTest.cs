@@ -341,11 +341,11 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oMessage.DumpAllProps());
 
             res = UserMessage.GetMessages(_connectionServer, _tempUser.ObjectId, out oMessages, 1, 10, MessageSortOrder.OLDEST_FIRST, MessageFilter.None,
-                MailboxFolder.DeletedItems);
+                MailboxFolder.deletedItems);
             Assert.IsTrue(res.Success, "Failed fetching deleted messages on new user");
 
             res = UserMessage.GetMessages(_connectionServer, _tempUser.ObjectId, out oMessages, 1, 10, MessageSortOrder.OLDEST_FIRST, MessageFilter.None,
-                MailboxFolder.SentItems);
+                MailboxFolder.sentItems);
             Assert.IsTrue(res.Success, "Failed fetching send messages on new user");
 
             try

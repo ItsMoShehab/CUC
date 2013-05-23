@@ -194,7 +194,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region Constructors and Destructors
- 
+
 
         /// <summary>
         /// default constructor - initalize everything to blank/0s
@@ -205,7 +205,14 @@ namespace Cisco.UnityConnection.RestFunctions
             LoginName = "";
             LoginPw = "";
             BaseUrl = "";
-            Version=new ConnectionVersion(0,0,0,0,0);
+            Version = new ConnectionVersion(0, 0, 0, 0, 0);
+
+            if (pTransportFunctions == null)
+            {
+                throw new ArgumentException("Null TransportFunctions interface passed to ConnectionServer constructor");
+            }
+
+            _transportFunctions = pTransportFunctions;
         }
 
         /// <summary>
@@ -241,13 +248,6 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 throw new ArgumentException("Empty server name, login name or password provided on constructor");
             }
-
-            if (pTransportFunctions == null)
-            {
-                throw new ArgumentException("Null TransportFunctions interface passed to ConnectionServer constructor");
-            }
-
-            _transportFunctions = pTransportFunctions;
 
             //starting with 10.0 we need to be careful managing our basic authentication requests to Connection and keep our cookies and 
             //tokens around - these values are part of that system

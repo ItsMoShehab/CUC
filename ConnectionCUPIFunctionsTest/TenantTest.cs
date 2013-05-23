@@ -54,8 +54,8 @@ namespace ConnectionCUPIFunctionsTest
             }
 
             //create new handler with GUID in the name to ensure uniqueness
-            //String strName = "Tenant_"+ Guid.NewGuid().ToString().Replace("-", "").Substring(0,13);
-            string strName = "too long to keep test from running" + Guid.NewGuid().ToString();
+            String strName = "Tenant_"+ Guid.NewGuid().ToString().Replace("-", "").Substring(0,13);
+            //string strName = "too long to keep test from running" + Guid.NewGuid().ToString();
             WebCallResult res = Tenant.AddTenant(_connectionServer, strName, strName+".org", strName, out _tempTenant);
             Assert.IsTrue(res.Success, "Failed creating temporary tenant:" + res.ToString());
         }
