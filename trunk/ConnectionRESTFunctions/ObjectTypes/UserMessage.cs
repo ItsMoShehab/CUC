@@ -34,7 +34,9 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Each mailbox has 3 folders that can be accessed, this enum is provided to allow easy selection of which folder 
     /// messages are being pulled from
     /// </summary>
-    public enum MailboxFolder {Inbox, DeletedItems, SentItems}
+// ReSharper disable InconsistentNaming
+    public enum MailboxFolder {inbox, deletedItems, sentItems}
+// ReSharper restore InconsistentNaming
 
     /// <summary>
     /// All the message filter flags supported by CUMI - you can "stack" read, dispatch, type and priority flags.  If you mis
@@ -844,7 +846,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public static WebCallResult GetMessages(ConnectionServer pConnectionServer, string pUserObjectId, out List<UserMessage> pMessage,
             int pPageNumber = 1, int pRowsPerPage = 20, MessageSortOrder pSortOrder = MessageSortOrder.NEWEST_FIRST, 
-            MessageFilter pFilter = MessageFilter.None, MailboxFolder pFolder = MailboxFolder.Inbox)
+            MessageFilter pFilter = MessageFilter.None, MailboxFolder pFolder = MailboxFolder.inbox)
         {
             WebCallResult res;
             pMessage = new List<UserMessage>();
@@ -928,11 +930,11 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //construct the URL
             string strUrl = pConnectionServer.BaseUrl;
-            if (pFolder == MailboxFolder.DeletedItems)
+            if (pFolder == MailboxFolder.deletedItems)
             {
                 strUrl+="mailbox/folders/deleted/messages";
             }
-            else if (pFolder == MailboxFolder.Inbox)
+            else if (pFolder == MailboxFolder.inbox)
             {
                 strUrl+="mailbox/folders/inbox/messages";
             }

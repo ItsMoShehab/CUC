@@ -38,7 +38,7 @@ namespace CUPIVerySimple
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
-                connectionServer = new ConnectionServer(new RestTransportFunctions(), "lindborgload3", "CCMAdministrator", "ecsbulab");
+                connectionServer = new ConnectionServer(new RestTransportFunctions(), "192.168.0.186", "CCMAdministrator", "ecsbulab");
             }
 
             catch (Exception ex)

@@ -218,13 +218,13 @@ namespace Cisco.UnityConnection.RestFunctions
             pSentItemsCount = 0;
             pDeletedItemsCount = 0;
 
-            WebCallResult res = GetFolderCount(FolderTypes.Inbox, out pInboxCount);
+            WebCallResult res = GetFolderCount(FolderTypes.inbox, out pInboxCount);
             if (res.Success == false) return res;
 
-            res = GetFolderCount(FolderTypes.Deleted, out pDeletedItemsCount);
+            res = GetFolderCount(FolderTypes.deleted, out pDeletedItemsCount);
             if (res.Success == false) return res;
 
-            res = GetFolderCount(FolderTypes.Sent, out pSentItemsCount);
+            res = GetFolderCount(FolderTypes.sent, out pSentItemsCount);
             return res;
         }
 
@@ -240,7 +240,7 @@ namespace Cisco.UnityConnection.RestFunctions
             public int MessageCount { get; private set; }
         }
 
-        private enum FolderTypes {Inbox, Deleted, Sent}
+        private enum FolderTypes {inbox, deleted, sent}
 
         /// <summary>
         /// Returns the message count for a specific folder type (inbox, sent, deleted)
