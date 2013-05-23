@@ -35,7 +35,7 @@ namespace LoadEachObjectTypeTest
         {
             try
             {
-                _server = new ConnectionServer(new RestTransportFunctions(), "192.168.0.185", "CCMAdministrator", "ecsbulab");
+                _server = new ConnectionServer(new RestTransportFunctions(), "192.168.0.186", "CCMAdministrator", "ecsbulab");
             }
             catch (Exception ex)
             {
@@ -44,9 +44,7 @@ namespace LoadEachObjectTypeTest
                 Console.WriteLine();
             }
 
-            RestTransportFunctions.JsonSerializerSettings.Error += JsonSerializerError;
-
-            _server.ErrorEvents += HttpFunctionsOnErrorEvents;
+            _server.ErrorEvents += ServerOnErrorEvents;
 
             //test user that has private lists, notification devices, mwis, alternate extensions and messages
             _userAliasToUse = "jlindborg";
@@ -62,12 +60,11 @@ namespace LoadEachObjectTypeTest
             Console.ReadLine();
         }
 
-
-        private static void HttpFunctionsOnErrorEvents(object sender, RestTransportFunctions.LogEventArgs logEventArgs)
+        private static void ServerOnErrorEvents(object sender, ConnectionServer.LogEventArgs logEventArgs)
         {
             Console.WriteLine(logEventArgs.Line);
+            Logger.Log(logEventArgs.Line);
         }
-
 
         private static void RunTests()
         {
@@ -147,7 +144,7 @@ namespace LoadEachObjectTypeTest
                 return;
             }
 
-            //Credential
+            //Credential PW
             Credential oCredential;
             res = Credential.GetCredential(_server, oTestUser.ObjectId, CredentialType.Password, out oCredential);
             if (res.Success == false)
@@ -156,6 +153,7 @@ namespace LoadEachObjectTypeTest
                 return;
             }
 
+            //Credential PIN
             res = Credential.GetCredential(_server, oTestUser.ObjectId, CredentialType.Pin, out oCredential);
             if (res.Success == false)
             {
@@ -374,6 +372,16 @@ namespace LoadEachObjectTypeTest
                 return;
             }
 
+            //Post greeting recording
+            List<PostGreetingRecording> oPostGreetingRecordings;
+            res = PostGreetingRecording.GetPostGreetingRecordings(_server, out oPostGreetingRecordings);
+            if (res.Success == false || oPostGreetingRecordings.Count == 0)
+            {
+                WriteOutput("[ERROR] fetching post greeting recordings:" + res);
+                return;
+            }
+
+
             //privatelist
             List<PrivateList> oPrivateLists;
             res = PrivateList.GetPrivateLists(_server, oTestUser.ObjectId, out oPrivateLists, 1, 2);
@@ -426,6 +434,16 @@ namespace LoadEachObjectTypeTest
                 WriteOutput("[ERROR] fetching roles:" + res);
                 return;
             }
+
+            //routing rule
+            List<RoutingRule> oRoutingRules;
+            res = RoutingRule.GetRoutingRules(_server, out oRoutingRules, 1, 2);
+            if (res.Success == false || oRoutingRules.Count == 0)
+            {
+                WriteOutput("[ERROR] fetching routing rules:" + res);
+                return;
+            }
+
 
             //RTPCodecDef
             List<RtpCodecDef> oRtpCodecDefs;
@@ -490,6 +508,7 @@ namespace LoadEachObjectTypeTest
                 return;
             }
 
+
             //SmppProvider
             List<SmppProvider> oSmppProviders;
             res = SmppProvider.GetSmppProviders(_server, out oSmppProviders, 1, 2);
@@ -498,6 +517,16 @@ namespace LoadEachObjectTypeTest
                 WriteOutput("[ERROR] fetching SMPP providers :" + res);
                 return;
             }
+
+            //Tenant
+            List<Tenant> oTenants;
+            res = Tenant.GetTenants(_server, out oTenants);
+            if (res.Success == false || oTenants.Count == 0)
+            {
+                WriteOutput("[ERROR] fetching SMPP providers :" + res);
+                return;
+            }
+
 
             //TimeZones
             try
@@ -559,7 +588,7 @@ namespace LoadEachObjectTypeTest
                 return;
             }
 
-
+            
 
             Logger.Log("All Tests Executed");
         }
@@ -571,19 +600,5 @@ namespace LoadEachObjectTypeTest
             Logger.Log(pLine);
         }
 
-
-        /// <summary>
-        /// Fires when the JSON serializer indicates there's a missing property error when populating a class.
-        /// Ignores missing URI properties since the SDK doesn't keep those around - they can easily be reconstructed
-        /// </summary>
-        private static void JsonSerializerError(object sender, ErrorEventArgs e)
-        {
-            if (!e.ErrorContext.Error.Message.Contains("URI'"))
-            {
-                Logger.Log(string.Format("[DEBUG][{0}]:{1}",e.CurrentObject.GetType().Name, 
-                    e.ErrorContext.Error.Message));
-            }
-            
-        }
     }
 }

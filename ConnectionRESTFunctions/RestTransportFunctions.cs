@@ -160,6 +160,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </param>
         private void RaiseDebugEvent(string pLine)
         {
+            if (DebugMode == false) return;
+
             //notify registered clients
             LoggingEventHandler handler = DebugEvents;
 
@@ -506,7 +508,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
                         return res;
                     }
-                }
+                }//try
                 catch (UriFormatException ex)
                 {
                     //URI errors almost always mean an invalid parameter (i.e. an alias or ObjectId that is not found) was 
@@ -530,7 +532,7 @@ namespace Cisco.UnityConnection.RestFunctions
                     //clean up on the way out of town.
                     if (response != null) response.Close();
                 }
-            }
+            }//Lock
             
             return res;
         }

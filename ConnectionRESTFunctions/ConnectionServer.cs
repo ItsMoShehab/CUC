@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Web.Script.Serialization;
 using System.Xml.Linq;
 using System.Diagnostics;
+using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
@@ -195,9 +196,9 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Constructors and Destructors
 
-
         /// <summary>
-        /// default constructor - initalize everything to blank/0s
+        /// default constructor - initalize everything to blank/0s and create a RestTransportFunctions instance
+        /// if one is not provided.
         /// </summary>
         public ConnectionServer(IConnectionRestCalls pTransportFunctions)
         {
@@ -206,6 +207,12 @@ namespace Cisco.UnityConnection.RestFunctions
             LoginPw = "";
             BaseUrl = "";
             Version = new ConnectionVersion(0, 0, 0, 0, 0);
+
+            if (pTransportFunctions == null)
+            {
+                _transportFunctions=new RestTransportFunctions();
+                return;
+            }
 
             if (pTransportFunctions == null)
             {
@@ -265,20 +272,54 @@ namespace Cisco.UnityConnection.RestFunctions
                 throw new UnityConnectionRestException(res, "Login failed to Connection server:"+pServerName);
             }
 
+            //register for error and logging events to the transport mechanism. 
+            _transportFunctions.DebugEvents += TransportFunctionsOnDebugEvents;
+            _transportFunctions.ErrorEvents += TransportFunctionsOnErrorEvents;
+            RestTransportFunctions.JsonSerializerSettings.Error += JsonParseError;
             ServerName = pServerName;
             LoginName = pLoginName;
             LoginPw = pLoginPw;
         }
 
-        #endregion
+        /// <summary>
+        /// Hook the JSON.NET serialization error event and "pinwheel" it up as an error event off the server object.
+        /// Ignore all errors about URIs being missing - those are bogus since they're unnecessary.
+        /// </summary>
+        private void JsonParseError(object sender, ErrorEventArgs errorEventArgs)
+        {
+            if (errorEventArgs.ErrorContext.Member.ToString().ToLower().Contains("uri"))
+            {
+                return;
+            }
+            RaiseErrorEvent(string.Format("[ERROR] JSON serialization error: [{0}]:{1}", errorEventArgs.CurrentObject.GetType().Name,
+                    errorEventArgs.ErrorContext.Error.Message));
+        }
 
 
-        #region Wrapped Events
-
-        public event RestTransportFunctions.LoggingEventHandler ErrorEvents;
-
-        public event RestTransportFunctions.LoggingEventHandler DebugEvents;
-
+        /// <summary>
+        /// Constructor for the ConnectionServer class that allows the caller to provide the server name, login name and login password 
+        /// used to authenticate to the CUPI interface on a Connection server.  Defaults to using the RestTransportFunctions version 
+        /// of the IConnectionRestCalls interface.
+        /// </summary>
+        /// <param name="pServerName">
+        /// Name or IP address of the remote Connection server to attach to.
+        /// </param>
+        /// <param name="pLoginName">
+        /// Login name used to authenticate to the CUPI interface on the Connection server provided.
+        /// </param>
+        /// <param name="pLoginPw">
+        /// Login password used to authenticate to the CUPI interface on the Connection server provided.
+        /// </param>
+        /// <param name="pLoginAsAdministrator">
+        /// When validating the login credentials of a user (as opposed to an admin) pass this as false instead
+        /// </param>
+        /// <returns>
+        /// Instance of the ConnectionServer class
+        /// </returns>
+        public ConnectionServer(string pServerName, string pLoginName, string pLoginPw,bool pLoginAsAdministrator = true)
+            : this(null,pServerName,pLoginName,pLoginPw,pLoginAsAdministrator)
+        {
+        }
 
         #endregion
 
@@ -545,6 +586,106 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             return _transportFunctions.UploadWavFileToStreamLibrary(this, pLocalWavFilePath,out pConnectionStreamFileName);
         }
+
+        #endregion
+
+
+        #region Logging and Error Events
+
+        /// <summary>
+        /// Event handle for external clients to register with so they can get logging events on errors and warnings that happen
+        /// within this class.
+        /// </summary>
+        public event LoggingEventHandler ErrorEvents;
+
+        /// <summary>
+        /// Debug events can be registered for and recieved to view raw send/response text
+        /// </summary>
+        public event LoggingEventHandler DebugEvents;
+
+        /// <summary>
+        /// The RestTransportFunctions class sends errors and warnings encountered in the class as an event that's raised which 
+        /// clients can subscribe to for logging events if they wish.  A custom eventArg is used for this that contains
+        /// just a simple string "Line" property.
+        /// </summary>
+        public class LogEventArgs : EventArgs
+        {
+            public string Line { get; set; }
+
+            public LogEventArgs(string pLine)
+            {
+                Line = pLine;
+            }
+
+            public override string ToString()
+            {
+                return Line;
+            }
+        }
+
+        /// <summary>
+        /// Alternative event handler for logging events that includes the LogEventArgs that include the log string in the 
+        /// argument
+        /// </summary>
+        public delegate void LoggingEventHandler(object sender, LogEventArgs e);
+
+        /// <summary>
+        /// If there's one or more clients registered for the ErrorEvent event then issue it here.
+        /// </summary>
+        /// <param name="pLine">
+        /// String to pass back to the receiving method
+        /// </param>
+        private void RaiseErrorEvent(string pLine)
+        {
+            //notify registered clients 
+            LoggingEventHandler handler = ErrorEvents;
+
+            if (handler != null)
+            {
+                LogEventArgs oArgs = new LogEventArgs(pLine);
+                handler(null, oArgs);
+            }
+        }
+
+        /// <summary>
+        /// If there's one or more clients registerd for the DebugEvents event then issue it here.
+        /// </summary>
+        /// <param name="pLine">
+        /// String to pass back to the receiving method
+        /// </param>
+        private void RaiseDebugEvent(string pLine)
+        {
+            if (DebugMode == false) return;
+
+            //notify registered clients
+            LoggingEventHandler handler = DebugEvents;
+
+            if (handler != null)
+            {
+                LogEventArgs oArgs = new LogEventArgs(pLine);
+                handler(null, oArgs);
+            }
+        }
+
+        /// <summary>
+        /// register for events off the TranspfortFunctions interface and "pinwheel" the events up to clients 
+        /// who have registered for error events off the server class
+        /// </summary>
+        private void TransportFunctionsOnErrorEvents(object sender, RestTransportFunctions.LogEventArgs logEventArgs)
+        {
+            RaiseErrorEvent(logEventArgs.Line);
+        }
+
+        /// <summary>
+        /// register for events off the TranspfortFunctions interface and "pinwheel" the events up to clients 
+        /// who have registered for debug events off the server class
+        /// </summary>
+        private void TransportFunctionsOnDebugEvents(object sender, RestTransportFunctions.LogEventArgs logEventArgs)
+        {
+            RaiseDebugEvent(logEventArgs.Line);
+        }
+
+
 
         #endregion
 

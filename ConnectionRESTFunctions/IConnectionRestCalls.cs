@@ -134,6 +134,9 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #endregion
 
+
+        #region Helper Methods
+
         /// <summary>
         /// Generic method for fetching a list of objects from an Json - works for all class types
         /// </summary>
@@ -170,6 +173,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Instance of the class passed in filled out (hopefully) with the data from the JSON text.
         /// </returns>
         T GetObjectFromJson<T>(string pJson, string pTypeNameOverride = "") where T : new();
+
+        #endregion
 
 
         #region Http Call Methods

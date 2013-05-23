@@ -302,7 +302,10 @@ namespace Cisco.UnityConnection.RestFunctions
         ConvHotelCheckedOut,
         ConvCvmMboxReset,
         EasySignIn,
+        AttemptSignIn,
+        AttemptForward,
         TransferAltContactNumber,
+        ConvUtilsLiveRecord,
         Invalid
     }
 
