@@ -623,12 +623,26 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with details of the call and response from the server.
         /// </returns>
-        public WebCallResult GetClassesOfService(out List<ClassOfService> pClassesOfService, int pPageNumber=1, int pRowsPerPage=20)
+        public WebCallResult GetClassesOfService(out List<ClassOfService> pClassesOfService, int pPageNumber=1, int pRowsPerPage=20,
+            params string[] pClauses)
         {
             pClassesOfService = new List<ClassOfService>();
 
-            //fetch the ObjectIds
-            string strUrl = string.Format("{0}tenants/{1}/coses", HomeServer.BaseUrl, ObjectId);
+           List<string> oParams;
+            if (pClauses == null)
+            {
+                oParams = new List<string>();
+            }
+            else
+            {
+                oParams = pClauses.ToList();
+            }
+            oParams.Add("pageNumber=" + pPageNumber);
+            oParams.Add("rowsPerPage=" + pRowsPerPage);
+
+            string strUrl = ConnectionServer.AddClausesToUri(string.Format("{0}tenants/{1}/coses", HomeServer.BaseUrl, ObjectId),oParams.ToArray());
+
+            //string strUrl = string.Format("{0}tenants/{1}/coses", HomeServer.BaseUrl, ObjectId);
 
             WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
@@ -647,17 +661,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             int iHoldTotalCount = res.TotalObjectCount;
 
-            List<TenantCos> oCoses;
-            try
-            {
-                oCoses = HomeServer.GetObjectsFromJson<TenantCos>(res.ResponseText, "TenantCos");
-            }
-            catch (Exception ex)
-            {
-                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
-                res.Success = false;
-                return res;
-            }
+            List<TenantCos> oCoses = HomeServer.GetObjectsFromJson<TenantCos>(res.ResponseText, "TenantCos");
 
             foreach (var oCos in oCoses)
             {
@@ -727,12 +731,28 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with details of the call and response from the server.
         /// </returns>
-        public WebCallResult GetPhoneSystems(out List<PhoneSystem> pPhoneSystems, int pPageNumber = 1,int pRowsPerPage = 20)
+        public WebCallResult GetPhoneSystems(out List<PhoneSystem> pPhoneSystems, int pPageNumber = 1,int pRowsPerPage = 20,
+            params string[] pClauses)
         {
             pPhoneSystems = new List<PhoneSystem>();
 
+            List<string> oParams;
+            if (pClauses == null)
+            {
+                oParams = new List<string>();
+            }
+            else
+            {
+                oParams = pClauses.ToList();
+            }
+            oParams.Add("pageNumber=" + pPageNumber);
+            oParams.Add("rowsPerPage=" + pRowsPerPage);
+
+            string strUrl = ConnectionServer.AddClausesToUri(string.Format("{0}tenants/{1}/phonesystems", HomeServer.BaseUrl, ObjectId), oParams.ToArray());
+
+
             //fetch the ObjectIds
-            string strUrl = string.Format("{0}tenants/{1}/phonesystems", HomeServer.BaseUrl, ObjectId);
+            //string strUrl = string.Format("{0}tenants/{1}/phonesystems", HomeServer.BaseUrl, ObjectId);
 
             WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
@@ -752,16 +772,7 @@ namespace Cisco.UnityConnection.RestFunctions
             int iHoldTotalCount = res.TotalObjectCount;
 
             List<TenantPhoneSystem> pPhones;
-            try
-            {
-                pPhones = HomeServer.GetObjectsFromJson<TenantPhoneSystem>(res.ResponseText, "TenantPhoneSystem");
-            }
-            catch (Exception ex)
-            {
-                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
-                res.Success = false;
-                return res;
-            }
+            pPhones = HomeServer.GetObjectsFromJson<TenantPhoneSystem>(res.ResponseText, "TenantPhoneSystem");
 
             foreach (var oPhone in pPhones)
             {
@@ -807,12 +818,26 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with details of the call and response from the server.
         /// </returns>
-        public WebCallResult GetScheduleSets(out List<ScheduleSet> pScheduleSets, int pPageNumber = 1,int pRowsPerPage = 20)
+        public WebCallResult GetScheduleSets(out List<ScheduleSet> pScheduleSets, int pPageNumber = 1,int pRowsPerPage = 20,
+            params string[] pClauses)
         {
             pScheduleSets = new List<ScheduleSet>();
 
-            //fetch the ObjectIds
-            string strUrl = string.Format("{0}tenants/{1}/schedulesets", HomeServer.BaseUrl, ObjectId);
+            List<string> oParams;
+            if (pClauses == null)
+            {
+                oParams = new List<string>();
+            }
+            else
+            {
+                oParams = pClauses.ToList();
+            }
+            oParams.Add("pageNumber=" + pPageNumber);
+            oParams.Add("rowsPerPage=" + pRowsPerPage);
+
+            string strUrl = ConnectionServer.AddClausesToUri(string.Format("{0}tenants/{1}/schedulesets", HomeServer.BaseUrl, ObjectId), oParams.ToArray());
+
+            //string strUrl = string.Format("{0}tenants/{1}/schedulesets", HomeServer.BaseUrl, ObjectId);
 
             WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
@@ -832,16 +857,7 @@ namespace Cisco.UnityConnection.RestFunctions
             int iHoldTotalCount = res.TotalObjectCount;
 
             List<TenantScheduleSet> pSchedules;
-            try
-            {
-                pSchedules = HomeServer.GetObjectsFromJson<TenantScheduleSet>(res.ResponseText, "TenantScheduleSet");
-            }
-            catch (Exception ex)
-            {
-                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
-                res.Success = false;
-                return res;
-            }
+            pSchedules = HomeServer.GetObjectsFromJson<TenantScheduleSet>(res.ResponseText, "TenantScheduleSet");
 
             foreach (var oSchedule in pSchedules)
             {

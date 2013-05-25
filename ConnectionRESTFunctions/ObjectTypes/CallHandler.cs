@@ -1287,6 +1287,13 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
+            if (res.TotalObjectCount == 0)
+            {
+                res.ErrorText = "Call handler not found";
+                res.Success = false;
+                return res;
+            }
+
             try
             {
                 JsonConvert.PopulateObject(ConnectionServer.StripJsonOfObjectWrapper(res.ResponseText, "Callhandler"), this,

@@ -54,7 +54,7 @@ namespace ConnectionCUPIFunctionsTest
 
 
         [TestMethod]
-        public void TestMethod1()
+        public void FetchTests()
         {
             //List<InstalledLanguage> oLanguages;
             InstalledLanguage oLanguages=null;
@@ -79,6 +79,28 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(oLanguages.IsLanguageInstalled(1033, ConnectionLanguageTypes.TTS), "1033 not installed for TTS");
 
             Assert.IsFalse(oLanguages.IsLanguageInstalled(8888, ConnectionLanguageTypes.TTS), "8888 listed as installed for TTS");
+        }
+
+        [TestMethod]
+        public void ConstructorTest()
+        {
+            InstalledLanguage oLanguages = new InstalledLanguage(null);
+
+            Assert.IsFalse(oLanguages.IsLanguageInstalled(1033),"Checking language install without loading languages from server should return false");
+        }
+
+        [TestMethod]
+        public void FailedLanguagesFetchTEst()
+        {
+            try
+            {
+                InstalledLanguage oLanguages = new InstalledLanguage(new ConnectionServer(new RestTransportFunctions()));
+                Assert.Fail("Fetching languages for invalid ConnectionServer should fail.");
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                Console.WriteLine("Expected failure:"+ex);
+            }
         }
     }
 }

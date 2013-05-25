@@ -11,7 +11,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Security;
@@ -74,11 +73,13 @@ namespace Cisco.UnityConnection.RestFunctions
         #region Constructors and Destructors
 
 
-        // Default construtor - attach the VAlidateRemoteCertificate to the validation check so we don't get errors on self signed certificates 
-        //when attaching to Connection servers.
+        /// <summary>
+        /// Default construtor - attach the VAlidateRemoteCertificate to the validation check so we don't get errors on self signed certificates 
+        /// when attaching to Connection servers.
+        /// Also sets up the global JsonSerializerSettings for raising an error on a missing property.
+        /// </summary>
         public RestTransportFunctions()
         {
-            // allows for validation of SSL conversations
             DebugMode = false;
 
             //handle self signed certificates
@@ -243,16 +244,12 @@ namespace Cisco.UnityConnection.RestFunctions
                 strCleanJson = ConnectionServer.StripJsonOfObjectWrapper(pJson, pTypeNameOverride, true);
             }
 
-            try
+            var oList= JsonConvert.DeserializeObject<List<T>>(strCleanJson, JsonSerializerSettings);
+            if (oList == null)
             {
-                return JsonConvert.DeserializeObject<List<T>>(strCleanJson, JsonSerializerSettings);
-            }
-            catch (Exception ex)
-            {
-                if (Debugger.IsAttached) Debugger.Break();
-                RaiseErrorEvent("Failed in GetObjectsFromJson:" + ex);
                 return new List<T>();
             }
+            return oList;
         }
 
         /// <summary>
@@ -290,9 +287,8 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             catch (Exception ex)
             {
-                if (Debugger.IsAttached) Debugger.Break();
                 RaiseErrorEvent("Failed in GetObjectFromJson:" + ex);
-                return new T();
+                return default(T);
             }
         }
 
@@ -1226,216 +1222,6 @@ namespace Cisco.UnityConnection.RestFunctions
                 RaiseErrorEvent(res.ErrorText);
             }
 
-            return res;
-        }
-
-
-        /// <summary>
-        /// Upload a broadcast message to a specified server using CUMI funtions. 
-        /// The authenticated user issuing this command MUST have the right to send broadcast messages on their account or this 
-        /// will fail and unfortunately there's no clean way to check for that up front or specifically cathch the error that results
-        /// from it - you get a generic 400 "bad request" coming back - this is deeply unfortunate as it's a common configuration 
-        /// error and somethign that should probably be addressed in the API at some point.
-        /// </summary>
-        /// <param name="pConnectionServer">
-        /// Instance of the ConnectionServer class
-        /// </param>
-        /// <param name="pWavFilePath">
-        /// Full path on the local hard drive to a WAV file to use for the broadcast message.
-        /// </param>
-        /// <param name="pStartDate">
-        /// start date for when the message will be active
-        /// </param>
-        /// <param name="pStartTime"> 
-        /// start time (used with the date) for when the message will be active
-        /// </param>
-        /// <param name="pEndDate">
-        /// end date for when the message will be inactivated
-        /// </param>
-        /// <param name="pEndTime">
-        /// end time (used with date) for when the message will be inactivated
-        ///  </param>
-        /// <returns>
-        /// instance of the WebCallResult class - the "Misc" section will contain the path to the wav file uploaded and the start/end 
-        /// date/times for the broadcast message.
-        /// </returns>
-        public WebCallResult UploadBroadcastMessage(ConnectionServer pConnectionServer, string pWavFilePath, 
-            DateTime pStartDate, DateTime pStartTime, DateTime pEndDate, DateTime pEndTime)
-        {
-            WebCallResult res = new WebCallResult();
-            res.Success = false;
-
-            if (pConnectionServer == null)
-            {
-                res.ErrorText = "Null ConnectionServer passed to UploadBroadcastMessage on RestTransportFunctions.cs";
-                return res;
-            }
-
-            //Disable Expect 100-Continue in header
-            ServicePointManager.Expect100Continue = false;
-
-            string uri = "https://" + pConnectionServer.ServerName + "/vmrest/mailbox/broadcastmessages";
-
-            res.Url = uri;
-            res.Method = "POST";
-
-            if (File.Exists(pWavFilePath)==false)
-            {
-              	res.ErrorText="File not found in UploadBroadcastMessage:"+pWavFilePath;
-                return res;
-            }
-
-            res.Misc = "WAV file to upload=" + pWavFilePath+Environment.NewLine;
-
-            CookieContainer cookies = new CookieContainer();
-
-            string boundary = DateTime.Now.Ticks.ToString("x");
-            HttpWebRequest webrequest = (HttpWebRequest)WebRequest.Create(uri);
-            webrequest.CookieContainer = cookies;
-            webrequest.UserAgent = "CUMILibraryFunctions";
-            webrequest.KeepAlive = true;
-            webrequest.Accept = "application/xml";
-            webrequest.Timeout = HttpTimeoutSeconds * 1000;
-            webrequest.ContentType = "multipart/form-data;boundary=" + boundary;
-            webrequest.Method = "POST";
-
-            AddCredentialsAndTokens(ref webrequest,pConnectionServer);
-
-            //format the date/time so CUMI likes it.
-            string strStartDate = string.Format("{0} {1}", pStartDate.ToString("yyyy-MM-dd"),pStartTime.ToString("HH:mm:ss.000"));
-            string strEndDate = string.Format("{0} {1}", pEndDate.ToString("yyyy-MM-dd"), pEndTime.ToString("HH:mm:ss.000"));
-
-            string partXml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-                    + "<BroadcastMessage>"
-                        + "<StartDate>" + strStartDate + "</StartDate>" //2011-07-09 14:23:10.000
-                        + "<EndDate>" + strEndDate + "</EndDate>" //2011-08-07 14:22:42.000
-                        + "<StreamFile>" + Path.GetFileName(pWavFilePath) + "</StreamFile>"  //44.wav
-                    + "</BroadcastMessage>";
-
-            res.RequestBody = partXml;
-
-            res.Misc += "Start date=" + pStartDate + Environment.NewLine;
-            res.Misc += "End date=" + pEndDate + Environment.NewLine;
-
-            // Build up the post message header
-            StringBuilder sb = new StringBuilder();
-            sb.Append("\r\n");
-            sb.Append("--" + boundary);
-            sb.Append("\r\n");
-
-            sb.Append("Content-Type: ");
-            sb.Append("application/xml");
-            sb.Append("\r\n");
-            sb.Append("\r\n");
-            sb.Append(partXml);
-            sb.Append("\r\n");
-            sb.Append("\r\n");
-            sb.Append("--" + boundary);
-
-            sb.Append("\r\n");
-            sb.Append("Content-Type: ");
-            sb.Append("audio/wav");
-
-            sb.Append("\r\n");
-            sb.Append("\r\n");
-
-            string postHeader = sb.ToString();
-            byte[] postHeaderBytes = Encoding.UTF8.GetBytes(postHeader);
-
-            // Build the trailing boundary string as a byte array
-            // ensuring the boundary appears on a line by itself
-            byte[] boundaryBytes = Encoding.ASCII.GetBytes("\r\n--" + boundary + "--\r\n");
-
-            try
-            {
-                FileStream fileStream=new FileStream(pWavFilePath,FileMode.Open, FileAccess.Read);
-
-                Stream memStream=new MemoryStream();
-
-                memStream.Write(postHeaderBytes, 0, postHeaderBytes.Length);
-
-                //add the wav file onto the HTTP 1KB at a time.
-                byte[] buffer = new byte[1024];
-                int bytesRead;
-                while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) != 0)
-                {
-                    memStream.Write(buffer, 0, bytesRead);
-                }
-
-                memStream.Write(boundaryBytes, 0, boundaryBytes.Length);
-
-                fileStream.Close();
-
-                webrequest.ContentLength = memStream.Length;
-                Stream requestStream = webrequest.GetRequestStream();
-
-                memStream.Position = 0;
-                byte[] tempBuffer = new byte[memStream.Length];
-                memStream.Read(tempBuffer, 0, tempBuffer.Length);
-                memStream.Close();
-
-                requestStream.Write(tempBuffer, 0, tempBuffer.Length);
-                requestStream.Close();
-            }
-            catch (Exception ex)
-            {
-                res.ErrorText = "Failed processing wav file in UploadBroadcastMessage on RestTransportFunctions.cs: " + ex;
-                RaiseErrorEvent(res.ErrorText);
-                return res;
-            }
-
-            //this can fail or many reasons but the details sent back from the server are not very helpful unfortunately.
-            try
-            {
-                HttpWebResponse response;
-                using (response = webrequest.GetResponse() as HttpWebResponse)
-                {
-                    if (webrequest.HaveResponse && response != null)
-                    {
-                        FetchCookieDetails(response, pConnectionServer);
-
-                        var oStream = response.GetResponseStream();
-                        if (oStream == null)
-                        {
-                            res.ErrorText = "Unable to get response stream in UploadBroadcastMessage in RestTransportFunctions.cs";
-                            RaiseErrorEvent(res.ErrorText);
-                            return res;
-                        }
-                        var reader = new StreamReader(oStream);
-                        res.StatusCode = (int) response.StatusCode;
-                        res.ResponseText=GetResponseText(response);
-                        res.Success = true;
-                        reader.Dispose();
-                    }
-                }
-            }
-            catch (WebException ex)
-            {
-                //CUMI will return additional information about the error reason in teh ResponseText tucked into the exception's Resonse object
-                //here - this only applies if the WebException thrown is a protocol error which in most cases it will be.
-                if (ex.Status == WebExceptionStatus.ProtocolError && ex.Response !=null)
-                {
-                    //fill out the return structure with as much detail as we call for the calling client to use to figure out what went wrong.
-                    res.ErrorText = ((HttpWebResponse)ex.Response).StatusDescription;
-                    res.ResponseText = GetResponseText(ex.Response as HttpWebResponse);
-                    res.XmlElement = GetXElementFromString(res.ResponseText);
-                    res.StatusDescription = ((HttpWebResponse)ex.Response).StatusDescription;
-                    res.StatusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
-                    
-                    RaiseErrorEvent(res.ToString());
-                }
-                else
-                {
-                    //there's not a lot of good reasons the WebException will be thrown without it being a protocol error, but just in case.
-                    res.ErrorText = "Web exception error in GetResponse on RestTransportFunctions.cs:" + ex.Message;
-                    RaiseErrorEvent(res.ErrorText);
-                }
-            }
-            catch(Exception ex)
-            {
-                res.ErrorText = string.Format("Failed sending broadcast message to {0}, error={1}", pConnectionServer.ServerName,ex);
-                RaiseErrorEvent(res.ErrorText);
-            }
             return res;
         }
 

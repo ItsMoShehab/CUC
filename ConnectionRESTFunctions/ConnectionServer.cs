@@ -214,11 +214,6 @@ namespace Cisco.UnityConnection.RestFunctions
                 return;
             }
 
-            if (pTransportFunctions == null)
-            {
-                throw new ArgumentException("Null TransportFunctions interface passed to ConnectionServer constructor");
-            }
-
             _transportFunctions = pTransportFunctions;
         }
 
@@ -391,9 +386,6 @@ namespace Cisco.UnityConnection.RestFunctions
         /// been in place since 7.0(2) and will work across all versions of Connection (COBRAS uses this).  I'm using it here to simplify
         /// fetching media files through a single method here - all that's needed is the actual WAV file name (GUID followed by a .wav).
         /// </remarks>
-        /// <param name="pConnectionServer">
-        /// Instance of the ConnectionServer class
-        /// </param>
         /// <param name="pLocalWavFilePath" type="string">
         /// The full path to stored the downloaded WAV file locally.
         /// </param>
@@ -466,38 +458,6 @@ namespace Cisco.UnityConnection.RestFunctions
             return _transportFunctions.UploadWavFile(pFullResourcePath, this, pLocalWavFilePath);
         }
 
-
-        /// <summary>
-        /// Upload a broadcast message to a specified server using CUMI funtions. 
-        /// The authenticated user issuing this command MUST have the right to send broadcast messages on their account or this 
-        /// will fail and unfortunately there's no clean way to check for that up front or specifically cathch the error that results
-        /// from it - you get a generic 400 "bad request" coming back - this is deeply unfortunate as it's a common configuration 
-        /// error and somethign that should probably be addressed in the API at some point.
-        /// </summary>
-        /// <param name="pWavFilePath">
-        /// Full path on the local hard drive to a WAV file to use for the broadcast message.
-        /// </param>
-        /// <param name="pStartDate">
-        /// start date for when the message will be active
-        /// </param>
-        /// <param name="pStartTime"> 
-        /// start time (used with the date) for when the message will be active
-        /// </param>
-        /// <param name="pEndDate">
-        /// end date for when the message will be inactivated
-        /// </param>
-        /// <param name="pEndTime">
-        /// end time (used with date) for when the message will be inactivated
-        ///  </param>
-        /// <returns>
-        /// instance of the WebCallResult class - the "Misc" section will contain the path to the wav file uploaded and the start/end 
-        /// date/times for the broadcast message.
-        /// </returns>
-        public WebCallResult UploadBroadcastMessage(string pWavFilePath,DateTime pStartDate, DateTime pStartTime, 
-                                                    DateTime pEndDate,DateTime pEndTime)
-        {
-            return _transportFunctions.UploadBroadcastMessage(this, pWavFilePath, pStartDate, pStartTime, pEndDate,pEndTime);
-        }
 
         /// <summary>
         /// Upload a new message to the Connection server using a local WAV file as the voice mail attachment.
@@ -943,12 +903,12 @@ namespace Cisco.UnityConnection.RestFunctions
 
                 foreach (XElement subElement in pElement.Elements())
                 {
-                    GetXMLProperty(pSubObject, subElement, subElement.Name.LocalName);
+                    GetXmlProperty(pSubObject, subElement, subElement.Name.LocalName);
                 }
             }
             else
             {
-                GetXMLProperty(pObject, pElement, pElement.Name.LocalName);
+                GetXmlProperty(pObject, pElement, pElement.Name.LocalName);
             }
         }
 
@@ -970,7 +930,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pName">
         /// Name of the property to look for - if it's not on the object, return.  
         /// </param>
-        private void GetXMLProperty(object pObject, XElement pElement, string pName)
+        private void GetXmlProperty(object pObject, XElement pElement, string pName)
         {
             //four value types to handle the four values we can pull from XML via the CUPI interface.
 
@@ -981,7 +941,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 {
                     return;
                 }
-                Console.WriteLine("Missing property value:" + pName);
+                RaiseErrorEvent("Missing property value:" + pName);
                 return;
             }
 
@@ -990,15 +950,15 @@ namespace Cisco.UnityConnection.RestFunctions
             switch (pObject.GetType().GetProperty(pName).PropertyType.FullName.ToLower())
             {
                 case "system.int32":
-                    int intValue = (pElement.Value == null) ? 0 : int.Parse(pElement.Value);
+                    int intValue = int.Parse(pElement.Value);
                     pObject.GetType().GetProperty(pName).SetValue(pObject, intValue, null);
                     break;
                 case "system.int64":
-                    long longValue = (pElement.Value == null) ? 0 : long.Parse(pElement.Value);
+                    long longValue = long.Parse(pElement.Value);
                     pObject.GetType().GetProperty(pName).SetValue(pObject, longValue, null);
                     break;
                 case "system.string":
-                    string strValue = (pElement.Value == null) ? "" : pElement.Value.ToString();
+                    string strValue = pElement.Value;
                     pObject.GetType().GetProperty(pName).SetValue(pObject, strValue, null);
                     break;
                 case "system.boolean":
@@ -1011,61 +971,68 @@ namespace Cisco.UnityConnection.RestFunctions
                     pObject.GetType().GetProperty(pName).SetValue(pObject, dateValue, null);
                     break;
                 case "cisco.unityconnection.restfunctions.subscriberconversationtui":
-                    strValue = (pElement.Value == null) ? "" : pElement.Value.ToString();
+                    strValue = pElement.Value;
                     SubscriberConversationTui oConv;
                     Enum.TryParse(strValue, true, out oConv);
                     pObject.GetType().GetProperty(pName).SetValue(pObject, oConv, null);
                     break;
                 case "cisco.unityconnection.restfunctions.transferoptiontypes":
-                    strValue = (pElement.Value == null) ? "" : pElement.Value.ToString();
+                    strValue = pElement.Value;
                     TransferOptionTypes oTran;
                     Enum.TryParse(strValue, true, out oTran);
                     pObject.GetType().GetProperty(pName).SetValue(pObject, oTran, null);
                     break;
                 case "cisco.unityconnection.restfunctions.greetingtypes":
-                    strValue = (pElement.Value == null) ? "" : pElement.Value.ToString();
+                    strValue = pElement.Value;
                     GreetingTypes oGreet;
                     Enum.TryParse(strValue, true, out oGreet);
                     pObject.GetType().GetProperty(pName).SetValue(pObject, oGreet, null);
                     break;
                 case "cisco.unityconnection.restfunctions.conversationnames":
-                    strValue = (pElement.Value == null) ? "" : pElement.Value.ToString();
+                    strValue = pElement.Value;
                     ConversationNames oConvName;
                     Enum.TryParse(strValue, true, out oConvName);
                     pObject.GetType().GetProperty(pName).SetValue(pObject, oConvName, null);
                     break;
                 case "cisco.unityconnection.restfunctions.messagetype":
-                    strValue = (pElement.Value == null) ? "" : pElement.Value.ToString();
+                    strValue = pElement.Value;
                     MessageType oMsgType;
                     Enum.TryParse(strValue, true, out oMsgType);
                     pObject.GetType().GetProperty(pName).SetValue(pObject, oMsgType, null);
                     break;
                 case "cisco.unityconnection.restfunctions.sensitivitytype":
-                    strValue = (pElement.Value == null) ? "" : pElement.Value.ToString();
+                    strValue = pElement.Value;
                     SensitivityType oSensitivityType;
                     Enum.TryParse(strValue, true, out oSensitivityType);
                     pObject.GetType().GetProperty(pName).SetValue(pObject, oSensitivityType, null);
                     break;
                 case "cisco.unityconnection.restfunctions.prioritytype":
-                    strValue = (pElement.Value == null) ? "" : pElement.Value.ToString();
+                    strValue = pElement.Value;
                     PriorityType oPriorityType;
                     Enum.TryParse(strValue, true, out oPriorityType);
                     pObject.GetType().GetProperty(pName).SetValue(pObject, oPriorityType, null);
                     break;
                 default:
-                    if (Debugger.IsAttached) Debugger.Break();
-                    
-                    Console.WriteLine("Unknown type encountered in GetXMLProperty on ConnectionServer.cs:"
+                    RaiseErrorEvent("Unknown type encountered in GetXMLProperty on ConnectionServer.cs:"
                                    + pObject.GetType().GetProperty(pName).PropertyType.FullName.ToLower());
                     break;
             }
         }
 
 
-        //Use a simple set of command line tools tools to convert just about any WAV format into raw PCM format that Connection will be 
-        //happy with.  This will handle GSM6.10, mp3, G729a, G726 and many other WAV formats I've run into in the field - the same library
-        //is used in COBRAS when importing Windows based backups (which may have numerous WAV formats for greetings and voice names) into 
-        //Connection.
+        /// <summary>
+        /// Use a simple set of command line tools tools to convert just about any WAV format into raw PCM format that Connection will be 
+        /// happy with.  This will handle GSM6.10, mp3, G729a, G726 and many other WAV formats I've run into in the field - the same library
+        /// is used in COBRAS when importing Windows based backups (which may have numerous WAV formats for greetings and voice names) into 
+        /// Connection.
+        /// </summary>
+        /// <param name="pPathToWavFile">
+        /// Wav file to convert
+        /// </param>
+        /// <returns>
+        /// Path to a temporary file that contains the converted WAV - File path will never be empty but the file will not exist on th e
+        /// hard drive if the conversion fails.
+        /// </returns>
         public string ConvertWavFileToPcm(string pPathToWavFile)
         {
             //create a temporary file with a GUID file name in the temporary folder for the local OS install.
@@ -1103,10 +1070,11 @@ namespace Cisco.UnityConnection.RestFunctions
                     exeProcess.WaitForExit(30000);
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 //log the error here in a production application - for our purposes we just pass back blank for the file 
                 //name indicating there was an issue.
+                RaiseErrorEvent("Error converting WAV file to PCM:"+ex);
                 strConvertedWavFilePath = "";
             }
 
@@ -1245,7 +1213,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
                             default:
                                 //Not a conversation name we recognize - there are clients that customize this so be sure to handle this cleanly.
-                                if (Debugger.IsAttached) Debugger.Break();
                                 return "(error) invalid conversation name:" + pConversationName;
                         }
                     }
@@ -1381,12 +1348,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //there should only ever be one location defined that has the "isprimary" set to true.
             WebCallResult res= Location.GetLocations(this, out oList,"query=(IsPrimary is 1)");
 
-            if (res.Success == false)
-            {
-                return null;
-            }
-
-            if (oList.Count != 1)
+            if (res.Success == false || oList.Count !=1)
             {
                 return null;
             }
@@ -1459,10 +1421,22 @@ namespace Cisco.UnityConnection.RestFunctions
                     strUrl += "directory-handler.do?op=read&objectId=" + strObjectId;
                     break;
                 case ConnectionObjectType.User:
+                case ConnectionObjectType.Subscriber:
+                case ConnectionObjectType.GlobalUser:
                     strUrl += "user.do?op=read&objectId=" + strObjectId;
                     break;
                 case ConnectionObjectType.SystemCallHandler:
+                case ConnectionObjectType.Handler:
                     strUrl += "callhandler.do?op=read&objectId=" + strObjectId;
+                    break;
+                case ConnectionObjectType.Location:
+                    strUrl += "location-vms.do?op=read&objectId=" + strObjectId;
+                    break;
+                case ConnectionObjectType.RestrictionTable:
+                    strUrl += "restriction-table.do?op=read&objectId=" + strObjectId;
+                    break;
+                case ConnectionObjectType.Role:
+                    strUrl += "edit-role.do?op=read&objectId=" + strObjectId;
                     break;
                 case ConnectionObjectType.RoutingRuleDirect:
                     strUrl += "routing-rule.do?op=readDirectRule&objectId=" + strObjectId;
@@ -1480,6 +1454,7 @@ namespace Cisco.UnityConnection.RestFunctions
                     strUrl += "callhandler.do?op=readTemplate&objectId=" + strObjectId;
                     break;
                 case ConnectionObjectType.Schedule:
+                case ConnectionObjectType.ScheduleSet:
                     strUrl += "schedule.do?op=read&objectId=" + strObjectId;
                     break;
                 case ConnectionObjectType.Partition:
@@ -1507,7 +1482,7 @@ namespace Cisco.UnityConnection.RestFunctions
                     strUrl += "cos.do?op=read&objectId=" + strObjectId;
                     break;
                 default:
-                    if (Debugger.IsAttached) Debugger.Break();
+                    strUrl = "";
                     break;
             }
 
