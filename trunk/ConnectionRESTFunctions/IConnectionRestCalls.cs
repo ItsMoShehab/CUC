@@ -327,39 +327,7 @@ namespace Cisco.UnityConnection.RestFunctions
         WebCallResult UploadWavFile(string pFullResourcePath, ConnectionServer pConnectionServer,string pLocalWavFilePath);
 
 
-        /// <summary>
-        /// Upload a broadcast message to a specified server using CUMI funtions. 
-        /// The authenticated user issuing this command MUST have the right to send broadcast messages on their account or this 
-        /// will fail and unfortunately there's no clean way to check for that up front or specifically cathch the error that results
-        /// from it - you get a generic 400 "bad request" coming back - this is deeply unfortunate as it's a common configuration 
-        /// error and somethign that should probably be addressed in the API at some point.
-        /// </summary>
-        /// <param name="pConnectionServer">
-        /// Instance of the ConnectionServer class
-        /// </param>
-        /// <param name="pWavFilePath">
-        /// Full path on the local hard drive to a WAV file to use for the broadcast message.
-        /// </param>
-        /// <param name="pStartDate">
-        /// start date for when the message will be active
-        /// </param>
-        /// <param name="pStartTime"> 
-        /// start time (used with the date) for when the message will be active
-        /// </param>
-        /// <param name="pEndDate">
-        /// end date for when the message will be inactivated
-        /// </param>
-        /// <param name="pEndTime">
-        /// end time (used with date) for when the message will be inactivated
-        ///  </param>
-        /// <returns>
-        /// instance of the WebCallResult class - the "Misc" section will contain the path to the wav file uploaded and the start/end 
-        /// date/times for the broadcast message.
-        /// </returns>
-        WebCallResult UploadBroadcastMessage(ConnectionServer pConnectionServer, string pWavFilePath,
-                                             DateTime pStartDate, DateTime pStartTime, DateTime pEndDate,DateTime pEndTime);
-
-        /// <summary>
+       /// <summary>
         /// Upload a new message to the Connection server using a local WAV file as the voice mail attachment.
         /// </summary>
         /// <param name="pConnectionServer">

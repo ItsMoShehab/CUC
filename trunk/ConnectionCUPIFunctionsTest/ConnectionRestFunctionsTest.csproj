@@ -73,6 +73,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="RestTransportFunctionsTests.cs" />
     <Compile Include="RoutingRuleTest.cs" />
     <Compile Include="RtpCodecDefTest.cs" />
     <Compile Include="Settings.cs" />

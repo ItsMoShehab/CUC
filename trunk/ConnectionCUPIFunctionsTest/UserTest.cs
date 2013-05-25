@@ -868,5 +868,101 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         #endregion
+
+        #region User Compare Tests
+
+        [TestMethod]
+        public void UserCompareTests_FirstName()
+        {
+            UserBase oUser1=new UserBase();
+            UserBase oUser2=new UserBase();
+            List<UserBase> oUsers = new List<UserBase>();
+            oUsers.Add(oUser1);
+            oUsers.Add(oUser2);
+
+            oUsers.Sort(new UserComparer("firstname"));
+            oUser1.FirstName = "bbb";
+            oUsers.Sort(new UserComparer("firstname"));
+            Assert.IsTrue(oUsers[0]==oUser1);
+
+            oUser2.FirstName = "aaa";
+            oUsers.Sort(new UserComparer("firstname"));
+            Assert.IsTrue(oUsers[0] == oUser2);
+
+        }
+
+        [TestMethod]
+        public void UserCompareTests_LastName()
+        {
+            UserBase oUser1 = new UserBase();
+            UserBase oUser2 = new UserBase();
+            List<UserBase> oUsers = new List<UserBase>();
+            oUsers.Add(oUser1);
+            oUsers.Add(oUser2);
+
+            oUsers.Sort(new UserComparer("lastname"));
+            oUser1.LastName = "bbb";
+            oUsers.Sort(new UserComparer("lastname"));
+            Assert.IsTrue(oUsers[0] == oUser1);
+
+            oUser2.LastName = "aaa";
+            oUsers.Sort(new UserComparer("lastname"));
+            Assert.IsTrue(oUsers[0] == oUser2);
+        }
+
+        [TestMethod]
+        public void UserCompareTests_DisplayName()
+        {
+            UserBase oUser1 = new UserBase();
+            UserBase oUser2 = new UserBase();
+            List<UserBase> oUsers = new List<UserBase>();
+            oUsers.Add(oUser1);
+            oUsers.Add(oUser2);
+
+            oUsers.Sort(new UserComparer("displayname"));
+            oUser1.DisplayName = "bbb";
+            oUsers.Sort(new UserComparer("displayname"));
+            Assert.IsTrue(oUsers[0] == oUser1);
+
+            oUser2.DisplayName = "aaa";
+            oUsers.Sort(new UserComparer("displayname"));
+            Assert.IsTrue(oUsers[0] == oUser2);
+
+        }
+
+        [TestMethod]
+        public void UserCompareTests_Extension()
+        {
+            UserBase oUser1 = new UserBase();
+            UserBase oUser2 = new UserBase();
+            List<UserBase> oUsers = new List<UserBase>();
+            oUsers.Add(oUser1);
+            oUsers.Add(oUser2);
+
+            oUser1.DtmfAccessId = "2222";
+            oUser2.DtmfAccessId = "1111";
+            oUsers.Sort(new UserComparer("dtmfaccessid"));
+            Assert.IsTrue(oUsers[0] == oUser2);
+
+        }
+
+        [TestMethod]
+        public void UserCompareTests_Alias()
+        {
+            UserBase oUser1 = new UserBase();
+            UserBase oUser2 = new UserBase();
+            List<UserBase> oUsers = new List<UserBase>();
+            oUsers.Add(oUser1);
+            oUsers.Add(oUser2);
+
+            oUser1.Alias = "bbbb";
+            oUser2.Alias = "aaaa";
+            oUsers.Sort(new UserComparer("alias"));
+            Assert.IsTrue(oUsers[0] == oUser2);
+
+        }
+
+        
+        #endregion
     }
 }

@@ -103,7 +103,7 @@ namespace ConnectionCUPIFunctionsTest
         //The phone will ring, answer it - you should hear a beep, record a brief message and then press # - it should be played
         //back to you and the call then terminates.
         [TestMethod]
-        public void TestMethods()
+        public void RecordingTest()
         {
             PhoneRecording oRecording=null;
 
@@ -145,6 +145,35 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(oRecording.IsCallConnected(),"Call not disconnected after hangup");
 
             oRecording.Dispose();
+        }
+
+        [TestMethod]
+        public void RecordingDialFail()
+        {
+            PhoneRecording oRecording = null;
+            try
+            {
+                oRecording = new PhoneRecording(_connectionServer, "abcd");
+                Assert.Fail("Phone connection to invalid extension should fail");
+            }
+            catch (UnityConnectionRestException ex)
+            {
+                Console.WriteLine("Expected failure:"+ex);
+            }
+        }
+
+        [TestMethod]
+        public void RecordingIsConnectedFailure()
+        {
+            try
+            {
+                PhoneRecording oPhoneRecording = new PhoneRecording(new ConnectionServer(new TestTransportFunctions()),"1234");
+                Assert.Fail("Phone connection with invalid ConnectionServer should fail");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Expected failure:"+ex);
+            }
         }
     }
 }

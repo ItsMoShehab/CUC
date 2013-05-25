@@ -24,6 +24,8 @@ namespace ConnectionCUPIFunctionsTest
         //routine below.
         private static ConnectionServer _connectionServer;
 
+        private static ConnectionServer _connectionServerTestHarness;
+
         /// <summary>
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
@@ -54,7 +56,18 @@ namespace ConnectionCUPIFunctionsTest
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start DistributionList test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start SmppProvider test:" + ex.Message);
+            }
+
+            try
+            {
+                _connectionServerTestHarness = new ConnectionServer(new TestTransportFunctions(),
+                                                                    mySettings.ConnectionServer,
+                                                                    mySettings.ConnectionLogin, mySettings.ConnectionPW);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Unable to create test harness version of ConnectionServer to start SmppProvider tests:"+ex);
             }
         }
 
@@ -93,14 +106,14 @@ namespace ConnectionCUPIFunctionsTest
         ///A test for getting and listing PhoneSystems
         ///</summary>
         [TestMethod]
-        public void SmppProvider_Test()
+        public void SmppProvider_FetchTest()
         {
             List<SmppProvider> oProviders;
 
-            WebCallResult res = SmppProvider.GetSmppProviders(null, out oProviders);
+            WebCallResult res = SmppProvider.GetSmppProviders(null, out oProviders,1,5);
             Assert.IsFalse(res.Success, "Null Connection server param should fail");
 
-            res = SmppProvider.GetSmppProviders(_connectionServer, out oProviders);
+            res = SmppProvider.GetSmppProviders(_connectionServer, out oProviders,1,5,null);
             Assert.IsTrue(res.Success, "Failed to fetch SmppProviders");
             Assert.IsTrue(oProviders.Count>0,"No SMPP providers returned");
 
@@ -108,6 +121,10 @@ namespace ConnectionCUPIFunctionsTest
             foreach (SmppProvider oTemp in oProviders)
             {
                 Console.WriteLine(oTemp.ToString());
+
+                //check IUnityDisplayInterface properties
+                Console.WriteLine(oTemp.SelectionDisplayString);
+                Console.WriteLine(oTemp.UniqueIdentifier);
                 strObjectId = oTemp.ObjectId;
             }
 
@@ -120,6 +137,57 @@ namespace ConnectionCUPIFunctionsTest
             {
                 Assert.Fail("Unable to fetch SMPP provider by valid ObjectId:"+ex);
             }
+
         }
+
+        [TestMethod]
+        public void SmppProvider_CreateEmpty()
+        {
+            try
+            {
+                SmppProvider oProvider = new SmppProvider(_connectionServer);
+                Console.WriteLine(oProvider);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Failed to create an empty ObjectInstance with no ObjectId:"+ex);
+            }
+        }
+
+        [TestMethod]
+        public void HarnessTest_GetSmppProvider()
+        {
+            try
+            {
+                SmppProvider oProvider = new SmppProvider(_connectionServerTestHarness, TestTransportFunctions.TestCommandValues.InvalidResultText.ToString());
+                Assert.Fail("Getting invalid response text back from server did not result in construciton failure");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Expected failure on class creation:"+ex);
+            }
+        }
+
+        [TestMethod]
+        public void HarnessTest_GetSmppProviders()
+        {
+            List<SmppProvider> oProviders;
+            var res = SmppProvider.GetSmppProviders(_connectionServerTestHarness, out oProviders, 1, 10,
+                                                    TestTransportFunctions.TestCommandValues.ErrorResponse.ToString());
+            Assert.IsFalse(res.Success, "Forcing error response from server did not result in call failure");
+
+            res = SmppProvider.GetSmppProviders(_connectionServerTestHarness, out oProviders, 1, 10,
+                                        TestTransportFunctions.TestCommandValues.EmptyResultText.ToString());
+            Assert.IsTrue(res.Success, "Forcing empty result text from server should not fail:"+res);
+            Assert.IsTrue(oProviders.Count==0,"Empty response from server should result in 0 elements returned:"+oProviders.Count);
+
+            res = SmppProvider.GetSmppProviders(_connectionServerTestHarness, out oProviders, 1, 10,
+                                        TestTransportFunctions.TestCommandValues.InvalidResultText.ToString());
+            Assert.IsTrue(res.Success, "Forcing invalid result text from server should not fail:" + res);
+            Assert.IsTrue(oProviders.Count == 0, "Invalid response text from server should result in 0 elements returned:" + oProviders.Count);
+
+        }
+
+
     }
 }

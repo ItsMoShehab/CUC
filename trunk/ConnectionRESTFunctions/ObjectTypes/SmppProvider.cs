@@ -11,6 +11,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
@@ -139,23 +140,22 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pConnectionServer">
         /// The Connection server object that references the server the SmppProviders should be pulled from
         /// </param>
-        /// <param name="pSMppProviders">
+        /// <param name="pSmppProviders">
         /// Out parameter that is used to return the list of SmppProvider objects defined on Connection - the list may be empty
         /// </param>
-        /// <param name="pPageNumber">
-        /// Results page to fetch - defaults to 1
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
+        /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(FirstName startswith a)" in
+        /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
         /// </param>
-        /// <param name="pRowsPerPage">
-        /// Results to return per page, defaults to 20
-        /// </param>        
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetSmppProviders(ConnectionServer pConnectionServer, out List<SmppProvider> pSMppProviders, 
-            int pPageNumber = 1, int pRowsPerPage = 20)
+        public static WebCallResult GetSmppProviders(ConnectionServer pConnectionServer, out List<SmppProvider> pSmppProviders,
+            params string[] pClauses)
         {
             WebCallResult res;
-            pSMppProviders = null;
+            pSmppProviders = null;
 
             if (pConnectionServer==null)
             {
@@ -164,8 +164,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "smppproviders", "pageNumber=" + pPageNumber, 
-                "rowsPerPage=" + pRowsPerPage);
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "smppproviders", pClauses);
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -179,21 +178,67 @@ namespace Cisco.UnityConnection.RestFunctions
             //if this is empty that's not an error, just return an empty list
             if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
-                pSMppProviders = new List<SmppProvider>();
+                pSmppProviders = new List<SmppProvider>();
                 return res;
             }
 
-            pSMppProviders = pConnectionServer.GetObjectsFromJson<SmppProvider>(res.ResponseText);
+            pSmppProviders = pConnectionServer.GetObjectsFromJson<SmppProvider>(res.ResponseText);
 
             //special case - Json.Net always creates an object even when there's no data for it.
-            if (pSMppProviders == null || (pSMppProviders.Count == 1 && string.IsNullOrEmpty(pSMppProviders[0].ObjectId)))
+            if (pSmppProviders == null || (pSmppProviders.Count == 1 && string.IsNullOrEmpty(pSmppProviders[0].ObjectId)))
             {
-                pSMppProviders = new List<SmppProvider>();
+                pSmppProviders = new List<SmppProvider>();
                 return res;
             }
 
             return res;
         }
+
+        /// <summary>
+        /// Gets the list of all SmppProviders and resturns them as a generic list of SmppProvider objects.  This
+        /// list can be used for providing drop down list selection for notification device creation purposes or the like.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// The Connection server object that references the server the SmppProviders should be pulled from
+        /// </param>
+        /// <param name="pSmppProviders">
+        /// Out parameter that is used to return the list of SmppProvider objects defined on Connection - the list may be empty
+        /// </param>
+        /// <param name="pPageNumber">
+        /// Results page to fetch - defaults to 1
+        /// </param>
+        /// <param name="pRowsPerPage">
+        /// Results to return per page, defaults to 20
+        /// </param>        
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
+        /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(FirstName startswith a)" in
+        /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult GetSmppProviders(ConnectionServer pConnectionServer,
+                                                     out List<SmppProvider> pSmppProviders,
+                                                     int pPageNumber = 1, int pRowsPerPage = 20,
+                                                     params string[] pClauses)
+        {
+            //tack on the paging items to the parameters list
+            List<string> temp;
+            if (pClauses == null)
+            {
+                temp = new List<string>();
+            }
+            else
+            {
+                temp = pClauses.ToList();
+            }
+            temp.Add("pageNumber=" + pPageNumber);
+            temp.Add("rowsPerPage=" + pRowsPerPage);
+
+            return GetSmppProviders(pConnectionServer, out pSmppProviders, temp.ToArray());
+        }
+
 
 
         #endregion

@@ -18,6 +18,9 @@ namespace ConnectionCUPIFunctionsTest
         //routine below.
         private static ConnectionServer _connectionServer;
 
+        //Class instance with mock version of transport for forcing specific server errors
+        private static ConnectionServer _connectionServerHarness;
+
         private static Tenant _tempTenant;
 
         /// <summary>
@@ -58,6 +61,15 @@ namespace ConnectionCUPIFunctionsTest
             //string strName = "too long to keep test from running" + Guid.NewGuid().ToString();
             WebCallResult res = Tenant.AddTenant(_connectionServer, strName, strName+".org", strName, out _tempTenant);
             Assert.IsTrue(res.Success, "Failed creating temporary tenant:" + res.ToString());
+
+           try
+           {
+               _connectionServerHarness = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+           }
+           catch (Exception ex)
+           {
+               throw new Exception("Unable to create harness ConnectionServer version for Tenant test:"+ex.Message);
+           }
         }
 
 
@@ -110,6 +122,14 @@ namespace ConnectionCUPIFunctionsTest
         }
 
 
+        [TestMethod]
+        public void ClassCreationNoObjectId()
+        {
+            //should not throw an exception
+            Tenant oTest=new Tenant(_connectionServer);
+            Console.WriteLine(oTest);
+        }
+
         #endregion
 
 
@@ -152,7 +172,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             //GetTenants
             List<Tenant> oTenants;
-            var res = Tenant.GetTenants(null, out oTenants, 1, 1);
+            var res = Tenant.GetTenants(null, out oTenants, 1, 1,null);
             Assert.IsFalse(res.Success, "");
         }
 
@@ -173,6 +193,8 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
+
+        #region Live Tests
 
         [TestMethod]
         public void Tenant_SetTests()
@@ -211,74 +233,235 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         [TestMethod]
-        public void Tenant_FetchTests()
+        public void Tenant_FetchTemplates()
         {
             List<CallHandlerTemplate> oHandlerTemplates;
             WebCallResult res = _tempTenant.GetCallHandlerTemplates(out oHandlerTemplates, 1, 1);
-            Assert.IsTrue(res.Success,"Failed to fetch call handler templates:"+res);
-            Assert.IsTrue(oHandlerTemplates.Count==1,"One call handler template not returned");
+            Assert.IsTrue(res.Success, "Failed to fetch call handler templates:" + res);
+            Assert.IsTrue(oHandlerTemplates.Count == 1, "One call handler template not returned");
+        }
 
+        [TestMethod]
+         public void Tenant_FetchHandlers()
+         {
             List<CallHandler> oHandlers;
-            res = _tempTenant.GetCallHandlers(out oHandlers, 1, 1);
+            var res = _tempTenant.GetCallHandlers(out oHandlers, 1, 1);
             Assert.IsTrue(res.Success, "Failed to fetch call handlers:" + res);
             Assert.IsTrue(oHandlers.Count > 0, "No call handlers returned");
+        }
 
+        [TestMethod]
+        public void Tenant_FetchCoses()
+        {
             List<ClassOfService> oCoses;
-            res = _tempTenant.GetClassesOfService(out oCoses);
+            var res = _tempTenant.GetClassesOfService(out oCoses);
             Assert.IsTrue(res.Success, "Failed to fetch coses:" + res);
             Assert.IsTrue(oCoses.Count > 0, "No coses returned");
+        }
 
+        [TestMethod]
+        public void Tenant_FetchDirHandlers()
+        {
             List<DirectoryHandler> oDirHandlers;
-            res = _tempTenant.GetDirectoryHandlers(out oDirHandlers);
+            var res = _tempTenant.GetDirectoryHandlers(out oDirHandlers);
             Assert.IsTrue(res.Success, "Failed to fetch directory handlers:" + res);
             Assert.IsTrue(oDirHandlers.Count > 0, "No directory handlers returned");
+        }
 
+        [TestMethod]
+        public void Tenant_FetchLists()
+        {
             List<DistributionList> oLists;
-            res = _tempTenant.GetDistributionLists(out oLists);
+            var res = _tempTenant.GetDistributionLists(out oLists);
             Assert.IsTrue(res.Success, "Failed to fetch distribution lists:" + res);
             Assert.IsTrue(oLists.Count > 0, "No distributionlists returned");
+        }
 
+        [TestMethod]
+        public void Tenant_FetchInterviewers()
+        {
             List<InterviewHandler> oInterviewers;
-            res = _tempTenant.GetInterviewHandlers(out oInterviewers);
+            var res = _tempTenant.GetInterviewHandlers(out oInterviewers);
             Assert.IsTrue(res.Success, "Failed to fetch interview handlers:" + res);
             Assert.IsTrue(oInterviewers.Count > 0, "No interview handlers returned");
+        }
 
+        [TestMethod]
+        public void Tenant_FetchPhoneSystems()
+        {
             List<PhoneSystem> oPhones;
-            res = _tempTenant.GetPhoneSystems(out oPhones);
+           var res = _tempTenant.GetPhoneSystems(out oPhones);
             Assert.IsTrue(res.Success, "Failed to fetch phone systems:" + res);
             Assert.IsTrue(oPhones.Count > 0, "No phone systems returned");
+        }
 
+        [TestMethod]
+        public void Tenant_Schedules()
+        {
             List<ScheduleSet> oSchedules;
-            res = _tempTenant.GetScheduleSets(out oSchedules);
+            var res = _tempTenant.GetScheduleSets(out oSchedules);
             Assert.IsTrue(res.Success, "Failed to fetch schedule sets:" + res);
             Assert.IsTrue(oSchedules.Count > 0, "No schedule sets returned");
+        }
 
+        [TestMethod]
+        public void Tenant_FetchUserTemplates()
+        {
             List<UserTemplate> oUserTemplates;
-            res = _tempTenant.GetUserTemplates(out oUserTemplates);
+            var res = _tempTenant.GetUserTemplates(out oUserTemplates);
             Assert.IsTrue(res.Success, "Failed to fetch user templates:" + res);
             Assert.IsTrue(oUserTemplates.Count > 0, "No user templates returned");
+        }
 
+        [TestMethod]
+        public void Tenant_FetchUsers()
+        {
             List<UserBase> oUsers;
-            res = _tempTenant.GetUsers(out oUsers);
+            var res = _tempTenant.GetUsers(out oUsers);
             Assert.IsTrue(res.Success, "Failed to fetch users :" + res);
             Assert.IsTrue(oUsers.Count > 0, "No users returned");
+        }
 
-
+        [TestMethod]
+        public void Tenant_FetchTenants()
+        {
             List<Tenant> oTenants;
-            res = Tenant.GetTenants(_connectionServer, out oTenants);
-            Assert.IsTrue(res.Success,"Failed to fetch tenants:"+res);
-            Assert.IsTrue(oTenants.Count>0,"No tenants returned from fetch");
+            var res = Tenant.GetTenants(_connectionServer, out oTenants);
+            Assert.IsTrue(res.Success, "Failed to fetch tenants:" + res);
+            Assert.IsTrue(oTenants.Count > 0, "No tenants returned from fetch");
 
             Tenant oTenant;
             res = Tenant.GetTenant(out oTenant, _connectionServer, oTenants[0].ObjectId);
-            Assert.IsTrue(res.Success,"Failed to fetch tenant from valid objectid:"+res);
+            Assert.IsTrue(res.Success, "Failed to fetch tenant from valid objectid:" + res);
 
-            res = Tenant.GetTenant(out oTenant, _connectionServer,"", oTenants[0].Alias);
+            res = Tenant.GetTenant(out oTenant, _connectionServer, "", oTenants[0].Alias);
             Assert.IsTrue(res.Success, "Failed to fetch tenant from valid alias:" + res);
 
 
             Console.WriteLine(oTenant.ToString());
             oTenant.DumpAllProps();
         }
+
+        #endregion
+
+        
+        #region Harness Tesst
+
+        [TestMethod]
+        public void Tenant_FetchCoses_Harness()
+        {
+            Tenant oTenant = new Tenant(_connectionServerHarness);
+
+            List<ClassOfService> oCoses;
+
+            var res = oTenant.GetClassesOfService(out oCoses, 1, 10, null);
+            Assert.IsFalse(res.Success, "Fetching COS should fail:");
+            Assert.IsTrue(oCoses.Count == 0, "No coses should be returned returned");
+
+            res = oTenant.GetClassesOfService(out oCoses,1,10, "EmptyResultText");
+            Assert.IsFalse(res.Success, "Fetching COS should fail:");
+            Assert.IsTrue(oCoses.Count == 0, "No coses should be returned returned");
+
+            res = oTenant.GetClassesOfService(out oCoses, 1, 10, "InvalidResultText");
+            Assert.IsTrue(res.Success, "Fetching COS with invalid text should not fail: "+res);
+            Assert.IsTrue(oCoses.Count == 0, "No coses should be returned returned for invalid text");
+
+            res = oTenant.GetClassesOfService(out oCoses, 1, 10, "ErrorResponse");
+            Assert.IsFalse(res.Success, "Fetching COS should fail:");
+            Assert.IsTrue(oCoses.Count == 0, "No coses should be returned returned");
+
+
+        }
+
+        [TestMethod]
+        public void Tenant_FetchPhoneSystems_Harness()
+        {
+            Tenant oTenant = new Tenant(_connectionServerHarness);
+
+            List<PhoneSystem> oPhoneSystems;
+
+            var res = oTenant.GetPhoneSystems(out oPhoneSystems, 1, 10, null);
+            Assert.IsFalse(res.Success, "Fetching phone systems should fail:");
+            Assert.IsTrue(oPhoneSystems.Count == 0, "No phone systems should be returned returned");
+
+            res = oTenant.GetPhoneSystems(out oPhoneSystems, 1, 10, "EmptyResultText");
+            Assert.IsFalse(res.Success, "Fetching phone systems should fail:");
+            Assert.IsTrue(oPhoneSystems.Count == 0, "No phone systems should be returned returned");
+
+            res = oTenant.GetPhoneSystems(out oPhoneSystems, 1, 10, "InvalidResultText");
+            Assert.IsTrue(res.Success, "Fetching phone systems with invalid text should not fail: " + res);
+            Assert.IsTrue(oPhoneSystems.Count == 0, "No coses should be returned returned for invalid text");
+
+            res = oTenant.GetPhoneSystems(out oPhoneSystems, 1, 10, "ErrorResponse");
+            Assert.IsFalse(res.Success, "Fetching phone systems should fail:");
+            Assert.IsTrue(oPhoneSystems.Count == 0, "No phone systems should be returned returned");
+        }
+
+        [TestMethod]
+        public void Tenant_Schedules_Harness()
+        {
+            Tenant oTenant = new Tenant(_connectionServerHarness);
+
+            List<ScheduleSet> oSchedules;
+
+            var res = oTenant.GetScheduleSets(out oSchedules, 1, 10, null);
+            Assert.IsFalse(res.Success, "Fetching schedules should fail:");
+            Assert.IsTrue(oSchedules.Count == 0, "No schedules should be returned returned");
+
+            res = oTenant.GetScheduleSets(out oSchedules, 1, 10, "EmptyResultText");
+            Assert.IsFalse(res.Success, "Fetching schedules should fail:");
+            Assert.IsTrue(oSchedules.Count == 0, "No schedules should be returned returned");
+
+            res = oTenant.GetScheduleSets(out oSchedules, 1, 10, "InvalidResultText");
+            Assert.IsTrue(res.Success, "Fetching schedules with invalid text should not fail: " + res);
+            Assert.IsTrue(oSchedules.Count == 0, "No schedules should be returned returned for invalid text");
+
+            res = oTenant.GetScheduleSets(out oSchedules, 1, 10, "ErrorResponse");
+            Assert.IsFalse(res.Success, "Fetching schedules should fail:");
+            Assert.IsTrue(oSchedules.Count == 0, "No schedules should be returned returned");
+        }
+
+        [TestMethod]
+        public void Tenant_CreationErrors_Harness()
+        {
+            Tenant oTenant;
+
+            var res = Tenant.GetTenant(out oTenant, _connectionServerHarness, "EmptyResultText");
+            Assert.IsFalse(res.Success,"Creating tenant with empty result text should fail");
+
+            res = Tenant.GetTenant(out oTenant, _connectionServerHarness, "InvalidResultText");
+            Assert.IsFalse(res.Success, "Creating tenant with InvalidResultText should fail");
+
+            res = Tenant.GetTenant(out oTenant, _connectionServerHarness, "ErrorResponse");
+            Assert.IsFalse(res.Success, "Creating tenant with eErrorResponse should fail");
+
+        }
+
+        [TestMethod]
+        public void Tenant_GetTenants_Errors_Harness()
+        {
+            List<Tenant> oTenants;
+
+            var res = Tenant.GetTenants(_connectionServerHarness, out oTenants,1,10, "EmptyResultText");
+            Assert.IsTrue(res.Success, "Calling GetTenants with empty result text should not faile");
+            Assert.IsTrue(oTenants.Count==0, "Zero tenants should be returned");
+
+            res = Tenant.GetTenants(_connectionServerHarness, out oTenants, 1, 10, "InvalidResultText");
+            Assert.IsTrue(res.Success, "Calling GetTenants with InvalidResultText should not fail:"+res);
+            Assert.IsTrue(oTenants.Count == 0, "Zero tenants should be returned");
+
+            res = Tenant.GetTenants(_connectionServerHarness, out oTenants, 1, 10, "ErrorResponse");
+            Assert.IsFalse(res.Success, "Calling GetTenants with ErrorResponse should fail");
+
+        }
+
+
+        #endregion
+
+    
     }
-}
+
+        
+
+    }
+

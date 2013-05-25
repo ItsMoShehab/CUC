@@ -219,10 +219,9 @@ namespace Cisco.UnityConnection.RestFunctions
             //pull the values out of the result set returned from the call (if any).  In this case we need to see
             // the "lastResult and "resourceId" values returned or we'll consider it a failure.
             object oValue;
-
+            res.Success = false;
             if (res.JsonDictionary.ContainsKey("lastResult") == false | res.JsonDictionary.ContainsKey("resourceId") == false)
             {
-                res.Success = false;
                 res.ErrorText = "No Result or resoruce ID returned from play in the response text";
                 return res;
             }
@@ -230,7 +229,6 @@ namespace Cisco.UnityConnection.RestFunctions
             res.JsonDictionary.TryGetValue("lastResult", out oValue);
             if (oValue == null || oValue.ToString().Equals("0")==false)
             {
-                res.Success = false;
                 res.ErrorText = "Empty or null Result returned from play";
                 return res;
             }
@@ -238,11 +236,11 @@ namespace Cisco.UnityConnection.RestFunctions
             res.JsonDictionary.TryGetValue("resourceId", out oValue);
             if (oValue==null || string.IsNullOrEmpty(oValue.ToString()))
             {
-                res.Success = false;
                 res.ErrorText = "Invalid resource ID resturned from play";
                 return res;
             }
 
+            res.Success = true;
             RecordingResourceId = oValue.ToString();
 
             return res;
