@@ -305,13 +305,13 @@ namespace ConnectionCUPIFunctionsTest
          #endregion
 
 
-         #region Live Tests
+        #region Live Tests
 
          [TestMethod]
          public void FetchTests()
          {
              List<RoutingRule> oRules;
-             var res = RoutingRule.GetRoutingRules(_connectionServer, out oRules, 1, 10);
+             var res = RoutingRule.GetRoutingRules(_connectionServer, out oRules, 1, 10,null);
              Assert.IsTrue(res.Success,"Fetching routing rules failed:"+res);
              Assert.IsTrue(oRules.Count>0,"No rules returned in fetch:"+res);
 
@@ -332,6 +332,9 @@ namespace ConnectionCUPIFunctionsTest
              res = oTest.RefetchRoutingRuleData();
              Assert.IsTrue(res.Success,"Failed to refetch routing rule data");
 
+             res = RoutingRule.GetRoutingRules(_connectionServer, out oRules, 1, 10,"query=(ObjectId is Bogus)");
+             Assert.IsTrue(res.Success, "fetching rules with invalid query should not fail:" + res);
+             Assert.IsTrue(oRules.Count == 0, "Invalid query string should return an empty rule list:" + oRules.Count);
          }
 
          [TestMethod]

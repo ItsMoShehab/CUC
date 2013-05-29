@@ -512,8 +512,12 @@ namespace Cisco.UnityConnection.RestFunctions
         //items that are NULL by default but get fetched on the fly when referenced
 
         private List<TransferOption> _transferOptions;
-        public List<TransferOption> GetTransferOptions()
+        public List<TransferOption> GetTransferOptions(bool pForceDataRefetch = false)
         {
+            if (pForceDataRefetch)
+            {
+                _transferOptions = null;
+            }
             //fetch transfer options only if they are referenced
             if (_transferOptions == null)
             {
@@ -524,8 +528,13 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         private List<Greeting> _greetings;
-        public List<Greeting> GetGreetings()
+        public List<Greeting> GetGreetings(bool pForceDataRefetch=false)
         {
+            if (pForceDataRefetch)
+            {
+                _greetings = null;
+            }
+
             //fetch greetings only if they are referenced
             if (_greetings == null)
             {
@@ -536,8 +545,12 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         private List<MenuEntry> _menuEntries;
-        public List<MenuEntry> GetMenuEntries()
+        public List<MenuEntry> GetMenuEntries(bool pForceDataRefetch = false)
         {
+            if (pForceDataRefetch)
+            {
+                _menuEntries = null;
+            }
             //fetch menu entries only if they are referenced
             if (_menuEntries == null)
             {
@@ -550,8 +563,13 @@ namespace Cisco.UnityConnection.RestFunctions
         //call handlers are associated with schedule sets which can contain one or more schedule definitions 
         //under that - this the scheduleset instance from which the other items can be derived.
         private ScheduleSet _scheduleSet;
-        public ScheduleSet GetScheduleSet()
+        public ScheduleSet GetScheduleSet(bool pForceDataRefetch = false)
         {
+            if (pForceDataRefetch)
+            {
+                _scheduleSet = null;
+            }
+
             if (_scheduleSet == null)
             {
                 _scheduleSet = new ScheduleSet(HomeServer,ScheduleSetObjectId);
@@ -655,21 +673,22 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that does not mean an error - return true here along with an empty list.
+            //if this is empty that means an error
             if (string.IsNullOrEmpty(res.ResponseText))
+            {
+                res.Success = false;
+                pCallHandlers = new List<CallHandler>();
+                return res;
+            }
+
+            //not an error, just no handlers returned in query - return empty list
+            if (res.TotalObjectCount == 0)
             {
                 pCallHandlers = new List<CallHandler>();
                 return res;
             }
 
             pCallHandlers = pConnectionServer.GetObjectsFromJson<CallHandler>(res.ResponseText);
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pCallHandlers == null || (pCallHandlers.Count == 1 && string.IsNullOrEmpty(pCallHandlers[0].ObjectId)))
-            {
-                pCallHandlers = new List<CallHandler>();
-                return res;
-            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
@@ -730,11 +749,6 @@ namespace Cisco.UnityConnection.RestFunctions
             catch (UnityConnectionRestException ex)
             {
                 return ex.WebCallResult;
-            }
-
-            catch (Exception ex)
-            {
-                res.ErrorText = "Failed to fetch handler in GetCallHandler:" + ex.Message;
             }
 
             return res;
@@ -1021,11 +1035,6 @@ namespace Cisco.UnityConnection.RestFunctions
                 {
                     return ex.WebCallResult;
                 }
-                catch (Exception ex)
-                {
-                    res.ErrorText = string.Format("Error fetching call handler in GetCallHandlerVoiceName with objectID{0}\n{1}", pObjectId, ex.Message);
-                    return res;
-                }
 
                 //the property will be null if no voice name is recorded for the handler.
                 if (string.IsNullOrEmpty(oCallHandler.VoiceName))
@@ -1273,10 +1282,12 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             else
             {
-                res = new WebCallResult();
-                res.Success = false;
-                res.ErrorText = "No value for ObjectId or Alias passed to GetCallHandler.";
-                return res;
+                return new WebCallResult
+                    {
+                        Success = false,
+                        ErrorText = "No value for ObjectId or Alias passed to GetCallHandler."
+                    };
+
             }
             
             //issue the command to the CUPI interface

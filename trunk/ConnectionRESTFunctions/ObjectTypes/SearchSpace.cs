@@ -401,11 +401,18 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that means an error in this case - should always be at least one search space
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            //if this is empty that means an error in this case
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
                 pSearchSpaces = new List<SearchSpace>();
                 res.Success = false;
+                return res;
+            }
+
+            //not an error, just return empty list
+            if (res.TotalObjectCount == 0)
+            {
+                pSearchSpaces= new List<SearchSpace>();
                 return res;
             }
 
@@ -459,21 +466,22 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that means an error in this case - should always be at least one template
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            //if this is empty that means an error in this case
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
+                res.Success = false;
                 pPartitions = new List<Partition>();
+                return res;
+            }
+
+            //no error, just return an empty list
+            if (res.TotalObjectCount == 0)
+            {
+                pPartitions= new List<Partition>();
                 return res;
             }
 
             List<SearchSpaceMember> oMembers = pConnectionServer.GetObjectsFromJson<SearchSpaceMember>(res.ResponseText);
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (oMembers == null || (oMembers.Count == 1 && string.IsNullOrEmpty(oMembers[0].ObjectId)))
-            {
-                pPartitions = new List<Partition>();
-                return res;
-            }
 
             //create an instance of each partition found in the membership list
             foreach (var oMember in oMembers)

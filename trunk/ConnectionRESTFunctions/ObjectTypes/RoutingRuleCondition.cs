@@ -162,13 +162,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pRoutingRuleConditions = pConnectionServer.GetObjectsFromJson<RoutingRuleCondition>(res.ResponseText);
 
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pRoutingRuleConditions == null || (pRoutingRuleConditions.Count == 1 && string.IsNullOrEmpty(pRoutingRuleConditions[0].ObjectId)))
-            {
-                pRoutingRuleConditions = new List<RoutingRuleCondition>();
-                return res;
-            }
-
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
             foreach (var oObject in pRoutingRuleConditions)

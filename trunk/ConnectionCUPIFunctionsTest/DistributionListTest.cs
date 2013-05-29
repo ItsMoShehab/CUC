@@ -154,7 +154,7 @@ namespace ConnectionCUPIFunctionsTest
             WebCallResult res = DistributionListMember.GetDistributionListMembers(null, "", out oListMember);
             Assert.IsFalse(res.Success, "Fetch of distribution list members should fail with null Connection Server object passed");
 
-            res = DistributionListMember.GetDistributionListMembers(_connectionServer, "", out oListMember);
+            res = DistributionListMember.GetDistributionListMembers(_connectionServer, "", out oListMember,1,2,null);
             Assert.IsFalse(res.Success, "GetDistributionListMember should fail with an invalid DistributionListObjectID passed to it");
         }
 
@@ -251,7 +251,27 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "SetDistributionListVoiceName did not fail with invalid obejctID");
 
         }
-        
+
+
+        /// <summary>
+        /// Exercise SetDistributionListVoiceName failure points
+        /// </summary>
+        [TestMethod]
+        public void StaticCallFailures_SetDistributionListVoiceNameToStreamFile()
+        {
+            var res = DistributionList.SetDistributionListVoiceNameToStreamFile(null, "objectid", "resourceId");
+            Assert.IsFalse(res.Success, "Calling SetDistributionListVoiceNameToStreamFile with null ConnectionServer did not fail");
+
+            res = DistributionList.SetDistributionListVoiceNameToStreamFile(_connectionServer, "objectid", "resourceId");
+            Assert.IsFalse(res.Success, "Calling SetDistributionListVoiceNameToStreamFile with invalid objectId did not fail");
+
+            res = DistributionList.SetDistributionListVoiceNameToStreamFile(_connectionServer, "", "resourceId");
+            Assert.IsFalse(res.Success, "Calling SetDistributionListVoiceNameToStreamFile with empty objectId did not fail");
+
+            res = DistributionList.SetDistributionListVoiceNameToStreamFile(_connectionServer, "objectid", "");
+            Assert.IsFalse(res.Success, "Calling SetDistributionListVoiceNameToStreamFile with empty resource ID did not fail");
+        }
+
         #endregion
 
 
@@ -309,14 +329,24 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success,"Call to update with no pending changes should fail");
 
             //Edit the list's name
-            _tempList.DisplayName = _tempList.DisplayName + "x";
+            string strNewName = _tempList.DisplayName + "x";
+            _tempList.DisplayName = strNewName;
             res = _tempList.Update();
             Assert.IsTrue(res.Success, "Call to update distribution list failed:"+res.ToString());
+
+            res = _tempList.RefetchDistributionListData();
+            Assert.IsTrue(res.Success,"Failed refetching list data:"+res);
+            Assert.IsTrue(_tempList.DisplayName.Equals(strNewName),"Updated name did not match after refresh");
 
             _tempList.PartitionObjectId = "bogus";
             res = _tempList.Update();
             Assert.IsFalse(res.Success,"Setting invalid partition value did not fail:"+res);
 
+            res = _tempList.SetVoiceNameToStreamFile("");
+            Assert.IsFalse(res.Success,"Calling SetVoiceNameToStreamFile with empty ID did not fail");
+
+            res = _tempList.SetVoiceName("CiscoUnityConnectionRestFunctions.dll", true);
+            Assert.IsFalse(res.Success,"Attempting to apply an DLL as a voice name did not fail:"+res);
         }
 
 
@@ -423,7 +453,160 @@ namespace ConnectionCUPIFunctionsTest
                 Console.WriteLine(oList.DumpAllProps());
             }
 
+            res = DistributionList.GetDistributionLists(pConnectionServer, out pDistributionLists,1,2,"query=(ObjectId is Bogus)");
+            Assert.IsTrue(res.Success, "fetching lists with invalid query should not fail:" + res);
+            Assert.IsTrue(pDistributionLists.Count == 0, "Invalid query string should return an empty DL list:" + pDistributionLists.Count);
+
         }
+
+        [TestMethod]
+        public void DistributionList_CreateWithEmptyId()
+        {
+            try
+            {
+                DistributionList oList = new DistributionList(_connectionServer);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Creating a new list with no objectId or alias should be allowed:"+ex);
+            }
+        }
+
+        [TestMethod]
+        public void DistributionList_CreateWithInvalidExtension()
+        {
+            string strAlias = Guid.NewGuid().ToString().Replace("-", "");
+            DistributionList oList;
+            var res = DistributionList.AddDistributionList(_connectionServer, strAlias, strAlias, strAlias, null,out oList);
+            Assert.IsFalse(res.Success,"Creating list with invalid extension should fail:"+res);
+
+        }
+
+        [TestMethod]
+        public void DistributionList_FetchTests()
+        {
+            List<DistributionList> oLists;
+            var res = DistributionList.GetDistributionLists(_connectionServer, out oLists, 1, 2,null);
+            Assert.IsTrue(res.Success,"Failed fetching lists:"+res);
+            Assert.IsTrue(oLists.Count>0,"No public lists fetched");
+
+            //now do a full fetch
+            DistributionList oFullList;
+            res = DistributionList.GetDistributionList(out oFullList, _connectionServer, oLists[0].ObjectId);
+            Assert.IsTrue(res.Success,"Failed fetching single list:"+res);
+            Assert.IsNotNull(oFullList,"Null full list returned from fetch");
+            Assert.IsTrue(oFullList.ObjectId.Equals(oLists[0].ObjectId),"ObjectId used for fetching list does not matched the returned list");
+
+            Console.WriteLine(oFullList.DumpAllProps());
+            Console.WriteLine(oFullList.ToString());
+
+        }
+
+        [TestMethod]
+        public void DistributionList_FullListDataTests()
+        {
+            List<DistributionList> oLists;
+            var res = DistributionList.GetDistributionLists(_connectionServer, out oLists, 1, 2);
+            Assert.IsTrue(res.Success,"Failed fetching lists:"+res);
+            Assert.IsTrue(oLists.Count>0,"No lists returned on fetch");
+            Assert.IsFalse(string.IsNullOrEmpty(oLists[0].DtmfName),"DTMFName not fetched automatically from list result");
+
+            res = DistributionList.GetDistributionLists(_connectionServer, out oLists, 1, 2);
+            Assert.IsTrue(res.Success, "Failed fetching lists:" + res);
+            Assert.IsTrue(oLists.Count > 0, "No lists returned on fetch");
+            Assert.IsTrue(oLists[0].CreationTime<DateTime.Now,"List creation date is not correct");
+
+            res = DistributionList.GetDistributionLists(_connectionServer, out oLists, 1, 2);
+            Assert.IsTrue(res.Success, "Failed fetching lists:" + res);
+            Assert.IsTrue(oLists.Count > 0, "No lists returned on fetch");
+            Console.WriteLine(oLists[0].AllowContacts);
+
+            res = DistributionList.GetDistributionLists(_connectionServer, out oLists, 1, 2);
+            Assert.IsTrue(res.Success, "Failed fetching lists:" + res);
+            Assert.IsTrue(oLists.Count > 0, "No lists returned on fetch");
+            Console.WriteLine(oLists[0].AllowForeignMessage);
+
+            res = DistributionList.GetDistributionLists(_connectionServer, out oLists, 1, 2);
+            Assert.IsTrue(res.Success, "Failed fetching lists:" + res);
+            Assert.IsTrue(oLists.Count > 0, "No lists returned on fetch");
+            Assert.IsTrue(oLists[0].IsPublic,"Is Public value no valid");
+
+            res = DistributionList.GetDistributionLists(_connectionServer, out oLists, 1, 2);
+            Assert.IsTrue(res.Success, "Failed fetching lists:" + res);
+            Assert.IsTrue(oLists.Count > 0, "No lists returned on fetch");
+            Console.WriteLine(oLists[0].VoiceName);
+
+        }
+
+        #endregion
+
+
+        #region Harness Tests
+
+        [TestMethod]
+        public void GetDistributionLists_HarnessTestFailures()
+        {
+            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+
+            List<DistributionList> oLists;
+            var res = DistributionList.GetDistributionLists(oServer, out oLists, 1, 5, "EmptyResultText");
+            Assert.IsFalse(res.Success, "Calling GetDistributionLists with EmptyResultText did not fail");
+
+            res = DistributionList.GetDistributionLists(oServer, out oLists, 1, 5, "InvalidResultText");
+            Assert.IsTrue(res.Success, "Calling GetDistributionLists with InvalidResultText should not fail:" + res);
+            Assert.IsTrue(oLists.Count == 0, "Invalid result text should produce an empty list of templates");
+
+            res = DistributionList.GetDistributionLists(oServer, out oLists, 1, 5, "ErrorResponse");
+            Assert.IsFalse(res.Success, "Calling GetDistributionLists with ErrorResponse did not fail");
+        }
+
+        [TestMethod]
+        public void PublicListConstructor_HarnessTestFailure()
+        {
+            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+
+            //fetch by ObjectId
+            try
+            {
+                DistributionList oList = new DistributionList(oServer, "InvalidResultText");
+                Assert.Fail("Creating new list with InvalidResultText should produce failure");
+            }
+            catch{}
+
+            //fetch by alias
+            try
+            {
+                DistributionList oList = new DistributionList(oServer,"", "InvalidResultText");
+                Assert.Fail("Creating new list with InvalidResultText should produce failure");
+            }
+            catch { }
+
+            try
+            {
+                DistributionList oList = new DistributionList(oServer, "", "ErrorResponse");
+                Assert.Fail("Creating new list with InvalidResultText should produce failure");
+            }
+            catch { }
+
+        }
+
+        [TestMethod]
+        public void GetDistributionListMembers_HarnessTestFailures()
+        {
+            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+
+            List<DistributionListMember> oMembers;
+            var res = DistributionListMember.GetDistributionListMembers(oServer, _tempList.ObjectId, out oMembers, 1, 5, "EmptyResultText");
+            Assert.IsFalse(res.Success, "Calling GetDistributionListMembers with EmptyResultText did not fail");
+
+            res = DistributionListMember.GetDistributionListMembers(oServer,_tempList.ObjectId, out oMembers, 1, 5, "InvalidResultText");
+            Assert.IsTrue(res.Success, "Calling GetDistributionListMembers with InvalidResultText should not fail:" + res);
+            Assert.IsTrue(oMembers.Count == 0, "Invalid result text should produce an empty list of templates");
+
+            res = DistributionListMember.GetDistributionListMembers(oServer, _tempList.ObjectId, out oMembers, 1, 5, "ErrorResponse");
+            Assert.IsFalse(res.Success, "Calling GetDistributionListMembers with ErrorResponse did not fail");
+        }
+
 
         #endregion
     }

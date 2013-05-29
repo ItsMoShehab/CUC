@@ -595,7 +595,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pLine">
         /// String to pass back to the receiving method
         /// </param>
-        private void RaiseErrorEvent(string pLine)
+        internal void RaiseErrorEvent(string pLine)
         {
             //notify registered clients 
             LoggingEventHandler handler = ErrorEvents;

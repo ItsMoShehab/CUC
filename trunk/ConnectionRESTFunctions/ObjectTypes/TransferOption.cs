@@ -491,13 +491,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pTransferOptions = pConnectionServer.GetObjectsFromJson<TransferOption>(res.ResponseText);
 
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pTransferOptions == null || (pTransferOptions.Count == 1 && string.IsNullOrEmpty(pTransferOptions[0].ObjectId)))
-            {
-                pTransferOptions = new List<TransferOption>();
-                return res;
-            }
-
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
             foreach (var oObject in pTransferOptions)

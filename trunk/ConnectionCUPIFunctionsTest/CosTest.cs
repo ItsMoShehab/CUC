@@ -206,6 +206,9 @@ namespace ConnectionCUPIFunctionsTest
             res = ClassOfService.GetClassOfService(out oCos2, _connectionServer, "", oCos.DisplayName);
             Assert.IsTrue(res.Success,"Faled to fetch COS by display name");
 
+            res = ClassOfService.GetClassesOfService(_connectionServer, out oCoses, 1, 2, "query=(ObjectId is bogus)");
+            Assert.IsTrue(res.Success, "fetching COSes with invalid query should not fail:" + res);
+            Assert.IsTrue(oCoses.Count == 0, "Invalid query string should return an empty COS list:" + oCoses.Count);
         }
 
         [TestMethod]
@@ -226,6 +229,69 @@ namespace ConnectionCUPIFunctionsTest
             res = _tempCos.RefetchClassOfServiceData();
             Assert.IsTrue(res.Success,"Refetch of data for COS failed:"+res);
             Assert.IsTrue(_tempCos.MaxPrivateDlists==92,"Max list value pulled on refetch does not matched what was set:"+res);
+        }
+
+        [TestMethod]
+        public void TransferRestrictionTable_FetchTest()
+        {
+            ClassOfService oTempCos;
+            var res = ClassOfService.GetClassOfService(out oTempCos, _connectionServer, _tempCos.ObjectId);
+            Assert.IsTrue(res.Success,"Failed to create instance of Cos from valie ObjectId:"+res);
+
+            oTempCos.XferRestrictionObjectId = "Bogus";
+            var oTable  = oTempCos.TransferRestrictionTable();
+            Assert.IsNull(oTable, "Forcing invalid restriction table fetch should return null restriction table");
+        }
+
+        [TestMethod]
+        public void FaxRestrictionTable_FetchTest()
+        {
+            ClassOfService oTempCos;
+            var res = ClassOfService.GetClassOfService(out oTempCos, _connectionServer, _tempCos.ObjectId);
+            Assert.IsTrue(res.Success, "Failed to create instance of Cos from valie ObjectId:" + res);
+
+            oTempCos.FaxRestrictionObjectId = "Bogus";
+            var oTable = oTempCos.FaxRestrictionTable();
+            Assert.IsNull(oTable, "Forcing invalid restriction table fetch should return null restriction table");
+        }
+
+        [TestMethod]
+        public void OutcallRestrictionTable_FetchTest()
+        {
+            ClassOfService oTempCos;
+            var res = ClassOfService.GetClassOfService(out oTempCos, _connectionServer, _tempCos.ObjectId);
+            Assert.IsTrue(res.Success, "Failed to create instance of Cos from valie ObjectId:" + res);
+
+            oTempCos.OutcallRestrictionObjectId = "Bogus";
+            var oTable = oTempCos.OutcallRestrictionTable();
+            Assert.IsNull(oTable, "Forcing invalid restriction table fetch should return null restriction table");
+        }
+
+
+        #endregion
+
+
+        #region Harness Tests
+
+        [TestMethod]
+        public void GetClassesOfService_HarnessTestFailures()
+        {
+            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+            List<ClassOfService> oCoses;
+
+            var res = ClassOfService.GetClassesOfService(oServer, out oCoses, 1, 5, "EmptyResultText");
+            Assert.IsFalse(res.Success, "Calling GetClassesOfService with EmptyResultText did not fail");
+
+            res = ClassOfService.GetClassesOfService(oServer, out oCoses, 1, 5, "InvalidResultText");
+            Assert.IsTrue(res.Success, "Calling GetClassesOfService with InvalidResultText should not fail:" + res);
+            Assert.IsTrue(oCoses.Count == 0, "Invalid result text should produce an empty list of Coeses");
+
+            res = ClassOfService.GetClassesOfService(oServer, out oCoses, 1, 5, "ErrorResponse");
+            Assert.IsFalse(res.Success, "Calling GetClassesOfService with ErrorResponse did not fail");
+
+
+           
+
         }
 
         #endregion

@@ -707,13 +707,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pNotificationDevices = pConnectionServer.GetObjectsFromJson<NotificationDevice>(res.ResponseText);
 
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pNotificationDevices == null || (pNotificationDevices.Count == 1 && string.IsNullOrEmpty(pNotificationDevices[0].ObjectId)))
-            {
-                pNotificationDevices = new List<NotificationDevice>();
-                return res;
-            }
-
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
             foreach (var oObject in pNotificationDevices)
@@ -1323,7 +1316,7 @@ namespace Cisco.UnityConnection.RestFunctions
                     strUrl = string.Format("{0}users/{1}/notificationdevices/smtpdevices/{2}", pConnectionServer.BaseUrl, pUserObjectId, pObjectId);
                     break;
                 default:
-                    if (Debugger.IsAttached) Debugger.Break();
+                    pConnectionServer.RaiseErrorEvent("Invalid device type encountered in GetUrlPathForDeviceType:"+pDeviceType.ToString());
                     return "";
             }
 

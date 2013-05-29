@@ -153,12 +153,14 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
-        
+
+        #region Live Tests
+
         [TestMethod]
         public void FetchTests()
         {
             List<RestrictionTable> oTables;
-            WebCallResult res = RestrictionTable.GetRestrictionTables(_connectionServer, out oTables);
+            WebCallResult res = RestrictionTable.GetRestrictionTables(_connectionServer, out oTables,1,2);
             Assert.IsTrue(res.Success,"Fetching restriction tables failed:"+res);
             Assert.IsTrue(oTables.Count>0,"No restriction tables fetched");
 
@@ -216,9 +218,130 @@ namespace ConnectionCUPIFunctionsTest
             }
 
 
+            res = RestrictionTable.GetRestrictionTables(_connectionServer, out oTables,1,2,"query=(ObjectId is Bogus)");
+            Assert.IsTrue(res.Success, "fetching RTs with invalid query should not fail:" + res);
+            Assert.IsTrue(oTables.Count == 0, "Invalid query string should return an empty RT list:" + oTables.Count);
+
+        }
+
+        [TestMethod]
+        public void ConstructWithEmptyObjectId()
+        {
+            List<RestrictionTable> oTables;
+            WebCallResult res = RestrictionTable.GetRestrictionTables(_connectionServer, out oTables, 1, 2,null);
+            Assert.IsTrue(res.Success, "Fetching restriction tables failed:" + res);
+            Assert.IsTrue(oTables.Count > 0, "No restriction tables fetched");
+            
+            try
+            {
+                RestrictionPattern oPattern = new RestrictionPattern(_connectionServer, oTables[0].ObjectId);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Creating new pattern object without an objectId should not fail:"+ex);
+            }
+        }
+
+        #endregion
+
+        #region Test Harness
+
+        // EmptyResultText, InvalidResultText, ErrorResponse
+        [TestMethod]
+        public void RestrctionPattern_Construct_TestHarnessFailures()
+        {
+            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(),"test","test","test");
+
+            try
+            {
+                RestrictionPattern oPattern = new RestrictionPattern(oServer, "EmptyResultText", "objectid");
+                Assert.Fail("Creating restriction pattern with empty response text should fail");
+            }
+            catch {}
+
+            try
+            {
+                RestrictionPattern oPattern = new RestrictionPattern(oServer, "InvalidResultText", "objectid");
+                Assert.Fail("Creating restriction pattern with empty response text should fail");
+            }
+            catch {}
+
+            try
+            {
+                RestrictionPattern oPattern = new RestrictionPattern(oServer, "ErrorResponse", "objectid");
+                Assert.Fail("Creating restriction pattern with empty response text should fail");
+            }
+            catch { }
+
+        }
+
+        [TestMethod]
+        public void GetRestrictionPatterns_TestHarnessFailures()
+        {
+            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+
+            List<RestrictionPattern> oPatterns;
+            var res = RestrictionPattern.GetRestrictionPatterns(oServer, "EmptyResultText", out oPatterns, 1, 2);
+            Assert.IsFalse(res.Success, "Calling GetRestrictionPatterns with empty result text should fail");
+            Assert.IsTrue(oPatterns.Count==0,"Empty response text should result in an empty list");
+
+            res = RestrictionPattern.GetRestrictionPatterns(oServer, "InvalidResultText", out oPatterns, 1, 2);
+            Assert.IsTrue(res.Success, "Calling GetRestrictionPatterns with InvalidResultText should not fail:"+res);
+            Assert.IsTrue(oPatterns.Count == 0, "Invalid response text should result in an empty list");
+
+            res = RestrictionPattern.GetRestrictionPatterns(oServer, "ErrorResponse", out oPatterns, 1, 2);
+            Assert.IsFalse(res.Success, "Calling GetRestrictionPatterns with ErrorResponse should fail");
+            Assert.IsTrue(oPatterns.Count == 0, "Error response should result in an empty list");
+        }
+
+        [TestMethod]
+        public void GetRestrictionTables_TestHarnessFailure()
+        {
+            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+
+            List<RestrictionTable> oTables;
+            var res = RestrictionTable.GetRestrictionTables(oServer, out oTables, 1, 2, "EmptyResultText");
+            Assert.IsFalse(res.Success, "Calling GetRestrictionTables with empty result text should fail");
+            Assert.IsTrue(oTables.Count == 0, "Empty response text should result in an empty list");
+
+            res = RestrictionTable.GetRestrictionTables(oServer, out oTables, 1, 2, "InvalidResultText");
+            Assert.IsTrue(res.Success, "Calling GetRestrictionTables with InvalidResultText should not fail:" + res);
+            Assert.IsTrue(oTables.Count == 0, "Invalid response text should result in an empty list");
+
+            res = RestrictionTable.GetRestrictionTables(oServer, out oTables, 1, 2, "ErrorResponse");
+            Assert.IsFalse(res.Success, "Calling GetRestrictionTables with ErrorResponse should fail");
+            Assert.IsTrue(oTables.Count == 0, "Error response should result in an empty list");
             
         }
 
+        [TestMethod]
+        public void RestrictionTable_Construct_TestHarnessFailures()
+        {
+            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
 
+            try
+            {
+                RestrictionTable oTable = new RestrictionTable(oServer, "EmptyResultText");
+                Assert.Fail("Creating restriction table with empty response text should fail");
+            }
+            catch { }
+
+            try
+            {
+                RestrictionTable oTable = new RestrictionTable(oServer, "InvalidResultText");
+                Assert.Fail("Creating restriction table with empty response text should fail");
+            }
+            catch { }
+
+            try
+            {
+                RestrictionTable oTable = new RestrictionTable(oServer, "ErrorResponse");
+                Assert.Fail("Creating restriction table with empty response text should fail");
+            }
+            catch { }
+
+        }
+
+        #endregion
     }
 }

@@ -142,48 +142,49 @@ namespace Cisco.UnityConnection.RestFunctions
     public static WebCallResult GetConfigurationValues(ConnectionServer pConnectionServer, out List<ConfigurationValue> pConfigurationValues, 
             params string[] pClauses)
         {
-            WebCallResult res = new WebCallResult();
+        WebCallResult res = new WebCallResult();
+        res.Success = false;
+
+        pConfigurationValues = null;
+
+        if (pConnectionServer == null)
+        {
+            res.ErrorText = "Null Connection server object passed to GetConfigurationValues";
+            return res;
+        }
+
+        string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "configurationvalues", pClauses);
+
+        //issue the command to the CUPI interface
+        res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
+
+        if (res.Success == false)
+        {
+            return res;
+        }
+
+        //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+        //if this is empty that is not an error, just return the empty list
+        if (string.IsNullOrEmpty(res.ResponseText))
+        {
+            pConfigurationValues = new List<ConfigurationValue>();
             res.Success = false;
+            return res;
+        }
 
-            pConfigurationValues = null;
+        //no error, just return empty list.
+         if (res.TotalObjectCount == 0)
+         {
+             pConfigurationValues= new List<ConfigurationValue>();
+             return res;
+         }
 
-            if (pConnectionServer == null)
-            {
-                res.ErrorText = "Null Connection server object passed to GetConfigurationValues";
-                return res;
-            }
+        pConfigurationValues = pConnectionServer.GetObjectsFromJson<ConfigurationValue>(res.ResponseText);
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "configurationvalues", pClauses);
-
-            //issue the command to the CUPI interface
-            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
-
-            if (res.Success == false)
-            {
-                return res;
-            }
-
-            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that is not an error, just return the empty list
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
-            {
-                pConfigurationValues = new List<ConfigurationValue>();
-                return res;
-            }
-
-            pConfigurationValues = pConnectionServer.GetObjectsFromJson<ConfigurationValue>(res.ResponseText);
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pConfigurationValues == null || (pConfigurationValues.Count == 1 && string.IsNullOrEmpty(pConfigurationValues[0].FullName)))
-            {
-                pConfigurationValues = new List<ConfigurationValue>();
-                return res;
-            }
-
-            foreach (var oObject in pConfigurationValues)
-            {
-                oObject.HomeServer = pConnectionServer;
-            }
+        foreach (var oObject in pConfigurationValues)
+        {
+            oObject.HomeServer = pConnectionServer;
+        }
 
         return res;
 

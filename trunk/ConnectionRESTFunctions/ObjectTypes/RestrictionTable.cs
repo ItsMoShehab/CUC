@@ -11,6 +11,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using Newtonsoft.Json;
@@ -285,14 +286,19 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pRowsPerPage">
         /// Results to return per page, defaults to 20
         /// </param>        
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter 
+        /// at a time  are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" in
+        /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+        /// </param>  
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetRestrictionTables(ConnectionServer pConnectionServer, out List<RestrictionTable> pRestrictionTables, 
-            int pPageNumber = 1, int pRowsPerPage = 20)
+        public static WebCallResult GetRestrictionTables(ConnectionServer pConnectionServer, out List<RestrictionTable> pRestrictionTables,
+            int pPageNumber = 1, int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res;
-            pRestrictionTables = null;
+            pRestrictionTables = new List<RestrictionTable>();
 
             if (pConnectionServer == null)
             {
@@ -301,8 +307,20 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "restrictiontables", "pageNumber=" + pPageNumber, 
-                "rowsPerPage=" + pRowsPerPage);
+            List<String> oParams;
+            if (pClauses == null)
+            {
+                oParams = new List<string>();
+            }
+            else
+            {
+                oParams = pClauses.ToList();
+            }
+
+            oParams.Add("pageNumber=" + pPageNumber);
+            oParams.Add("rowsPerPage=" + pRowsPerPage);
+
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "restrictiontables", oParams.ToArray());
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET,  "");
@@ -314,21 +332,19 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
             //if this is empty that means an error in this case - should always be at least one template
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
-                pRestrictionTables = new List<RestrictionTable>();
                 res.Success = false;
                 return res;
             }
 
-            pRestrictionTables = pConnectionServer.GetObjectsFromJson<RestrictionTable>(res.ResponseText);
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pRestrictionTables == null || (pRestrictionTables.Count == 1 && string.IsNullOrEmpty(pRestrictionTables[0].ObjectId)))
+            //not an error, just return empty list
+            if (res.TotalObjectCount == 0)
             {
-                pRestrictionTables = new List<RestrictionTable>();
                 return res;
             }
+
+            pRestrictionTables = pConnectionServer.GetObjectsFromJson<RestrictionTable>(res.ResponseText);
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.

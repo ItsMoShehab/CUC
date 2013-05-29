@@ -308,16 +308,9 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private string _recipientContactObjectId;
-        public string RecipientContactObjectId
-        {
-            get { return _recipientContactObjectId; }
-            set
-            {
-                _recipientContactObjectId = value;
-                _changedPropList.Add("RecipientContactObjectId", value);
-            }
-        }
+        //Contacts cannot yet be a recipient - read only property for now
+        [JsonProperty]
+        public string RecipientContactObjectId { get; private set; }
 
         private string _recipientDistributionListObjectId;
         public string RecipientDistributionListObjectId
@@ -518,20 +511,20 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that means an error in this case - should always be at least one template
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount==0)
+            //if this is empty that means an error in this case
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
                 res.Success = false;
                 return res;
             }
 
-            pCallHandlerTemplates = pConnectionServer.GetObjectsFromJson<CallHandlerTemplate>(res.ResponseText);
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pCallHandlerTemplates == null || (pCallHandlerTemplates.Count == 1 && string.IsNullOrEmpty(pCallHandlerTemplates[0].ObjectId)))
+            //not an error, just no templates returned with query
+            if (res.TotalObjectCount == 0)
             {
                 return res;
             }
+
+            pCallHandlerTemplates = pConnectionServer.GetObjectsFromJson<CallHandlerTemplate>(res.ResponseText);
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
@@ -593,10 +586,6 @@ namespace Cisco.UnityConnection.RestFunctions
             catch (UnityConnectionRestException ex)
             {
                 return ex.WebCallResult;
-            }
-            catch (Exception ex)
-            {
-                res.ErrorText = "Failed to fetch handler template in GetCallHandlerTemplate:" + ex.Message;
             }
 
             return res;

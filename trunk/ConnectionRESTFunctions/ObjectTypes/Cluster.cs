@@ -57,7 +57,20 @@ namespace Cisco.UnityConnection.RestFunctions
         //reference to the ConnectionServer object used to create this object instance.
         public ConnectionServer HomeServer { get; private set; }
 
-        public List<Server> Servers;
+        private List<Server> _servers;
+        public List<Server> Servers
+        {
+            get
+            {
+                var res = GetServers(HomeServer);
+                if (res.Success == false)
+                {
+                    HomeServer.RaiseErrorEvent("Error fetching servers:"+res);
+                    return null;
+                }
+                return _servers;
+            }
+        }
 
         #endregion
 
@@ -90,7 +103,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         private WebCallResult GetServers(ConnectionServer pConnectionServer)
         {
-            Servers = new List<Server>();
+            _servers = new List<Server>();
 
             string strUrl = pConnectionServer.BaseUrl + "cluster";
 
@@ -107,19 +120,12 @@ namespace Cisco.UnityConnection.RestFunctions
             //if this is empty that means an error in this case - should always be at least one template
             if (string.IsNullOrEmpty(res.ResponseText))
             {
-                Servers = new List<Server>();
+                _servers = new List<Server>();
                 res.Success = false;
                 return res;
             }
 
-            Servers = pConnectionServer.GetObjectsFromJson<Server>(res.ResponseText);
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (Servers == null || (Servers.Count == 1 && string.IsNullOrEmpty(Servers[0].HostName)))
-            {
-                Servers = new List<Server>();
-                return res;
-            }
+            _servers = pConnectionServer.GetObjectsFromJson<Server>(res.ResponseText);
 
             return res;
         }

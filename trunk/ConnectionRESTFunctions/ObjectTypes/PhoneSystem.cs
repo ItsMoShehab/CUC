@@ -518,11 +518,16 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pRowsPerPage">
         /// Results to return per page, defaults to 20
         /// </param>        
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter 
+        /// at a time  are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" in
+        /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+        /// </param>        
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPhoneSystems(ConnectionServer pConnectionServer, out List<PhoneSystem> pPhoneSystems, 
-            int pPageNumber = 1, int pRowsPerPage = 20)
+        public static WebCallResult GetPhoneSystems(ConnectionServer pConnectionServer, out List<PhoneSystem> pPhoneSystems,
+            int pPageNumber = 1, int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res;
             pPhoneSystems = null;
@@ -534,8 +539,20 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "phonesystems", "pageNumber=" + pPageNumber, 
-                "rowsPerPage=" + pRowsPerPage);
+            List<String> oParams;
+            if (pClauses == null)
+            {
+                oParams=new List<string>();
+            }
+            else
+            {
+                oParams = pClauses.ToList();
+            }
+
+            oParams.Add("pageNumber=" + pPageNumber);
+            oParams.Add("rowsPerPage=" + pRowsPerPage);
+
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "phonesystems", oParams.ToArray());
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -546,21 +563,22 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that does not mean an error - no phone systems is legal
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            //if this is empty that means an error
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
+                res.Success = false;
                 pPhoneSystems = new List<PhoneSystem>();
+                return res;
+            }
+
+            //not an error, just return empty list
+            if (res.TotalObjectCount == 0)
+            {
+                pPhoneSystems=new List<PhoneSystem>();
                 return res;
             }
 
             pPhoneSystems = pConnectionServer.GetObjectsFromJson<PhoneSystem>(res.ResponseText);
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pPhoneSystems == null || (pPhoneSystems.Count == 1 && string.IsNullOrEmpty(pPhoneSystems[0].ObjectId)))
-            {
-                pPhoneSystems = new List<PhoneSystem>();
-                return res;
-            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
@@ -836,19 +854,21 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that does not mean an error - no phone systems is legal
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            //if this is empty that means an error
+            if (string.IsNullOrEmpty(res.ResponseText))
+            {
+                res.Success = false;
+                return res;
+            }
+
+            //not an error, just return the empty list
+            if (res.TotalObjectCount == 0)
             {
                 return res;
             }
 
             pAssociations = pConnectionServer.GetObjectsFromJson<PhoneSystemAssociation>(res.ResponseText);
 
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pAssociations == null || (pAssociations.Count == 1 && string.IsNullOrEmpty(pAssociations[0].Alias)))
-            {
-                pAssociations = new List<PhoneSystemAssociation>();
-            }
             return res;
         }
 

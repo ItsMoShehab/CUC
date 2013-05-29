@@ -122,6 +122,10 @@ namespace ConnectionCUPIFunctionsTest
 
             res = Location.GetLocation(out oNewLocation, _connectionServer, "", strDisplayName);
             Assert.IsTrue(res.Success, "Failed to fetch location with valid display name:" + res);
+
+            res = Location.GetLocations(_connectionServer, out oLocations, 1, 10, "query=(ObjectId is Bogus)");
+            Assert.IsTrue(res.Success, "fetching locations with invalid query should not fail:" + res);
+            Assert.IsTrue(oLocations.Count == 0, "Invalid query string should return an empty location list:" + oLocations.Count);
         }
 
         [TestMethod]

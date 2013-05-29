@@ -95,6 +95,8 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Live Tests 
+
         [TestMethod]
         public void GlobalUser_GetUser()
         {
@@ -137,7 +139,7 @@ namespace ConnectionCUPIFunctionsTest
             //exercise dump calls
             Console.WriteLine(oUsers[0].ToString());
             Console.WriteLine(oUsers[0].DumpAllProps());
-            
+
             //GetUsers
             res = GlobalUser.GetUsers(null, out oNewUsers);
             Assert.IsFalse(res.Success, "Fetching users via static method with null ConnectionServer did not fail");
@@ -149,7 +151,13 @@ namespace ConnectionCUPIFunctionsTest
             res = GlobalUser.GetUsers(_connectionServer, out oNewUsers, strQuery);
             Assert.IsTrue(res.Success, "Fetching users via static method with valid alias query construction failed");
             Assert.IsTrue(oNewUsers.Count == 1, "Fetching users by alias construction did not return single match");
+
+            res = GlobalUser.GetUsers(_connectionServer, out oUsers, 1, 20, "query=(ObjectId is Bogus)");
+            Assert.IsTrue(res.Success, "fetching users with invalid query should not fail:" + res);
+            Assert.IsTrue(oUsers.Count == 0, "Invalid query string should return an empty user list:" + oUsers.Count);
+
         }
 
+        #endregion
     }
 }

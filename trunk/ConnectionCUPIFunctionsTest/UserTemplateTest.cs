@@ -209,6 +209,8 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Live Tests
+
         [TestMethod]
         public void TopLevelPropertyTests()
         {
@@ -270,5 +272,19 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(oTemplates.Count>1,"Templates not returned from fetch");
         }
 
+        [TestMethod]
+        public void FetchTests()
+        {
+            List<UserTemplate> oTemplates;
+            var res = UserTemplate.GetUserTemplates(_connectionServer, out oTemplates, 1, 2,null);
+            Assert.IsTrue(res.Success,"Failed to fetch user templates:"+res);
+            Assert.IsTrue(oTemplates.Count>0,"At least one template should be fetched yet none were returned.");
+
+            res = UserTemplate.GetUserTemplates(_connectionServer, out oTemplates, 1, 2,"query=(Alias is _Bogus)");
+            Assert.IsTrue(res.Success, "fetching templates with invalid query should not fail:" + res);
+            Assert.IsTrue(oTemplates.Count == 0, "Invalid query string should return an empty template list:" + oTemplates.Count);
+        }
+
+        #endregion
     }
 }

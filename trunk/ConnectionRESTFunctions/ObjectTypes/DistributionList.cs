@@ -376,7 +376,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that means an error in this case - should always be at least one template
+            //if this is empty that means an error in this case
             if (string.IsNullOrEmpty(res.ResponseText))
             {
                 pDistributionLists = new List<DistributionList>();
@@ -384,14 +384,14 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            pDistributionLists = pConnectionServer.GetObjectsFromJson<DistributionList>(res.ResponseText);
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pDistributionLists == null || (pDistributionLists.Count == 1 && string.IsNullOrEmpty(pDistributionLists[0].ObjectId)))
+            //not an error, just return an empty list
+            if (res.TotalObjectCount == 0)
             {
-                pDistributionLists = new List<DistributionList>();
+                pDistributionLists=new List<DistributionList>();
                 return res;
             }
+
+            pDistributionLists = pConnectionServer.GetObjectsFromJson<DistributionList>(res.ResponseText);
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
@@ -646,10 +646,6 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 return ex.WebCallResult;
             }
-            catch (Exception ex)
-            {
-                res.ErrorText = "Failed to fetch list in GetDistributionList:" + ex.Message;
-            }
 
             return res;
         }
@@ -787,11 +783,6 @@ namespace Cisco.UnityConnection.RestFunctions
                 catch (UnityConnectionRestException ex)
                 {
                     return ex.WebCallResult;
-                }
-                catch (Exception ex)
-                {
-                    res.ErrorText = string.Format("Error fetching list in GetDistributionListVoiceName with objectID{0}\n{1}", pObjectId, ex.Message);
-                    return res;
                 }
 
                 //the property will be null if no voice name is recorded for the list.
@@ -1113,14 +1104,6 @@ namespace Cisco.UnityConnection.RestFunctions
         private WebCallResult GetDistributionList(string pObjectId, string pAlias = "")
         {
             WebCallResult res;
-
-            //either alias or ObjectId needs to be passed here.
-            if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pAlias))
-            {
-                res = new WebCallResult();
-                res.ErrorText = "No value for ObjectId or Alias passed to GetDistributionList.";
-                return res;
-            }
 
             //when fetching a list use the query construct in both cases so the XML parsing is identical
             if (string.IsNullOrEmpty(pObjectId))

@@ -165,6 +165,10 @@ namespace ConnectionCUPIFunctionsTest
 
             res = PrivateList.GetPrivateList(out oNewPrivateList, _connectionServer, "");
             Assert.IsFalse(res.Success, "Fetching private list with empty owner objectId not fail");
+
+            res = PrivateList.GetPrivateList(out oNewPrivateList, _connectionServer, _tempUser.ObjectId, "blah");
+            Assert.IsFalse(res.Success, "Fetching private list with invalid objectId did not fail");
+
         }
 
         [TestMethod]
@@ -354,6 +358,10 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oMembers[0].ToString());
             Console.WriteLine(oMembers[0].DumpAllProps());
 
+            List<PrivateListMember> oMembers2 = _tempPrivateList.PrivateListMembers(true);
+            Assert.IsNotNull(oMembers2, "Null returned for private list member fetch");
+            Assert.IsTrue(oMembers2.Count == oMembers.Count, "Fetch of members via static vs instance methods do not match");
+
             res = PrivateListMember.GetPrivateListMembers(null, _tempPrivateList.ObjectId, _tempPrivateList.UserObjectId, out oMembers);
             Assert.IsFalse(res.Success,"Getting private list members via static method did not fail with null Connection server");
 
@@ -362,6 +370,68 @@ namespace ConnectionCUPIFunctionsTest
 
             res = PrivateListMember.GetPrivateListMembers(_connectionServer, _tempPrivateList.ObjectId, "", out oMembers);
             Assert.IsFalse(res.Success, "Getting private list members via static method did not fail with blank owner ObjectId");
+
+        }
+
+        [TestMethod]
+        public void PrivateList_EmptyObjectIdTest()
+        {
+            try
+            {
+                PrivateList oList = new PrivateList(_connectionServer, _tempUser.ObjectId);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Creating a private list with no objectId should not fail:"+ex);
+            }
+        }
+
+
+
+        #endregion
+
+
+        #region Harness Tests
+
+         // EmptyResultText, InvalidResultText, ErrorResponse, ReturnSpecificText[
+         //{"@total":"0"}"
+        [TestMethod]
+        public void GetPrivateListMembers_HarnessFailures()
+        {
+            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+
+            List<PrivateListMember> oMembers;
+            var res = PrivateListMember.GetPrivateListMembers(oServer, "objectid", "EmptyResultText", out oMembers);
+            Assert.IsFalse(res.Success, "Calling GetPrivateListMembers with EmptyResultText did not fail");
+            Assert.IsTrue(oMembers.Count==0,"Empty result text should result in empty list returned");
+
+            res = PrivateListMember.GetPrivateListMembers(oServer, "objectid", "InvalidResultText", out oMembers);
+            Assert.IsTrue(res.Success, "Calling GetPrivateListMembers with InvalidResultText should not fail:"+res);
+            Assert.IsTrue(oMembers.Count == 0, "Invalid result text should result in empty list returned");
+
+            res = PrivateListMember.GetPrivateListMembers(oServer, "objectid", "ErrorResponse", out oMembers);
+            Assert.IsFalse(res.Success, "Calling GetPrivateListMembers with ErrorResponse did not fail");
+            Assert.IsTrue(oMembers.Count == 0, "Error result should result in empty list returned");
+
+        }
+
+        [TestMethod]
+        public void GetPrivateLists_HarnessFailures()
+        {
+            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+
+            List<PrivateList> oLists;
+            var res = PrivateList.GetPrivateLists(oServer, "EmptyResultText", out oLists);
+            Assert.IsFalse(res.Success, "Calling GetPrivateLists with EmptyResultText did not fail");
+            Assert.IsTrue(oLists.Count == 0, "Empty result text should result in empty list returned");
+
+            res = PrivateList.GetPrivateLists(oServer, "InvalidResultText", out oLists);
+            Assert.IsTrue(res.Success, "Calling GetPrivateLists with InvalidResultText should not fail:" + res);
+            Assert.IsTrue(oLists.Count == 0, "Invalid result text should result in empty list returned");
+
+            res = PrivateList.GetPrivateLists(oServer, "ErrorResponse", out oLists);
+            Assert.IsFalse(res.Success, "Calling GetPrivateLists with ErrorResponse did not fail");
+            Assert.IsTrue(oLists.Count == 0, "Error result should result in empty list returned");
         }
 
         #endregion

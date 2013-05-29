@@ -212,20 +212,20 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
              //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that isn't an error - having zero is ok - just return an empty list
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount==0)
+            //if this is empty thats an error 
+            if (string.IsNullOrEmpty(res.ResponseText))
+            {
+                res.Success = false;
+                return res;
+            }
+
+            //not an error just return the empty list
+            if (res.TotalObjectCount == 0)
             {
                 return res;
             }
 
             pTemplates = pConnectionServer.GetObjectsFromJson<NotificationTemplate>(res.ResponseText);
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pTemplates == null || (pTemplates.Count == 1 && string.IsNullOrEmpty(pTemplates[0].NotificationTemplateId)))
-            {
-                pTemplates=new List<NotificationTemplate>();
-                return res;
-            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
