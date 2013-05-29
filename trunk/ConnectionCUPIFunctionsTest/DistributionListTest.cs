@@ -514,7 +514,7 @@ namespace ConnectionCUPIFunctionsTest
             res = DistributionList.GetDistributionLists(_connectionServer, out oLists, 1, 2);
             Assert.IsTrue(res.Success, "Failed fetching lists:" + res);
             Assert.IsTrue(oLists.Count > 0, "No lists returned on fetch");
-            Assert.IsTrue(oLists[0].CreationTime<DateTime.Now,"List creation date is not correct");
+            Assert.IsTrue(oLists[0].CreationTime<DateTime.Now.AddDays(2),"List creation date is not correct");
 
             res = DistributionList.GetDistributionLists(_connectionServer, out oLists, 1, 2);
             Assert.IsTrue(res.Success, "Failed fetching lists:" + res);
