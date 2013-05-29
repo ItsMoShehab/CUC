@@ -173,13 +173,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pCodecDefs = pConnectionServer.GetObjectsFromJson<RtpCodecDef>(res.ResponseText);
 
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pCodecDefs == null || (pCodecDefs.Count == 1 && string.IsNullOrEmpty(pCodecDefs[0].ObjectId)))
-            {
-                pCodecDefs = new List<RtpCodecDef>();
-                return res;
-            }
-
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
             foreach (var oObject in pCodecDefs)

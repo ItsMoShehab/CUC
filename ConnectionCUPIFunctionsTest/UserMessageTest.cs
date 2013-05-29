@@ -320,7 +320,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             List<UserMessage> oMessages;
 
-            WebCallResult res = UserMessage.GetMessages(_connectionServer, _tempUser.ObjectId, out oMessages);
+            WebCallResult res = UserMessage.GetMessages(_connectionServer, _tempUser.ObjectId, out oMessages,1,2);
             Assert.IsTrue(res.Success, "Failed fetching messages on new user");
             Assert.IsTrue(oMessages.Count == 0, "Test user account is reporting more than 0 messages");
 

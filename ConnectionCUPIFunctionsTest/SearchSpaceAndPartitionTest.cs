@@ -346,6 +346,10 @@ namespace ConnectionCUPIFunctionsTest
                 Console.WriteLine("Expected failure on creation");
             }
 
+            res = Partition.GetPartitions(_connectionServer, out oPartitions,1,2,"query=(ObjectId is Bogus)");
+            Assert.IsTrue(res.Success, "fetching partitions with invalid query should not fail:" + res);
+            Assert.IsTrue(oPartitions.Count == 0, "Invalid query string should return an empty partition list:" + oPartitions.Count);
+
         }
 
 
@@ -421,6 +425,10 @@ namespace ConnectionCUPIFunctionsTest
             {
                 Console.WriteLine("Expected error on creation failure");
             }
+
+            res = SearchSpace.GetSearchSpaces(_connectionServer, out oSearchSpaces,1,2,"query=(ObjectId is Bogus)");
+            Assert.IsTrue(res.Success, "fetching search spaces with invalid query should not fail:" + res);
+            Assert.IsTrue(oSearchSpaces.Count == 0, "Invalid query string should return an empty search space list:" + oSearchSpaces.Count);
         }
 
 

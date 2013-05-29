@@ -248,11 +248,11 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         [TestMethod]
-        public void ScheduleTests()
+        public void ScheduleFetchAndCreateTests()
         {
             //cover all lists on the server - there must be at least one
             List<Schedule> oSchedules;
-            WebCallResult res = Schedule.GetSchedules(_connectionServer, out oSchedules);
+            WebCallResult res = Schedule.GetSchedules(_connectionServer, out oSchedules,1,2,null);
             Assert.IsTrue(res.Success,"Failed to fetch schedule list:"+res.ToString());
 
             string strObjectId="";
@@ -301,6 +301,12 @@ namespace ConnectionCUPIFunctionsTest
 
             res = Schedule.GetSchedule(out oNewSchedule, _connectionServer, "", "bogus");
             Assert.IsFalse(res.Success,"Fetching schedule by invalid name did not fail");
+
+
+            res = Schedule.GetSchedules(_connectionServer, out oSchedules,1,2,"query=(ObjectId is Bogus)");
+            Assert.IsTrue(res.Success, "fetching schedules with invalid query should not fail:" + res);
+            Assert.IsTrue(oSchedules.Count == 0, "Invalid query string should return an empty schedules list:" + oSchedules.Count);
+
         }
 
 

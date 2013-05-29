@@ -388,14 +388,6 @@ namespace Cisco.UnityConnection.RestFunctions
             pGreetingStreamFiles = pConnectionServer.GetObjectsFromJson<PostGreetingRecordingStreamFile>(res.ResponseText, 
                 "PostGreetingRecordingStreamFile");
 
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pGreetingStreamFiles == null || (pGreetingStreamFiles.Count == 1 
-                && string.IsNullOrEmpty(pGreetingStreamFiles[0].PostGreetingRecordingObjectId)))
-            {
-                pGreetingStreamFiles = new List<PostGreetingRecordingStreamFile>();
-                return res;
-            }
-
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
             foreach (var oObject in pGreetingStreamFiles)

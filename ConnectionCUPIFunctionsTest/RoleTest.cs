@@ -96,8 +96,10 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Live Tests
+
         [TestMethod]
-        public void TestMethod1()
+        public void FetchTests()
         {
             List<Role> oRoles;
             WebCallResult res= Role.GetRoles(_connectionServer, out oRoles);
@@ -105,6 +107,10 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(oRoles.Count>0,"No roles returned from server");
 
             Console.WriteLine(oRoles[0].ToString());
+            Console.WriteLine(oRoles[0].UniqueIdentifier);
+            Console.WriteLine(oRoles[0].SelectionDisplayString);
+            
+            oRoles.Sort(new UnityDisplayObjectCompare());
 
             res = Role.GetRoles(null, out oRoles);
             Assert.IsFalse(res.Success,"Static fetch of rules did not fail with null ConnectionServer");
@@ -133,5 +139,59 @@ namespace ConnectionCUPIFunctionsTest
                 Assert.Fail("Class construction with valid objectId failed:" + ex);
             }
         }
+
+        #endregion
+
+        #region Harness Tess
+        
+        // EmptyResultText, InvalidResultText, ErrorResponse, ReturnSpecificText[
+
+        [TestMethod]
+        public void GetRole_HarnessFailures()
+        {
+            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+
+            Role oRole;
+            try
+            {
+                oRole = new Role(oServer, "EmptyResultText");
+                Assert.Fail("Getting role with empty result text should fail");
+            }
+            catch {}
+
+            try
+            {
+                oRole = new Role(oServer, "InvalidResultText");
+                Assert.Fail("Getting role with InvalidResultText should fail");
+            }
+            catch { }
+
+            try
+            {
+                oRole = new Role(oServer, "ErrorResponse");
+                Assert.Fail("Getting role with ErrorResponse should fail");
+            }
+            catch { }
+        }
+
+        [TestMethod]
+        public void GetRoles_HarnessFailures()
+        {
+            List<Role> oRoles;
+            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+
+            var res = Role.GetRoles(oServer, out oRoles, "EmptyResultText");
+            Assert.IsFalse(res.Success, "Calling GetRoles with EmptyResultText should fail");
+            Assert.IsTrue(oRoles.Count == 0, "Empty result text shoudl produce empty list of roles");
+
+            res = Role.GetRoles(oServer, out oRoles, "InvalidResultText");
+            Assert.IsTrue(res.Success, "Calling GetRoles with InvalidResultText should fail");
+            Assert.IsTrue(oRoles.Count==0,"Invalid result text shoudl produce empty list of roles");
+
+            res = Role.GetRoles(oServer, out oRoles, "ErrorResponse");
+            Assert.IsFalse(res.Success, "Calling GetRoles with ErrorResponse should fail");
+        }
+
+        #endregion
     }
 }

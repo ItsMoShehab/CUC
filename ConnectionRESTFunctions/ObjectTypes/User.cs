@@ -527,9 +527,9 @@ namespace Cisco.UnityConnection.RestFunctions
                 {
                     _phoneSystem = new PhoneSystem(this.HomeServer, this.MediaSwitchObjectId);
                 }
-                catch (Exception)
+                catch (UnityConnectionRestException ex)
                 {
-                    if (Debugger.IsAttached) Debugger.Break();
+                    HomeServer.RaiseErrorEvent("Error fetching PhoneSystem for User:"+ex.WebCallResult);
                 }
             }
 
@@ -559,7 +559,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 WebCallResult res= PrivateList.GetPrivateLists(this.HomeServer, ObjectId, out _privateLists);
                 if (res.Success == false)
                 {
-                    if (Debugger.IsAttached) Debugger.Break();
+                    HomeServer.RaiseErrorEvent("Error fetching PrivateList for User:"+res);
                 }
             }
 

@@ -11,7 +11,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -176,7 +175,7 @@ namespace Cisco.UnityConnection.RestFunctions
                                                         out _privateListMembers);
                 if (res.Success == false)
                 {
-                    if (Debugger.IsAttached) Debugger.Break();
+                    HomeServer.RaiseErrorEvent("Error getting private list members:"+res);
                 }
             }
 
@@ -216,7 +215,7 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             WebCallResult res = new WebCallResult {Success = false};
 
-            pPrivateLists = null;
+            pPrivateLists = new List<PrivateList>();
 
             if (pConnectionServer == null)
             {
@@ -236,21 +235,20 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that's not an error, just return an empty list
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            //if this is empty that's an error
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
-                pPrivateLists = new List<PrivateList>();
+                res.Success = false;
+                return res;
+            }
+
+            //not an error, just return empty list
+            if (res.TotalObjectCount == 0)
+            {
                 return res;
             }
 
             pPrivateLists = pConnectionServer.GetObjectsFromJson<PrivateList>(res.ResponseText);
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pPrivateLists == null || (pPrivateLists.Count == 1 && string.IsNullOrEmpty(pPrivateLists[0].ObjectId)))
-            {
-                pPrivateLists = new List<PrivateList>();
-                return res;
-            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
@@ -448,10 +446,6 @@ namespace Cisco.UnityConnection.RestFunctions
             catch (UnityConnectionRestException ex)
             {
                 return ex.WebCallResult;
-            }
-            catch (Exception ex)
-            {
-                res.ErrorText = "Failed to fetch list in GetDistributionList:" + ex.Message;
             }
 
             return res;

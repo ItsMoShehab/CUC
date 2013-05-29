@@ -78,7 +78,6 @@ namespace Cisco.UnityConnection.RestFunctions
                 //see if we're connected
                 if (IsCallConnected())
                 {
-                    Console.WriteLine("Connected!");
                     return;
                 }
             }
@@ -390,7 +389,7 @@ namespace Cisco.UnityConnection.RestFunctions
             res.JsonDictionary.TryGetValue("lastResult", out oValue);
             if (oValue==null)
             {
-                Console.WriteLine("Null value returned for last result");   
+                _homeServer.RaiseErrorEvent("Error playing back message via CUTI, null value returned for last result");   
             }
             else if (oValue.ToString().Equals("0") == false)
             {

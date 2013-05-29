@@ -209,7 +209,7 @@ namespace Cisco.UnityConnection.RestFunctions
             out List<RestrictionPattern> pRestrictionPatterns, int pPageNumber = 1, int pRowsPerPage = 20)
         {
             WebCallResult res;
-            pRestrictionPatterns = null;
+            pRestrictionPatterns = new List<RestrictionPattern>();
 
             if (pConnectionServer == null)
             {
@@ -237,22 +237,20 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that means an error in this case - should always be at least one template
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            //if this is empty that means an error in this case
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
-                pRestrictionPatterns = new List<RestrictionPattern>();
                 res.Success = false;
                 return res;
             }
 
-            pRestrictionPatterns = pConnectionServer.GetObjectsFromJson<RestrictionPattern>(res.ResponseText);
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pRestrictionPatterns == null || (pRestrictionPatterns.Count == 1 && string.IsNullOrEmpty(pRestrictionPatterns[0].ObjectId)))
+            //no error, just return an empty list
+            if (res.TotalObjectCount == 0)
             {
-                pRestrictionPatterns = new List<RestrictionPattern>();
                 return res;
             }
+
+            pRestrictionPatterns = pConnectionServer.GetObjectsFromJson<RestrictionPattern>(res.ResponseText);
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.

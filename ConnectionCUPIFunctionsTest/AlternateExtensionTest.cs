@@ -16,6 +16,7 @@ namespace ConnectionCUPIFunctionsTest
     [TestClass()]
     public class AlternateExtensionTest
     {
+
         // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
         // ReSharper disable HeuristicUnreachableCode
 
@@ -25,8 +26,8 @@ namespace ConnectionCUPIFunctionsTest
         //routine below.
         private static ConnectionServer _connectionServer;
 
-        //class wide _user instance to use for testing
-        private static UserBase _user;
+        //used for editing/adding items to a temporary user that gets cleaned up after the tests are complete
+        private static UserFull _tempUser;
 
         /// <summary>
         ///Gets or sets the test context which provides
@@ -34,16 +35,14 @@ namespace ConnectionCUPIFunctionsTest
         ///</summary>
         public TestContext TestContext { get; set; }
 
+
         #endregion
 
 
         #region Additional test attributes
 
-        // 
-        //You can use the following additional attributes as you write your tests:
-        //
         //Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             //create a connection server instance used for all tests - rather than using a mockup 
@@ -54,32 +53,43 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                 _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
-                   mySettings.ConnectionPW);
+                _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                  mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
 
             catch (Exception ex)
             {
-                throw new Exception("Unable to attach to Connection server to start AlternateExtension test:" + ex.Message);
+                throw new Exception("Unable to attach to Connection server to start Alternate Extension test:" + ex.Message);
             }
 
-            //get the operator to work with as our user
-            try
+            //create new list with GUID in the name to ensure uniqueness
+            String strUserAlias = "TempUser_" + Guid.NewGuid().ToString().Replace("-", "");
+
+            //generate a random number and tack it onto the end of some zeros so we're sure to avoid any legit numbers on the system.
+            Random random = new Random();
+            int iExtPostfix = random.Next(100000, 999999);
+            string strExtension = "000000" + iExtPostfix.ToString();
+
+            //use a bogus extension number that's legal but non dialable to avoid conflicts
+            WebCallResult res = UserBase.AddUser(_connectionServer, "voicemailusertemplate", strUserAlias, strExtension, null, out _tempUser);
+            Assert.IsTrue(res.Success, "Failed creating temporary user:" + res.ToString());
+        }
+
+
+        [ClassCleanup]
+        public static void MyClassCleanup()
+        {
+            if (_tempUser != null)
             {
-                _user = new UserBase(_connectionServer, "", "operator");
+                WebCallResult res = _tempUser.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete temporary user on cleanup.");
             }
-
-            catch (Exception ex)
-            {
-                throw new Exception("Unable to get Operator user for testing:" + ex.Message);
-            }
-
         }
 
         #endregion
 
-
+        
         #region Class Construction Errors
 
         /// <summary>
@@ -116,10 +126,10 @@ namespace ConnectionCUPIFunctionsTest
             WebCallResult res;
 
             //static delete failure calls
-            res = AlternateExtension.DeleteAlternateExtension(_connectionServer, _user.ObjectId, "aaa");
+            res = AlternateExtension.DeleteAlternateExtension(_connectionServer, _tempUser.ObjectId, "aaa");
             Assert.IsFalse(res.Success, "Invalid ObjectId should fail");
 
-            res = AlternateExtension.DeleteAlternateExtension(_connectionServer, _user.ObjectId, "");
+            res = AlternateExtension.DeleteAlternateExtension(_connectionServer, _tempUser.ObjectId, "");
             Assert.IsFalse(res.Success, "Empty ObjectId should fail");
 
             res = AlternateExtension.DeleteAlternateExtension(_connectionServer, "", "aaa");
@@ -128,7 +138,7 @@ namespace ConnectionCUPIFunctionsTest
             res = AlternateExtension.DeleteAlternateExtension(_connectionServer, "aaa", "aaa");
             Assert.IsFalse(res.Success, "Invalid user objectId should fail");
 
-            res = AlternateExtension.DeleteAlternateExtension(null, _user.ObjectId, "aaa");
+            res = AlternateExtension.DeleteAlternateExtension(null, _tempUser.ObjectId, "aaa");
             Assert.IsFalse(res.Success, "Null ConnectionServer object should fail");
 
         }
@@ -143,7 +153,7 @@ namespace ConnectionCUPIFunctionsTest
             List<AlternateExtension> oAltExts;
 
             //static GetAlternateExtensions calls
-            res = AlternateExtension.GetAlternateExtensions(null, _user.ObjectId, out oAltExts);
+            res = AlternateExtension.GetAlternateExtensions(null, _tempUser.ObjectId, out oAltExts);
             Assert.IsFalse(res.Success, "Null ConnectionServer object should fail");
 
         }
@@ -158,10 +168,10 @@ namespace ConnectionCUPIFunctionsTest
             WebCallResult res;
 
             //static GetAlternateExtension calls
-            res = AlternateExtension.GetAlternateExtension(_connectionServer, _user.ObjectId, "aaa", out oAltExt);
+            res = AlternateExtension.GetAlternateExtension(_connectionServer, _tempUser.ObjectId, "aaa", out oAltExt);
             Assert.IsFalse(res.Success, "Invalid objecTId should fail");
 
-            res = AlternateExtension.GetAlternateExtension(null, _user.ObjectId, "aaa", out oAltExt);
+            res = AlternateExtension.GetAlternateExtension(null, _tempUser.ObjectId, "aaa", out oAltExt);
             Assert.IsFalse(res.Success, "Null ConnectonServer object should fail");
 
             res = AlternateExtension.GetAlternateExtension(_connectionServer, "", "aaa", out oAltExt);
@@ -185,10 +195,10 @@ namespace ConnectionCUPIFunctionsTest
             ConnectionPropertyList oProps = new ConnectionPropertyList();
             oProps.Add("name", "value");
 
-            res = AlternateExtension.UpdateAlternateExtension(_connectionServer, _user.ObjectId, "aaa", oProps);
+            res = AlternateExtension.UpdateAlternateExtension(_connectionServer, _tempUser.ObjectId, "aaa", oProps);
             Assert.IsFalse(res.Success, "Invalid ObjectId should fail");
 
-            res = AlternateExtension.UpdateAlternateExtension(null, _user.ObjectId, "aaa", oProps);
+            res = AlternateExtension.UpdateAlternateExtension(null, _tempUser.ObjectId, "aaa", oProps);
             Assert.IsFalse(res.Success, "Null ConnectionServer object should fail");
 
             res = AlternateExtension.UpdateAlternateExtension(_connectionServer, "", "aaa", oProps);
@@ -197,7 +207,7 @@ namespace ConnectionCUPIFunctionsTest
             res = AlternateExtension.UpdateAlternateExtension(_connectionServer, "aaa", "aaa", oProps);
             Assert.IsFalse(res.Success, "Invalid UserObjectID should fail");
 
-            res = AlternateExtension.UpdateAlternateExtension(_connectionServer, _user.ObjectId, "aaa", null);
+            res = AlternateExtension.UpdateAlternateExtension(_connectionServer, _tempUser.ObjectId, "aaa", null);
             Assert.IsFalse(res.Success, "Empty property list should fail");
 
         }
@@ -212,7 +222,7 @@ namespace ConnectionCUPIFunctionsTest
 
             //Static AddAlternateExtension calls
 
-            res = AlternateExtension.AddAlternateExtension(null, _user.ObjectId, 1, "1234");
+            res = AlternateExtension.AddAlternateExtension(null, _tempUser.ObjectId, 1, "1234");
             Assert.IsFalse(res.Success, "Null Connection server object should fail");
 
             res = AlternateExtension.AddAlternateExtension(_connectionServer, "", 1, "1234");
@@ -221,15 +231,225 @@ namespace ConnectionCUPIFunctionsTest
             res = AlternateExtension.AddAlternateExtension(_connectionServer, "aaa", 1, "1234");
             Assert.IsFalse(res.Success, "Invalid UserOBjectID should fail");
 
-            res = AlternateExtension.AddAlternateExtension(_connectionServer, _user.ObjectId, 99, "1234");
+            res = AlternateExtension.AddAlternateExtension(_connectionServer, _tempUser.ObjectId, 99, "1234");
             Assert.IsFalse(res.Success, "Invalid alternate extension index ID should fail");
 
-            res = AlternateExtension.AddAlternateExtension(_connectionServer, _user.ObjectId, 1, "");
+            res = AlternateExtension.AddAlternateExtension(_connectionServer, _tempUser.ObjectId, 1, "");
             Assert.IsFalse(res.Success, "Empty extension string should fail");
 
         }
 
         #endregion
 
+
+        #region Live Tests
+
+        [TestMethod]
+        public void AddAndFetchAlternateExtension()
+        {
+            AlternateExtension oAltExt;
+            string strExtension = Guid.NewGuid().ToString().Replace("-", "");
+            var res = AlternateExtension.AddAlternateExtension(_connectionServer, _tempUser.ObjectId, 1,strExtension, out oAltExt);
+            Assert.IsTrue(res.Success,"Failed to create new alternate extension:"+res);
+
+            const string strNewDisplayName = "New Display Name";
+            oAltExt.DisplayName = strNewDisplayName;
+            res = oAltExt.Update();
+            Assert.IsTrue(res.Success,"Failed to update alternate extension:"+res);
+
+            res =oAltExt.RefetchAlternateExtensionData();
+            Assert.IsTrue(res.Success,"Failed to refetch alternate extension data:"+res);
+            Assert.IsTrue(oAltExt.DisplayName.Equals(strNewDisplayName));
+
+
+            //refetch using objectId
+            AlternateExtension oNewAltExt;
+            res = AlternateExtension.GetAlternateExtension(_connectionServer, _tempUser.ObjectId, oAltExt.ObjectId,out oNewAltExt);
+            Assert.IsTrue(res.Success,"Failed to fetch the alternate extension based on valid ObjectId:"+res);
+            Assert.IsTrue(oNewAltExt.ObjectId.Equals(oAltExt.ObjectId),"Fetch of existing alternate extension does not match");
+
+            res = oAltExt.Delete();
+            Assert.IsTrue(res.Success, "Calling Delete on AlternateExtension on instance method failed:" + res);
+
+
+            res = AlternateExtension.GetAlternateExtension(_connectionServer, "", "test", out oAltExt);
+            Assert.IsFalse(res.Success,"Calling GetAlternateExtension with empty user objectId should fail");
+
+            res = AlternateExtension.GetAlternateExtension(_connectionServer, "bogus", "test", out oAltExt);
+            Assert.IsFalse(res.Success, "Calling GetAlternateExtension with bogus user objectId should fail");
+        }
+
+        [TestMethod]
+        public void AlternateExtensions_AddDelete()
+        {
+            //Add an alternate extension
+            string strExtension = Guid.NewGuid().ToString().Replace("-", "");
+            WebCallResult res = AlternateExtension.AddAlternateExtension(_connectionServer, _tempUser.ObjectId, 1, strExtension);
+            Assert.IsTrue(res.Success, "Failed adding alternate extension to user:" + res.ToString());
+
+            //Iterate the alternate extensiosn
+            foreach (AlternateExtension oExt in _tempUser.AlternateExtensions(true))
+            {
+                Console.WriteLine(oExt.ToString());
+                Console.WriteLine(oExt.DumpAllProps());
+            }
+
+            AlternateExtension oAltExt;
+
+            //alt extension that doesn't exist should fail
+            res = _tempUser.GetAlternateExtension(5, out oAltExt);
+            Assert.IsFalse(res.Success, "Invalid alternate extension ID should fail to fetch");
+
+            res = _tempUser.GetAlternateExtension(1, out oAltExt, true);
+            Assert.IsTrue(res.Success, "Failed to fetch alternate extension added to new user:" + res.ToString());
+
+            oAltExt.ClearPendingChanges();
+
+            //update it with no outstanding items should fail
+            res = oAltExt.Update();
+            Assert.IsFalse(res.Success, "Updating an alternate extension with no pending changes should fail");
+
+            //edit it
+            oAltExt.DtmfAccessId = _tempUser.DtmfAccessId + "2";
+            res = oAltExt.Update();
+            Assert.IsTrue(res.Success, "Failed to update alternate extension added:" + res.ToString());
+
+            //delete it
+            res = oAltExt.Delete();
+            Assert.IsTrue(res.Success, "Failed to delete alternate extension:" + res.ToString());
+
+            //add alternate extension through alternate route via static method with return via out param
+
+            res = AlternateExtension.AddAlternateExtension(_connectionServer, _tempUser.ObjectId, 2, _tempUser.DtmfAccessId + "321", out oAltExt);
+            Assert.IsTrue(res.Success, "Failed adding alternate extension:" + res.ToString());
+
+            res = oAltExt.RefetchAlternateExtensionData();
+            Assert.IsTrue(res.Success, "Failed to refresh alternate extension:" + res.ToString());
+
+            //get the alternate extension via alternative static method route - we'll cheat a bit here and just pass the 
+            //ObjectId of the guy we just created for fetching - just need to exercise the code path
+            res = AlternateExtension.GetAlternateExtension(_connectionServer, _tempUser.ObjectId, oAltExt.ObjectId,
+                                                           out oAltExt);
+            Assert.IsTrue(res.Success, "Failed to fetch newly created alternate extension:" + res.ToString());
+
+            //one last alternative fetching code path here - create an alternate extension object and then fetch it as an 
+            //instance method
+            AlternateExtension oAltExt2 = new AlternateExtension(_connectionServer, _tempUser.ObjectId);
+            Assert.IsNotNull(oAltExt2, "Failed to create new instance of an alternate extension");
+
+            //some static method failures for alternate extenions
+
+            //AddAlternateExtension
+            res = AlternateExtension.AddAlternateExtension(null, "bogus", 1, "1234");
+            Assert.IsFalse(res.Success, "Adding alternate extension with static AddAlternateExtension did not fail with null Connection server");
+
+            res = AlternateExtension.AddAlternateExtension(_connectionServer, "bogus", 1, "1234");
+            Assert.IsFalse(res.Success, "Adding alternate extension with static AddAlternateExtension did not fail with invalid objectId");
+
+            res = AlternateExtension.AddAlternateExtension(_connectionServer, "", 1, "1234");
+            Assert.IsFalse(res.Success, "Adding alternate extension with static AddAlternateExtension did not fail with blank objectId");
+
+            res = AlternateExtension.AddAlternateExtension(_connectionServer, "bogus", 49, "1234");
+            Assert.IsFalse(res.Success, "Adding alternate extension with static AddAlternateExtension did not fail with invalid index number");
+
+            //DeleteAlternateExtension
+            res = AlternateExtension.DeleteAlternateExtension(null, "bogus", "bogus");
+            Assert.IsFalse(res.Success, "Adding alternate extension with static DeleteAlternateExtension did not fail with null ConnectionServer");
+
+            res = AlternateExtension.DeleteAlternateExtension(_connectionServer, "bogus", "bogus");
+            Assert.IsFalse(res.Success, "Adding alternate extension with static DeleteAlternateExtension did not fail with invalid objectId");
+
+            res = AlternateExtension.DeleteAlternateExtension(_connectionServer, "", "bogus");
+            Assert.IsFalse(res.Success, "Adding alternate extension with static DeleteAlternateExtension did not fail with blank objectId");
+
+            //GetAlternateExtension
+            res = AlternateExtension.GetAlternateExtension(null, "bogus", "bogus", out oAltExt);
+            Assert.IsFalse(res.Success, "Getting alternate extension with static GetAlternateExtension did not fail with null Connection server");
+
+            res = AlternateExtension.GetAlternateExtension(_connectionServer, "bogus", "bogus", out oAltExt);
+            Assert.IsFalse(res.Success, "Getting alternate extension with static GetAlternateExtension did not fail with invalid objectId");
+
+            res = AlternateExtension.GetAlternateExtension(_connectionServer, "", "bogus", out oAltExt);
+            Assert.IsFalse(res.Success, "Getting alternate extension with static GetAlternateExtension did not fail with blank objectId");
+
+            //GetAlternateExtensions
+            List<AlternateExtension> oAltExts;
+            res = AlternateExtension.GetAlternateExtensions(null, "bogus", out oAltExts);
+            Assert.IsFalse(res.Success, "Getting alternate extensions with static GetAlternateExtensions did not fail with null Connection server");
+
+
+            res = AlternateExtension.GetAlternateExtensions(_connectionServer, "", out oAltExts);
+            Assert.IsFalse(res.Success, "Getting alternate extensions with static GetAlternateExtensions did not fail with empty objectId");
+
+            //UpdateAlternateExtension
+            res = AlternateExtension.UpdateAlternateExtension(null, "bogus", "bogus", null);
+            Assert.IsFalse(res.Success, "updating alternate extensions with static UpdateAlternateExtension did not fail with null Connection server");
+
+            res = AlternateExtension.UpdateAlternateExtension(_connectionServer, "bogus", "bogus", null);
+            Assert.IsFalse(res.Success, "updating alternate extensions with static UpdateAlternateExtension did not fail with empty property list");
+
+        }
+
+        #endregion
+
+
+        #region Harness Tests
+
+        [TestMethod]
+        public void GetAlternateExtension_Harness()
+        {
+            ConnectionServer oServer=null;
+            try
+            {
+                oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Failed to create test harness version of ConnectionServer:"+ex);
+            }
+
+            AlternateExtension oAltExt;
+            // EmptyResultText, InvalidResultText, ErrorResponse
+
+            var res = AlternateExtension.GetAlternateExtension(oServer, "userObjectID", "ErrorResponse", out oAltExt);
+            Assert.IsFalse(res.Success,"Calling GEtAlternateExtension with server error response should fail");
+
+            res = AlternateExtension.GetAlternateExtension(oServer, "userObjectID", "InvalidResultText", out oAltExt);
+            Assert.IsFalse(res.Success, "Calling GEtAlternateExtension with InvalidResultText should fail");
+
+            res = AlternateExtension.GetAlternateExtension(oServer, "userObjectID", "EmptyResultText", out oAltExt);
+            Assert.IsFalse(res.Success, "Calling GEtAlternateExtension with EmptyResultText should fail");
+        }
+
+        [TestMethod]
+        public void GetAlternateExtensions_Harness()
+        {
+            ConnectionServer oServer = null;
+            try
+            {
+                oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Failed to create test harness version of ConnectionServer:" + ex);
+            }
+
+            List<AlternateExtension> oAltExts;
+            // EmptyResultText, InvalidResultText, ErrorResponse
+
+            var res = AlternateExtension.GetAlternateExtensions(oServer, "ErrorResponse", out oAltExts);
+            Assert.IsFalse(res.Success, "Calling GetAlternateExtensions with server error response should fail");
+
+            res = AlternateExtension.GetAlternateExtensions(oServer, "InvalidResultText", out oAltExts);
+            Assert.IsTrue(res.Success, "Calling GetAlternateExtensions with InvalidResultText should not fail:"+res);
+            Assert.IsTrue(oAltExts.Count==0,"Invalid text should result in empty list of alternate extensions being returned");
+
+            res = AlternateExtension.GetAlternateExtensions(oServer, "EmptyResultText", out oAltExts);
+            Assert.IsTrue(res.Success, "Calling GetAlternateExtensions with EmptyResultText should not fail:"+res);
+            Assert.IsTrue(oAltExts.Count == 0, "Empty text should result in empty list of alternate extensions being returned");
+        }
+
+
+        #endregion
     }
 }

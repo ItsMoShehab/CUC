@@ -326,7 +326,7 @@ namespace ConnectionCUPIFunctionsTest
         public void Tenant_FetchTenants()
         {
             List<Tenant> oTenants;
-            var res = Tenant.GetTenants(_connectionServer, out oTenants);
+            var res = Tenant.GetTenants(_connectionServer, out oTenants,null);
             Assert.IsTrue(res.Success, "Failed to fetch tenants:" + res);
             Assert.IsTrue(oTenants.Count > 0, "No tenants returned from fetch");
 
@@ -337,9 +337,12 @@ namespace ConnectionCUPIFunctionsTest
             res = Tenant.GetTenant(out oTenant, _connectionServer, "", oTenants[0].Alias);
             Assert.IsTrue(res.Success, "Failed to fetch tenant from valid alias:" + res);
 
-
             Console.WriteLine(oTenant.ToString());
             oTenant.DumpAllProps();
+
+            res = Tenant.GetTenants(_connectionServer, out oTenants,1,2,"query=(ObjectId is Bogus)");
+            Assert.IsTrue(res.Success, "fetching tenants with invalid query should not fail:" + res);
+            Assert.IsTrue(oTenants.Count == 0, "Invalid query string should return an empty tenant list:" + oTenants.Count);
         }
 
         #endregion
@@ -443,7 +446,7 @@ namespace ConnectionCUPIFunctionsTest
             List<Tenant> oTenants;
 
             var res = Tenant.GetTenants(_connectionServerHarness, out oTenants,1,10, "EmptyResultText");
-            Assert.IsTrue(res.Success, "Calling GetTenants with empty result text should not faile");
+            Assert.IsFalse(res.Success, "Calling GetTenants with empty result text should fail");
             Assert.IsTrue(oTenants.Count==0, "Zero tenants should be returned");
 
             res = Tenant.GetTenants(_connectionServerHarness, out oTenants, 1, 10, "InvalidResultText");

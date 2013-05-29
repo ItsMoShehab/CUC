@@ -341,21 +341,22 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is not an error, just return an empty list
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            //if this is an error
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
+                res.Success = false;
                 pInterviewHandlers = new List<InterviewHandler>();
+                return res;
+            }
+
+            //not an error, just return an empty list
+            if (res.TotalObjectCount == 0)
+            {
+                pInterviewHandlers=new List<InterviewHandler>();
                 return res;
             }
 
             pInterviewHandlers = pConnectionServer.GetObjectsFromJson<InterviewHandler>(res.ResponseText);
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pInterviewHandlers == null || (pInterviewHandlers.Count == 1 && string.IsNullOrEmpty(pInterviewHandlers[0].ObjectId)))
-            {
-                pInterviewHandlers = new List<InterviewHandler>();
-                return res;
-            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.

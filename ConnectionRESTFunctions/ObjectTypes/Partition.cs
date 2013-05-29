@@ -334,21 +334,21 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
             //if this is empty that means an error in this case - should always be at least one partition
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
                 pPartitions = new List<Partition>();
                 res.Success = false;
                 return res;
             }
 
-            pPartitions = pConnectionServer.GetObjectsFromJson<Partition>(res.ResponseText);
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pPartitions == null || (pPartitions.Count == 1 && string.IsNullOrEmpty(pPartitions[0].ObjectId)))
+            //not an error, just return the empty list
+            if (res.TotalObjectCount == 0)
             {
-                pPartitions = new List<Partition>();
+                pPartitions=new List<Partition>();
                 return res;
             }
+
+            pPartitions = pConnectionServer.GetObjectsFromJson<Partition>(res.ResponseText);
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.

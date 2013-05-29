@@ -91,6 +91,8 @@ namespace ConnectionCUPIFunctionsTest
 
             Console.WriteLine(oCluster.ToString());
 
+            Assert.IsTrue(oCluster.Servers.Count>0,"There should always be at least 1 server in a cluster");
+
             foreach (var oServer in oCluster.Servers)
             {
                 Console.WriteLine(oServer.ToString());

@@ -112,6 +112,8 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Live Tests 
+
         [TestMethod]
         public void ScheduleSetFetchTests()
         {
@@ -158,9 +160,9 @@ namespace ConnectionCUPIFunctionsTest
                 Assert.Fail("Failed to fetch schedule set by valid name:"+ex);
             }
 
-            //fetch the schedule set members
-            
-
+            res = ScheduleSet.GetSchedulesSets(_connectionServer, out oSets,1,2,"query=(ObjectId is Bogus)");
+            Assert.IsTrue(res.Success, "fetching schedule sets with invalid query should not fail:" + res);
+            Assert.IsTrue(oSets.Count == 0, "Invalid query string should return an empty schedule list:" + oSets.Count);
         }
 
         [TestMethod]
@@ -188,6 +190,8 @@ namespace ConnectionCUPIFunctionsTest
             }
 
         }
+
+        #endregion
 
         #region Static Call Failures
 

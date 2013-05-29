@@ -175,21 +175,15 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that's not an error, just return an empty list
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            //if this is empty that's an error
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
+                res.Success = false;
                 pSmppProviders = new List<SmppProvider>();
                 return res;
             }
 
             pSmppProviders = pConnectionServer.GetObjectsFromJson<SmppProvider>(res.ResponseText);
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pSmppProviders == null || (pSmppProviders.Count == 1 && string.IsNullOrEmpty(pSmppProviders[0].ObjectId)))
-            {
-                pSmppProviders = new List<SmppProvider>();
-                return res;
-            }
 
             return res;
         }

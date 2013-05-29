@@ -218,7 +218,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //create a new Alternate Extension instance passing the ObjectId which fills out the data automatically
             try
             {
-                pAlternateExtension = new AlternateExtension(pConnectionServer, pObjectId, pObjectId);
+                pAlternateExtension = new AlternateExtension(pConnectionServer, pUserObjectId, pObjectId);
                 res.Success = true;
             }
             catch (UnityConnectionRestException ex)
@@ -282,13 +282,6 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             pAlternateExtensions = pConnectionServer.GetObjectsFromJson<AlternateExtension>(res.ResponseText);
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pAlternateExtensions == null||(pAlternateExtensions.Count == 1 && string.IsNullOrEmpty(pAlternateExtensions[0].ObjectId)))
-            {
-                pAlternateExtensions = new List<AlternateExtension>();
-                return res;
-            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.

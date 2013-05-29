@@ -11,6 +11,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using Newtonsoft.Json;
@@ -383,11 +384,16 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pRowsPerPage">
         /// Results to return per page, defaults to 20
         /// </param>
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter 
+        /// at a time  are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" in
+        /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+        /// </param>       
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetSchedules(ConnectionServer pConnectionServer, out List<Schedule> pSchedules, int pPageNumber = 1, 
-            int pRowsPerPage = 20)
+        public static WebCallResult GetSchedules(ConnectionServer pConnectionServer, out List<Schedule> pSchedules, int pPageNumber = 1,
+            int pRowsPerPage = 20, params string[] pClauses)
         {
             pSchedules = null;
 
@@ -400,8 +406,20 @@ namespace Cisco.UnityConnection.RestFunctions
                     };
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "schedules", "pageNumber=" + pPageNumber, 
-                "rowsPerPage=" + pRowsPerPage);
+            List<String> oParams;
+            if (pClauses == null)
+            {
+                oParams = new List<string>();
+            }
+            else
+            {
+                oParams = pClauses.ToList();
+            }
+
+            oParams.Add("pageNumber=" + pPageNumber);
+            oParams.Add("rowsPerPage=" + pRowsPerPage);
+
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "schedules", oParams.ToArray());
 
             //issue the command to the CUPI interface
             WebCallResult res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET,  "");
@@ -412,22 +430,22 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that means an error in this case - should always be at least one template
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            //if this is empty that means an error in this case
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
                 pSchedules = new List<Schedule>();
                 res.Success = false;
                 return res;
             }
 
-            pSchedules = pConnectionServer.GetObjectsFromJson<Schedule>(res.ResponseText);
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pSchedules == null || (pSchedules.Count == 1 && string.IsNullOrEmpty(pSchedules[0].ObjectId)))
+            //no error, just return an empty list
+            if (res.TotalObjectCount == 0)
             {
                 pSchedules = new List<Schedule>();
                 return res;
             }
+
+            pSchedules = pConnectionServer.GetObjectsFromJson<Schedule>(res.ResponseText);
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.

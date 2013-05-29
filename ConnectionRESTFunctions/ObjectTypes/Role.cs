@@ -104,6 +104,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public override string ToString()
         {
             return string.Format("{0} [{1}]", RoleName, RoleDescription);
+            
         }
 
 
@@ -206,10 +207,15 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pRoles">
         /// Out parameter that is used to return the list of Role objects defined on Connection
         /// </param>
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter 
+        /// at a time are currently supported by CUPI - in other words you can't have "query=(rolename startswith ab)" in
+        /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
+        /// </param>        
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetRoles(ConnectionServer pConnectionServer, out List<Role> pRoles)
+        public static WebCallResult GetRoles(ConnectionServer pConnectionServer, out List<Role> pRoles, params string[] pClauses)
         {
             WebCallResult res;
             pRoles = null;
@@ -221,7 +227,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = pConnectionServer.BaseUrl + "roles";
+            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "roles",pClauses);
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -241,13 +247,6 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             pRoles = pConnectionServer.GetObjectsFromJson<Role>(res.ResponseText);
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pRoles == null || (pRoles.Count == 1 && string.IsNullOrEmpty(pRoles[0].ObjectId)))
-            {
-                pRoles = new List<Role>();
-                return res;
-            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.

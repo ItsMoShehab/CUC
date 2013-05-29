@@ -125,23 +125,49 @@ namespace ConnectionCUPIFunctionsTest
         #region Live Tests
 
         [TestMethod]
-        public void CallHandlerTemplate_AddDeleteTest()
+        public void CallHandlerTemplate_AddDeleteTest_UserRecipient()
         {
-            List<CallHandlerTemplate> oTemplates;
-            WebCallResult res = CallHandlerTemplate.GetCallHandlerTemplates(_connectionServer, out oTemplates,1,20);
-            Assert.IsTrue(res.Success, "Failed to get call handler templates");
-            Assert.IsNotNull(oTemplates, "Null call handler template returned");
-            Assert.IsTrue(oTemplates.Count > 0, "Empty list of templates returned");
+            List<PhoneSystem> oPhoneSystems;
+            var res = PhoneSystem.GetPhoneSystems(_connectionServer, out oPhoneSystems, 1, 1);
+            Assert.IsTrue(res.Success,"Failed to fetch phone systems:"+res);
+            Assert.IsTrue(oPhoneSystems.Count==1,"Failed to fetch single phone system");
 
-            CallHandlerTemplate oTemp = oTemplates[0];
-
-            string strMediaSwitchId = oTemp.MediaSwitchObjectId;
+            List<UserBase> oUsers;
+            res = UserBase.GetUsers(_connectionServer, out oUsers, 1, 1);
+            Assert.IsTrue(res.Success,"Failed to fetch users:"+res);
+            Assert.IsTrue(oUsers.Count==1,"Failed to fetch single user");
 
             string strName = "Temp_" + Guid.NewGuid().ToString();
 
             CallHandlerTemplate oTemplate;
-            res = CallHandlerTemplate.AddCallHandlerTemplate(_connectionServer, strName, strMediaSwitchId,
-                oTemp.RecipientDistributionListObjectId, oTemp.RecipientSubscriberObjectId, null, out oTemplate);
+            res = CallHandlerTemplate.AddCallHandlerTemplate(_connectionServer, strName, oPhoneSystems[0].ObjectId,
+                "", oUsers[0].ObjectId, null, out oTemplate);
+
+            Assert.IsTrue(res.Success, "Failed creating new call handler template:" + res);
+
+            res = oTemplate.Delete();
+            Assert.IsTrue(res.Success, "Failed deleting call handler template:" + res);
+        }
+
+
+        [TestMethod]
+        public void CallHandlerTemplate_AddDeleteTest_ListRecipient()
+        {
+            List<PhoneSystem> oPhoneSystems;
+            var res = PhoneSystem.GetPhoneSystems(_connectionServer, out oPhoneSystems, 1, 1);
+            Assert.IsTrue(res.Success, "Failed to fetch phone systems:" + res);
+            Assert.IsTrue(oPhoneSystems.Count == 1, "Failed to fetch single phone system");
+
+            List<DistributionList> oLists;
+            res = DistributionList.GetDistributionLists(_connectionServer, out oLists, 1, 1);
+            Assert.IsTrue(res.Success, "Failed to fetch lists:" + res);
+            Assert.IsTrue(oLists.Count == 1, "Failed to fetch single list");
+
+            string strName = "Temp_" + Guid.NewGuid().ToString();
+
+            CallHandlerTemplate oTemplate;
+            res = CallHandlerTemplate.AddCallHandlerTemplate(_connectionServer, strName, oPhoneSystems[0].ObjectId,
+                oLists[0].ObjectId, "", null, out oTemplate);
 
             Assert.IsTrue(res.Success, "Failed creating new call handler template:" + res);
 
@@ -155,7 +181,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             _tempHandlerTemplate.ClearPendingChanges();
             var res = _tempHandlerTemplate.Update();
-            Assert.IsFalse(res.Success,"Updating template with no pending changes did not fail");
+            Assert.IsFalse(res.Success, "Updating template with no pending changes did not fail");
 
             _tempHandlerTemplate.SendPrivateMsg = 0;
             _tempHandlerTemplate.PlayAfterMessage = 0;
@@ -164,11 +190,43 @@ namespace ConnectionCUPIFunctionsTest
             _tempHandlerTemplate.UseDefaultTimeZone = true;
 
             res = _tempHandlerTemplate.Update();
-            Assert.IsTrue(res.Success,"Failed to update call handler template:"+res);
+            Assert.IsTrue(res.Success, "Failed to update call handler template:" + res);
 
         }
 
-        /// <summary>
+        [TestMethod]
+        public void CallHandlerTemplate_SetRecipientUser()
+        {
+            _tempHandlerTemplate.ClearPendingChanges();
+
+            List<UserBase> oUsers;
+            var res = UserBase.GetUsers(_connectionServer, out oUsers, 1, 1);
+            Assert.IsTrue(res.Success,"Failed to fetch user as recipient:"+res);
+            Assert.IsTrue(oUsers.Count==1,"Failed to fetch single user:"+res);
+
+            _tempHandlerTemplate.RecipientSubscriberObjectId = oUsers[0].ObjectId;
+
+            res = _tempHandlerTemplate.Update();
+            Assert.IsTrue(res.Success,"Failed to update call handler template for user recipient:"+res);
+        }
+
+        [TestMethod]
+        public void CallHandlerTemplate_SetRecipientList()
+        {
+            _tempHandlerTemplate.ClearPendingChanges();
+
+            List<DistributionList> oLists;
+            var res = DistributionList.GetDistributionLists(_connectionServer, out oLists, 1, 1);
+            Assert.IsTrue(res.Success, "Failed to fetch list as recipient:" + res);
+            Assert.IsTrue(oLists.Count == 1, "Failed to fetch single list:" + res);
+
+            _tempHandlerTemplate.RecipientDistributionListObjectId = oLists[0].ObjectId;
+
+            res = _tempHandlerTemplate.Update();
+            Assert.IsTrue(res.Success, "Failed to update call handler template for list recipient:" + res);
+        }
+
+       /// <summary>
         /// exercise call handler templates - call handler templates is a pretty simple class and it only gets used by handlers so 
         /// test it here - make sure it handles an invalid conneciton server passed in and can get the list back out and hit the 
         /// ToString override for it - that about covers it.
@@ -181,7 +239,7 @@ namespace ConnectionCUPIFunctionsTest
             WebCallResult res = CallHandlerTemplate.GetCallHandlerTemplates(null, out oTemplates);
             Assert.IsFalse(res.Success, "Null ConnectionServer parameter should fail");
 
-            res = CallHandlerTemplate.GetCallHandlerTemplates(_connectionServer, out oTemplates);
+            res = CallHandlerTemplate.GetCallHandlerTemplates(_connectionServer, out oTemplates,1,10,null);
             Assert.IsTrue(res.Success, "Failed to get call handler templates");
             Assert.IsNotNull(oTemplates, "Null call handler template returned");
             Assert.IsTrue(oTemplates.Count > 0, "Empty list of templates returned");
@@ -241,6 +299,10 @@ namespace ConnectionCUPIFunctionsTest
             res = CallHandlerTemplate.GetCallHandlerTemplate(out oNewTemplate, _connectionServer, "", "bogus");
             Assert.IsFalse(res.Success, "Call to get call handler via static call using invalid DisplayName did not fail.");
 
+            res = CallHandlerTemplate.GetCallHandlerTemplates(_connectionServer, out oTemplates, 1, 2, "query=(ObjectId is bogus)");
+            Assert.IsTrue(res.Success, "fetching Templates with invalid query should not fail:" + res);
+            Assert.IsTrue(oTemplates.Count == 0, "Invalid query string should return an empty COS list:" + oTemplates.Count);
+
         }
 
         #endregion
@@ -255,7 +317,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailures_GetCallHandlerTemplates()
         {
             List<CallHandlerTemplate> oTemplates;
-            WebCallResult res = CallHandlerTemplate.GetCallHandlerTemplates(null, out oTemplates);
+            WebCallResult res = CallHandlerTemplate.GetCallHandlerTemplates(null, out oTemplates,1,10,null);
             Assert.IsFalse(res.Success, "Passing null connection server should fail.");
 
 
@@ -334,6 +396,44 @@ namespace ConnectionCUPIFunctionsTest
 
             res = CallHandlerTemplate.UpdateCallHandlerTemplate(_connectionServer, "objectId", oProps);
             Assert.IsFalse(res.Success, "UpdateCallHandlerTemplate with invalid ObjectId did not fail");
+        }
+
+        #endregion
+
+
+        #region Harness Tests
+
+        // EmptyResultText, InvalidResultText, ErrorResponse, ReturnSpecificText[
+
+       [TestMethod]
+       public void GetCallHandlerTemplates_HarnessFailures()
+       {
+           ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(),"test","test","test");
+
+           List<CallHandlerTemplate> oTemplates;
+           var res = CallHandlerTemplate.GetCallHandlerTemplates(oServer, out oTemplates, 1, 5, "EmptyResultText");
+           Assert.IsFalse(res.Success, "Calling GetCallHandlerTemplates with EmptyResultText did not fail");
+
+           res = CallHandlerTemplate.GetCallHandlerTemplates(oServer, out oTemplates, 1, 5, "InvalidResultText");
+           Assert.IsTrue(res.Success, "Calling GetCallHandlerTemplates with InvalidResultText should not fail:"+res);
+           Assert.IsTrue(oTemplates.Count==0,"Invalid result text should produce an empty list of templates");
+
+           res = CallHandlerTemplate.GetCallHandlerTemplates(oServer, out oTemplates, 1, 5, "ErrorResponse");
+           Assert.IsFalse(res.Success, "Calling GetCallHandlerTemplates with ErrorResponse did not fail");
+       }
+
+        [TestMethod]
+        public void AddCallHandlerTemplate_HarnessFailures()
+        {
+            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+
+            ConnectionPropertyList oProps = new ConnectionPropertyList();
+            oProps.Add("ReturnSpecificText[/vmrest/callhandlertemplates/junk]", "junk");
+
+            CallHandlerTemplate oTemplate;
+            var res = CallHandlerTemplate.AddCallHandlerTemplate(oServer, "test", "test", "", "test", oProps,out oTemplate);
+            Assert.IsFalse(res.Success,"AddCallHandlerTemplate that produces invalid new ObjectId did not fail");
+
         }
 
         #endregion

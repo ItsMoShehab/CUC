@@ -195,7 +195,7 @@ namespace ConnectionCUPIFunctionsTest
             WebCallResult res = PhoneSystem.GetPhoneSystems(null, out oSystems);
             Assert.IsFalse(res.Success,"Null Connection server param should fail");
 
-            res = PhoneSystem.GetPhoneSystems(_connectionServer, out oSystems);
+            res = PhoneSystem.GetPhoneSystems(_connectionServer, out oSystems,1,1);
             Assert.IsTrue(res.Success,"Failed to fetch phone systems");
             Assert.IsTrue(oSystems.Count>0,"No phone systems found in Connection");
 
@@ -221,6 +221,10 @@ namespace ConnectionCUPIFunctionsTest
             {
                 Console.WriteLine(oUser.ToString());
             }
+
+            res = PhoneSystem.GetPhoneSystems(_connectionServer, out oSystems, 1, 1,"query=(ObjectId Is Bogus)");
+            Assert.IsTrue(res.Success, "fetching phone systems with invalid query should not fail:" + res);
+            Assert.IsTrue(oSystems.Count == 0, "Invalid query string should return an empty phone system list:" + oSystems.Count);
         }
 
 

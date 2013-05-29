@@ -69,7 +69,7 @@ namespace ConnectionCUPIFunctionsTest
             
             //create new handler with GUID in the name to ensure uniqueness
             String strName = "TempHandler_" + Guid.NewGuid().ToString().Replace("-", "");
-
+            
             res = CallHandler.AddCallHandler(_connectionServer, oTemplates[0].ObjectId, strName, "", null, out _tempHandler);
             Assert.IsTrue(res.Success, "Failed creating temporary callhandler:" + res.ToString());
         }
@@ -112,7 +112,7 @@ namespace ConnectionCUPIFunctionsTest
         /// methods on them each.
         /// </summary>
         [TestMethod]
-        public void GetCallHandlers_Test()
+        public void GetCallHandlers_FetchTest()
         {
             List<CallHandler> oHandlerList;
             CallHandler oHoldHandler=null;
@@ -120,9 +120,9 @@ namespace ConnectionCUPIFunctionsTest
             //limit the fetch to the first 3 handlers to be sure this passes even on a default install
             string[] pClauses = { "rowsPerPage=3" };
 
-            WebCallResult res = CallHandler.GetCallHandlers(_connectionServer, out oHandlerList, pClauses);
+            WebCallResult res = CallHandler.GetCallHandlers(_connectionServer, out oHandlerList,1,2, pClauses);
 
-            Assert.IsTrue(res.Success, "Fetching of top three call handlers failed: " + res.ToString());
+            Assert.IsTrue(res.Success, "Fetching of top three call handlers failed: " + res);
             Assert.AreEqual(oHandlerList.Count, 3, "Fetching of the top three call handlers returned a different number of handlers: " + res.ToString());
 
             //exercise the ToString and DumpAllProperties as part of this test as well
@@ -133,6 +133,14 @@ namespace ConnectionCUPIFunctionsTest
                 oHoldHandler = oHandler;
             }
 
+            res = CallHandler.GetCallHandlers(_connectionServer, out oHandlerList, 1, 1, null);
+            Assert.IsTrue(res.Success,"Failed to fetch call handlers:"+res);
+            Assert.IsTrue(oHandlerList.Count==1,"Failed to return single call handler");
+
+            res = CallHandler.GetCallHandlers(_connectionServer, out oHandlerList, 1, 1, "query=(ObjectId is bogus)");
+            Assert.IsTrue(res.Success, "fetching handlers with invalid query should not fail:" + res);
+            Assert.IsTrue(oHandlerList.Count == 0, "Invalid query string should return an empty handler list:" + oHandlerList.Count);
+            
             //exercise the menu entry action descriptions
             MenuEntry oMenu;
              res = oHoldHandler.GetMenuEntry("0", out oMenu);
@@ -144,6 +152,8 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success, "Fetching of * menu entry key failed: " + res.ToString());
 
             Console.WriteLine(_connectionServer.GetActionDescription(oMenu.Action, oMenu.TargetConversation, oMenu.TargetHandlerObjectId));
+
+
 
         }
 
@@ -167,11 +177,16 @@ namespace ConnectionCUPIFunctionsTest
             res = _tempHandler.Update();
             Assert.IsTrue(res.Success, "Call to update call handler failed:" + res.ToString());
 
+            res = _tempHandler.RefetchCallHandlerData();
+            Assert.IsTrue(res.Success, "Refetching handler data failed:" + res);
+            Assert.IsTrue(_tempHandler.PrependDigits=="123","Pepend digits value did not match after refetch:"+res);
+
             _tempHandler.DtmfAccessId = "____";
             res = _tempHandler.Update();
             Assert.IsFalse(res.Success,"Setting call handler to illegal primary extension did not fail:"+res);
 
-            _tempHandler.ClearPendingChanges();
+            
+
 
             _tempHandler.ClearPendingChanges();
 
@@ -252,6 +267,35 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success,"Failed to update menu entry to PHGreeting back to self");
         }
 
+
+        [TestMethod]
+        public void AddEditDeleteCallHandler_RecipientContact()
+        {
+            List<Contact> oContacts;
+            var res = Contact.GetContacts(_connectionServer, out oContacts, 1, 1);
+            Assert.IsTrue(res.Success,"Failed to fetch contacts:"+res);
+            Assert.IsTrue(oContacts.Count==1,"Failed to fetch single contacts");
+
+            _tempHandler.ClearPendingChanges();
+            _tempHandler.RecipientContactObjectId = oContacts[0].ObjectId;
+            res = _tempHandler.Update();
+            Assert.IsTrue(res.Success,"Failed to update handler to contact recipient:"+res);
+        }
+
+        [TestMethod]
+        public void AddEditDeleteCallHandler_SetPostGreetingRecording()
+        {
+            List<PostGreetingRecording> oRecordings;
+            var res = PostGreetingRecording.GetPostGreetingRecordings(_connectionServer, out oRecordings, 1, 1);
+            Assert.IsTrue(res.Success, "Failed to fetch recordings:" + res);
+            Assert.IsTrue(oRecordings.Count == 1, "Failed to fetch single recording");
+
+            _tempHandler.ClearPendingChanges();
+            _tempHandler.PostGreetingRecordingObjectId = oRecordings[0].ObjectId;
+            res = _tempHandler.Update();
+            Assert.IsTrue(res.Success, "Failed to update handler to postgreeting recording:" + res);
+        }
+
         [TestMethod]
         public void AddEditDeleteCallHandler_GreetingOptionTests()
         {
@@ -323,6 +367,22 @@ namespace ConnectionCUPIFunctionsTest
         }
 
 
+        [TestMethod]
+        public void AddCallHandlerFailure_InvalidExtension()
+        {
+            //grab the first template - should always be one and it doesn't matter which
+            List<CallHandlerTemplate> oTemplates;
+            WebCallResult res =CallHandlerTemplate.GetCallHandlerTemplates(_connectionServer, out oTemplates,1,1);
+            if (res.Success == false || oTemplates==null || oTemplates.Count == 0)
+            {
+                Assert.Fail("Could not fetch call handler templates:"+res);    
+            }
+
+            string strExtension = Guid.NewGuid().ToString();
+            res = CallHandler.AddCallHandler(_connectionServer, oTemplates[0].ObjectId, strExtension, strExtension, null);
+            Assert.IsFalse(res.Success,"Creating new call handler with invalid extension should fail");
+        }
+
         /// <summary>
         /// exercise property list adds and dumps - property list does not need it's own test class, everything it can do 
         /// is done right here.  Add each of the types its supports and dump the list out using the ToString override.
@@ -341,6 +401,45 @@ namespace ConnectionCUPIFunctionsTest
 
          }
 
+        [TestMethod]
+        public void CollectionFetchTests_TransferOptions()
+        {
+            List<TransferOption> oTransferOptions;
+            oTransferOptions = _tempHandler.GetTransferOptions(true);
+            Assert.IsTrue(oTransferOptions.Count==3,"Transfer option did not return 3");
+        }
+
+        [TestMethod]
+        public void CollectionFetchTests_Greetings()
+        {
+            List<Greeting> oGreetings;
+            oGreetings = _tempHandler.GetGreetings(true);
+            Assert.IsTrue(oGreetings.Count == 7, "Greeting fetch did not return 7 greetings");
+        }
+
+        [TestMethod]
+        public void CollectionFetchTests_MenuEntries()
+        {
+            List<MenuEntry> oMenuEntries;
+            oMenuEntries = _tempHandler.GetMenuEntries(true);
+            Assert.IsTrue(oMenuEntries.Count == 12, "Menu entry fetch did not return 12 greetings");
+        }
+
+        [TestMethod]
+        public void CollectionFetchTests_ScheduleSet()
+        {
+            ScheduleSet oSchedule;
+            oSchedule = _tempHandler.GetScheduleSet(true);
+            Assert.IsTrue(!string.IsNullOrEmpty(oSchedule.ObjectId), "Schedule set fetch did not return a valid schedule");
+        }
+
+        [TestMethod]
+        public void ConstructurWithEmptyId()
+        {
+            CallHandler oHandler = new CallHandler(_connectionServer);
+            Assert.IsNotNull(oHandler,"Call handler object not returned from constructor with no ObjectId");
+            Assert.IsTrue(string.IsNullOrEmpty(oHandler.ObjectId),"Empty constructor should return call handler not filled in with data");
+        }
 
 
         #endregion
@@ -479,6 +578,61 @@ namespace ConnectionCUPIFunctionsTest
 
         }
 
+        [TestMethod]
+        public void StaticCallFailure_SetCallHandlerVoiceNameToStreamFile()
+        {
+            var res = CallHandler.SetCallHandlerVoiceNameToStreamFile(null, "objectid", "StreamId");
+            Assert.IsFalse(res.Success,"Calling SetCallHandlerVoiceNameToStreamFile with null ConnectionServer did not fail");
+
+            res = CallHandler.SetCallHandlerVoiceNameToStreamFile(_connectionServer, "objectid", "StreamId");
+            Assert.IsFalse(res.Success, "Calling SetCallHandlerVoiceNameToStreamFile with invalid ObjectId did not fail");
+
+            res = CallHandler.SetCallHandlerVoiceNameToStreamFile(_connectionServer, "", "StreamId");
+            Assert.IsFalse(res.Success, "Calling SetCallHandlerVoiceNameToStreamFile with empty objectId did not fail");
+
+            res = CallHandler.SetCallHandlerVoiceNameToStreamFile(_connectionServer, "ObjectId", "");
+            Assert.IsFalse(res.Success, "Calling SetCallHandlerVoiceNameToStreamFile with empty stream ID did not fail");
+
+        }
+
+
+        #endregion
+
+
+        #region Harness Tests
+
+       [TestMethod]
+        public void GetCallHAndlers_HarnessTestFailures()
+        {
+            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+
+            List<CallHandler> oHandlers;
+            var res = CallHandler.GetCallHandlers(oServer, out oHandlers, 1, 5, "EmptyResultText");
+            Assert.IsFalse(res.Success, "Calling GetCallHandlers with EmptyResultText did not fail");
+
+            res = CallHandler.GetCallHandlers(oServer, out oHandlers, 1, 5, "InvalidResultText");
+            Assert.IsTrue(res.Success, "Calling GetCallHandlers with InvalidResultText should not fail:" + res);
+            Assert.IsTrue(oHandlers.Count == 0, "Invalid result text should produce an empty list of templates");
+
+            res = CallHandler.GetCallHandlers(oServer, out oHandlers, 1, 5, "ErrorResponse");
+            Assert.IsFalse(res.Success, "Calling GetCallHandlers with ErrorResponse did not fail");
+        }
+
+        [TestMethod]
+        public void GetCallHAndler_HarnessTestFailures()
+        {
+            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+
+            CallHandler oHandler;
+            var res = CallHandler.GetCallHandler(out oHandler, oServer, "EmptyResultText");
+            Assert.IsFalse(res.Success, "Calling GetCallHandler with EmptyResultText did not fail");
+
+            res = CallHandler.GetCallHandler(out oHandler, oServer, "InvalidResultText");
+            Assert.IsFalse(res.Success, "Calling GetCallHandler with InvalidResultText should fail");
+
+            res = CallHandler.GetCallHandler(out oHandler, oServer, "ErrorResponse");
+            Assert.IsFalse(res.Success, "Calling GetCallHandler with ErrorResponse did not fail");
+        }
 
         #endregion
     }

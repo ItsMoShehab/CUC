@@ -321,13 +321,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pMenuEntries = pConnectionServer.GetObjectsFromJson<MenuEntry>(res.ResponseText);
 
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pMenuEntries == null || (pMenuEntries.Count == 1 && string.IsNullOrEmpty(pMenuEntries[0].ObjectId)))
-            {
-                pMenuEntries = new List<MenuEntry>();
-                return res;
-            }
-
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
             foreach (var oObject in pMenuEntries)

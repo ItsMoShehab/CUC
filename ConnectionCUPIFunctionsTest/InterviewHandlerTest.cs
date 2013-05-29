@@ -239,6 +239,7 @@ namespace ConnectionCUPIFunctionsTest
 
             res = InterviewHandler.GetInterviewHandlers(null, out oHandlers, null);
             Assert.IsFalse(res.Success, "GetInterviewHandler should fail with null ConnectionServer passed to it");
+
         }
 
         /// <summary>
@@ -255,10 +256,7 @@ namespace ConnectionCUPIFunctionsTest
 
             InterviewHandler oInterviewHandler;
 
-            //limit the fetch to the first 1 handler 
-            string[] pClauses = { "rowsPerPage=1" };
-
-            WebCallResult res = InterviewHandler.GetInterviewHandlers(_connectionServer, out oHandlerList, pClauses);
+            WebCallResult res = InterviewHandler.GetInterviewHandlers(_connectionServer, out oHandlerList,1,1, null);
 
             Assert.IsTrue(res.Success, "Fetching of first interview handler failed: " + res.ToString());
             Assert.AreEqual(oHandlerList.Count, 1, "Fetching of the first interview handler returned a different number of handlers: " + res.ToString());
@@ -287,6 +285,9 @@ namespace ConnectionCUPIFunctionsTest
             res = InterviewHandler.GetInterviewHandler(out oInterviewHandler, _connectionServer, "", "blah");
             Assert.IsFalse(res.Success, "Fetching of interview handler by bogus name did not fail");
 
+            res = InterviewHandler.GetInterviewHandlers(_connectionServer, out oHandlerList,1,2,"query=(ObjectId is Bogus)");
+            Assert.IsTrue(res.Success, "fetching handlers with invalid query should not fail:" + res);
+            Assert.IsTrue(oHandlerList.Count == 0, "Invalid query string should return an empty handler list:" + oHandlerList.Count);
         }
 
 

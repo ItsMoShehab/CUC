@@ -1010,7 +1010,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
                 if (oMessage == null)
                 {
-                    if (Debugger.IsAttached) Debugger.Break();
+                    pConnetionServer.RaiseErrorEvent("Could not find MsgId element in GetMessageFromXElements:"+pXElement);
                     continue;
                 }
                 

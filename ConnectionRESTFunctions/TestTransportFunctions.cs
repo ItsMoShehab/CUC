@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
 using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
@@ -25,7 +24,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #endregion
 
-          #region Constructors and Destructors
+        #region Constructors and Destructors
 
 
         // Default construtor - attach the VAlidateRemoteCertificate to the validation check so we don't get errors on self signed certificates 
@@ -40,8 +39,52 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #endregion
 
+        #region Error and Debug Methods
 
-        public enum TestCommandValues { EmptyResultText, InvalidResultText, ErrorResponse, ReturnRequestBody, GenerateEmptyFile, GenerateMissingFile }
+        /// <summary>
+        /// If there's one or more clients registered for the ErrorEvent event then issue it here.
+        /// </summary>
+        /// <param name="pLine">
+        /// String to pass back to the receiving method
+        /// </param>
+        private void RaiseErrorEvent(string pLine)
+        {
+            //notify registered clients 
+            RestTransportFunctions.LoggingEventHandler handler = ErrorEvents;
+
+            if (handler != null)
+            {
+                RestTransportFunctions.LogEventArgs oArgs = new RestTransportFunctions.LogEventArgs(pLine);
+                handler(null, oArgs);
+            }
+        }
+
+        /// <summary>
+        /// If there's one or more clients registerd for the DebugEvents event then issue it here.
+        /// </summary>
+        /// <param name="pLine">
+        /// String to pass back to the receiving method
+        /// </param>
+        private void RaiseDebugEvent(string pLine)
+        {
+            if (DebugMode == false) return;
+
+            //notify registered clients
+            RestTransportFunctions.LoggingEventHandler handler = DebugEvents;
+
+            if (handler != null)
+            {
+                RestTransportFunctions.LogEventArgs oArgs = new RestTransportFunctions.LogEventArgs(pLine);
+                handler(null, oArgs);
+            }
+        }
+
+        #endregion
+
+
+        //ReturnSpecificText[blah, blah]
+        public enum TestCommandValues { EmptyResultText, InvalidResultText, ErrorResponse, ReturnRequestBody, 
+            ReturnSpecificText, GenerateEmptyFile, GenerateMissingFile }
 
 
         public List<T> GetObjectsFromJson<T>(string pJson, string pTypeNameOverride = "")
@@ -65,7 +108,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             catch (Exception ex)
             {
-                if (Debugger.IsAttached) Debugger.Break();
+                RaiseErrorEvent("Error deserializing Json in GetObjectsFromJson:"+ex);
                 return new List<T>();
             }
         }
@@ -89,7 +132,8 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             catch (Exception ex)
             {
-                if (Debugger.IsAttached) Debugger.Break();
+                
+                RaiseErrorEvent("Error converting Json in GetObjectFromJson:"+ex);
                 return default(T);
             }
         }
@@ -108,6 +152,32 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             WebCallResult res = new WebCallResult {Success = true, StatusCode = 200};
 
+            //contains string can come in on the url or in the body depending on the test
+            string pSpecificString="";
+            if (pRequestBody.Contains("ReturnSpecificText["))
+            {
+                pSpecificString = pRequestBody;
+            }
+            if (pUrl.Contains("ReturnSpecificText["))
+            {
+                pSpecificString = pUrl;
+            }
+
+            if (pSpecificString.Contains("ReturnSpecificText["))
+            {
+                //pull out the text between [ and ] and return it
+                int iPos = pSpecificString.IndexOf("ReturnSpecificText[");
+                int iPos2 = pSpecificString.IndexOf("]", iPos);
+                if (iPos2 <= iPos)
+                {
+                    pConnectionServer.RaiseErrorEvent("Error parsing ReturnSpecificText harness call:" + pSpecificString);
+                }
+                else
+                {
+                    res.ResponseText = pSpecificString.Substring(iPos + 19, iPos2 - iPos - 19);
+                    return res;
+                }
+            }
 
             if (pUrl.Contains("EmptyResultText"))
             {

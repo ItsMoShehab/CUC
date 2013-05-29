@@ -180,7 +180,6 @@ namespace Cisco.UnityConnection.RestFunctions
             if (!_timeZones.TryGetValue(pTimeZoneId, out pConnectionConnectionTimeZone))
             {
                 pConnectionConnectionTimeZone=new ConnectionTimeZone();
-                if (Debugger.IsAttached) Debugger.Break();
                 res.Success = false;
                 res.ErrorText = "Unable to find timezone by ID=" + pTimeZoneId.ToString();
             }

@@ -178,7 +178,7 @@ namespace ConnectionCUPIFunctionsTest
 
             res = SmppProvider.GetSmppProviders(_connectionServerTestHarness, out oProviders, 1, 10,
                                         TestTransportFunctions.TestCommandValues.EmptyResultText.ToString());
-            Assert.IsTrue(res.Success, "Forcing empty result text from server should not fail:"+res);
+            Assert.IsFalse(res.Success, "Forcing empty result text from server should fail:"+res);
             Assert.IsTrue(oProviders.Count==0,"Empty response from server should result in 0 elements returned:"+oProviders.Count);
 
             res = SmppProvider.GetSmppProviders(_connectionServerTestHarness, out oProviders, 1, 10,

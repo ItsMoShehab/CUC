@@ -594,8 +594,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
                 catch (Exception ex)
                 {
-                    if (Debugger.IsAttached) Debugger.Break();
-                    Console.WriteLine("Failed fetching TransferRestrictionTable:"+ex);
+                    HomeServer.RaiseErrorEvent("Failed fetching TransferRestrictionTable:" + ex);
+                    return null;
                 }
             }
 
@@ -630,8 +630,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
                 catch (Exception ex)
                 {
-                    if (Debugger.IsAttached) Debugger.Break();
-                    Console.WriteLine("Failed fetching FaxRestrictionTable:"+ex);
+                    HomeServer.RaiseErrorEvent("Failed fetching FaxRestrictionTable:"+ex);
+                    return null;
                 }
             }
 
@@ -665,8 +665,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
                 catch (Exception ex)
                 {
-                    if (Debugger.IsAttached) Debugger.Break();
-                    Console.WriteLine("Failed fetching OutcallRestrictionTable:"+ex);
+                    HomeServer.RaiseErrorEvent("Failed fetching OutcallRestrictionTable:"+ex);
+                    return null;
                 }
             }
 
@@ -727,21 +727,22 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that doesn't mean an error - just return the empty list.
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            //if this is empty thats an error
+            if (string.IsNullOrEmpty(res.ResponseText))
             {
+                res.Success = false;
                 pClassOfServices = new List<ClassOfService>();
+                return res;
+            }
+
+            //not a failure, just return an empty list
+            if (res.TotalObjectCount == 0)
+            {
+                pClassOfServices=new List<ClassOfService>();
                 return res;
             }
 
             pClassOfServices = pConnectionServer.GetObjectsFromJson<ClassOfService>(res.ResponseText, "cos");
-
-            //special case - Json.Net always creates an object even when there's no data for it.
-            if (pClassOfServices == null || (pClassOfServices.Count == 1 && string.IsNullOrEmpty(pClassOfServices[0].ObjectId)))
-            {
-                pClassOfServices = new List<ClassOfService>();
-                return res;
-            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.

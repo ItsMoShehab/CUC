@@ -301,7 +301,7 @@ namespace ConnectionCUPIFunctionsTest
                 res = DirectoryHandler.GetDirectoryHandler(out oNewHandler, _connectionServer, oHandler.ObjectId);
                 Assert.IsTrue(res.Success, "Fetching directory handler by ObjectId: " + res.ToString());
             }
-            
+
             try
             {
                 oNewHandler = new DirectoryHandler(_connectionServer, "", oHandlerList[0].DisplayName);
@@ -315,6 +315,11 @@ namespace ConnectionCUPIFunctionsTest
             //hit failed searches
             res = DirectoryHandler.GetDirectoryHandler(out oNewHandler, _connectionServer, "", "bogus name that shouldnt match");
             Assert.IsFalse(res.Success, "Fetching directory handler by bogus name did not fail");
+
+            res = DirectoryHandler.GetDirectoryHandlers(_connectionServer, out oHandlerList, 1, 1, "query=(ObjectId is bogus)");
+            Assert.IsTrue(res.Success, "fetching handlers with invalid query should not fail:" + res);
+            Assert.IsTrue(oHandlerList.Count == 0, "Invalid query string should return an empty handler list:" + oHandlerList.Count);
+
 
         }
 
