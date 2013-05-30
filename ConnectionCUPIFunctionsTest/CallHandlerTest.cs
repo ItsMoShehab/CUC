@@ -22,7 +22,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         private static CallHandler _tempHandler;
 
@@ -49,7 +49,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                 _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                 _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                    mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -456,7 +456,7 @@ namespace ConnectionCUPIFunctionsTest
             List<CallHandler> oHandlerList;
 
             WebCallResult res = CallHandler.GetCallHandlers(null, out oHandlerList, null);
-            Assert.IsFalse(res.Success, "GetHandler should fail with null ConnectionServer passed to it");
+            Assert.IsFalse(res.Success, "GetHandler should fail with null ConnectionServerRest passed to it");
 
         }
 
@@ -470,7 +470,7 @@ namespace ConnectionCUPIFunctionsTest
             CallHandler oHandler;
 
             WebCallResult res = CallHandler.GetCallHandler(out oHandler, null);
-            Assert.IsFalse(res.Success, "GetCallHandler should fail if the ConnectionServer is null");
+            Assert.IsFalse(res.Success, "GetCallHandler should fail if the ConnectionServerRest is null");
 
             res = CallHandler.GetCallHandler(out oHandler, _connectionServer);
             Assert.IsFalse(res.Success, "GetCallHandler should fail if the ObjectId and display name are both blank");
@@ -484,7 +484,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailure_AddCallHandler()
         {
             WebCallResult res = CallHandler.AddCallHandler(null, "", "", "", null);
-            Assert.IsFalse(res.Success, "AddCallHandler should fail if the ConnectionServer parameter is null");
+            Assert.IsFalse(res.Success, "AddCallHandler should fail if the ConnectionServerRest parameter is null");
 
             res = CallHandler.AddCallHandler(_connectionServer, "", "aaa", "123", null);
             Assert.IsFalse(res.Success, "AddCallHandler should fail if the template parameter is empty");
@@ -505,7 +505,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailure_DeleteCallHandler()
         {
             WebCallResult res = CallHandler.DeleteCallHandler(null, "");
-            Assert.IsFalse(res.Success, "DeleteCallHandler should fail if the ConnectionServer parameter is null");
+            Assert.IsFalse(res.Success, "DeleteCallHandler should fail if the ConnectionServerRest parameter is null");
 
             res = CallHandler.DeleteCallHandler(_connectionServer, "");
             Assert.IsFalse(res.Success, "DeleteCallHandler should fail if the ObjectId parameter is blank");
@@ -521,7 +521,7 @@ namespace ConnectionCUPIFunctionsTest
             ConnectionPropertyList oPropList = new ConnectionPropertyList();
 
             WebCallResult res = CallHandler.UpdateCallHandler(null, "", oPropList);
-            Assert.IsFalse(res.Success, "UpdateCallHandler should fail if the ConnectionServer parameter is null");
+            Assert.IsFalse(res.Success, "UpdateCallHandler should fail if the ConnectionServerRest parameter is null");
 
             res = CallHandler.UpdateCallHandler(_connectionServer, "", oPropList);
             Assert.IsFalse(res.Success, "UpdateCallHandler should fail if the ObjectId parameter is blank");
@@ -582,7 +582,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailure_SetCallHandlerVoiceNameToStreamFile()
         {
             var res = CallHandler.SetCallHandlerVoiceNameToStreamFile(null, "objectid", "StreamId");
-            Assert.IsFalse(res.Success,"Calling SetCallHandlerVoiceNameToStreamFile with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success,"Calling SetCallHandlerVoiceNameToStreamFile with null ConnectionServerRest did not fail");
 
             res = CallHandler.SetCallHandlerVoiceNameToStreamFile(_connectionServer, "objectid", "StreamId");
             Assert.IsFalse(res.Success, "Calling SetCallHandlerVoiceNameToStreamFile with invalid ObjectId did not fail");
@@ -604,7 +604,7 @@ namespace ConnectionCUPIFunctionsTest
        [TestMethod]
         public void GetCallHAndlers_HarnessTestFailures()
         {
-            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
 
             List<CallHandler> oHandlers;
             var res = CallHandler.GetCallHandlers(oServer, out oHandlers, 1, 5, "EmptyResultText");
@@ -621,7 +621,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetCallHAndler_HarnessTestFailures()
         {
-            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
 
             CallHandler oHandler;
             var res = CallHandler.GetCallHandler(out oHandler, oServer, "EmptyResultText");

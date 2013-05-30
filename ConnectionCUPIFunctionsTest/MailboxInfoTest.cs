@@ -16,7 +16,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         private static UserFull _tempUser;
 
@@ -43,7 +43,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                     mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -111,7 +111,7 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure3()
         {
-            MailboxInfo otest = new MailboxInfo(new ConnectionServer(new RestTransportFunctions()), "blah");
+            MailboxInfo otest = new MailboxInfo(new ConnectionServerRest(new RestTransportFunctions()), "blah");
             Console.WriteLine(otest);
         }
 

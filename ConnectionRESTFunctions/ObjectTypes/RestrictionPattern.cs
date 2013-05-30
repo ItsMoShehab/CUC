@@ -39,7 +39,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pObjectId">
         /// Optional ObjecTId of the restriction table to load.
         /// </param>
-        public RestrictionPattern(ConnectionServer pConnectionServer, string pRestrictionTableObjectId, string pObjectId = "")
+        public RestrictionPattern(ConnectionServerRest pConnectionServer, string pRestrictionTableObjectId, string pObjectId = "")
         {
             if (pConnectionServer == null)
             {
@@ -85,7 +85,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Fields and Properties
 
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         #endregion
 
@@ -205,7 +205,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetRestrictionPatterns(ConnectionServer pConnectionServer, string pRestrictionTableObjectId,
+        public static WebCallResult GetRestrictionPatterns(ConnectionServerRest pConnectionServer, string pRestrictionTableObjectId,
             out List<RestrictionPattern> pRestrictionPatterns, int pPageNumber = 1, int pRowsPerPage = 20)
         {
             WebCallResult res;
@@ -225,7 +225,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(string.Format("{0}restrictiontables/{1}/restrictionpatterns", pConnectionServer.BaseUrl, 
+            string strUrl = ConnectionServerRest.AddClausesToUri(string.Format("{0}restrictiontables/{1}/restrictionpatterns", pConnectionServer.BaseUrl, 
                 pRestrictionTableObjectId), "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface

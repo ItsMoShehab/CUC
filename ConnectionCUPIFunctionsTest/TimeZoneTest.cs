@@ -14,7 +14,7 @@ namespace ConnectionCUPIFunctionsTest
 
         #region Fields and Properties
 
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
         
         private TimeZones _timeZones;
 
@@ -41,7 +41,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                    mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -75,7 +75,7 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
-            TimeZones oTest = new TimeZones(new ConnectionServer(new RestTransportFunctions()));
+            TimeZones oTest = new TimeZones(new ConnectionServerRest(new RestTransportFunctions()));
             Console.WriteLine(oTest);
         }
 

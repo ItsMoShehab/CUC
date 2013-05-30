@@ -41,7 +41,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pDisplayName">
         /// Optional display name for the restriction table to load. 
         /// </param>
-        public RestrictionTable(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+        public RestrictionTable(ConnectionServerRest pConnectionServer, string pObjectId = "", string pDisplayName = "")
         {
             if (pConnectionServer == null)
             {
@@ -86,7 +86,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
 
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         private List<RestrictionPattern> _restrictionPatterns;
         /// <summary>
@@ -294,7 +294,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetRestrictionTables(ConnectionServer pConnectionServer, out List<RestrictionTable> pRestrictionTables,
+        public static WebCallResult GetRestrictionTables(ConnectionServerRest pConnectionServer, out List<RestrictionTable> pRestrictionTables,
             int pPageNumber = 1, int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res;
@@ -320,7 +320,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("pageNumber=" + pPageNumber);
             oParams.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "restrictiontables", oParams.ToArray());
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "restrictiontables", oParams.ToArray());
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET,  "");

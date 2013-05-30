@@ -52,7 +52,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pLanguageCode">
         /// The language of the greeting stream file to return (i.e. 1033 is US English).
         /// </param>
-        public PostGreetingRecordingStreamFile(ConnectionServer pConnectionServer, string pPostGreetingRecordingObjectId, 
+        public PostGreetingRecordingStreamFile(ConnectionServerRest pConnectionServer, string pPostGreetingRecordingObjectId, 
             int pLanguageCode = -1)
         {
             if (pConnectionServer == null)
@@ -94,7 +94,7 @@ namespace Cisco.UnityConnection.RestFunctions
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this Greeting instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         #endregion
 
@@ -294,7 +294,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetGreetingStreamFile(ConnectionServer pConnectionServer,
+        public static WebCallResult GetGreetingStreamFile(ConnectionServerRest pConnectionServer,
                                                           string pPostGreetingRecordingObjectId,
                                                           int pLanguageCode,
                                                           out PostGreetingRecordingStreamFile pGreetingStreamFile)
@@ -345,7 +345,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetGreetingStreamFiles(ConnectionServer pConnectionServer,
+        public static WebCallResult GetGreetingStreamFiles(ConnectionServerRest pConnectionServer,
                                                            string pPostGreetingRecordingObjectId,
                                                            out List<PostGreetingRecordingStreamFile> pGreetingStreamFiles)
         {
@@ -418,7 +418,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetGreetingWavFile(ConnectionServer pConnectionServer,
+        public static WebCallResult GetGreetingWavFile(ConnectionServerRest pConnectionServer,
                                                        string pTargetLocalFilePath,
                                                        string pConnectionStreamFileName)
         {
@@ -470,7 +470,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetGreetingWavFile(ConnectionServer pConnectionServer,
+        public static WebCallResult GetGreetingWavFile(ConnectionServerRest pConnectionServer,
                                                        string pTargetLocalFilePath,
                                                        string pPostGreetingRecordingObjectId,
                                                        int pLanguageCode)
@@ -542,7 +542,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult SetGreetingWavFile(ConnectionServer pConnectionServer,
+        public static WebCallResult SetGreetingWavFile(ConnectionServerRest pConnectionServer,
                                                             string pPostGreetingRecordingObjectId,
                                                             int pLanguageCode,
                                                             string pSourceLocalFilePath,

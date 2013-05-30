@@ -46,7 +46,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pAlias">
         /// Optional alias to search on - if both ObjectId and alais are passed, ObjectId is used.  The alias search is not case sensitive.
         /// </param>
-        public Tenant(ConnectionServer pConnectionServer, string pObjectId = "", string pAlias = "")
+        public Tenant(ConnectionServerRest pConnectionServer, string pObjectId = "", string pAlias = "")
             : this()
         {
             if (pConnectionServer == null)
@@ -82,7 +82,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Fields and Properties
 
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
         
         public string SelectionDisplayString { get { return Description; }}
         
@@ -152,7 +152,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetTenants(ConnectionServer pConnectionServer, out List<Tenant> pTenants,params string[] pClauses)
+        public static WebCallResult GetTenants(ConnectionServerRest pConnectionServer, out List<Tenant> pTenants,params string[] pClauses)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -165,7 +165,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "tenants", pClauses);
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "tenants", pClauses);
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -233,7 +233,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetTenants(ConnectionServer pConnectionServer, out List<Tenant> pTenants,
+        public static WebCallResult GetTenants(ConnectionServerRest pConnectionServer, out List<Tenant> pTenants,
             int pPageNumber = 1, int pRowsPerPage = 20, params string[] pClauses)
         {
             //tack on the paging items to the parameters list
@@ -272,7 +272,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetTenant(out Tenant pTenant, ConnectionServer pConnectionServer, string pObjectId = "", string pAlias = "")
+        public static WebCallResult GetTenant(out Tenant pTenant, ConnectionServerRest pConnectionServer, string pObjectId = "", string pAlias = "")
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -329,7 +329,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddTenant(ConnectionServer pConnectionServer,
+        public static WebCallResult AddTenant(ConnectionServerRest pConnectionServer,
                                                     string pAlias,
                                                     string pSmtpDomain,
                                                     string pDescription)
@@ -401,7 +401,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddTenant(ConnectionServer pConnectionServer,
+        public static WebCallResult AddTenant(ConnectionServerRest pConnectionServer,
                                               string pAlias,
                                               string pSmtpDomain,
                                               string pDescription,
@@ -440,7 +440,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult DeleteTenant(ConnectionServer pConnectionServer, string pObjectId)
+        public static WebCallResult DeleteTenant(ConnectionServerRest pConnectionServer, string pObjectId)
         {
             if (pConnectionServer == null)
             {
@@ -641,7 +641,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("pageNumber=" + pPageNumber);
             oParams.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = ConnectionServer.AddClausesToUri(string.Format("{0}tenants/{1}/coses", HomeServer.BaseUrl, ObjectId),oParams.ToArray());
+            string strUrl = ConnectionServerRest.AddClausesToUri(string.Format("{0}tenants/{1}/coses", HomeServer.BaseUrl, ObjectId),oParams.ToArray());
 
             //string strUrl = string.Format("{0}tenants/{1}/coses", HomeServer.BaseUrl, ObjectId);
 
@@ -749,7 +749,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("pageNumber=" + pPageNumber);
             oParams.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = ConnectionServer.AddClausesToUri(string.Format("{0}tenants/{1}/phonesystems", HomeServer.BaseUrl, ObjectId), oParams.ToArray());
+            string strUrl = ConnectionServerRest.AddClausesToUri(string.Format("{0}tenants/{1}/phonesystems", HomeServer.BaseUrl, ObjectId), oParams.ToArray());
 
 
             //fetch the ObjectIds
@@ -836,7 +836,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("pageNumber=" + pPageNumber);
             oParams.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = ConnectionServer.AddClausesToUri(string.Format("{0}tenants/{1}/schedulesets", HomeServer.BaseUrl, ObjectId), oParams.ToArray());
+            string strUrl = ConnectionServerRest.AddClausesToUri(string.Format("{0}tenants/{1}/schedulesets", HomeServer.BaseUrl, ObjectId), oParams.ToArray());
 
             //string strUrl = string.Format("{0}tenants/{1}/schedulesets", HomeServer.BaseUrl, ObjectId);
 

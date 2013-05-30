@@ -56,7 +56,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pTransferOptionType">
         /// The transfer rule to fetch (Standard, Alternate, OffHours)
         /// </param>
-        public TransferOption(ConnectionServer pConnectionServer, string pCallHandlerObjectId, 
+        public TransferOption(ConnectionServerRest pConnectionServer, string pCallHandlerObjectId, 
             TransferOptionTypes pTransferOptionType = TransferOptionTypes.Invalid):this()
         {
             if (pConnectionServer == null)
@@ -99,7 +99,7 @@ namespace Cisco.UnityConnection.RestFunctions
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this TransferOption instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -400,7 +400,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetTransferOption(ConnectionServer pConnectionServer,
+        public static WebCallResult GetTransferOption(ConnectionServerRest pConnectionServer,
                                                         string pCallHandlerObjectId,
                                                         TransferOptionTypes pTransferOptionType,
                                                         out  TransferOption pTransferOption)
@@ -455,7 +455,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetTransferOptions(ConnectionServer pConnectionServer,
+        public static WebCallResult GetTransferOptions(ConnectionServerRest pConnectionServer,
                                                             string pCallHandlerObjectId,
                                                            out List<TransferOption> pTransferOptions)
         {
@@ -527,7 +527,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult UpdateTransferOption(ConnectionServer pConnectionServer, 
+        public static WebCallResult UpdateTransferOption(ConnectionServerRest pConnectionServer, 
                                                         string pCallHandlerObjectId,
                                                         TransferOptionTypes pTransferOptionType, 
                                                         ConnectionPropertyList pPropList)
@@ -598,7 +598,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// the method returning a failure.
         /// </param>
         /// <returns></returns>
-        public static WebCallResult UpdateTransferOptionEnabledStatus(ConnectionServer pConnectionServer,
+        public static WebCallResult UpdateTransferOptionEnabledStatus(ConnectionServerRest pConnectionServer,
                                                         string pCallHandlerObjectId,
                                                         TransferOptionTypes pTransferOptionType,
                                                         bool pEnabled,

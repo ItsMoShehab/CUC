@@ -28,7 +28,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Constructor requires the ConnectionServer object where the RtpCodec is defined.  Optionally can pass the ObjectId string
         /// and have that specific codec definition loaded.
         /// </summary>
-        public RtpCodecDef(ConnectionServer pConnectionServer, string pObjectId = "")
+        public RtpCodecDef(ConnectionServerRest pConnectionServer, string pObjectId = "")
         {
             if (pConnectionServer == null)
             {
@@ -62,7 +62,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Fields and Properties 
 
-        public ConnectionServer HomeServer;
+        public ConnectionServerRest HomeServer;
 
         #endregion
 
@@ -140,7 +140,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetRtpCodecDefs(ConnectionServer pConnectionServer, out List<RtpCodecDef> pCodecDefs)
+        public static WebCallResult GetRtpCodecDefs(ConnectionServerRest pConnectionServer, out List<RtpCodecDef> pCodecDefs)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -153,7 +153,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "rtpcodecdefs");
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "rtpcodecdefs");
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");

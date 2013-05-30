@@ -16,7 +16,7 @@ namespace PWResetASP
         /// ConnectionServer object that is passed to this page from the login page via the Session.  Used for displaying info 
         /// about the Connection server and executing queries and functions against it via REST.
         /// </summary>
-        private ConnectionServer _connectionServer;
+        private ConnectionServerRest _connectionServer;
         
         /// <summary>
         /// Holds the current page in a multiple page scenario when searching and reviewing users.  This gets stored in the ViewState.
@@ -46,7 +46,7 @@ namespace PWResetASP
         /// </summary>
         protected void Page_Load(object sender, EventArgs e)
         {
-            _connectionServer = (ConnectionServer) Session["CurrentConnectionServer"];
+            _connectionServer = (ConnectionServerRest)Session["CurrentConnectionServer"];
 
             if (_connectionServer == null)
             {

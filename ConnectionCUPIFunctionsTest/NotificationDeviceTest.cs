@@ -23,7 +23,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         //class wide user reference for testing - gets filled in with operator user details
         private static UserFull _tempUser;
@@ -51,7 +51,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                 _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                 _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                    mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -143,7 +143,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailure_AddSmtpDevice()
         {
             var res = NotificationDevice.AddSmtpDevice(null, "objectId", "device name", "address@fun.com", null, true);
-            Assert.IsFalse(res.Success, "Calling AddSmtpDevice with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Calling AddSmtpDevice with null ConnectionServerRest did not fail");
 
             res = NotificationDevice.AddSmtpDevice(_connectionServer, "objectId", "device name", "address@fun.com", null, true);
             Assert.IsFalse(res.Success, "Calling AddSmtpDevice with null event type did not fail");

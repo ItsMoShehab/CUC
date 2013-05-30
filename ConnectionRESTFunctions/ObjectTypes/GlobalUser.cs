@@ -47,7 +47,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Optional parameter for fetching a user's data based on alias.  If both the ObjectId and the Alias are passed, the ObjectId will be used 
         /// for the search.
         /// </param>
-        public GlobalUser(ConnectionServer pConnectionServer, string pObjectId = "", string pAlias = "")
+        public GlobalUser(ConnectionServerRest pConnectionServer, string pObjectId = "", string pAlias = "")
         {
             if (pConnectionServer == null)
             {
@@ -88,7 +88,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this object instance.
-        internal ConnectionServer HomeServer { get; private set; }
+        internal ConnectionServerRest HomeServer { get; private set; }
 
         #endregion
 
@@ -189,7 +189,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetUsers(ConnectionServer pConnectionServer, out List<GlobalUser> pUsers, params string[] pClauses)
+        public static WebCallResult GetUsers(ConnectionServerRest pConnectionServer, out List<GlobalUser> pUsers, params string[] pClauses)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -202,7 +202,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "globalusers", pClauses);
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "globalusers", pClauses);
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -276,7 +276,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
 
-        public static WebCallResult GetUsers(ConnectionServer pConnectionServer, out List<GlobalUser> pUsers,int pPageNumber=1, 
+        public static WebCallResult GetUsers(ConnectionServerRest pConnectionServer, out List<GlobalUser> pUsers,int pPageNumber=1, 
             int pRowsPerPage=20,params string[] pClauses)
         {
             //tack on the paging items to the parameters list
@@ -318,7 +318,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetUser(out GlobalUser pUser, ConnectionServer pConnectionServer, string pObjectId, string pAlias = "")
+        public static WebCallResult GetUser(out GlobalUser pUser, ConnectionServerRest pConnectionServer, string pObjectId, string pAlias = "")
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;

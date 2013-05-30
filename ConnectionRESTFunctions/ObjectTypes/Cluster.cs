@@ -31,7 +31,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pConnectionServer">
         /// ConnectionServer data is being fetched from.
         /// </param>
-        public Cluster(ConnectionServer pConnectionServer)
+        public Cluster(ConnectionServerRest pConnectionServer)
         {
             if (pConnectionServer == null)
             {
@@ -55,7 +55,7 @@ namespace Cisco.UnityConnection.RestFunctions
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this object instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         private List<Server> _servers;
         public List<Server> Servers
@@ -101,7 +101,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        private WebCallResult GetServers(ConnectionServer pConnectionServer)
+        private WebCallResult GetServers(ConnectionServerRest pConnectionServer)
         {
             _servers = new List<Server>();
 

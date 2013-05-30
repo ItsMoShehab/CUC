@@ -38,7 +38,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pFullName">
         /// Optional full name of the value to fetch 
         /// </param>
-        public ConfigurationValue(ConnectionServer pConnectionServer, string pFullName = "")
+        public ConfigurationValue(ConnectionServerRest pConnectionServer, string pFullName = "")
         {
             if (pConnectionServer == null)
             {
@@ -74,7 +74,7 @@ namespace Cisco.UnityConnection.RestFunctions
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this value's instance.
-        internal ConnectionServer HomeServer;
+        internal ConnectionServerRest HomeServer;
 
         #endregion
 
@@ -139,7 +139,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <returns>
     /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
     /// </returns>
-    public static WebCallResult GetConfigurationValues(ConnectionServer pConnectionServer, out List<ConfigurationValue> pConfigurationValues, 
+    public static WebCallResult GetConfigurationValues(ConnectionServerRest pConnectionServer, out List<ConfigurationValue> pConfigurationValues, 
             params string[] pClauses)
         {
         WebCallResult res = new WebCallResult();
@@ -153,7 +153,7 @@ namespace Cisco.UnityConnection.RestFunctions
             return res;
         }
 
-        string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "configurationvalues", pClauses);
+        string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "configurationvalues", pClauses);
 
         //issue the command to the CUPI interface
         res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -219,7 +219,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
 
-        public static WebCallResult GetConfigurationValues(ConnectionServer pConnectionServer,out List<ConfigurationValue> pConfigurationValues,
+        public static WebCallResult GetConfigurationValues(ConnectionServerRest pConnectionServer,out List<ConfigurationValue> pConfigurationValues,
             int pPageNumber=1, int pRowsPerPage=20,params string[] pClauses)
         {
             //tack on the paging items to the parameters list
@@ -255,7 +255,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetConfigurationValue(out ConfigurationValue pConfigurationValue, ConnectionServer pConnectionServer, string pFullName)
+        public static WebCallResult GetConfigurationValue(out ConfigurationValue pConfigurationValue, ConnectionServerRest pConnectionServer, string pFullName)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;

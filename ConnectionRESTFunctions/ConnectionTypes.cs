@@ -167,7 +167,7 @@ namespace Cisco.UnityConnection.RestFunctions
         //for adding a boolean value - CUPI needs 0/1 passed instead of "true" or "false" here
         public void Add(string pPropertyName, bool pPropertyValue)
         {
-            ConnectionObjectPropertyPair oPair = new ConnectionObjectPropertyPair(pPropertyName,ConnectionServer.BoolToString(pPropertyValue));
+            ConnectionObjectPropertyPair oPair = new ConnectionObjectPropertyPair(pPropertyName,ConnectionServerRest.BoolToString(pPropertyValue));
             Add(oPair);
         }
 

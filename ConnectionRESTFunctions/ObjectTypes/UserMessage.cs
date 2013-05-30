@@ -168,7 +168,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pMessageObjectId">
         /// ObjectId of the message.
         /// </param>
-        public UserMessage(ConnectionServer pConnectionServer, string pUserObjectId, string pMessageObjectId = "")
+        public UserMessage(ConnectionServerRest pConnectionServer, string pUserObjectId, string pMessageObjectId = "")
         {
             if (pConnectionServer == null)
             {
@@ -212,7 +212,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UserObjectId { get; private set; }
 
         //reference to the ConnectionServer object used to create this object instance.
-        internal ConnectionServer HomeServer;
+        internal ConnectionServerRest HomeServer;
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -442,7 +442,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with the details of the call and results from the server.
         /// </returns>
-        public static WebCallResult CreateMessageLocalWav(ConnectionServer pConnectionServer, string pSenderUserObjectId,
+        public static WebCallResult CreateMessageLocalWav(ConnectionServerRest pConnectionServer, string pSenderUserObjectId,
                                                           string pSubject, string pPathToLocalWavFile, 
                                                           bool pUrgent, SensitivityType pSensitivity, bool pSecure, bool pDispatch,
                                                           bool pReadReceipt, bool pDeliveryReceipt,
@@ -555,7 +555,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with the details of the call and results from the server.
         /// </returns>
-        public static WebCallResult CreateMessageResourceId(ConnectionServer pConnectionServer, string pSenderUserObjectId,
+        public static WebCallResult CreateMessageResourceId(ConnectionServerRest pConnectionServer, string pSenderUserObjectId,
                                                           string pSubject, string pResourceId,
                                                           bool pUrgent, SensitivityType pSensitivity, bool pSecure, bool pDispatch,
                                                           bool pReadReceipt, bool pDeliveryReceipt,
@@ -776,7 +776,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetMessageAttachmentCount(ConnectionServer pConnectionServer, string pMessageObjectId, string pUserObjectId,
+        public static WebCallResult GetMessageAttachmentCount(ConnectionServerRest pConnectionServer, string pMessageObjectId, string pUserObjectId,
                                                               out int pAttachmentCount)
         {
             WebCallResult res = new WebCallResult();
@@ -844,7 +844,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetMessages(ConnectionServer pConnectionServer, string pUserObjectId, out List<UserMessage> pMessage,
+        public static WebCallResult GetMessages(ConnectionServerRest pConnectionServer, string pUserObjectId, out List<UserMessage> pMessage,
             int pPageNumber = 1, int pRowsPerPage = 20, MessageSortOrder pSortOrder = MessageSortOrder.NEWEST_FIRST, 
             MessageFilter pFilter = MessageFilter.None, MailboxFolder pFolder = MailboxFolder.inbox)
         {
@@ -943,7 +943,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 strUrl+="mailbox/folders/sent/messages";
             }
             
-            strUrl = ConnectionServer.AddClausesToUri(strUrl, oParams.ToArrayOfStrings());
+            strUrl = ConnectionServerRest.AddClausesToUri(strUrl, oParams.ToArrayOfStrings());
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "", false);
@@ -983,7 +983,7 @@ namespace Cisco.UnityConnection.RestFunctions
         ///  <returns>
         ///  List of userMessage objects.
         ///  </returns>
-        private static List<UserMessage> GetMessagesFromXElements(ConnectionServer pConnetionServer, string pUserObjectId, XElement pXElement)
+        private static List<UserMessage> GetMessagesFromXElements(ConnectionServerRest pConnetionServer, string pUserObjectId, XElement pXElement)
         {
             List<UserMessage> oMessageList = new List<UserMessage>();
 
@@ -1046,7 +1046,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetMessageAttachment(ConnectionServer pConnectionServer, string pTargetLocalFilePath, string pMessageObjectId, 
+        public static WebCallResult GetMessageAttachment(ConnectionServerRest pConnectionServer, string pTargetLocalFilePath, string pMessageObjectId, 
                                                         string pUserObjectId, int pAttachmentNumber)
         {
             WebCallResult res = new WebCallResult();
@@ -1095,7 +1095,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of teh WebCallResult class with details of the call and the results.
         /// </returns>
-        public static WebCallResult DeleteMessage(ConnectionServer pConnectionServer, string pMessageObjectId,
+        public static WebCallResult DeleteMessage(ConnectionServerRest pConnectionServer, string pMessageObjectId,
                                                   string pUserObjectId, bool pHardDelete=false)
         {
             string strHardDelete;
@@ -1135,7 +1135,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUMI interface.
         /// </returns>
-        public static WebCallResult UpdateUserMessage(ConnectionServer pConnectionServer, string pMessageObjectId, 
+        public static WebCallResult UpdateUserMessage(ConnectionServerRest pConnectionServer, string pMessageObjectId, 
             string pUserObjectId,ConnectionPropertyList pPropList)
         {
             WebCallResult res = new WebCallResult();
@@ -1183,7 +1183,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUMI interface.
         /// </returns>
-        public static WebCallResult ClearDeletedItemsFolder(ConnectionServer pConnectionServer, string pUserObjectId)
+        public static WebCallResult ClearDeletedItemsFolder(ConnectionServerRest pConnectionServer, string pUserObjectId)
         {
             if (pConnectionServer == null)
             {
@@ -1216,7 +1216,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUMI interface.
         /// </returns>
-        public static WebCallResult RecallMessage(ConnectionServer pConnectionServer, string pUserObjectId,
+        public static WebCallResult RecallMessage(ConnectionServerRest pConnectionServer, string pUserObjectId,
                                                   string pMessageObjectId)
         {
             if (pConnectionServer == null)
@@ -1246,7 +1246,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUMI interface.
         /// </returns>
-        public static WebCallResult RestoreDeletedMessage(ConnectionServer pConnectionServer, string pUserObjectId,
+        public static WebCallResult RestoreDeletedMessage(ConnectionServerRest pConnectionServer, string pUserObjectId,
                                                           string pMessageObjectId)
         {
             if (pConnectionServer == null)

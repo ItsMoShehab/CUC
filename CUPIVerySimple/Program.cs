@@ -32,14 +32,14 @@ namespace CUPIVerySimple
             //you can attach to multiple different Connection servers an interact with them in the same program easily by just creating
             //new instances of ConnectionServer objects - all objects "know" which server they are associated with.  This example, of course, 
             //just attaches to one server.
-            ConnectionServer connectionServer = null;
+            ConnectionServerRest  connectionServer = null;
 
             Logger.Log("Starting log output");
 
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
-                connectionServer = new ConnectionServer("192.168.0.186", "CCMAdministrator", "ecsbulab");
+                connectionServer = new ConnectionServerRest ("192.168.0.186", "CCMAdministrator", "ecsbulab");
             }
 
             catch (Exception ex)
@@ -66,7 +66,7 @@ namespace CUPIVerySimple
             //the WebCallResult is the structure returned on most calls into the CUPIFunctions library.
             WebCallResult res;
 
-            ConnectionServer _connectionServerHarness = new ConnectionServer(new TestTransportFunctions());
+            ConnectionServerRest  _connectionServerHarness = new ConnectionServerRest (new TestTransportFunctions());
 
             Tenant oTenant = new Tenant(_connectionServerHarness);
 

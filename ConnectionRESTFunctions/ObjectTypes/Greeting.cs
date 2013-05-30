@@ -52,7 +52,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pGreetingType">
         /// The greeting rule to fetch (Standard, Alternate, OffHours, Busy, Internal, Error, Holdiay)
         /// </param>
-        public Greeting(ConnectionServer pConnectionServer, string pCallHandlerObjectId, GreetingTypes pGreetingType = GreetingTypes.Invalid ):this()
+        public Greeting(ConnectionServerRest pConnectionServer, string pCallHandlerObjectId, GreetingTypes pGreetingType = GreetingTypes.Invalid ):this()
             {
             if (pConnectionServer == null)
             {
@@ -101,7 +101,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this Greeting instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -330,7 +330,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetGreeting(ConnectionServer pConnectionServer,
+        public static WebCallResult GetGreeting(ConnectionServerRest pConnectionServer,
                                                         string pCallHandlerObjectId,
                                                         GreetingTypes pGreetingType,
                                                         out  Greeting pGreeting)
@@ -387,7 +387,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetGreetings(ConnectionServer pConnectionServer,
+        public static WebCallResult GetGreetings(ConnectionServerRest pConnectionServer,
                                                             string pCallHandlerObjectId,
                                                            out List<Greeting> pGreetings)
         {
@@ -465,7 +465,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult UpdateGreeting(ConnectionServer pConnectionServer,
+        public static WebCallResult UpdateGreeting(ConnectionServerRest pConnectionServer,
                                                         string pCallHandlerObjectId,
                                                         GreetingTypes pGreetingType,
                                                         ConnectionPropertyList pPropList)
@@ -538,7 +538,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult UpdateGreetingEnabledStatus(ConnectionServer pConnectionServer,
+        public static WebCallResult UpdateGreetingEnabledStatus(ConnectionServerRest pConnectionServer,
                                                         string pCallHandlerObjectId,
                                                         GreetingTypes pGreetingType,
                                                         bool pEnabled,
@@ -656,7 +656,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult SetGreetingWavFile(ConnectionServer pConnectionServer,
+        public static WebCallResult SetGreetingWavFile(ConnectionServerRest pConnectionServer,
                                                         string pSourceLocalFilePath,
                                                         string pCallHandlerObjectId,
                                                         GreetingTypes pGreetingType,
@@ -735,7 +735,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult SetGreetingRecordingToStreamFile(ConnectionServer pConnectionServer,
+        public static WebCallResult SetGreetingRecordingToStreamFile(ConnectionServerRest pConnectionServer,
                                                      string pStreamFileResourceName,
                                                      string pCallHandlerObjectId,                                         
                                                      string pGreetingType,
@@ -849,7 +849,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(ConnectionServer.StripJsonOfObjectWrapper(res.ResponseText, "Greeting"), this,
+                JsonConvert.PopulateObject(ConnectionServerRest.StripJsonOfObjectWrapper(res.ResponseText, "Greeting"), this,
                     RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)

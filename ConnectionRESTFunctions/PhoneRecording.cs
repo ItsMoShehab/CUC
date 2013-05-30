@@ -24,7 +24,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Fields and Properties
 
-        private readonly ConnectionServer _homeServer;
+        private readonly ConnectionServerRest _homeServer;
         private readonly string _phoneNumber;
         private readonly int _rings = 4;
         private int _callId;
@@ -55,7 +55,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pRings">
         /// The number of rings to wait for - defaults to 4
         /// </param>
-        public PhoneRecording(ConnectionServer pConnectionServer, string pPhoneNumberToDial, int pRings=4)
+        public PhoneRecording(ConnectionServerRest pConnectionServer, string pPhoneNumberToDial, int pRings=4)
         {
             if (pConnectionServer == null)
             {

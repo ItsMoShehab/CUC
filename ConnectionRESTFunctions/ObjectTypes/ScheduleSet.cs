@@ -42,7 +42,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pDisplayName">
         /// Name of schedule set to find
         /// </param>
-        public ScheduleSet(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+        public ScheduleSet(ConnectionServerRest pConnectionServer, string pObjectId = "", string pDisplayName = "")
         {
             if (pConnectionServer == null)
             {
@@ -85,7 +85,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this Alternate Extension instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //list of schedules associated with this schedule set.  Typically a schedule set will contain two schedules - one
         //for regular schedule details and one for holidays - but it may not contain a holiday schedule and can technically
@@ -373,7 +373,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetScheduleSet(out ScheduleSet pScheduleSet, ConnectionServer pConnectionServer, string pObjectId = "",
+        public static WebCallResult GetScheduleSet(out ScheduleSet pScheduleSet, ConnectionServerRest pConnectionServer, string pObjectId = "",
             string pDisplayName = "")
         {
             WebCallResult res = new WebCallResult();
@@ -435,7 +435,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetSchedulesSets(ConnectionServer pConnectionServer, out List<ScheduleSet> pScheduleSets, int pPageNumber = 1,
+        public static WebCallResult GetSchedulesSets(ConnectionServerRest pConnectionServer, out List<ScheduleSet> pScheduleSets, int pPageNumber = 1,
             int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res;
@@ -461,7 +461,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("pageNumber=" + pPageNumber);
             oParams.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "schedulesets",oParams.ToArray());
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "schedulesets",oParams.ToArray());
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -513,7 +513,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetSchedulesSetsMembers(ConnectionServer pConnectionServer, string pScheduleSetObjectId,
+        public static WebCallResult GetSchedulesSetsMembers(ConnectionServerRest pConnectionServer, string pScheduleSetObjectId,
             out List<ScheduleSetMember> pScheduleSetsMembers)
         {
             WebCallResult res;
@@ -577,7 +577,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddScheduleSet(ConnectionServer pConnectionServer,
+        public static WebCallResult AddScheduleSet(ConnectionServerRest pConnectionServer,
                                                     string pDisplayName,
                                                     string pOwnerLocationObjectId,
                                                     string pOwnerSubscriberObjectId)
@@ -665,7 +665,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddScheduleSet(ConnectionServer pConnectionServer,
+        public static WebCallResult AddScheduleSet(ConnectionServerRest pConnectionServer,
                                                     string pDisplayName,
                                                     string pOwnerLocationObjectId,
                                                     string pOwnerSubscriberObjectId,
@@ -702,7 +702,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class
         /// </returns>
-        public static WebCallResult DeleteScheduleSet(ConnectionServer pConnectionServer, string pScheduleSetObjectId, bool pRemoveAllSchedules=true)
+        public static WebCallResult DeleteScheduleSet(ConnectionServerRest pConnectionServer, string pScheduleSetObjectId, bool pRemoveAllSchedules=true)
         {
             WebCallResult res =new WebCallResult {Success = false};
             if (pConnectionServer == null)
@@ -745,7 +745,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// instance of the WebCallResults class with details on the call and response if there's an error.
         /// </returns>
-        private static WebCallResult DeleteAllSchedulesAssociatedWithScheduleSet(ConnectionServer pConnectionServer, string pScheduleSetObjectId)
+        private static WebCallResult DeleteAllSchedulesAssociatedWithScheduleSet(ConnectionServerRest pConnectionServer, string pScheduleSetObjectId)
         {
             List<ScheduleSetMember> oMembers;
             WebCallResult res = GetSchedulesSetsMembers(pConnectionServer, pScheduleSetObjectId,out oMembers);
@@ -784,7 +784,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class
         /// </returns>
-        public static WebCallResult AddScheduleSetMember(ConnectionServer pConnectionServer,
+        public static WebCallResult AddScheduleSetMember(ConnectionServerRest pConnectionServer,
                                                  string pScheduleSetObjectId,
                                                  string pScheduleObjectId)
         {
@@ -873,7 +873,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Instance of the WebCallResults class - if all goes through the ObjectId of the newly created ScheduleSet will
         /// be returned in the ReturnedObjectId property.
         /// </returns>
-        public static WebCallResult AddQuickSchedule(ConnectionServer pConnectionServer, string pDisplayName,
+        public static WebCallResult AddQuickSchedule(ConnectionServerRest pConnectionServer, string pDisplayName,
                                               string pOwnerLocationObjectId,string pOwnerSubscriberObjectId,
                                               int pStartTime, int pEndTime,bool pActiveMonday, bool pActiveTuesday, bool pActiveWednesday,
                                               bool pActiveThursday,bool pActiveFriday, bool pActiveSaturday, bool pActiveSunday,
@@ -989,7 +989,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Instance of the WebCallResults class - if all goes through the ObjectId of the newly created ScheduleSet will
         /// be returned in the ReturnedObjectId property.
         /// </returns>
-        public static WebCallResult AddQuickSchedule(ConnectionServer pConnectionServer, string pDisplayName,
+        public static WebCallResult AddQuickSchedule(ConnectionServerRest pConnectionServer, string pDisplayName,
                                                      string pOwnerLocationObjectId, string pOwnerSubscriberObjectId,
                                                      int pStartTime, int pEndTime, bool pActiveMonday,
                                                      bool pActiveTuesday, bool pActiveWednesday,bool pActiveThursday, 

@@ -87,7 +87,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <summary>
         /// Constructor requeires ConnectionServer object to pull time zone details from.
         /// </summary>
-        public TimeZones(ConnectionServer pConnectionServer)
+        public TimeZones(ConnectionServerRest pConnectionServer)
         {
             if (pConnectionServer == null)
             {
@@ -119,7 +119,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pConnectionServer">
         /// Connection server to fetch zones from.
         /// </param>
-        private WebCallResult LoadTimeZones(ConnectionServer pConnectionServer)
+        private WebCallResult LoadTimeZones(ConnectionServerRest pConnectionServer)
         {
             _timeZones = new Dictionary<int, ConnectionTimeZone>();
 

@@ -23,7 +23,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         private static InterviewHandler _tempHandler;
 
@@ -44,7 +44,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                      mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -238,7 +238,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success,"Calling static method GetInterviewHandlers did not fail with: null ConnectionServer");
 
             res = InterviewHandler.GetInterviewHandlers(null, out oHandlers, null);
-            Assert.IsFalse(res.Success, "GetInterviewHandler should fail with null ConnectionServer passed to it");
+            Assert.IsFalse(res.Success, "GetInterviewHandler should fail with null ConnectionServerRest passed to it");
 
         }
 
@@ -422,7 +422,7 @@ namespace ConnectionCUPIFunctionsTest
             InterviewHandler oHandler;
 
             WebCallResult res = InterviewHandler.GetInterviewHandler(out oHandler, null);
-            Assert.IsFalse(res.Success, "GetInterviewHandler should fail if the ConnectionServer is null");
+            Assert.IsFalse(res.Success, "GetInterviewHandler should fail if the ConnectionServerRest is null");
 
             res = InterviewHandler.GetInterviewHandler(out oHandler, _connectionServer);
             Assert.IsFalse(res.Success, "GetInterviewHandler should fail if the ObjectId and display name are both blank");

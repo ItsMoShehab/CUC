@@ -30,7 +30,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pRoutingRuleObjectId">
         /// Routing rule that this rule condition is associated with.
         /// </param>
-        public RoutingRuleCondition(ConnectionServer pConnectionServer, string pRoutingRuleObjectId, string pObjectId = "")
+        public RoutingRuleCondition(ConnectionServerRest pConnectionServer, string pRoutingRuleObjectId, string pObjectId = "")
         {
             if (pConnectionServer == null)
             {
@@ -73,7 +73,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Fields and Properties
 
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         #endregion
 
@@ -122,7 +122,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetRoutingRuleConditions(ConnectionServer pConnectionServer, string pRoutingRuleObjectId,
+        public static WebCallResult GetRoutingRuleConditions(ConnectionServerRest pConnectionServer, string pRoutingRuleObjectId,
             out List<RoutingRuleCondition> pRoutingRuleConditions, int pPageNumber = 1,int pRowsPerPage = 20)
         {
             pRoutingRuleConditions = null;
@@ -141,7 +141,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "routingrules/"+pRoutingRuleObjectId+"/routingruleconditions", 
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "routingrules/"+pRoutingRuleObjectId+"/routingruleconditions", 
                 "pageNumber=" + pPageNumber,"rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
@@ -190,7 +190,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetRoutingRuleCondition(out RoutingRuleCondition pCondition, ConnectionServer pConnectionServer, 
+        public static WebCallResult GetRoutingRuleCondition(out RoutingRuleCondition pCondition, ConnectionServerRest pConnectionServer, 
                                                             string pRoutingRuleObjectId, string pObjectId)
         {
             WebCallResult res = new WebCallResult();
@@ -257,7 +257,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddRoutingRuleCondition(ConnectionServer pConnectionServer,
+        public static WebCallResult AddRoutingRuleCondition(ConnectionServerRest pConnectionServer,
                                                     string pRoutingRuleObjectId,
                                                     RoutingRuleConditionOperator pOperator,
                                                     RoutingRuleConditionParameter pParameter,
@@ -319,7 +319,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pOperandValue">value to evaluate the parameter for using the operator</param>
         /// <param name="pCondition">New condition object is returned on this out parameter</param>
         /// <returns></returns>
-        public static WebCallResult AddRoutingRuleCondition(ConnectionServer pConnectionServer,
+        public static WebCallResult AddRoutingRuleCondition(ConnectionServerRest pConnectionServer,
                                                     string pRoutingRuleObjectId,
                                                     RoutingRuleConditionOperator pOperator,
                                                     RoutingRuleConditionParameter pParameter,
@@ -355,7 +355,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class
         /// </returns>
-        public static WebCallResult DeleteRoutingRuleCondition(ConnectionServer pConnectionServer, string pRoutingRuleObjectId, string pObjectId)
+        public static WebCallResult DeleteRoutingRuleCondition(ConnectionServerRest pConnectionServer, string pRoutingRuleObjectId, string pObjectId)
         {
             WebCallResult res = new WebCallResult {Success = false};
 

@@ -20,7 +20,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         #endregion
 
@@ -39,7 +39,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                    mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }

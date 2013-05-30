@@ -93,7 +93,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult GetPrivateListMembers(ConnectionServer pConnectionServer, string pPrivateListObjectId, string pOwnerUserObjectId,
+        public static WebCallResult GetPrivateListMembers(ConnectionServerRest pConnectionServer, string pPrivateListObjectId, string pOwnerUserObjectId,
             out List<PrivateListMember> pMemberList,int pPageNumber=1, int pRowsPerPage=20)
         {
             WebCallResult res = new WebCallResult();
@@ -106,7 +106,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(string.Format("{0}users/{1}/privatelists/{2}/privatelistmembers", pConnectionServer.BaseUrl, pOwnerUserObjectId, 
+            string strUrl = ConnectionServerRest.AddClausesToUri(string.Format("{0}users/{1}/privatelists/{2}/privatelistmembers", pConnectionServer.BaseUrl, pOwnerUserObjectId, 
                 pPrivateListObjectId), "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface

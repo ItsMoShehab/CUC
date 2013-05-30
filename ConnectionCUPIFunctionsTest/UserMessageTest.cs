@@ -21,7 +21,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         //used for editing/adding items to a temporary user that gets cleaned up after the tests are complete
         private static UserFull _tempUser;
@@ -50,7 +50,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                 _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                 _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                    mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -142,7 +142,7 @@ namespace ConnectionCUPIFunctionsTest
             //CreateMessageResourceId
             var res = UserMessage.CreateMessageResourceId(null, "userobjectId", "subject", "resourceId", false,
                                                       SensitivityType.Normal, false, false, false, false, null, oRecipient, oRecipient2, oRecipient3);
-            Assert.IsFalse(res.Success, "Call to CreateMessageResourceId with null ConnectionServer did not fail.");
+            Assert.IsFalse(res.Success, "Call to CreateMessageResourceId with null ConnectionServerRest did not fail.");
 
             res = UserMessage.CreateMessageResourceId(_connectionServer, "userobjectId", "subject", "resourceId", false,
                   SensitivityType.Normal, false, false, false, false, null);
@@ -247,7 +247,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             //UpdateUserMessage
             var res = UserMessage.UpdateUserMessage(null, "bogus", "userobjectId", new ConnectionPropertyList());
-            Assert.IsFalse(res.Success, "Calling UpdateUserMessage with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Calling UpdateUserMessage with null ConnectionServerRest did not fail");
 
             res = UserMessage.UpdateUserMessage(_connectionServer, "bogus", "userobjectId", new ConnectionPropertyList());
             Assert.IsFalse(res.Success, "Calling UpdateUserMessage with empty parameter list did not fail");
@@ -266,7 +266,7 @@ namespace ConnectionCUPIFunctionsTest
 
             WebCallResult res = UserMessage.CreateMessageLocalWav(null, "userobjectID", "subject", "dummy.wav", false,
                                                                   SensitivityType.Normal, false, false, false, false, null, false, oRecipient, oRecipient2, oRecipient3);
-            Assert.IsFalse(res.Success, "Call to CreateMessageLocalWav with null ConnectionServer did not fail.");
+            Assert.IsFalse(res.Success, "Call to CreateMessageLocalWav with null ConnectionServerRest did not fail.");
 
             res = UserMessage.CreateMessageLocalWav(_connectionServer, "", "subject", "dummy.wav", false,
                                                     SensitivityType.Normal, false, false, false, false, null, false, oRecipient, oRecipient2, oRecipient3);
@@ -459,7 +459,7 @@ namespace ConnectionCUPIFunctionsTest
 
             //failure
             res = UserMessage.ClearDeletedItemsFolder(null, _tempUser.ObjectId);
-            Assert.IsFalse(res.Success, "Calling ClearDeletedItemsFolder with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Calling ClearDeletedItemsFolder with null ConnectionServerRest did not fail");
 
 
             res = UserMessage.RecallMessage(null, _tempUser.ObjectId, "bugus");
@@ -469,7 +469,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Calling RecallMessage with invalid message ID did not fail");
 
             res = UserMessage.RestoreDeletedMessage(null, _tempUser.ObjectId, "bugus");
-            Assert.IsFalse(res.Success, "Calling RestoreDeletedMessage with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Calling RestoreDeletedMessage with null ConnectionServerRest did not fail");
 
             res = UserMessage.RestoreDeletedMessage(_connectionServer, _tempUser.ObjectId, "bugus");
             Assert.IsFalse(res.Success, "Calling RestoreDeletedMessage with invalid messae Id did not fail");

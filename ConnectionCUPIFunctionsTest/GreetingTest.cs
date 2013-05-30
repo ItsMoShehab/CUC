@@ -21,7 +21,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
         
         //class wide call handler to use for various greeting tests - this will get filled with the opening greeting call handler.
         private static CallHandler _callHandler;
@@ -49,7 +49,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                                                          mySettings.ConnectionPW);
             }
 
@@ -188,7 +188,7 @@ namespace ConnectionCUPIFunctionsTest
 
             //static calls to SetGreetingWAVFiles with invalid params
             res = GreetingStreamFile.SetGreetingWavFile(null, "aaa", GreetingTypes.Alternate, 1033, "Dummy.wav");
-            Assert.IsFalse(res.Success, "Null ConnectionServer param should fail");
+            Assert.IsFalse(res.Success, "Null ConnectionServerRest param should fail");
 
             res = GreetingStreamFile.SetGreetingWavFile(_connectionServer, "", GreetingTypes.Invalid, 1033, "Dummy.wav");
             Assert.IsFalse(res.Success, "Empty CallHandler ObjectId or greeting type should fail");

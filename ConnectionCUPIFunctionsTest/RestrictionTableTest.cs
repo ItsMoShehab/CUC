@@ -17,7 +17,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         /// <summary>
         ///Gets or sets the test context which provides
@@ -42,7 +42,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                    mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -250,7 +250,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void RestrctionPattern_Construct_TestHarnessFailures()
         {
-            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(),"test","test","test");
+            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(),"test","test","test");
 
             try
             {
@@ -278,7 +278,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetRestrictionPatterns_TestHarnessFailures()
         {
-            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
 
             List<RestrictionPattern> oPatterns;
             var res = RestrictionPattern.GetRestrictionPatterns(oServer, "EmptyResultText", out oPatterns, 1, 2);
@@ -297,7 +297,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetRestrictionTables_TestHarnessFailure()
         {
-            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
 
             List<RestrictionTable> oTables;
             var res = RestrictionTable.GetRestrictionTables(oServer, out oTables, 1, 2, "EmptyResultText");
@@ -317,7 +317,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void RestrictionTable_Construct_TestHarnessFailures()
         {
-            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
 
             try
             {

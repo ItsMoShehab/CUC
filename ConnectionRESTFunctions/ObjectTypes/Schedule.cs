@@ -41,7 +41,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Optional display name search critiera - if both ObjectId and DisplayName are passed, ObjectId is used.  The display name search is not case
         /// sensitive.
         /// </param>
-        public Schedule(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+        public Schedule(ConnectionServerRest pConnectionServer, string pObjectId = "", string pDisplayName = "")
         {
             if (pConnectionServer == null)
             {
@@ -86,7 +86,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         //reference to the ConnectionServer object used to create this Alternate Extension instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //Every schedule has a list of schedule details which dictate the on/off time and day(s) the schedule is active.
         //there may be 0 there may be many - it's not required that a schedule have a detail item.
@@ -392,7 +392,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetSchedules(ConnectionServer pConnectionServer, out List<Schedule> pSchedules, int pPageNumber = 1,
+        public static WebCallResult GetSchedules(ConnectionServerRest pConnectionServer, out List<Schedule> pSchedules, int pPageNumber = 1,
             int pRowsPerPage = 20, params string[] pClauses)
         {
             pSchedules = null;
@@ -419,7 +419,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("pageNumber=" + pPageNumber);
             oParams.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "schedules", oParams.ToArray());
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "schedules", oParams.ToArray());
 
             //issue the command to the CUPI interface
             WebCallResult res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET,  "");
@@ -482,7 +482,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddSchedule(ConnectionServer pConnectionServer,
+        public static WebCallResult AddSchedule(ConnectionServerRest pConnectionServer,
                                                     string pDisplayName,
                                                     string pOwnerLocationObjectId,
                                                     string pOwnerSubscriberObjectId,
@@ -578,7 +578,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddSchedule(ConnectionServer pConnectionServer,
+        public static WebCallResult AddSchedule(ConnectionServerRest pConnectionServer,
                                                     string pDisplayName,
                                                     string pOwnerLocationObjectId,
                                                     string pOwnerSubscriberObjectId,
@@ -618,7 +618,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetSchedule(out Schedule pSchedule, ConnectionServer pConnectionServer, string pObjectId = "",
+        public static WebCallResult GetSchedule(out Schedule pSchedule, ConnectionServerRest pConnectionServer, string pObjectId = "",
             string pDisplayName = "")
         {
             WebCallResult res = new WebCallResult();
@@ -696,7 +696,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult
         /// </returns>
-        public static WebCallResult AddScheduleDetail(ConnectionServer pConnectionServer, string pScheduleObjectId, string pSubject,
+        public static WebCallResult AddScheduleDetail(ConnectionServerRest pConnectionServer, string pScheduleObjectId, string pSubject,
                                                 int pStartTime, int pEndTime,
                                                 bool pActiveMonday, bool pActiveTuesday, bool pActiveWednesday, bool pActiveThursday,
                                                 bool pActiveFriday, bool pActiveSaturday, bool pActiveSunday,
@@ -785,7 +785,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class
         /// </returns>
-        public static WebCallResult DeleteSchedule(ConnectionServer pConnectionServer, string pScheduleObjectId)
+        public static WebCallResult DeleteSchedule(ConnectionServerRest pConnectionServer, string pScheduleObjectId)
         {
             WebCallResult res;
             if (pConnectionServer == null)

@@ -18,7 +18,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         /// <summary>
         ///Gets or sets the test context which provides
@@ -45,7 +45,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                 _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                 _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                    mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -145,7 +145,7 @@ namespace ConnectionCUPIFunctionsTest
          public void StaticMethodFailure_AddRoutingRule()
          {
              var res = RoutingRule.AddRoutingRule(null, "display name", null);
-             Assert.IsFalse(res.Success,"Calling AddRoutingRule with null ConnectionServer should fail");
+             Assert.IsFalse(res.Success,"Calling AddRoutingRule with null ConnectionServerRest should fail");
 
              res = RoutingRule.AddRoutingRule(_connectionServer, "",null);
              Assert.IsFalse(res.Success, "Calling AddRoutingRule with empty display name should fail");
@@ -155,7 +155,7 @@ namespace ConnectionCUPIFunctionsTest
          public void StaticMethodFailure_DeleteRoutingRule()
          {
              var res = RoutingRule.DeleteRoutingRule(null, "objectid");
-             Assert.IsFalse(res.Success, "Calling DeleteRoutingRule with null ConnectionServer should fail");
+             Assert.IsFalse(res.Success, "Calling DeleteRoutingRule with null ConnectionServerRest should fail");
 
              res = RoutingRule.DeleteRoutingRule(_connectionServer, "objectid");
              Assert.IsFalse(res.Success, "Calling DeleteRoutingRule with invalid ObjectId should fail");
@@ -169,7 +169,7 @@ namespace ConnectionCUPIFunctionsTest
          {
              RoutingRule oRule;
              var res = RoutingRule.GetRoutingRule(out oRule, null, "objectId", "displayname");
-             Assert.IsFalse(res.Success, "Calling GetRoutingRule with null ConnectionServer should fail");
+             Assert.IsFalse(res.Success, "Calling GetRoutingRule with null ConnectionServerRest should fail");
 
              res = RoutingRule.GetRoutingRule(out oRule, _connectionServer, "objectId", "");
              Assert.IsFalse(res.Success, "Calling GetRoutingRule with invalid objectId should fail");
@@ -186,7 +186,7 @@ namespace ConnectionCUPIFunctionsTest
          {
              List<RoutingRule> oRules;
              var res = RoutingRule.GetRoutingRules(null, out oRules);
-             Assert.IsFalse(res.Success, "Calling GetRoutingRules with null ConnectionServer should fail");
+             Assert.IsFalse(res.Success, "Calling GetRoutingRules with null ConnectionServerRest should fail");
 
              res = RoutingRule.GetRoutingRules(_connectionServer, out oRules,1,20,"query=(blah is blah)");
              Assert.IsFalse(res.Success, "Calling GetRoutingRules with invalid query should fail:"+res);
@@ -199,7 +199,7 @@ namespace ConnectionCUPIFunctionsTest
              ConnectionPropertyList oProps = new ConnectionPropertyList();
 
              var res = RoutingRule.UpdateRoutingRule(null, "objectid", oProps);
-             Assert.IsFalse(res.Success, "Calling UpdateRoutingRule with null ConnectionServer should fail");
+             Assert.IsFalse(res.Success, "Calling UpdateRoutingRule with null ConnectionServerRest should fail");
 
              res = RoutingRule.UpdateRoutingRule(_connectionServer, "objectid", null);
              Assert.IsFalse(res.Success, "Calling UpdateRoutingRule with null properties should fail");
@@ -221,7 +221,7 @@ namespace ConnectionCUPIFunctionsTest
          {
              List<RoutingRuleCondition> oConditions;
              var res = RoutingRuleCondition.GetRoutingRuleConditions(null, "objectid", out oConditions);
-             Assert.IsFalse(res.Success, "Calling GetRoutingRuleConditions with null ConnectionServer should fail");
+             Assert.IsFalse(res.Success, "Calling GetRoutingRuleConditions with null ConnectionServerRest should fail");
 
              res = RoutingRuleCondition.GetRoutingRuleConditions(_connectionServer, "objectid", out oConditions);
              Assert.IsTrue(res.Success, "Calling GetRoutingRuleConditions with invalid objectId should not fail:"+res);
@@ -239,7 +239,7 @@ namespace ConnectionCUPIFunctionsTest
              var res = RoutingRuleCondition.AddRoutingRuleCondition(null, "objectId",
                                                                     RoutingRuleConditionOperator.Equals,
                                                                     RoutingRuleConditionParameter.ForwardingStation, "value", out oRule);
-             Assert.IsFalse(res.Success, "Calling AddRoutingRuleCondition with null ConnectionServer should fail");
+             Assert.IsFalse(res.Success, "Calling AddRoutingRuleCondition with null ConnectionServerRest should fail");
 
              res = RoutingRuleCondition.AddRoutingRuleCondition(_connectionServer, "",
                                                                     RoutingRuleConditionOperator.Equals,
@@ -273,7 +273,7 @@ namespace ConnectionCUPIFunctionsTest
          public void StaticMethodFailure_DeleteRoutingRuleCondition()
          {
              var res=RoutingRuleCondition.DeleteRoutingRuleCondition(null, "ruleobjectid", "objectid");
-             Assert.IsFalse(res.Success, "Calling DeleteRoutingRuleCondition with null ConnectionServer should fail");
+             Assert.IsFalse(res.Success, "Calling DeleteRoutingRuleCondition with null ConnectionServerRest should fail");
 
              res = RoutingRuleCondition.DeleteRoutingRuleCondition(_connectionServer, "ruleobjectid", "objectid");
              Assert.IsFalse(res.Success, "Calling DeleteRoutingRuleCondition with invalid objectIds should fail");
@@ -290,7 +290,7 @@ namespace ConnectionCUPIFunctionsTest
          {
              RoutingRuleCondition oCondition;
              var res = RoutingRuleCondition.GetRoutingRuleCondition(out oCondition, null, "ruleObjectId", "objectId");
-             Assert.IsFalse(res.Success, "Calling GetRoutingRuleCondition with null ConnectionServer should fail");
+             Assert.IsFalse(res.Success, "Calling GetRoutingRuleCondition with null ConnectionServerRest should fail");
 
              res = RoutingRuleCondition.GetRoutingRuleCondition(out oCondition, _connectionServer, "ruleObjectId", "objectId");
              Assert.IsFalse(res.Success, "Calling GetRoutingRuleCondition with invalid objectIds should fail");

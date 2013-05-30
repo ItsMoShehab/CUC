@@ -28,7 +28,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Constructor requires a Connection server and an ObjectId for an itnerview handler that the question is 
         /// associated with to be passed in as well as which number the question is (1 through 20).
         /// </summary>
-        public InterviewQuestion(ConnectionServer pConnectionServer, string pInterviewHandlerObjectId, int pInterviewQuestionNumber)
+        public InterviewQuestion(ConnectionServerRest pConnectionServer, string pInterviewHandlerObjectId, int pInterviewQuestionNumber)
         {
             if (pConnectionServer == null)
             {
@@ -63,7 +63,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return InterviewHandlerObjectId; } }
 
         //reference to the ConnectionServer object used to create this handlers instance.
-        internal ConnectionServer HomeServer { get; private set; }
+        internal ConnectionServerRest HomeServer { get; private set; }
 
         #endregion
 
@@ -108,7 +108,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetInterviewQuestions(ConnectionServer pConnectionServer, string pInterviewHandlerObjectId,
+        public static WebCallResult GetInterviewQuestions(ConnectionServerRest pConnectionServer, string pInterviewHandlerObjectId,
             out List<InterviewQuestion> pInterviewQuestions)
         {
             WebCallResult res = new WebCallResult();
@@ -194,7 +194,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with details of the request and response from the server.
         /// </returns>
-        public static WebCallResult UpdateInterviewHandlerQuestion(ConnectionServer pConnectionServer,
+        public static WebCallResult UpdateInterviewHandlerQuestion(ConnectionServerRest pConnectionServer,
                                                                    string pInterviewHandlerObjectId,
                                                                    int pInterviewQuestionNumber, 
                                                                    bool pActive, int pMaxResponseLength,
@@ -253,7 +253,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetInterviewQuestion(out InterviewQuestion pInterviewQuestion, ConnectionServer pConnectionServer,
+        public static WebCallResult GetInterviewQuestion(out InterviewQuestion pInterviewQuestion, ConnectionServerRest pConnectionServer,
             string pInterviewHandlerObjectId, int pInterviewQuestionNumber)
         {
             WebCallResult res = new WebCallResult();
@@ -317,7 +317,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetInterviewHandlerQuestionRecording(ConnectionServer pConnectionServer, string pTargetLocalFilePath, string pObjectId,
+        public static WebCallResult GetInterviewHandlerQuestionRecording(ConnectionServerRest pConnectionServer, string pTargetLocalFilePath, string pObjectId,
             int pQuestionNumber, string pConnectionWavFileName = "")
         {
             WebCallResult res = new WebCallResult();
@@ -405,7 +405,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult SetInterviewHandlerQuestionRecording(ConnectionServer pConnectionServer, string pSourceLocalFilePath, string pObjectId,
+        public static WebCallResult SetInterviewHandlerQuestionRecording(ConnectionServerRest pConnectionServer, string pSourceLocalFilePath, string pObjectId,
             int pQuestionNumber, bool pConvertToPcmFirst = false)
         {
             string strConvertedWavFilePath = "";
@@ -513,7 +513,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult SetInterviewHandlerQuestionRecordingToStreamFile(ConnectionServer pConnectionServer, string pObjectId,
+        public static WebCallResult SetInterviewHandlerQuestionRecordingToStreamFile(ConnectionServerRest pConnectionServer, string pObjectId,
                                                      int pQuestionNumber, string pStreamFileResourceName)
         {
             WebCallResult res = new WebCallResult();
@@ -632,7 +632,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(ConnectionServer.StripJsonOfObjectWrapper(res.ResponseText, "InterviewQuestion"), this,
+                JsonConvert.PopulateObject(ConnectionServerRest.StripJsonOfObjectWrapper(res.ResponseText, "InterviewQuestion"), this,
                     RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)

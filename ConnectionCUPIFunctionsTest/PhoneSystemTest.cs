@@ -21,7 +21,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         /// <summary>
         ///Gets or sets the test context which provides
@@ -49,7 +49,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                 _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                 _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                    mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -123,7 +123,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailures_AddPhoneSystem()
         {
             WebCallResult res = PhoneSystem.AddPhoneSystem(null, "bogus");
-            Assert.IsFalse(res.Success, "Static call to AddPhoneSystem with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Static call to AddPhoneSystem with null ConnectionServerRest did not fail");
 
             res = PhoneSystem.AddPhoneSystem(_connectionServer, "");
             Assert.IsFalse(res.Success, "Static call to AddPhoneSystem with empty name did not fail");
@@ -133,7 +133,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailures_DeletePhoneSystem()
         {
             var res = PhoneSystem.DeletePhoneSystem(null, "objectid");
-            Assert.IsFalse(res.Success, "Static call to DeletePhoneSystem with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Static call to DeletePhoneSystem with null ConnectionServerRest did not fail");
 
             res = PhoneSystem.DeletePhoneSystem(_connectionServer, "objectid");
             Assert.IsFalse(res.Success, "Static call to DeletePhoneSystem with invalid ObjectId did not fail");
@@ -143,7 +143,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailures_UpdatePhoneSystem()
         {
             var res = PhoneSystem.UpdatePhoneSystem(null, "objectid", null);
-            Assert.IsFalse(res.Success, "Static call to UpdatePhoneSystem with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Static call to UpdatePhoneSystem with null ConnectionServerRest did not fail");
 
             res = PhoneSystem.UpdatePhoneSystem(_connectionServer, "objectid", null);
             Assert.IsFalse(res.Success, "Static call to UpdatePhoneSystem with invalid ObjectId did not fail");
@@ -154,7 +154,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             List<PhoneSystemAssociation> oList;
             var res = PhoneSystem.GetPhoneSystemAssociations(null, "objectid", out oList);
-            Assert.IsFalse(res.Success, "Static call to GetPhoneSystemAssociations with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Static call to GetPhoneSystemAssociations with null ConnectionServerRest did not fail");
 
             res = PhoneSystem.GetPhoneSystemAssociations(_connectionServer, "objectid", out oList);
             Assert.IsTrue(res.Success, "Fetching phone system associations with invalid objectid should not fail:" + res);
@@ -167,7 +167,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             PhoneSystem oPhoneSystem;
             var res = PhoneSystem.GetPhoneSystem(out oPhoneSystem, null, "objectid");
-            Assert.IsFalse(res.Success, "Static call to GetPhoneSystem with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Static call to GetPhoneSystem with null ConnectionServerRest did not fail");
 
             res = PhoneSystem.GetPhoneSystem(out oPhoneSystem, _connectionServer, "bogus");
             Assert.IsFalse(res.Success, "Static call to GetPhoneSystem with invalid ObjectId did not fail");

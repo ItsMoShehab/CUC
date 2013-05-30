@@ -29,7 +29,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Constructor requires ConnectionServer object where the role is defined.  Optionally you can pass the ObjectId or
         /// name of the role to fetch data for that role specifically.
         /// </summary>
-        public Role(ConnectionServer pConnectionServer, string pObjectId = "", string pRoleName = "")
+        public Role(ConnectionServerRest pConnectionServer, string pObjectId = "", string pRoleName = "")
         {
             if (pConnectionServer == null)
             {
@@ -63,7 +63,7 @@ namespace Cisco.UnityConnection.RestFunctions
         #region Fields and Properties 
 
         //reference to the ConnectionServer object used to create this instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //used for displaying in grids and drop downs
         public string SelectionDisplayString { get { return RoleName; } }
@@ -171,7 +171,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// ObjectId of the role if found, blank string if not.
         /// </returns>
-        public static string GetObjectIdFromName(ConnectionServer pConnectionServer, string pRoleName)
+        public static string GetObjectIdFromName(ConnectionServerRest pConnectionServer, string pRoleName)
         {
             string strUrl = pConnectionServer.BaseUrl + string.Format("roles/?query=(RoleName is {0})", pRoleName);
 
@@ -215,7 +215,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetRoles(ConnectionServer pConnectionServer, out List<Role> pRoles, params string[] pClauses)
+        public static WebCallResult GetRoles(ConnectionServerRest pConnectionServer, out List<Role> pRoles, params string[] pClauses)
         {
             WebCallResult res;
             pRoles = null;
@@ -227,7 +227,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "roles",pClauses);
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "roles",pClauses);
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");

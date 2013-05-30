@@ -96,7 +96,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Primary class for teh ConnectionRestFunctions library.  This is used to connect to and get/set data to and from a remote Connection
     /// server via the CUPI REST based web interface.
     /// </summary>
-    public class ConnectionServer
+    public class ConnectionServerRest
     {
 
         #region Fields and Properties
@@ -200,7 +200,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// default constructor - initalize everything to blank/0s and create a RestTransportFunctions instance
         /// if one is not provided.
         /// </summary>
-        public ConnectionServer(IConnectionRestCalls pTransportFunctions)
+        public ConnectionServerRest(IConnectionRestCalls pTransportFunctions)
         {
             ServerName = "";
             LoginName = "";
@@ -240,7 +240,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the ConnectionServer class
         /// </returns>
-        public ConnectionServer (IConnectionRestCalls pTransportFunctions, string pServerName, string pLoginName, string pLoginPw, 
+        public ConnectionServerRest (IConnectionRestCalls pTransportFunctions, string pServerName, string pLoginName, string pLoginPw, 
             bool pLoginAsAdministrator=true) : this(pTransportFunctions)
         {
             BaseUrl = string.Format("https://{0}:8443/vmrest/", pServerName);
@@ -311,7 +311,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the ConnectionServer class
         /// </returns>
-        public ConnectionServer(string pServerName, string pLoginName, string pLoginPw,bool pLoginAsAdministrator = true)
+        public ConnectionServerRest(string pServerName, string pLoginName, string pLoginPw, bool pLoginAsAdministrator = true)
             : this(null,pServerName,pLoginName,pLoginPw,pLoginAsAdministrator)
         {
         }
@@ -1293,7 +1293,7 @@ namespace Cisco.UnityConnection.RestFunctions
             pUser = null;
             try
             {
-                new ConnectionServer(_transportFunctions, this.ServerName, pLoginName, pPassword, false);
+                new ConnectionServerRest(_transportFunctions, this.ServerName, pLoginName, pPassword, false);
             }
             catch 
             {
@@ -1325,7 +1325,7 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             try
             {
-                new ConnectionServer(_transportFunctions,this.ServerName, pLoginName, pPassword, false);
+                new ConnectionServerRest(_transportFunctions,this.ServerName, pLoginName, pPassword, false);
             }
             catch 
             {

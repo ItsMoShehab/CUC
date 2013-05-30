@@ -44,7 +44,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pAlias">
         /// Optional alias search critiera - if both ObjectId and Alias are passed, ObjectId is used.  
         /// </param>
-        public DistributionList(ConnectionServer pConnectionServer, string pObjectId = "", string pAlias = "")
+        public DistributionList(ConnectionServerRest pConnectionServer, string pObjectId = "", string pAlias = "")
             : this()
         {
             if (pConnectionServer == null)
@@ -93,7 +93,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this distribution list instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -352,7 +352,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetDistributionLists(ConnectionServer pConnectionServer, out List<DistributionList> pDistributionLists, params string[] pClauses)
+        public static WebCallResult GetDistributionLists(ConnectionServerRest pConnectionServer, out List<DistributionList> pDistributionLists, params string[] pClauses)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -365,7 +365,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "distributionlists", pClauses);
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "distributionlists", pClauses);
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -434,7 +434,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
 
-        public static WebCallResult GetDistributionLists(ConnectionServer pConnectionServer,out List<DistributionList> pDistributionLists,
+        public static WebCallResult GetDistributionLists(ConnectionServerRest pConnectionServer,out List<DistributionList> pDistributionLists,
             int pPageNumber=1, int pRowsPerPage=20,params string[] pClauses)
         {
             //tack on the paging items to the parameters list
@@ -479,7 +479,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddDistributionList(ConnectionServer pConnectionServer,
+        public static WebCallResult AddDistributionList(ConnectionServerRest pConnectionServer,
                                                     string pDisplayName,
                                                     string pAlias,
                                                     string pExtension,
@@ -574,7 +574,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddDistributionList(ConnectionServer pConnectionServer,
+        public static WebCallResult AddDistributionList(ConnectionServerRest pConnectionServer,
                                                     string pDisplayName,
                                                     string pAlias,
                                                     string pExtension,
@@ -615,7 +615,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetDistributionList(out DistributionList pDistributionList, ConnectionServer pConnectionServer, string pObjectId = "", 
+        public static WebCallResult GetDistributionList(out DistributionList pDistributionList, ConnectionServerRest pConnectionServer, string pObjectId = "", 
             string pAlias = "")
         {
             WebCallResult res = new WebCallResult();
@@ -670,7 +670,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult UpdateDistributionList(ConnectionServer pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
+        public static WebCallResult UpdateDistributionList(ConnectionServerRest pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -716,7 +716,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult DeleteDistributionList(ConnectionServer pConnectionServer, string pObjectId)
+        public static WebCallResult DeleteDistributionList(ConnectionServerRest pConnectionServer, string pObjectId)
         {
             if (pConnectionServer == null)
             {
@@ -751,7 +751,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetDistributionListVoiceName(ConnectionServer pConnectionServer, string pTargetLocalFilePath, string pObjectId, 
+        public static WebCallResult GetDistributionListVoiceName(ConnectionServerRest pConnectionServer, string pTargetLocalFilePath, string pObjectId, 
             string pConnectionWavFileName = "")
         {
             WebCallResult res = new WebCallResult();
@@ -822,7 +822,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult SetDistributionListVoiceName(ConnectionServer pConnectionServer, string pSourceLocalFilePath, string pObjectId, 
+        public static WebCallResult SetDistributionListVoiceName(ConnectionServerRest pConnectionServer, string pSourceLocalFilePath, string pObjectId, 
             bool pConvertToPcmFirst = false)
         {
             string strConvertedWavFilePath = "";
@@ -907,7 +907,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult SetDistributionListVoiceNameToStreamFile(ConnectionServer pConnectionServer, string pObjectId,
+        public static WebCallResult SetDistributionListVoiceNameToStreamFile(ConnectionServerRest pConnectionServer, string pObjectId,
                                                      string pStreamFileResourceName)
         {
             WebCallResult res = new WebCallResult();
@@ -967,7 +967,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetMembersList(ConnectionServer pConnectionServer, string pDistributionListObjectId, out List<DistributionListMember> pMemberList)
+        public static WebCallResult GetMembersList(ConnectionServerRest pConnectionServer, string pDistributionListObjectId, out List<DistributionListMember> pMemberList)
         {
             return DistributionListMember.GetDistributionListMembers(pConnectionServer, pDistributionListObjectId, out pMemberList);
         }
@@ -980,7 +980,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pDistributionListObjectId"></param>
         /// <param name="pUserObjectId"></param>
         /// <returns></returns>
-        public static WebCallResult AddMemberUser(ConnectionServer pConnectionServer, string pDistributionListObjectId, string pUserObjectId)
+        public static WebCallResult AddMemberUser(ConnectionServerRest pConnectionServer, string pDistributionListObjectId, string pUserObjectId)
         {
             string strUrl = string.Format("{0}distributionlists/{1}/distributionlistmembers", pConnectionServer.BaseUrl, pDistributionListObjectId);
 
@@ -1001,7 +1001,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pDistributionListObjectId"></param>
         /// <param name="pListObjectId"></param>
         /// <returns></returns>
-        public static WebCallResult AddMemberList(ConnectionServer pConnectionServer, string pDistributionListObjectId, string pListObjectId)
+        public static WebCallResult AddMemberList(ConnectionServerRest pConnectionServer, string pDistributionListObjectId, string pListObjectId)
         {
             string strUrl = string.Format("{0}distributionlists/{1}/distributionlistmembers", pConnectionServer.BaseUrl, pDistributionListObjectId);
 
@@ -1022,7 +1022,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pDistributionListObjectId"></param>
         /// <param name="pMemberUserObjectId"></param>
         /// <returns></returns>
-        public static WebCallResult RemoveMember(ConnectionServer pConnectionServer, string pDistributionListObjectId, string pMemberUserObjectId)
+        public static WebCallResult RemoveMember(ConnectionServerRest pConnectionServer, string pDistributionListObjectId, string pMemberUserObjectId)
         {
             string strUrl = string.Format("{0}distributionlists/{1}/distributionlistmembers/{2}", 
                         pConnectionServer.BaseUrl, 

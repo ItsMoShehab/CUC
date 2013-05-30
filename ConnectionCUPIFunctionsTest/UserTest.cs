@@ -21,7 +21,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         //used for editing/adding items to a temporary user that gets cleaned up after the tests are complete
         private static UserFull _tempUser;
@@ -50,7 +50,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                 _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                 _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                    mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -236,7 +236,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Empty ObjectId should fail");
 
             res = UserBase.UpdateUser(null, "aaa", oPropList);
-            Assert.IsFalse(res.Success, "Null ConnectionServer object should fail");
+            Assert.IsFalse(res.Success, "Null ConnectionServerRest object should fail");
 
             res = UserBase.UpdateUser(_connectionServer, "aaa", null);
             Assert.IsFalse(res.Success, "Empty property list should fail");
@@ -310,7 +310,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailure_AddUser()
         {
             WebCallResult res = UserBase.AddUser(null, "", "", "", null);
-            Assert.IsFalse(res.Success, "AddUser should fail if the ConnectionServer parameter is null");
+            Assert.IsFalse(res.Success, "AddUser should fail if the ConnectionServerRest parameter is null");
 
             res = UserBase.AddUser(_connectionServer, "", "aaa", "123", null);
             Assert.IsFalse(res.Success, "AddUser should fail if the template parameter is empty");
@@ -335,7 +335,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Empty ObjectId should fail");
 
             res = UserBase.DeleteUser(null, "aaa");
-            Assert.IsFalse(res.Success, "Null ConnectionServer object should fail");
+            Assert.IsFalse(res.Success, "Null ConnectionServerRest object should fail");
 
         }
 
@@ -633,7 +633,7 @@ namespace ConnectionCUPIFunctionsTest
 
             //reset the pin failure
             res = UserBase.ResetUserPin(null, _tempUser.ObjectId, "1323424323");
-            Assert.IsFalse(res.Success, "Resetting user PIN with null ConnectionServer should fail");
+            Assert.IsFalse(res.Success, "Resetting user PIN with null ConnectionServerRest should fail");
 
             //reset the PIN and Password
             res = _tempUser.ResetPin("234098234");

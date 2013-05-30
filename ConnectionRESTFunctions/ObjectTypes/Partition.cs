@@ -33,7 +33,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Constructor requires ConnectionServer the partition lives on - you can optionally pass the ObjectId or the display name
         /// of the partition to load data for.
         /// </summary>
-        public Partition(ConnectionServer pConnectionServer, string pObjectId = "", string pName = "")
+        public Partition(ConnectionServerRest pConnectionServer, string pObjectId = "", string pName = "")
         {
             if (pConnectionServer == null)
             {
@@ -75,7 +75,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this instance.
-        public ConnectionServer HomeServer { get; set; }
+        public ConnectionServerRest HomeServer { get; set; }
 
         #endregion
 
@@ -295,7 +295,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPartitions(ConnectionServer pConnectionServer, out List<Partition> pPartitions,
+        public static WebCallResult GetPartitions(ConnectionServerRest pConnectionServer, out List<Partition> pPartitions,
             int pPageNumber = 1, int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res;
@@ -322,7 +322,7 @@ namespace Cisco.UnityConnection.RestFunctions
             temp.Add("pageNumber=" + pPageNumber);
             temp.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "partitions", temp.ToArray());
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "partitions", temp.ToArray());
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -383,7 +383,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddPartition(ConnectionServer pConnectionServer,
+        public static WebCallResult AddPartition(ConnectionServerRest pConnectionServer,
                                                          out Partition pPartition,
                                                          string pName,
                                                          string pDescription = "",
@@ -429,7 +429,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddPartition(ConnectionServer pConnectionServer,
+        public static WebCallResult AddPartition(ConnectionServerRest pConnectionServer,
                                                     string pName,
                                                     string pDescription ="",
                                                     string pLocationObjectId="")
@@ -494,7 +494,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class
         /// </returns>
-        public static WebCallResult DeletePartition(ConnectionServer pConnectionServer, string pPartitionObjectId)
+        public static WebCallResult DeletePartition(ConnectionServerRest pConnectionServer, string pPartitionObjectId)
         {
             WebCallResult res;
             if (pConnectionServer == null)
@@ -537,7 +537,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class
         /// </returns>
-        public static WebCallResult UpdatePartition(ConnectionServer pConnectionServer, string pObjectId, string pName="", string pDescription="")
+        public static WebCallResult UpdatePartition(ConnectionServerRest pConnectionServer, string pObjectId, string pName="", string pDescription="")
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;

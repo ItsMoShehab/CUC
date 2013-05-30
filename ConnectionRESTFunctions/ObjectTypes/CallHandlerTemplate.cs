@@ -49,7 +49,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// display name to look for - it's possible to have multiple display names that conflict so the first match 
         /// is returned in this case.
         /// </param>
-        public CallHandlerTemplate(ConnectionServer pConnectionServer, string pObjectId, string pDisplayName = "")
+        public CallHandlerTemplate(ConnectionServerRest pConnectionServer, string pObjectId, string pDisplayName = "")
             : this()
         {
             if (pConnectionServer == null)
@@ -86,7 +86,7 @@ namespace Cisco.UnityConnection.RestFunctions
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
 
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         #endregion
 
@@ -475,7 +475,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetCallHandlerTemplates(ConnectionServer pConnectionServer, out List<CallHandlerTemplate> pCallHandlerTemplates
+        public static WebCallResult GetCallHandlerTemplates(ConnectionServerRest pConnectionServer, out List<CallHandlerTemplate> pCallHandlerTemplates
             , int pPageNumber = 1, int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res;
@@ -500,7 +500,7 @@ namespace Cisco.UnityConnection.RestFunctions
             temp.Add("pageNumber=" + pPageNumber);
             temp.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "callhandlertemplates", temp.ToArray());
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "callhandlertemplates", temp.ToArray());
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -556,7 +556,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult GetCallHandlerTemplate(out CallHandlerTemplate pCallHandlerTemplate, ConnectionServer pConnectionServer, 
+        public static WebCallResult GetCallHandlerTemplate(out CallHandlerTemplate pCallHandlerTemplate, ConnectionServerRest pConnectionServer, 
             string pObjectId = "",string pDisplayName = "")
         {
             WebCallResult res = new WebCallResult();
@@ -629,7 +629,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddCallHandlerTemplate(ConnectionServer pConnectionServer, string pDisplayName,
+        public static WebCallResult AddCallHandlerTemplate(ConnectionServerRest pConnectionServer, string pDisplayName,
             string pMediaSwitchObjectId, string pRecipientDistributionListId, string pRecipientUserId,
             ConnectionPropertyList pPropList)
         {
@@ -724,7 +724,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddCallHandlerTemplate(ConnectionServer pConnectionServer,
+        public static WebCallResult AddCallHandlerTemplate(ConnectionServerRest pConnectionServer,
                                                         string pDisplayName,
                                                         string pMediaSwitchObjectId, 
                                                         string pRecipientDistributionListId, 
@@ -775,7 +775,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult UpdateCallHandlerTemplate(ConnectionServer pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
+        public static WebCallResult UpdateCallHandlerTemplate(ConnectionServerRest pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -828,7 +828,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult DeleteCallHandlerTemplate(ConnectionServer pConnectionServer, string pObjectId)
+        public static WebCallResult DeleteCallHandlerTemplate(ConnectionServerRest pConnectionServer, string pObjectId)
         {
             if (pConnectionServer == null)
             {

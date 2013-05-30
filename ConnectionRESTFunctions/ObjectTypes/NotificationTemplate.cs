@@ -32,7 +32,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Constructor requires the ConnectionServer the template lives on and optionally takes an ObjectId of a template to 
         /// load data for.
         /// </summary>
-        public NotificationTemplate(ConnectionServer pConnectionServer, string pObjectId = "")
+        public NotificationTemplate(ConnectionServerRest pConnectionServer, string pObjectId = "")
         {
             if (pConnectionServer == null)
             {
@@ -76,7 +76,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return NotificationTemplateId; } }
 
 
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         #endregion
 
@@ -187,7 +187,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetNotificationTemplates(ConnectionServer pConnectionServer, out List<NotificationTemplate> pTemplates,
+        public static WebCallResult GetNotificationTemplates(ConnectionServerRest pConnectionServer, out List<NotificationTemplate> pTemplates,
             int pPageNumber=1, int pRowsPerPage=20)
         {
             WebCallResult res;
@@ -200,7 +200,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "notificationtemplates",
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "notificationtemplates",
                 "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
