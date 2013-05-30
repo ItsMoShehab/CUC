@@ -54,7 +54,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Optional parameter for the unique ID of the extension on the home server provided.  If no ObjectId is passed then an empty instance of the 
         /// AlternateExtension class is returned instead.
         /// </param>
-        public AlternateExtension(ConnectionServer pConnectionServer, string pUserObjectId, string pObjectId = ""):this()
+        public AlternateExtension(ConnectionServerRest pConnectionServer, string pUserObjectId, string pObjectId = ""):this()
         {
             if (pConnectionServer == null)
             {
@@ -97,7 +97,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this Alternate Extension instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -199,7 +199,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetAlternateExtension(ConnectionServer pConnectionServer, 
+        public static WebCallResult GetAlternateExtension(ConnectionServerRest pConnectionServer, 
                                                         string pUserObjectId, 
                                                         string pObjectId, 
                                                         out  AlternateExtension pAlternateExtension)
@@ -248,7 +248,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetAlternateExtensions(ConnectionServer pConnectionServer, 
+        public static WebCallResult GetAlternateExtensions(ConnectionServerRest pConnectionServer, 
                                                             string pUserObjectId,
                                                            out List<AlternateExtension> pAlternateExtensions)
         {
@@ -316,7 +316,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddAlternateExtension(ConnectionServer pConnectionServer,
+        public static WebCallResult AddAlternateExtension(ConnectionServerRest pConnectionServer,
                                                           string pUserObjectId,
                                                           int pIdIndex,
                                                           string pExtension)
@@ -395,7 +395,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddAlternateExtension(ConnectionServer pConnectionServer,
+        public static WebCallResult AddAlternateExtension(ConnectionServerRest pConnectionServer,
                                                           string pUserObjectId,
                                                           int pIdIndex,
                                                           string pExtension,
@@ -430,7 +430,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult DeleteAlternateExtension(ConnectionServer pConnectionServer, string pUserObjectId, string pObjectId)
+        public static WebCallResult DeleteAlternateExtension(ConnectionServerRest pConnectionServer, string pUserObjectId, string pObjectId)
         {
             if (pConnectionServer == null)
             {
@@ -465,7 +465,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult UpdateAlternateExtension(ConnectionServer pConnectionServer, string pUserObjectId, string pObjectId, ConnectionPropertyList pPropList)
+        public static WebCallResult UpdateAlternateExtension(ConnectionServerRest pConnectionServer, string pUserObjectId, string pObjectId, ConnectionPropertyList pPropList)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -628,7 +628,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(ConnectionServer.StripJsonOfObjectWrapper(res.ResponseText, "AlternateExtension"), this,
+                JsonConvert.PopulateObject(ConnectionServerRest.StripJsonOfObjectWrapper(res.ResponseText, "AlternateExtension"), this,
                     RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)

@@ -21,7 +21,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         //class level call handler for use with testing - gets filled in with the opening greeting call handler data
         private static CallHandler _callHandler;
@@ -49,7 +49,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                 _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                 _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                    mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -82,7 +82,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             //hit some invalid calls for updating the enabled status for transfer options
             WebCallResult res = TransferOption.UpdateTransferOptionEnabledStatus(null, _callHandler.ObjectId, TransferOptionTypes.Alternate, true);
-            Assert.IsFalse(res.Success, "Null ConnectionServer parameter should fail");
+            Assert.IsFalse(res.Success, "Null ConnectionServerRest parameter should fail");
 
             res = TransferOption.UpdateTransferOptionEnabledStatus(_connectionServer, "aaa", TransferOptionTypes.Alternate, true);
             Assert.IsFalse(res.Success, "Invalid ObjectId for call handler should fail");
@@ -106,7 +106,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             //check manually editing properties on transfer options failure cases
             WebCallResult res = TransferOption.UpdateTransferOption(null, _callHandler.ObjectId, TransferOptionTypes.Alternate, null);
-            Assert.IsFalse(res.Success, "Updating transfer options with null ConnectionServer param should fail");
+            Assert.IsFalse(res.Success, "Updating transfer options with null ConnectionServerRest param should fail");
 
             res = TransferOption.UpdateTransferOption(_connectionServer, _callHandler.ObjectId, TransferOptionTypes.Alternate, null);
             Assert.IsFalse(res.Success, "Calling update for transfer options with no parameters should fail");
@@ -141,14 +141,14 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Invalid transfer option type should fail");
 
             res = TransferOption.GetTransferOption(null, "", TransferOptionTypes.Alternate , out oTransfer);
-            Assert.IsFalse(res.Success, "Null ConnectionServer parameter should fail");
+            Assert.IsFalse(res.Success, "Null ConnectionServerRest parameter should fail");
 
             res = TransferOption.GetTransferOption(_connectionServer, "", TransferOptionTypes.Standard , out oTransfer);
             Assert.IsFalse(res.Success, "Empty ObjectId should should fail");
 
             //make sure invalid Connection server param is caught
             res = TransferOption.GetTransferOption(null, _callHandler.ObjectId, TransferOptionTypes.Alternate , out oTransfer);
-            Assert.IsFalse(res.Success, "Null ConnectionServer parameter should fail");
+            Assert.IsFalse(res.Success, "Null ConnectionServerRest parameter should fail");
 
         }
 

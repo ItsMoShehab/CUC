@@ -41,7 +41,7 @@ namespace PWResetASP.Account
         /// </summary>
         protected void ButtonLogin_Click(object sender, EventArgs e)
         {
-            ConnectionServer currentConnectionServer;
+            ConnectionServerRest currentConnectionServer;
 
             //check for empty strings - yes, you can use ASP form control checks for these but then you have difficulty with the Java Script
             //method of enabling/disabling the login button on the client side so I do the checks manually here and just use a single status
@@ -71,7 +71,7 @@ namespace PWResetASP.Account
 
             try
             {
-                currentConnectionServer = new ConnectionServer(new RestTransportFunctions(), TextBoxServerName.Text.Trim(), TextBoxName.Text.Trim(), 
+                currentConnectionServer = new ConnectionServerRest(new RestTransportFunctions(), TextBoxServerName.Text.Trim(), TextBoxName.Text.Trim(), 
                     TextBoxPassword.Text.Trim());
             }
             catch

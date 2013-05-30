@@ -19,7 +19,7 @@ namespace LoadEachObjectTypeTest
         /// <summary>
         /// Connection server to run tests against
         /// </summary>
-        private static ConnectionServer _server;
+        private static ConnectionServerRest _server;
 
         /// <summary>
         /// User that has private lists, mwi, notification device(s) etc... configured to use for test
@@ -35,7 +35,7 @@ namespace LoadEachObjectTypeTest
         {
             try
             {
-                _server = new ConnectionServer(new RestTransportFunctions(), "192.168.0.186", "CCMAdministrator", "ecsbulab");
+                _server = new ConnectionServerRest(new RestTransportFunctions(), "192.168.0.186", "CCMAdministrator", "ecsbulab");
             }
             catch (Exception ex)
             {
@@ -60,7 +60,7 @@ namespace LoadEachObjectTypeTest
             Console.ReadLine();
         }
 
-        private static void ServerOnErrorEvents(object sender, ConnectionServer.LogEventArgs logEventArgs)
+        private static void ServerOnErrorEvents(object sender, ConnectionServerRest.LogEventArgs logEventArgs)
         {
             Console.WriteLine(logEventArgs.Line);
             Logger.Log(logEventArgs.Line);

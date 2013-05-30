@@ -158,7 +158,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Optional parameter for fetching a user's data based on alias.  If both the ObjectId and the Alias are passed, the ObjectId will be used 
         /// for the search.
         /// </param>
-        public UserBase(ConnectionServer pConnectionServer, string pObjectId = "", string pAlias = "")
+        public UserBase(ConnectionServerRest pConnectionServer, string pObjectId = "", string pAlias = "")
         {
             if (pConnectionServer == null)
             {
@@ -198,7 +198,7 @@ namespace Cisco.UnityConnection.RestFunctions
         #region Fields and Properties
 
         //reference to the ConnectionServer object used to create this object instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         internal ConnectionPropertyList ChangedPropList;
@@ -751,7 +751,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetUsers(ConnectionServer pConnectionServer, out List<UserBase> pUsers, params string[] pClauses)
+        public static WebCallResult GetUsers(ConnectionServerRest pConnectionServer, out List<UserBase> pUsers, params string[] pClauses)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -764,7 +764,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "users", pClauses);
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "users", pClauses);
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -838,7 +838,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
 
-        public static WebCallResult GetUsers(ConnectionServer pConnectionServer, out List<UserBase> pUsers,int pPageNumber=1, 
+        public static WebCallResult GetUsers(ConnectionServerRest pConnectionServer, out List<UserBase> pUsers,int pPageNumber=1, 
             int pRowsPerPage=20,params string[] pClauses)
         {
 
@@ -878,7 +878,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetUser(out UserBase pUser, ConnectionServer pConnectionServer, string pObjectId, string pAlias = "")
+        public static WebCallResult GetUser(out UserBase pUser, ConnectionServerRest pConnectionServer, string pObjectId, string pAlias = "")
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -939,7 +939,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetUser(out UserFull pUser, ConnectionServer pConnectionServer, string pObjectId, string pAlias = "")
+        public static WebCallResult GetUser(out UserFull pUser, ConnectionServerRest pConnectionServer, string pObjectId, string pAlias = "")
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -1007,7 +1007,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddUser(ConnectionServer pConnectionServer,
+        public static WebCallResult AddUser(ConnectionServerRest pConnectionServer,
                                             string pTemplateAlias,
                                             string pAlias,
                                             string pExtension,
@@ -1085,7 +1085,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddMwi(ConnectionServer pConnectionServer,
+        public static WebCallResult AddMwi(ConnectionServerRest pConnectionServer,
                                                       string pUserObjectId,
                                                       string pExtension,
                                                       string pDisplayName)
@@ -1165,7 +1165,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddUser(ConnectionServer pConnectionServer,
+        public static WebCallResult AddUser(ConnectionServerRest pConnectionServer,
                                             string pTemplateAlias,
                                             string pAlias,
                                             string pExtension,
@@ -1229,7 +1229,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult ResetUserPin(ConnectionServer pConnectionServer, 
+        public static WebCallResult ResetUserPin(ConnectionServerRest pConnectionServer, 
                                                 string pObjectId, 
                                                 string pNewPin, 
                                                 bool? pLocked = null,
@@ -1251,7 +1251,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         //back end helper function to reset PIN or Password
-        private static WebCallResult ResetUserCredential(ConnectionServer pConnectionServer,
+        private static WebCallResult ResetUserCredential(ConnectionServerRest pConnectionServer,
                                         string pObjectId,
                                         string pNewPCredential,
                                         CredentialType pCredentialType,
@@ -1351,7 +1351,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult ResetUserPassword(ConnectionServer pConnectionServer, 
+        public static WebCallResult ResetUserPassword(ConnectionServerRest pConnectionServer, 
                                                     string pObjectId, 
                                                     string pNewPassword,
                                                     bool? pLocked = null,
@@ -1383,7 +1383,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult DeleteUser(ConnectionServer pConnectionServer, string pObjectId)
+        public static WebCallResult DeleteUser(ConnectionServerRest pConnectionServer, string pObjectId)
         {
             if (pConnectionServer == null)
             {
@@ -1418,7 +1418,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult UpdateUser(ConnectionServer pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
+        public static WebCallResult UpdateUser(ConnectionServerRest pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -1474,7 +1474,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetUserVoiceName(ConnectionServer pConnectionServer, string pTargetLocalFilePath, string pObjectId, string pConnectionWavFileName = "")
+        public static WebCallResult GetUserVoiceName(ConnectionServerRest pConnectionServer, string pTargetLocalFilePath, string pObjectId, string pConnectionWavFileName = "")
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -1550,7 +1550,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult SetUserVoiceName(ConnectionServer pConnectionServer, string pSourceLocalFilePath, string pObjectId, bool pConvertToPcmFirst = false)
+        public static WebCallResult SetUserVoiceName(ConnectionServerRest pConnectionServer, string pSourceLocalFilePath, string pObjectId, bool pConvertToPcmFirst = false)
         {
             string strConvertedWavFilePath = "";
             WebCallResult res = new WebCallResult();
@@ -1635,7 +1635,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult SetUserVoiceNameToStreamFile(ConnectionServer pConnectionServer, string pObjectId,
+        public static WebCallResult SetUserVoiceNameToStreamFile(ConnectionServerRest pConnectionServer, string pObjectId,
                                                      string pStreamFileResourceName)
         {
             WebCallResult res = new WebCallResult();
@@ -1747,7 +1747,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(ConnectionServer.StripJsonOfObjectWrapper(res.ResponseText, "User"), this,
+                JsonConvert.PopulateObject(ConnectionServerRest.StripJsonOfObjectWrapper(res.ResponseText, "User"), this,
                     RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
@@ -2184,7 +2184,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <summary>
         /// Create an empty instance of the class - for testing purposes
         /// </summary>
-        public UserFull(ConnectionServer pConnectionServer):base(pConnectionServer)
+        public UserFull(ConnectionServerRest pConnectionServer):base(pConnectionServer)
         {
             //only for testing
         }
@@ -2203,7 +2203,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pAlias">
         /// Optional alias string which can be used instead of the ObjectId for fetching user data
         /// </param>
-        public UserFull(ConnectionServer pConnectionServer, string pObjectId,string pAlias="")
+        public UserFull(ConnectionServerRest pConnectionServer, string pObjectId,string pAlias="")
             : base(pConnectionServer)
         {
             string strObjectId = pObjectId;
@@ -3937,7 +3937,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetUser(ConnectionServer pConnectionServer, string pObjectId, out UserFull pUser)
+        public static WebCallResult GetUser(ConnectionServerRest pConnectionServer, string pObjectId, out UserFull pUser)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;

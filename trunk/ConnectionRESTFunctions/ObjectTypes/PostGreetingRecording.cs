@@ -33,7 +33,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Constructor requires ConnectionServer where the PostGreetingRecording is homed.  You can optionally pass the objectId
         /// or name of a post greeting recording to have it loaded automatically.
         /// </summary>
-        public PostGreetingRecording(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+        public PostGreetingRecording(ConnectionServerRest pConnectionServer, string pObjectId = "", string pDisplayName = "")
         {
             if (pConnectionServer == null)
             {
@@ -75,7 +75,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this instance.
-        public ConnectionServer HomeServer { get; set; }
+        public ConnectionServerRest HomeServer { get; set; }
 
         //greeting stream files are fetched on the fly if referenced - implemented as a method instead of a prperty so the 
         //values doesn't get bound when tying a list of objects to a grid control or the like.
@@ -330,7 +330,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPostGreetingRecordings(ConnectionServer pConnectionServer,
+        public static WebCallResult GetPostGreetingRecordings(ConnectionServerRest pConnectionServer,
             out List<PostGreetingRecording> pPostGreetingRecordings, int pPageNumber = 1, int pRowsPerPage = 20, 
             params string[] pClauses)
         {
@@ -357,7 +357,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("pageNumber=" + pPageNumber);
             oParams.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "postgreetingrecordings", oParams.ToArray());
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "postgreetingrecordings", oParams.ToArray());
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -410,7 +410,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddPostGreetingRecording(ConnectionServer pConnectionServer,string pDisplayName, 
+        public static WebCallResult AddPostGreetingRecording(ConnectionServerRest pConnectionServer,string pDisplayName, 
             out PostGreetingRecording pPostGreetingRecording)
 
         {
@@ -455,7 +455,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
         public static WebCallResult GetPostGreetingRecording(out PostGreetingRecording pPostGreetingRecording, 
-            ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+            ConnectionServerRest pConnectionServer, string pObjectId = "", string pDisplayName = "")
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -505,7 +505,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddPostGreetingRecording(ConnectionServer pConnectionServer,string pDisplayName)
+        public static WebCallResult AddPostGreetingRecording(ConnectionServerRest pConnectionServer,string pDisplayName)
         {
 
             WebCallResult res = new WebCallResult();
@@ -557,7 +557,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class
         /// </returns>
-        public static WebCallResult DeletePostGreetingRecording(ConnectionServer pConnectionServer, string pPostGreetingRecordingObjectId)
+        public static WebCallResult DeletePostGreetingRecording(ConnectionServerRest pConnectionServer, string pPostGreetingRecordingObjectId)
         {
             WebCallResult res;
             if (pConnectionServer == null)
@@ -596,7 +596,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class
         /// </returns>
-        public static WebCallResult UpdatePostGreetingRecording(ConnectionServer pConnectionServer, string pObjectId, string pDisplayName)
+        public static WebCallResult UpdatePostGreetingRecording(ConnectionServerRest pConnectionServer, string pObjectId, string pDisplayName)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -651,7 +651,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult SetPostGreetingRecordingWavFile(ConnectionServer pConnectionServer,
+        public static WebCallResult SetPostGreetingRecordingWavFile(ConnectionServerRest pConnectionServer,
                                                         string pSourceLocalFilePath,
                                                         string pPostGreetingRecordingObjectId,
                                                         int pLanguageId,
@@ -726,7 +726,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult SetPostGreetingRecordingToStreamFile(ConnectionServer pConnectionServer,
+        public static WebCallResult SetPostGreetingRecordingToStreamFile(ConnectionServerRest pConnectionServer,
                                                      string pStreamFileResourceName,
                                                      string pPostGreetingRecordingObjectId,
                                                      int pLanguageId)

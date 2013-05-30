@@ -16,10 +16,10 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         //Class instance with mock version of transport for forcing specific server errors
-        private static ConnectionServer _connectionServerHarness;
+        private static ConnectionServerRest _connectionServerHarness;
 
         private static Tenant _tempTenant;
 
@@ -46,7 +46,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                    mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -64,11 +64,11 @@ namespace ConnectionCUPIFunctionsTest
 
            try
            {
-               _connectionServerHarness = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+               _connectionServerHarness = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
            }
            catch (Exception ex)
            {
-               throw new Exception("Unable to create harness ConnectionServer version for Tenant test:"+ex.Message);
+               throw new Exception("Unable to create harness ConnectionServerRest version for Tenant test:"+ex.Message);
            }
         }
 

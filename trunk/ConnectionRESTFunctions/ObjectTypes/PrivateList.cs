@@ -50,7 +50,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// as blank and this value is greater than 0 then the constructor will attempt to fill in its properties with the data for that list number 
         /// if it can be found.  An exception will be thrown if it cannot be found.
         /// </param>
-        public PrivateList(ConnectionServer pConnectionServer, string pUserOwnerObjectId, string pObjectId = "", int pNumericId = 0)
+        public PrivateList(ConnectionServerRest pConnectionServer, string pUserOwnerObjectId, string pObjectId = "", int pNumericId = 0)
             : this()
         {
             if (pConnectionServer == null)
@@ -102,7 +102,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this distribution list instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -210,7 +210,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPrivateLists(ConnectionServer pConnectionServer, string pOwnerUserObjectId, out List<PrivateList> pPrivateLists, 
+        public static WebCallResult GetPrivateLists(ConnectionServerRest pConnectionServer, string pOwnerUserObjectId, out List<PrivateList> pPrivateLists, 
             int pPageNumber = 1, int pRowsPerPage = 20)
         {
             WebCallResult res = new WebCallResult {Success = false};
@@ -223,7 +223,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(string.Format("{0}users/{1}/privatelists", pConnectionServer.BaseUrl, pOwnerUserObjectId),
+            string strUrl = ConnectionServerRest.AddClausesToUri(string.Format("{0}users/{1}/privatelists", pConnectionServer.BaseUrl, pOwnerUserObjectId),
                 "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
             //issue the command to the CUPI interface
@@ -282,7 +282,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddPrivateList(ConnectionServer pConnectionServer,
+        public static WebCallResult AddPrivateList(ConnectionServerRest pConnectionServer,
                                                     string pUserOwnerObjectId,
                                                     string pDisplayName,
                                                     int pNumericId=0)
@@ -369,7 +369,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddPrivateList(ConnectionServer pConnectionServer,
+        public static WebCallResult AddPrivateList(ConnectionServerRest pConnectionServer,
                                                     string pOwnerUserObjectId,
                                                     string pDisplayName,
                                                     int pNumericId,
@@ -410,7 +410,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPrivateList(out PrivateList pDistributionList, ConnectionServer pConnectionServer, string pOwnerUserObjectId,
+        public static WebCallResult GetPrivateList(out PrivateList pDistributionList, ConnectionServerRest pConnectionServer, string pOwnerUserObjectId,
             string pObjectId = "", int pNumericId=0)
         {
             WebCallResult res = new WebCallResult();
@@ -474,7 +474,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult UpdatePrivateList(ConnectionServer pConnectionServer, string pObjectId, ConnectionPropertyList pPropList,
+        public static WebCallResult UpdatePrivateList(ConnectionServerRest pConnectionServer, string pObjectId, ConnectionPropertyList pPropList,
             string pUserOwnerObjectId)
         {
             WebCallResult res = new WebCallResult();
@@ -530,7 +530,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult DeletePrivateList(ConnectionServer pConnectionServer, string pObjectId, string pUserOwnerObjectId)
+        public static WebCallResult DeletePrivateList(ConnectionServerRest pConnectionServer, string pObjectId, string pUserOwnerObjectId)
         {
             if (pConnectionServer == null)
             {
@@ -568,7 +568,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPrivateListVoiceName(ConnectionServer pConnectionServer, string pUserObjectId, string pTargetLocalFilePath, string pObjectId,
+        public static WebCallResult GetPrivateListVoiceName(ConnectionServerRest pConnectionServer, string pUserObjectId, string pTargetLocalFilePath, string pObjectId,
             string pConnectionWavFileName)
         {
             WebCallResult res = new WebCallResult();
@@ -619,7 +619,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult SetPrivateListVoiceName(ConnectionServer pConnectionServer, string pSourceLocalFilePath, string pObjectId,
+        public static WebCallResult SetPrivateListVoiceName(ConnectionServerRest pConnectionServer, string pSourceLocalFilePath, string pObjectId,
             string pUserObjectId, bool pConvertToPcmFirst=false)
         {
             WebCallResult res = new WebCallResult();
@@ -694,7 +694,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetMembersList(ConnectionServer pConnectionServer, string pDistributionListObjectId, string pOwnerUserObjectId,
+        public static WebCallResult GetMembersList(ConnectionServerRest pConnectionServer, string pDistributionListObjectId, string pOwnerUserObjectId,
             out List<PrivateListMember> pMemberList)
         {
             return PrivateListMember.GetPrivateListMembers(pConnectionServer, pDistributionListObjectId,pOwnerUserObjectId, out pMemberList);
@@ -719,7 +719,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class.
         /// </returns>
-        public static WebCallResult AddMemberUser(ConnectionServer pConnectionServer, string pPrivateListObjectId, string pUserObjectId, 
+        public static WebCallResult AddMemberUser(ConnectionServerRest pConnectionServer, string pPrivateListObjectId, string pUserObjectId, 
             string pOwnerUserObjectId)
         {
             if (pConnectionServer == null)
@@ -771,7 +771,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddMemberPublicList(ConnectionServer pConnectionServer, string pPrivateListObjectId, string pListObjectId,string pOwnerUserObjectId)
+        public static WebCallResult AddMemberPublicList(ConnectionServerRest pConnectionServer, string pPrivateListObjectId, string pListObjectId,string pOwnerUserObjectId)
         {
             if (pConnectionServer == null)
             {
@@ -823,7 +823,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult RemoveMember(ConnectionServer pConnectionServer, string pPrivateListObjectId, string pMemberObjectId, 
+        public static WebCallResult RemoveMember(ConnectionServerRest pConnectionServer, string pPrivateListObjectId, string pMemberObjectId, 
             string pOwnerUserObjectId)
         {
             string strUrl = string.Format("{0}users/{1}/privatelists/{2}/privatelistmembers/{3}",

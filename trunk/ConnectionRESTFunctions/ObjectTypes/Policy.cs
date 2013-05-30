@@ -32,7 +32,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Constructor requires the ConnectionServer that the Policy object lives on and can optionally take an ObjectId for 
         /// a policy to load up data for.
         /// </summary>
-        public Policy(ConnectionServer pConnectionServer, string pObjectId = "")
+        public Policy(ConnectionServerRest pConnectionServer, string pObjectId = "")
         {
             if (pConnectionServer == null)
             {
@@ -67,7 +67,7 @@ namespace Cisco.UnityConnection.RestFunctions
         #region Fields and Properties 
 
         //reference to the ConnectionServer object used to create this instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         #endregion
 
@@ -196,7 +196,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPolicies(ConnectionServer pConnectionServer, out List<Policy> pPolicies, params string[] pClauses)
+        public static WebCallResult GetPolicies(ConnectionServerRest pConnectionServer, out List<Policy> pPolicies, params string[] pClauses)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -209,7 +209,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "policies", pClauses);
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "policies", pClauses);
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -275,7 +275,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPolicies(ConnectionServer pConnectionServer, out List<Policy> pPolicies,int pPageNumber=1, 
+        public static WebCallResult GetPolicies(ConnectionServerRest pConnectionServer, out List<Policy> pPolicies,int pPageNumber=1, 
             int pRowsPerPage=20,params string[] pClauses)
         {
             //tack on the paging items to the parameters list
@@ -311,7 +311,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPoliciesForUser(ConnectionServer pConnectionServer,string pUserObjectId,
+        public static WebCallResult GetPoliciesForUser(ConnectionServerRest pConnectionServer,string pUserObjectId,
                                                        out List<Policy> pPolicies)
         {
             string strClause = string.Format("query=(UserObjectId is {0})",pUserObjectId);
@@ -336,7 +336,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetRoleNamesForUser(ConnectionServer pConnectionServer, string pUserObjectId,
+        public static WebCallResult GetRoleNamesForUser(ConnectionServerRest pConnectionServer, string pUserObjectId,
                                                         out List<string> pRoleNames)
         {
             pRoleNames=new List<string>();
@@ -401,7 +401,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPoliciesForRole(ConnectionServer pConnectionServer, string pRoleObjectId,
+        public static WebCallResult GetPoliciesForRole(ConnectionServerRest pConnectionServer, string pRoleObjectId,
                                                        out List<Policy> pPolicies)
         {
             string strClause = string.Format("query=(RoleObjectId is {0})", pRoleObjectId);

@@ -22,7 +22,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         private static DistributionList _tempList;
 
@@ -49,7 +49,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                 _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                 _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                    mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -126,7 +126,7 @@ namespace ConnectionCUPIFunctionsTest
             List<DistributionList> oList;
             WebCallResult res = DistributionList.GetDistributionLists(null, out oList, null);
 
-            Assert.IsFalse(res.Success, "GetDistributionLists failed to catch null ConnectionServer object");
+            Assert.IsFalse(res.Success, "GetDistributionLists failed to catch null ConnectionServerRest object");
         }
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailures_AddDistributionList()
         {
             WebCallResult res = DistributionList.AddDistributionList(null, "aaa", "aaa", "123", null);
-            Assert.IsFalse(res.Success, "AddDistributionList failed to catch null ConnectionServer object");
+            Assert.IsFalse(res.Success, "AddDistributionList failed to catch null ConnectionServerRest object");
 
 
             res = DistributionList.AddDistributionList(_connectionServer, "", "", "123", null);
@@ -166,7 +166,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailures_UpdateDistributionList()
         {
             WebCallResult res = DistributionList.UpdateDistributionList(null, "aaa", null);
-            Assert.IsFalse(res.Success, "UpdateDistributionList failed to catch null ConnectionServer object");
+            Assert.IsFalse(res.Success, "UpdateDistributionList failed to catch null ConnectionServerRest object");
 
 
             res = DistributionList.UpdateDistributionList(_connectionServer, "aaa", null);
@@ -181,7 +181,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailures_DeleteDistributionList()
         {
             WebCallResult res = DistributionList.DeleteDistributionList(null, "aaa");
-            Assert.IsFalse(res.Success, "DeleteDistributionList failed to catch null ConnectionServer object");
+            Assert.IsFalse(res.Success, "DeleteDistributionList failed to catch null ConnectionServerRest object");
         }
 
 
@@ -194,7 +194,7 @@ namespace ConnectionCUPIFunctionsTest
             DistributionList oList;
 
             WebCallResult res = DistributionList.GetDistributionList(out oList, null);
-            Assert.IsFalse(res.Success, "GetDistributionList failed to catch null ConnectionServer object");
+            Assert.IsFalse(res.Success, "GetDistributionList failed to catch null ConnectionServerRest object");
 
             res = DistributionList.GetDistributionList(out oList, _connectionServer);
             Assert.IsFalse(res.Success, "GetDistributionList failed to catch empty alias and ObjectId being passed");
@@ -260,7 +260,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailures_SetDistributionListVoiceNameToStreamFile()
         {
             var res = DistributionList.SetDistributionListVoiceNameToStreamFile(null, "objectid", "resourceId");
-            Assert.IsFalse(res.Success, "Calling SetDistributionListVoiceNameToStreamFile with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Calling SetDistributionListVoiceNameToStreamFile with null ConnectionServerRest did not fail");
 
             res = DistributionList.SetDistributionListVoiceNameToStreamFile(_connectionServer, "objectid", "resourceId");
             Assert.IsFalse(res.Success, "Calling SetDistributionListVoiceNameToStreamFile with invalid objectId did not fail");
@@ -436,7 +436,7 @@ namespace ConnectionCUPIFunctionsTest
         public void DistributionList_GetDistributionLists()
         {
 
-            ConnectionServer pConnectionServer = _connectionServer;
+            ConnectionServerRest pConnectionServer = _connectionServer;
             List<DistributionList> pDistributionLists;
 
             //limit the fetch to the first 3 lists to be sure this passes even on a default install
@@ -546,7 +546,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetDistributionLists_HarnessTestFailures()
         {
-            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
 
             List<DistributionList> oLists;
             var res = DistributionList.GetDistributionLists(oServer, out oLists, 1, 5, "EmptyResultText");
@@ -563,7 +563,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void PublicListConstructor_HarnessTestFailure()
         {
-            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
 
             //fetch by ObjectId
             try
@@ -593,7 +593,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetDistributionListMembers_HarnessTestFailures()
         {
-            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
 
             List<DistributionListMember> oMembers;
             var res = DistributionListMember.GetDistributionListMembers(oServer, _tempList.ObjectId, out oMembers, 1, 5, "EmptyResultText");

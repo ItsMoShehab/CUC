@@ -32,7 +32,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Constructor requires a ConnectionServer where the port group template is homed.  Optionally you can
         /// pass the objectId of the template and it will load values for that object.
         /// </summary>
-        public PortGroupTemplate(ConnectionServer pConnectionServer, string pObjectId = "")
+        public PortGroupTemplate(ConnectionServerRest pConnectionServer, string pObjectId = "")
         {
             if (pConnectionServer == null)
             {
@@ -66,7 +66,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Fields and Properties 
 
-        public ConnectionServer HomeServer;
+        public ConnectionServerRest HomeServer;
 
         #endregion
 
@@ -177,7 +177,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// instance of the WebCallResult class with details of the call and it's results from the server.
         /// </returns>
-        public static WebCallResult GetPortGroupTemplateObjectId(ConnectionServer pConnectionServer,
+        public static WebCallResult GetPortGroupTemplateObjectId(ConnectionServerRest pConnectionServer,
                                                                  TelephonyIntegrationMethodEnum pIntegrationMethod,
                                                                  out string pPortGroupTemplateObjectId)
         {
@@ -218,7 +218,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPortGroupTemplates(ConnectionServer pConnectionServer, out List<PortGroupTemplate> pTemplates)
+        public static WebCallResult GetPortGroupTemplates(ConnectionServerRest pConnectionServer, out List<PortGroupTemplate> pTemplates)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -231,7 +231,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "portgrouptemplates");
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "portgrouptemplates");
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");

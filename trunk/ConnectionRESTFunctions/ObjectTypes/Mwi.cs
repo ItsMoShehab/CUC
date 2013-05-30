@@ -52,7 +52,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pObjectId">
         /// Optionally the ObjectId of the device itself - if passed in this will load the NotificationDevice object with data for that device from Connection.
         /// </param>
-        public Mwi(ConnectionServer pConnectionServer, string pUserObjectId, string pObjectId = "")
+        public Mwi(ConnectionServerRest pConnectionServer, string pUserObjectId, string pObjectId = "")
             : this()
         {
             if (pConnectionServer == null)
@@ -96,7 +96,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this notificationd evice instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -270,7 +270,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetMwiDevice(ConnectionServer pConnectionServer, string pUserObjectId, string pObjectId, out Mwi pMwiDevice)
+        public static WebCallResult GetMwiDevice(ConnectionServerRest pConnectionServer, string pUserObjectId, string pObjectId, out Mwi pMwiDevice)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -323,7 +323,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetMwiDevices(ConnectionServer pConnectionServer,
+        public static WebCallResult GetMwiDevices(ConnectionServerRest pConnectionServer,
                                                             string pUserObjectId,
                                                            out List<Mwi> pMwiDevices)
         {
@@ -403,7 +403,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with details of the request/response from the server.
         /// </returns>
-        public static WebCallResult AddMwi(ConnectionServer pConnectionServer,
+        public static WebCallResult AddMwi(ConnectionServerRest pConnectionServer,
                                   string pUserObjectId,
                                   string pDeviceDisplayName,
                                   string pMediaSwitchObjectId,
@@ -477,7 +477,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult DeleteMwiDevice(ConnectionServer pConnectionServer, 
+        public static WebCallResult DeleteMwiDevice(ConnectionServerRest pConnectionServer, 
                                                             string pUserObjectId, 
                                                             string pObjectId)
         {
@@ -526,7 +526,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult UpdateMwi(ConnectionServer pConnectionServer, 
+        public static WebCallResult UpdateMwi(ConnectionServerRest pConnectionServer, 
                                                             string pUserObjectId, 
                                                             string pObjectId, 
                                                             ConnectionPropertyList pPropList)

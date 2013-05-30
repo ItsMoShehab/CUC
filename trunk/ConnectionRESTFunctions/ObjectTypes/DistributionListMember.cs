@@ -115,7 +115,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// WebCallResult instance
         /// </returns>
-        public static WebCallResult GetDistributionListMembers(ConnectionServer pConnectionServer, string pDistributionListObjectId,
+        public static WebCallResult GetDistributionListMembers(ConnectionServerRest pConnectionServer, string pDistributionListObjectId,
             out List<DistributionListMember> pMemberList, int pPageNumber = 1, int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res = new WebCallResult();
@@ -142,7 +142,7 @@ namespace Cisco.UnityConnection.RestFunctions
             temp.Add("pageNumber=" + pPageNumber);
             temp.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = ConnectionServer.AddClausesToUri(string.Format("{0}distributionlists/{1}/distributionlistmembers", pConnectionServer.BaseUrl, 
+            string strUrl = ConnectionServerRest.AddClausesToUri(string.Format("{0}distributionlists/{1}/distributionlistmembers", pConnectionServer.BaseUrl, 
                 pDistributionListObjectId), temp.ToArray());
 
             //issue the command to the CUPI interface

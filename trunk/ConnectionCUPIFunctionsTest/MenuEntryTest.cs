@@ -21,7 +21,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         //call handler to use for testing
         private static CallHandler _callHandler;
@@ -49,7 +49,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                 _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                 _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                    mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -174,7 +174,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             //manual update failure calls
             WebCallResult res = MenuEntry.UpdateMenuEntry(null, _callHandler.ObjectId, "1", null);
-            Assert.IsFalse(res.Success, "Null ConnectionServer parameter should fail");
+            Assert.IsFalse(res.Success, "Null ConnectionServerRest parameter should fail");
 
             res = MenuEntry.UpdateMenuEntry(_connectionServer, "", "1", null);
             Assert.IsFalse(res.Success, "Empty CallHandlerObjectID value should fail");

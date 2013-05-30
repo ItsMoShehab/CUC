@@ -49,7 +49,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </param>
         /// <param name="pObjectId">ObjectId of the COS to load - can ba passed blank if using display name for lookup</param>
         /// <param name="pDisplayName">Display name of COS to search for</param>
-        public ClassOfService(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+        public ClassOfService(ConnectionServerRest pConnectionServer, string pObjectId = "", string pDisplayName = "")
             : this()
         {
             if (pConnectionServer == null)
@@ -85,7 +85,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this TransferOption instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -703,7 +703,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetClassesOfService(ConnectionServer pConnectionServer, out List<ClassOfService> pClassOfServices, params string[] pClauses)
+        public static WebCallResult GetClassesOfService(ConnectionServerRest pConnectionServer, out List<ClassOfService> pClassOfServices, params string[] pClauses)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -716,7 +716,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "coses", pClauses);
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "coses", pClauses);
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -784,7 +784,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetClassesOfService(ConnectionServer pConnectionServer,out List<ClassOfService> pClassOfServices,
+        public static WebCallResult GetClassesOfService(ConnectionServerRest pConnectionServer,out List<ClassOfService> pClassOfServices,
             int pPageNumber=1, int pRowsPerPage=20,params string[] pClauses)
         {
             //tack on the paging items to the parameters list
@@ -821,7 +821,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetClassOfService(out ClassOfService pClassOfService, ConnectionServer pConnectionServer, string pObjectId = "", 
+        public static WebCallResult GetClassOfService(out ClassOfService pClassOfService, ConnectionServerRest pConnectionServer, string pObjectId = "", 
             string pDisplayName = "")
         {
             WebCallResult res = new WebCallResult();
@@ -876,7 +876,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddClassOfService(ConnectionServer pConnectionServer,
+        public static WebCallResult AddClassOfService(ConnectionServerRest pConnectionServer,
                                                     string pDisplayName,
                                                     ConnectionPropertyList pPropList)
         {
@@ -953,7 +953,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddClassOfService(ConnectionServer pConnectionServer,
+        public static WebCallResult AddClassOfService(ConnectionServerRest pConnectionServer,
                                                     string pDisplayName,
                                                     ConnectionPropertyList pPropList,
                                                     out ClassOfService oClassOfService)
@@ -990,7 +990,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult UpdateClassOfService(ConnectionServer pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
+        public static WebCallResult UpdateClassOfService(ConnectionServerRest pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -1037,7 +1037,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult DeleteClassOfService(ConnectionServer pConnectionServer, string pObjectId)
+        public static WebCallResult DeleteClassOfService(ConnectionServerRest pConnectionServer, string pObjectId)
         {
             if (pConnectionServer == null)
             {

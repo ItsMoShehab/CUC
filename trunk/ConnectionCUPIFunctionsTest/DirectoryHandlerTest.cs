@@ -22,7 +22,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         private static DirectoryHandler _tempHandler;
 
@@ -42,7 +42,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                     mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -100,7 +100,7 @@ namespace ConnectionCUPIFunctionsTest
             List<DirectoryHandler> oHandlerList;
 
             WebCallResult res = DirectoryHandler.GetDirectoryHandlers(null, out oHandlerList, null);
-            Assert.IsFalse(res.Success, "GetDirectoryHandler should fail with null ConnectionServer passed to it");
+            Assert.IsFalse(res.Success, "GetDirectoryHandler should fail with null ConnectionServerRest passed to it");
 
         }
 
@@ -109,7 +109,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             DirectoryHandler oHandler;
             var res = DirectoryHandler.AddDirectoryHandler(null, "display name", true, null, out oHandler);
-            Assert.IsFalse(res.Success, "Calling AddHandler with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Calling AddHandler with null ConnectionServerRest did not fail");
 
             res = DirectoryHandler.AddDirectoryHandler(_connectionServer, "", true, null, out oHandler);
             Assert.IsFalse(res.Success, "Calling AddHandler with empty display name did not fail");
@@ -119,7 +119,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailures_DeleteDirectoryHandler()
         {
             var res = DirectoryHandler.DeleteDirectoryHandler(null, "objectid");
-            Assert.IsFalse(res.Success, "Calling DeleteDirectoryHandler with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Calling DeleteDirectoryHandler with null ConnectionServerRest did not fail");
 
             res = DirectoryHandler.DeleteDirectoryHandler(_connectionServer, "objectid");
             Assert.IsFalse(res.Success, "Calling DeleteDirectoryHandler with invalid objectId did not fail");
@@ -132,7 +132,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailures_UpdateDirectoryHandler()
         {
             var res = DirectoryHandler.UpdateDirectoryHandler(null, "objectid", null);
-            Assert.IsFalse(res.Success, "Calling UpdateDirectoryHandler with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Calling UpdateDirectoryHandler with null ConnectionServerRest did not fail");
 
             res = DirectoryHandler.UpdateDirectoryHandler(_connectionServer, "objectid", null);
             Assert.IsFalse(res.Success, "Calling UpdateDirectoryHandler with null property list did not fail");
@@ -156,7 +156,7 @@ namespace ConnectionCUPIFunctionsTest
             DirectoryHandler oHandler;
 
             WebCallResult res = DirectoryHandler.GetDirectoryHandler(out oHandler, null);
-            Assert.IsFalse(res.Success, "GetDirectoryHandler should fail if the ConnectionServer is null");
+            Assert.IsFalse(res.Success, "GetDirectoryHandler should fail if the ConnectionServerRest is null");
 
             res = DirectoryHandler.GetDirectoryHandler(out oHandler, _connectionServer);
             Assert.IsFalse(res.Success, "GetDirectoryHandler should fail if the ObjectId and display name are both blank");
@@ -235,7 +235,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailures_SetGreetingStreamFile()
         {
             var res = DirectoryHandler.SetGreetingRecordingToStreamFile(null, "streamname", "objectId", 1033);
-            Assert.IsFalse(res.Success, "Calling SetGreetingRecordingToStreamFile with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Calling SetGreetingRecordingToStreamFile with null ConnectionServerRest did not fail");
 
             res = DirectoryHandler.SetGreetingRecordingToStreamFile(_connectionServer, "streamname", "objectId", 1033);
             Assert.IsFalse(res.Success, "Calling SetGreetingRecordingToStreamFile with invalid objectId did not fail");

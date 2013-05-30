@@ -30,7 +30,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Constructor requires a ConnectionServer object for where the VMSServer is hosted.  You can optionally pass in an ObjectID 
         /// to load a specific VMSserver object data directly.
         /// </summary>
-        public VmsServer(ConnectionServer pConnectionServer, string pObjectId = "")
+        public VmsServer(ConnectionServerRest pConnectionServer, string pObjectId = "")
         {
             if (pConnectionServer == null)
             {
@@ -64,7 +64,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Fields and Properties
 
-        public ConnectionServer HomeServer;
+        public ConnectionServerRest HomeServer;
 
         #endregion
 
@@ -228,7 +228,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetVmsServers(ConnectionServer pConnectionServer, out List<VmsServer> pServers)
+        public static WebCallResult GetVmsServers(ConnectionServerRest pConnectionServer, out List<VmsServer> pServers)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -241,7 +241,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "vmsservers");
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "vmsservers");
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");

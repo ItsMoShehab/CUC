@@ -23,7 +23,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         private static CallHandlerTemplate _tempHandlerTemplate;
 
@@ -50,7 +50,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                 _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                 _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                    mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -237,7 +237,7 @@ namespace ConnectionCUPIFunctionsTest
             List<CallHandlerTemplate> oTemplates;
 
             WebCallResult res = CallHandlerTemplate.GetCallHandlerTemplates(null, out oTemplates);
-            Assert.IsFalse(res.Success, "Null ConnectionServer parameter should fail");
+            Assert.IsFalse(res.Success, "Null ConnectionServerRest parameter should fail");
 
             res = CallHandlerTemplate.GetCallHandlerTemplates(_connectionServer, out oTemplates,1,10,null);
             Assert.IsTrue(res.Success, "Failed to get call handler templates");
@@ -333,7 +333,7 @@ namespace ConnectionCUPIFunctionsTest
             CallHandlerTemplate oTemplate;
             var res = CallHandlerTemplate.AddCallHandlerTemplate(null, "display name", "mediaswitchobjectid", "recipientlist","recipientuser", 
                 null, out oTemplate);
-            Assert.IsFalse(res.Success,"AddCallHandlerTemplate with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success,"AddCallHandlerTemplate with null ConnectionServerRest did not fail");
 
             res = CallHandlerTemplate.AddCallHandlerTemplate(_connectionServer, "", "mediaswitchobjectid", "recipientlist", "recipientuser",null, out oTemplate);
             Assert.IsFalse(res.Success, "AddCallHandlerTemplate with empty display name did not fail");
@@ -365,7 +365,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             CallHandlerTemplate oTemplate;
             var res= CallHandlerTemplate.GetCallHandlerTemplate(out oTemplate, null, "objectid", "displayname");
-            Assert.IsFalse(res.Success, "GetCallHandlerTemplate with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "GetCallHandlerTemplate with null ConnectionServerRest did not fail");
 
             res = CallHandlerTemplate.GetCallHandlerTemplate(out oTemplate, _connectionServer, "", "");
             Assert.IsFalse(res.Success, "GetCallHandlerTemplate with empty objectId and name did not fail");
@@ -408,7 +408,7 @@ namespace ConnectionCUPIFunctionsTest
        [TestMethod]
        public void GetCallHandlerTemplates_HarnessFailures()
        {
-           ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(),"test","test","test");
+           ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(),"test","test","test");
 
            List<CallHandlerTemplate> oTemplates;
            var res = CallHandlerTemplate.GetCallHandlerTemplates(oServer, out oTemplates, 1, 5, "EmptyResultText");
@@ -425,7 +425,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void AddCallHandlerTemplate_HarnessFailures()
         {
-            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
 
             ConnectionPropertyList oProps = new ConnectionPropertyList();
             oProps.Add("ReturnSpecificText[/vmrest/callhandlertemplates/junk]", "junk");

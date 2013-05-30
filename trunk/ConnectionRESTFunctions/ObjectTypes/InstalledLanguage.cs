@@ -29,7 +29,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// constructor takes a ConnectionServer as a parameter - passed as null when constructing lists internally
         /// </summary>
         /// <param name="pConnectionServer"></param>
-        public InstalledLanguage(ConnectionServer pConnectionServer = null)
+        public InstalledLanguage(ConnectionServerRest pConnectionServer = null)
         {
             if (pConnectionServer == null)
             {
@@ -58,7 +58,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Fields and Properties 
 
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         public List<InstalledLanguage> InstalledLanguages { get; private set; }
 

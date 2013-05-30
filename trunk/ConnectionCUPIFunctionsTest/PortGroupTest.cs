@@ -17,7 +17,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         /// <summary>
         ///Gets or sets the test context which provides
@@ -43,7 +43,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                     mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -79,7 +79,7 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
-            PortGroup oPorts = new PortGroup(new ConnectionServer(new RestTransportFunctions()), "blah");
+            PortGroup oPorts = new PortGroup(new ConnectionServerRest(new RestTransportFunctions()), "blah");
             Console.WriteLine(oPorts);
         }
 
@@ -105,7 +105,7 @@ namespace ConnectionCUPIFunctionsTest
             WebCallResult res = PortGroup.GetPortGroups(null, out oPortGroups);
             Assert.IsFalse(res.Success, "Fetching port groups with null Connection server should fail.");
 
-            res = PortGroup.GetPortGroups(new ConnectionServer(new RestTransportFunctions()), out oPortGroups);
+            res = PortGroup.GetPortGroups(new ConnectionServerRest(new RestTransportFunctions()), out oPortGroups);
             Assert.IsFalse(res.Success, "Fetching port groups with invalid Connection server should fail.");
         }
 

@@ -41,7 +41,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pDisplayName">
         /// Optional display name to search for a port group by
         /// </param>
-        public PortGroup(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+        public PortGroup(ConnectionServerRest pConnectionServer, string pObjectId = "", string pDisplayName = "")
             : this()
         {
             if (pConnectionServer == null)
@@ -88,7 +88,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this object instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -706,7 +706,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPortGroups(ConnectionServer pConnectionServer, out List<PortGroup> pPortGroups, int pPageNumber = 1,
+        public static WebCallResult GetPortGroups(ConnectionServerRest pConnectionServer, out List<PortGroup> pPortGroups, int pPageNumber = 1,
             int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res;
@@ -733,7 +733,7 @@ namespace Cisco.UnityConnection.RestFunctions
             temp.Add("pageNumber=" + pPageNumber);
             temp.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "portgroups",temp.ToArray());
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "portgroups",temp.ToArray());
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -787,7 +787,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPortGroups(ConnectionServer pConnectionServer, out List<PortGroup> pPortGroups,
+        public static WebCallResult GetPortGroups(ConnectionServerRest pConnectionServer, out List<PortGroup> pPortGroups,
                                                   string pMediaSwitchObjectId)
         {
             return GetPortGroups(pConnectionServer, out pPortGroups, 1, 512,
@@ -812,7 +812,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPortGroup(out PortGroup pPortGroup, ConnectionServer pConnectionServer, string pObjectId, 
+        public static WebCallResult GetPortGroup(out PortGroup pPortGroup, ConnectionServerRest pConnectionServer, string pObjectId, 
             string pDisplayName="")
         {
             WebCallResult res = new WebCallResult { Success = false };
@@ -869,7 +869,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult UpdatePortGroup(ConnectionServer pConnectionServer,
+        public static WebCallResult UpdatePortGroup(ConnectionServerRest pConnectionServer,
                                                         string pPortGroupObjectId,
                                                         ConnectionPropertyList pPropList)
         {
@@ -931,7 +931,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with details of the method call and the results from the server.
         /// </returns>
-        public static WebCallResult AddPortGroup(ConnectionServer pConnectionServer, string pDisplayName, string pPhoneSystemObjectId, 
+        public static WebCallResult AddPortGroup(ConnectionServerRest pConnectionServer, string pDisplayName, string pPhoneSystemObjectId, 
             string pHostOrIpAddress, TelephonyIntegrationMethodEnum pPhoneIntegrationMethod, string pSccpDevicePrefix = "")
         {
             WebCallResult res = new WebCallResult {Success = false};
@@ -1020,7 +1020,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with details of the method call and the results from the server.
         /// </returns>
-        public static WebCallResult AddPortGroup(ConnectionServer pConnectionServer, string pDisplayName, string pPhoneSystemObjectId, 
+        public static WebCallResult AddPortGroup(ConnectionServerRest pConnectionServer, string pDisplayName, string pPhoneSystemObjectId, 
                     string pHostOrIpAddress, TelephonyIntegrationMethodEnum pPhoneIntegrationMethod, string pSccpDevicePrefix,out PortGroup pPortGroup)
         {
             pPortGroup = null;
@@ -1048,7 +1048,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult DeletePortGroup(ConnectionServer pConnectionServer, string pObjectId)
+        public static WebCallResult DeletePortGroup(ConnectionServerRest pConnectionServer, string pObjectId)
         {
             if (pConnectionServer == null)
             {

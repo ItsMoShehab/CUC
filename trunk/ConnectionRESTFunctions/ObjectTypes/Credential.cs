@@ -38,7 +38,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pCredentialType">
         /// The credential type to fetch for the user (PIN or GUI Password)
         ///  </param>
-        public Credential(ConnectionServer pConnectionServer, string pUserObjectId, CredentialType pCredentialType)
+        public Credential(ConnectionServerRest pConnectionServer, string pUserObjectId, CredentialType pCredentialType)
         {
             if (pConnectionServer == null)
             {
@@ -79,7 +79,7 @@ namespace Cisco.UnityConnection.RestFunctions
         #region Fields and properties
 
         //reference to the ConnectionServer object used to create this credential instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         #endregion
 
@@ -157,7 +157,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetCredential(ConnectionServer pConnectionServer, string pUserObjectId,CredentialType pCredentialType , out Credential pCredential)
+        public static WebCallResult GetCredential(ConnectionServerRest pConnectionServer, string pUserObjectId,CredentialType pCredentialType , out Credential pCredential)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;

@@ -44,7 +44,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pAlias">
         /// 
         /// </param>
-        public Contact(ConnectionServer pConnectionServer, string pObjectId = "", string pAlias = ""):this()
+        public Contact(ConnectionServerRest pConnectionServer, string pObjectId = "", string pAlias = ""):this()
         {
             if (pConnectionServer == null)
             {
@@ -87,7 +87,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this contact instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -298,7 +298,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetContacts(ConnectionServer pConnectionServer, out List<Contact> pContacts, params string[] pClauses)
+        public static WebCallResult GetContacts(ConnectionServerRest pConnectionServer, out List<Contact> pContacts, params string[] pClauses)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -311,7 +311,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "contacts", pClauses);
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "contacts", pClauses);
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -381,7 +381,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
 
-        public static WebCallResult GetContacts(ConnectionServer pConnectionServer, out List<Contact> pContacts,int pPageNumber=1, 
+        public static WebCallResult GetContacts(ConnectionServerRest pConnectionServer, out List<Contact> pContacts,int pPageNumber=1, 
             int pRowsPerPage=20,params string[] pClauses)
         {
             //tack on the paging items to the parameters list
@@ -417,7 +417,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetContact(out Contact pContact,ConnectionServer pConnectionServer, string pObjectId="", string pAlias="")
+        public static WebCallResult GetContact(out Contact pContact,ConnectionServerRest pConnectionServer, string pObjectId="", string pAlias="")
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -481,7 +481,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddContact(ConnectionServer pConnectionServer,
+        public static WebCallResult AddContact(ConnectionServerRest pConnectionServer,
                                                     string pContactTemplateAlias, 
                                                     string pDisplayName, 
                                                     string pFirstName, 
@@ -579,7 +579,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddContact(ConnectionServer pConnectionServer, 
+        public static WebCallResult AddContact(ConnectionServerRest pConnectionServer, 
                                                     string pContactTemplateAlias, 
                                                     string pDisplayName, 
                                                     string pFirstName, 
@@ -615,7 +615,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult DeleteContact(ConnectionServer pConnectionServer, string pObjectId)
+        public static WebCallResult DeleteContact(ConnectionServerRest pConnectionServer, string pObjectId)
         {
             if (pConnectionServer == null)
             {
@@ -647,7 +647,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult UpdateContact(ConnectionServer pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
+        public static WebCallResult UpdateContact(ConnectionServerRest pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -703,7 +703,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetContactVoiceName(ConnectionServer pConnectionServer, string pTargetLocalFilePath, string pObjectId, string pConnectionWavFileName = "")
+        public static WebCallResult GetContactVoiceName(ConnectionServerRest pConnectionServer, string pTargetLocalFilePath, string pObjectId, string pConnectionWavFileName = "")
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -778,7 +778,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult SetContactVoiceName(ConnectionServer pConnectionServer, string pSourceLocalFilePath, string pObjectId, bool pConvertToPcmFirst = false)
+        public static WebCallResult SetContactVoiceName(ConnectionServerRest pConnectionServer, string pSourceLocalFilePath, string pObjectId, bool pConvertToPcmFirst = false)
         {
             string strConvertedWavFilePath = "";
             WebCallResult res = new WebCallResult();
@@ -862,7 +862,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult SetContactVoiceNameToStreamFile(ConnectionServer pConnectionServer, string pObjectId,
+        public static WebCallResult SetContactVoiceNameToStreamFile(ConnectionServerRest pConnectionServer, string pObjectId,
                                                      string pStreamFileResourceName)
         {
             WebCallResult res = new WebCallResult();

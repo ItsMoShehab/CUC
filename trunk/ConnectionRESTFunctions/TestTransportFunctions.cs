@@ -95,11 +95,11 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (string.IsNullOrEmpty(pTypeNameOverride))
             {
-                strCleanJson = ConnectionServer.StripJsonOfObjectWrapper(pJson, typeof(T).Name, true);
+                strCleanJson = ConnectionServerRest.StripJsonOfObjectWrapper(pJson, typeof(T).Name, true);
             }
             else
             {
-                strCleanJson = ConnectionServer.StripJsonOfObjectWrapper(pJson, pTypeNameOverride, true);
+                strCleanJson = ConnectionServerRest.StripJsonOfObjectWrapper(pJson, pTypeNameOverride, true);
             }
 
             try
@@ -119,11 +119,11 @@ namespace Cisco.UnityConnection.RestFunctions
             string strCleanJson;
             if (string.IsNullOrEmpty(pTypeNameOverride))
             {
-                strCleanJson = ConnectionServer.StripJsonOfObjectWrapper(pJson, typeof(T).Name);
+                strCleanJson = ConnectionServerRest.StripJsonOfObjectWrapper(pJson, typeof(T).Name);
             }
             else
             {
-                strCleanJson = ConnectionServer.StripJsonOfObjectWrapper(pJson, pTypeNameOverride);
+                strCleanJson = ConnectionServerRest.StripJsonOfObjectWrapper(pJson, pTypeNameOverride);
             }
 
             try
@@ -147,7 +147,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pRequestBody"></param>
         /// <param name="pJsonResponse"></param>
         /// <returns></returns>
-        public WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServer pConnectionServer, string pRequestBody,
+        public WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServerRest pConnectionServer, string pRequestBody,
                                              bool pJsonResponse = true)
         {
             WebCallResult res = new WebCallResult {Success = true, StatusCode = 200};
@@ -232,7 +232,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pConnectionServer"></param>
         /// <param name="pRequestDictionary"></param>
         /// <returns></returns>
-        public WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServer pConnectionServer,
+        public WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServerRest pConnectionServer,
                                              Dictionary<string, string> pRequestDictionary)
         {
             return GetCupiResponse(pUrl, pMethod, pConnectionServer, "");
@@ -246,7 +246,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pLocalWavFilePath"></param>
         /// <param name="pConnectionFileName"></param>
         /// <returns></returns>
-        public WebCallResult DownloadWavFile(ConnectionServer pConnectionServer, string pLocalWavFilePath, string pConnectionFileName)
+        public WebCallResult DownloadWavFile(ConnectionServerRest pConnectionServer, string pLocalWavFilePath, string pConnectionFileName)
         {
             WebCallResult res = new WebCallResult {Success = true};
 
@@ -287,7 +287,7 @@ namespace Cisco.UnityConnection.RestFunctions
             return res;
         }
 
-        public WebCallResult DownloadMessageAttachment(string pBaseUrl, ConnectionServer pConnectionServer, string pLocalWavFilePath,
+        public WebCallResult DownloadMessageAttachment(string pBaseUrl, ConnectionServerRest pConnectionServer, string pLocalWavFilePath,
                                                        string pUserObjectId, string pMessageObjectId, int pAttachmentNumber)
         {
             WebCallResult res = new WebCallResult { Success = true };
@@ -331,26 +331,26 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
 
-        public WebCallResult UploadWavFile(string pFullResourcePath, ConnectionServer pConnectionServer, string pLocalWavFilePath)
+        public WebCallResult UploadWavFile(string pFullResourcePath, ConnectionServerRest pConnectionServer, string pLocalWavFilePath)
         {
             throw new NotImplementedException();
         }
 
-        public WebCallResult UploadVoiceMessageWav(ConnectionServer pConnectionServer, string pPathToLocalWav,
+        public WebCallResult UploadVoiceMessageWav(ConnectionServerRest pConnectionServer, string pPathToLocalWav,
                                                    string pMessageDetailsJsonString, string pSenderUserObjectId,
                                                    string pRecipientJsonString, string pUriConstruction = "")
         {
             throw new NotImplementedException();
         }
 
-        public WebCallResult UploadVoiceMessageResourceId(ConnectionServer pConnectionServer, string pResourceId,
+        public WebCallResult UploadVoiceMessageResourceId(ConnectionServerRest pConnectionServer, string pResourceId,
                                                           string pMessageDetailsJsonString, string pSenderUserObjectId,
                                                           string pRecipientJsonString, string pUriConstruction = "")
         {
             throw new NotImplementedException();
         }
 
-        public WebCallResult UploadWavFileToStreamLibrary(ConnectionServer pConnectionServer, string pLocalWavFilePath,
+        public WebCallResult UploadWavFileToStreamLibrary(ConnectionServerRest pConnectionServer, string pLocalWavFilePath,
                                                           out string pConnectionStreamFileName)
         {
             throw new NotImplementedException();

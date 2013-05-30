@@ -49,7 +49,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pDisplayName">
         /// Optional display name to search for a switch definition by
         /// </param>
-        public PhoneSystem(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+        public PhoneSystem(ConnectionServerRest pConnectionServer, string pObjectId = "", string pDisplayName = "")
             : this()
         {
             if (pConnectionServer == null)
@@ -87,7 +87,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this object instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -526,7 +526,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPhoneSystems(ConnectionServer pConnectionServer, out List<PhoneSystem> pPhoneSystems,
+        public static WebCallResult GetPhoneSystems(ConnectionServerRest pConnectionServer, out List<PhoneSystem> pPhoneSystems,
             int pPageNumber = 1, int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res;
@@ -552,7 +552,7 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("pageNumber=" + pPageNumber);
             oParams.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "phonesystems", oParams.ToArray());
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "phonesystems", oParams.ToArray());
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -610,7 +610,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetPhoneSystem(out PhoneSystem pPhoneSystem, ConnectionServer pConnectionServer, string pObjectId, 
+        public static WebCallResult GetPhoneSystem(out PhoneSystem pPhoneSystem, ConnectionServerRest pConnectionServer, string pObjectId, 
             string pDisplayName="")
         {
             WebCallResult res = new WebCallResult {Success = false};
@@ -666,7 +666,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult UpdatePhoneSystem(ConnectionServer pConnectionServer,string pMediaSwitchObjectId,ConnectionPropertyList pPropList)
+        public static WebCallResult UpdatePhoneSystem(ConnectionServerRest pConnectionServer,string pMediaSwitchObjectId,ConnectionPropertyList pPropList)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -712,7 +712,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddPhoneSystem(ConnectionServer pConnectionServer,string pDisplayName)
+        public static WebCallResult AddPhoneSystem(ConnectionServerRest pConnectionServer,string pDisplayName)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -769,7 +769,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddPhoneSystem(ConnectionServer pConnectionServer,string pDisplayName,out PhoneSystem pPhoneSystem)
+        public static WebCallResult AddPhoneSystem(ConnectionServerRest pConnectionServer,string pDisplayName,out PhoneSystem pPhoneSystem)
         {
             pPhoneSystem = null;
 
@@ -796,7 +796,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult DeletePhoneSystem(ConnectionServer pConnectionServer, string pObjectId)
+        public static WebCallResult DeletePhoneSystem(ConnectionServerRest pConnectionServer, string pObjectId)
         {
             if (pConnectionServer == null)
             {
@@ -831,7 +831,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class with details of the fetch results.
         /// </returns>
-        public static WebCallResult GetPhoneSystemAssociations(ConnectionServer pConnectionServer, string pObjectId,
+        public static WebCallResult GetPhoneSystemAssociations(ConnectionServerRest pConnectionServer, string pObjectId,
             out List<PhoneSystemAssociation> pAssociations, int pPageNumber=1, int pRowsPerPage=20)
         {
             WebCallResult res = new WebCallResult {Success = false};
@@ -843,7 +843,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl =ConnectionServer.AddClausesToUri(string.Format("{0}phonesystems/{1}/phonesystemassociations", pConnectionServer.BaseUrl, pObjectId),
+            string strUrl =ConnectionServerRest.AddClausesToUri(string.Format("{0}phonesystems/{1}/phonesystemassociations", pConnectionServer.BaseUrl, pObjectId),
                     "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");

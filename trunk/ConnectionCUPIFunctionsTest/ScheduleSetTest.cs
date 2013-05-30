@@ -17,7 +17,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         private static ScheduleSet _tempScheduleSet;
         /// <summary>
@@ -43,7 +43,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                     mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -219,7 +219,7 @@ namespace ConnectionCUPIFunctionsTest
             //get scheduleset memebers
             List<ScheduleSetMember> oMembers;
             var res = ScheduleSet.GetSchedulesSetsMembers(null, "bogus", out oMembers);
-            Assert.IsFalse(res.Success, "Getting schedule set members with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Getting schedule set members with null ConnectionServerRest did not fail");
 
             res = ScheduleSet.GetSchedulesSetsMembers(_connectionServer, "", out oMembers);
             Assert.IsFalse(res.Success, "Getting schedule set members with empty objectId did not fail");
@@ -230,7 +230,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             //AddScheduleSet
             var res = ScheduleSet.AddScheduleSet(null, "DisplayName", _connectionServer.PrimaryLocationObjectId, "");
-            Assert.IsFalse(res.Success, "Calling AddScheduleSet with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Calling AddScheduleSet with null ConnectionServerRest did not fail");
 
             res = ScheduleSet.AddScheduleSet(_connectionServer, "", _connectionServer.PrimaryLocationObjectId, "");
             Assert.IsFalse(res.Success, "Calling AddScheduleSet with empty display name did not fail");
@@ -246,7 +246,7 @@ namespace ConnectionCUPIFunctionsTest
             
             ScheduleSet oSet;
             res = ScheduleSet.AddScheduleSet(null, "DisplayName", _connectionServer.PrimaryLocationObjectId, "", out oSet);
-            Assert.IsFalse(res.Success, "Calling AddScheduleSet with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Calling AddScheduleSet with null ConnectionServerRest did not fail");
         }
 
         [TestMethod]
@@ -254,7 +254,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             //deleteScheduleSet
             var res = ScheduleSet.DeleteScheduleSet(null, "bogus");
-            Assert.IsFalse(res.Success, "Calling DeleteScheduleSet with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Calling DeleteScheduleSet with null ConnectionServerRest did not fail");
 
             res = ScheduleSet.DeleteScheduleSet(_connectionServer, "bogus");
             Assert.IsFalse(res.Success, "Calling DeleteScheduleSet with invalid ObjectID did not fail");
@@ -268,7 +268,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             //AddScheduleSetMember
             var res = ScheduleSet.AddScheduleSetMember(null, "bogus", "bogus");
-            Assert.IsFalse(res.Success, "Calling AddScheduleSetMember with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Calling AddScheduleSetMember with null ConnectionServerRest did not fail");
 
             res = ScheduleSet.AddScheduleSetMember(_connectionServer, "bogus", "bogus");
             Assert.IsFalse(res.Success, "Calling AddScheduleSetMember with invalid schedule and scheduleset IDs did not fail");
@@ -311,7 +311,7 @@ namespace ConnectionCUPIFunctionsTest
             List<ScheduleSet> oSets;
 
             WebCallResult res = ScheduleSet.GetSchedulesSets(null, out oSets);
-            Assert.IsFalse(res.Success,"Getting schedule sets with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success,"Getting schedule sets with null ConnectionServerRest did not fail");
         }
 
         #endregion

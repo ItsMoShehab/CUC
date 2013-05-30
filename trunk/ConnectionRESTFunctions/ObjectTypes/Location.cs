@@ -46,7 +46,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Optional parameter for fetching a location's data based on display name.  If both the ObjectId and the name are passed, the ObjectId will be used 
         /// for the search.
         /// </param>
-        public Location(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+        public Location(ConnectionServerRest pConnectionServer, string pObjectId = "", string pDisplayName = "")
         {
             if (pConnectionServer == null)
             {
@@ -87,7 +87,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this location instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         #endregion
 
@@ -269,7 +269,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetLocations(ConnectionServer pConnectionServer, out List<Location> pLocations, params string[] pClauses)
+        public static WebCallResult GetLocations(ConnectionServerRest pConnectionServer, out List<Location> pLocations, params string[] pClauses)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -281,7 +281,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 res.ErrorText = "Null Connection server object passed to GetLocations";
                 return res;
             }
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "locations/connectionlocations",pClauses);
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "locations/connectionlocations",pClauses);
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -354,7 +354,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetLocations(ConnectionServer pConnectionServer, out List<Location> pLocations,int pPageNumber=1, 
+        public static WebCallResult GetLocations(ConnectionServerRest pConnectionServer, out List<Location> pLocations,int pPageNumber=1, 
             int pRowsPerPage=20,params string[] pClauses)
         {
             //tack on the paging items to the parameters list
@@ -396,7 +396,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetLocation(out Location pLocation, ConnectionServer pConnectionServer, string pObjectId, string pDisplayName = "")
+        public static WebCallResult GetLocation(out Location pLocation, ConnectionServerRest pConnectionServer, string pObjectId, string pDisplayName = "")
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;

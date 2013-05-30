@@ -30,7 +30,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Constructor requires ConnectionServer where SNPP provider is homed.  Can optionally pass in an ObjectId to load that
         /// SMPP provider data.
         /// </summary>
-        public SmppProvider(ConnectionServer pConnectionServer, string pObjectId = "")
+        public SmppProvider(ConnectionServerRest pConnectionServer, string pObjectId = "")
         {
             if (pConnectionServer == null)
             {
@@ -109,7 +109,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of WebCallResult class
         /// </returns>
-        private WebCallResult GetSmppProvider(ConnectionServer pConnectionServer, string pObjectId)
+        private WebCallResult GetSmppProvider(ConnectionServerRest pConnectionServer, string pObjectId)
         {
             string strUrl = pConnectionServer.BaseUrl + "smppproviders/" + pObjectId;
 
@@ -151,7 +151,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetSmppProviders(ConnectionServer pConnectionServer, out List<SmppProvider> pSmppProviders,
+        public static WebCallResult GetSmppProviders(ConnectionServerRest pConnectionServer, out List<SmppProvider> pSmppProviders,
             params string[] pClauses)
         {
             WebCallResult res;
@@ -164,7 +164,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "smppproviders", pClauses);
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "smppproviders", pClauses);
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -212,7 +212,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetSmppProviders(ConnectionServer pConnectionServer,
+        public static WebCallResult GetSmppProviders(ConnectionServerRest pConnectionServer,
                                                      out List<SmppProvider> pSmppProviders,
                                                      int pPageNumber = 1, int pRowsPerPage = 20,
                                                      params string[] pClauses)

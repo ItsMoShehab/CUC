@@ -22,9 +22,9 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
-        private static ConnectionServer _connectionServerTestHarness;
+        private static ConnectionServerRest _connectionServerTestHarness;
 
         /// <summary>
         ///Gets or sets the test context which provides
@@ -49,7 +49,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                 _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                 _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                    mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -61,13 +61,13 @@ namespace ConnectionCUPIFunctionsTest
 
             try
             {
-                _connectionServerTestHarness = new ConnectionServer(new TestTransportFunctions(),
+                _connectionServerTestHarness = new ConnectionServerRest(new TestTransportFunctions(),
                                                                     mySettings.ConnectionServer,
                                                                     mySettings.ConnectionLogin, mySettings.ConnectionPW);
             }
             catch (Exception ex)
             {
-                throw new Exception("Unable to create test harness version of ConnectionServer to start SmppProvider tests:"+ex);
+                throw new Exception("Unable to create test harness version of ConnectionServerRest to start SmppProvider tests:"+ex);
             }
         }
 

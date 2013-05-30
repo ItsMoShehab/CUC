@@ -57,7 +57,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Optional display name of the device - names must be unique across all devices so this can be used for fetching a specific notificaiton device
         /// of any type.
         /// </param>
-        public NotificationDevice(ConnectionServer pConnectionServer, string pUserObjectId, string pObjectId = "", string pDisplayName = "")
+        public NotificationDevice(ConnectionServerRest pConnectionServer, string pUserObjectId, string pObjectId = "", string pDisplayName = "")
             : this()
         {
             if (pConnectionServer == null)
@@ -102,7 +102,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this notificationd evice instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -611,7 +611,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetNotificationDeivce(ConnectionServer pConnectionServer, string pUserObjectId, string pObjectId,string pDisplayName, 
+        public static WebCallResult GetNotificationDeivce(ConnectionServerRest pConnectionServer, string pUserObjectId, string pObjectId,string pDisplayName, 
             out NotificationDevice pNotificationDevice)
         {
             WebCallResult res = new WebCallResult();
@@ -666,7 +666,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetNotificationDevices(ConnectionServer pConnectionServer,
+        public static WebCallResult GetNotificationDevices(ConnectionServerRest pConnectionServer,
                                                             string pUserObjectId,
                                                            out List<NotificationDevice> pNotificationDevices)
         {
@@ -746,7 +746,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddSmtpDevice(ConnectionServer pConnectionServer,
+        public static WebCallResult AddSmtpDevice(ConnectionServerRest pConnectionServer,
                                                   string pUserObjectId,
                                                   string pDeviceDisplayName,
                                                   string pSmtpAddress,
@@ -833,7 +833,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddHtmlDevice(ConnectionServer pConnectionServer,
+        public static WebCallResult AddHtmlDevice(ConnectionServerRest pConnectionServer,
                                                   string pUserObjectId,
                                                   string pTemplateObjectId,
                                                   string pDeviceDisplayName,
@@ -926,7 +926,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult AddSmsDevice(ConnectionServer pConnectionServer,
+        public static WebCallResult AddSmsDevice(ConnectionServerRest pConnectionServer,
                                                   string pUserObjectId,
                                                   string pDeviceDisplayName,
                                                   string pSmppProviderObjectId,
@@ -1023,7 +1023,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class
         /// </returns>
-        public static WebCallResult AddPhoneDevice(ConnectionServer pConnectionServer,
+        public static WebCallResult AddPhoneDevice(ConnectionServerRest pConnectionServer,
                                           string pUserObjectId,
                                           string pDeviceDisplayName,
                                           string pMediaSwitchObjectId,
@@ -1112,7 +1112,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class
         /// </returns>
-        public static WebCallResult AddPagerDevice(ConnectionServer pConnectionServer,
+        public static WebCallResult AddPagerDevice(ConnectionServerRest pConnectionServer,
                                   string pUserObjectId,
                                   string pDeviceDisplayName,
                                   string pMediaSwitchObjectId,
@@ -1192,7 +1192,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult DeleteNotificationDevice(ConnectionServer pConnectionServer, 
+        public static WebCallResult DeleteNotificationDevice(ConnectionServerRest pConnectionServer, 
                                                             string pUserObjectId, 
                                                             string pObjectId, 
                                                             NotificationDeviceTypes pDeviceType)
@@ -1244,7 +1244,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult UpdateNotificationDevice(ConnectionServer pConnectionServer, 
+        public static WebCallResult UpdateNotificationDevice(ConnectionServerRest pConnectionServer, 
                                                             string pUserObjectId, 
                                                             string pObjectId, 
                                                             NotificationDeviceTypes pDeviceType,
@@ -1296,7 +1296,7 @@ namespace Cisco.UnityConnection.RestFunctions
         //Helper function to construct the full path to the notificaiton device based on its type which is used by both the edit and
         //delete functions.  There's no provision for deleting a notification devie via the generic "notificationdevices" path - you have
         //to reference the type in the both for the ObjectId to be resolved.
-        private static string GetUrlPathForDeviceType(NotificationDeviceTypes pDeviceType, ConnectionServer pConnectionServer, string pUserObjectId, 
+        private static string GetUrlPathForDeviceType(NotificationDeviceTypes pDeviceType, ConnectionServerRest pConnectionServer, string pUserObjectId, 
             string pObjectId)
         {
             string strUrl;
@@ -1453,7 +1453,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(ConnectionServer.StripJsonOfObjectWrapper(res.ResponseText, "NotificationDevice"), this,
+                JsonConvert.PopulateObject(ConnectionServerRest.StripJsonOfObjectWrapper(res.ResponseText, "NotificationDevice"), this,
                     RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)

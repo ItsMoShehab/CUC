@@ -31,7 +31,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Constructor requires ConnectionServer object where SearchSpace is homed.  Can optionally pass ObjectId or name
         /// of search space to load data for.
         /// </summary>
-        public SearchSpace(ConnectionServer pConnectionServer, string pObjectId = "", string pName = "")
+        public SearchSpace(ConnectionServerRest pConnectionServer, string pObjectId = "", string pName = "")
         {
             if (pConnectionServer == null)
             {
@@ -74,7 +74,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         //reference to the ConnectionServer object used to create this instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         private List<Partition> _partitions;
         /// <summary>
@@ -363,7 +363,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// are currently supported by CUPI - in other words you can't have "query=(alias startswith ab)" and "query=(FirstName startswith a)" in
         /// the same call.  Also if you have a sort and a query clause they must both reference the same column.
         /// </param>        
-        public static WebCallResult GetSearchSpaces(ConnectionServer pConnectionServer, out List<SearchSpace> pSearchSpaces, int pPageNumber = 1,
+        public static WebCallResult GetSearchSpaces(ConnectionServerRest pConnectionServer, out List<SearchSpace> pSearchSpaces, int pPageNumber = 1,
             int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res;
@@ -390,7 +390,7 @@ namespace Cisco.UnityConnection.RestFunctions
             temp.Add("pageNumber=" + pPageNumber);
             temp.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "searchspaces", temp.ToArray());
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "searchspaces", temp.ToArray());
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -450,7 +450,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        private static WebCallResult GetPartitions(ConnectionServer pConnectionServer, string pSearchSpaceObjectId, out List<Partition> pPartitions )
+        private static WebCallResult GetPartitions(ConnectionServerRest pConnectionServer, string pSearchSpaceObjectId, out List<Partition> pPartitions )
         {
             pPartitions= new List<Partition>();
 
@@ -530,7 +530,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddSearchSpace(ConnectionServer pConnectionServer,
+        public static WebCallResult AddSearchSpace(ConnectionServerRest pConnectionServer,
                                                    out SearchSpace pSearchSpace,
                                                    string pName,
                                                    string pDescription = "",
@@ -575,7 +575,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddSearchSpace(ConnectionServer pConnectionServer,
+        public static WebCallResult AddSearchSpace(ConnectionServerRest pConnectionServer,
                                                     string pName,
                                                     string pDescription = "",
                                                     string pLocationObjectId = "")
@@ -638,7 +638,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class
         /// </returns>
-        public static WebCallResult DeleteSearchSpace(ConnectionServer pConnectionServer, string pSearchSpaceObjectId)
+        public static WebCallResult DeleteSearchSpace(ConnectionServerRest pConnectionServer, string pSearchSpaceObjectId)
         {
             WebCallResult res;
             if (pConnectionServer == null)
@@ -682,7 +682,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class
         /// </returns>
-        public static WebCallResult UpdateSearchSpace(ConnectionServer pConnectionServer, string pObjectId, string pName = "", string pDescription = "")
+        public static WebCallResult UpdateSearchSpace(ConnectionServerRest pConnectionServer, string pObjectId, string pName = "", string pDescription = "")
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -740,7 +740,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddSearchSpaceMember(ConnectionServer pConnectionServer,
+        public static WebCallResult AddSearchSpaceMember(ConnectionServerRest pConnectionServer,
                                                     string pSearchSpaceObjectId,
                                                     string pPartitionObjectId,
                                                     int pSortOrder)
@@ -799,7 +799,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult DeleteSearchSpaceMember(ConnectionServer pConnectionServer,
+        public static WebCallResult DeleteSearchSpaceMember(ConnectionServerRest pConnectionServer,
                                                     string pSearchSpaceObjectId,
                                                     string pPartitionObjectId)
         {
@@ -848,7 +848,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// SearchSpaceMember ObjectId value if found, empty string if not.
         /// </returns>
-        private static string GetSearchSpaceMemberObjectIdFromPartitionObjectId(ConnectionServer pConnectionServer, 
+        private static string GetSearchSpaceMemberObjectIdFromPartitionObjectId(ConnectionServerRest pConnectionServer, 
                                                                                 string pPartitionObjectId, string pSearchSpaceObjectId)
         {
 

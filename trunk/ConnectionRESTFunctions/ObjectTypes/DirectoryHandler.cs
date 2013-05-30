@@ -47,7 +47,7 @@ namespace Cisco.UnityConnection.RestFunctions
             /// Optional display name search critiera - if both ObjectId and DisplayName are passed, ObjectId is used.  The display name search is not case
             /// sensitive.
             /// </param>
-            public DirectoryHandler(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+            public DirectoryHandler(ConnectionServerRest pConnectionServer, string pObjectId = "", string pDisplayName = "")
                 : this()
             {
                 if (pConnectionServer == null)
@@ -93,7 +93,7 @@ namespace Cisco.UnityConnection.RestFunctions
             public string UniqueIdentifier { get { return ObjectId; } }
 
             //reference to the ConnectionServer object used to create this handlers instance.
-            internal ConnectionServer HomeServer { get; private set; }
+            internal ConnectionServerRest HomeServer { get; private set; }
 
             //used to keep track of which properties have been updated
             private readonly ConnectionPropertyList _changedPropList;
@@ -593,7 +593,7 @@ namespace Cisco.UnityConnection.RestFunctions
             /// <returns>
             /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
             /// </returns>
-            public static WebCallResult GetDirectoryHandlers(ConnectionServer pConnectionServer, out List<DirectoryHandler> pDirectoryHandlers, 
+            public static WebCallResult GetDirectoryHandlers(ConnectionServerRest pConnectionServer, out List<DirectoryHandler> pDirectoryHandlers, 
                 params string[] pClauses)
             {
                 WebCallResult res = new WebCallResult();
@@ -607,7 +607,7 @@ namespace Cisco.UnityConnection.RestFunctions
                     return res;
                 }
 
-                string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "handlers/directoryhandlers",pClauses);
+                string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "handlers/directoryhandlers",pClauses);
 
                 //issue the command to the CUPI interface
                 res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -674,7 +674,7 @@ namespace Cisco.UnityConnection.RestFunctions
             /// <returns>
             /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
             /// </returns>
-            public static WebCallResult GetDirectoryHandlers(ConnectionServer pConnectionServer,out List<DirectoryHandler> pDirectoryHandlers,
+            public static WebCallResult GetDirectoryHandlers(ConnectionServerRest pConnectionServer,out List<DirectoryHandler> pDirectoryHandlers,
                 int pPageNumber=1, int pRowsPerPage=20,params string[] pClauses)
             {
                 //tack on the paging items to the parameters list
@@ -704,7 +704,7 @@ namespace Cisco.UnityConnection.RestFunctions
             /// <returns>
             /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
             /// </returns>
-            public static WebCallResult GetDirectoryHandler(out DirectoryHandler pDirectoryHandler, ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+            public static WebCallResult GetDirectoryHandler(out DirectoryHandler pDirectoryHandler, ConnectionServerRest pConnectionServer, string pObjectId = "", string pDisplayName = "")
             {
                 WebCallResult res = new WebCallResult();
                 res.Success = false;
@@ -766,7 +766,7 @@ namespace Cisco.UnityConnection.RestFunctions
             /// <returns>
             /// Instance of the WebCallResult class.
             /// </returns>
-            public static WebCallResult AddDirectoryHandler(ConnectionServer pConnectionServer,
+            public static WebCallResult AddDirectoryHandler(ConnectionServerRest pConnectionServer,
                                                              string pDisplayName,
                                                              bool pVoiceEnabled,
                                                              ConnectionPropertyList pPropList,
@@ -813,7 +813,7 @@ namespace Cisco.UnityConnection.RestFunctions
             /// <returns>
             /// Instance of the WebCallResult class.
             /// </returns>
-            public static WebCallResult AddDirectoryHandler(ConnectionServer pConnectionServer,
+            public static WebCallResult AddDirectoryHandler(ConnectionServerRest pConnectionServer,
                                                         string pDisplayName,
                                                         bool pVoiceEnabled,
                                                         ConnectionPropertyList pPropList)
@@ -878,7 +878,7 @@ namespace Cisco.UnityConnection.RestFunctions
             /// <returns>
             /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
             /// </returns>
-            public static WebCallResult DeleteDirectoryHandler(ConnectionServer pConnectionServer, string pObjectId)
+            public static WebCallResult DeleteDirectoryHandler(ConnectionServerRest pConnectionServer, string pObjectId)
             {
                 if (pConnectionServer == null)
                 {
@@ -911,7 +911,7 @@ namespace Cisco.UnityConnection.RestFunctions
             /// <returns>
             /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
             /// </returns>
-            public static WebCallResult UpdateDirectoryHandler(ConnectionServer pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
+            public static WebCallResult UpdateDirectoryHandler(ConnectionServerRest pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
             {
                 WebCallResult res = new WebCallResult();
                 res.Success = false;
@@ -977,7 +977,7 @@ namespace Cisco.UnityConnection.RestFunctions
             /// <returns>
             /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
             /// </returns>
-            public static WebCallResult SetGreetingWavFile(ConnectionServer pConnectionServer,
+            public static WebCallResult SetGreetingWavFile(ConnectionServerRest pConnectionServer,
                                                             string pSourceLocalFilePath,
                                                             string pDirectoryHandlerObjectId,
                                                             int pLanguageId,
@@ -1051,7 +1051,7 @@ namespace Cisco.UnityConnection.RestFunctions
             /// <returns>
             /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
             /// </returns>
-            public static WebCallResult SetGreetingRecordingToStreamFile(ConnectionServer pConnectionServer,
+            public static WebCallResult SetGreetingRecordingToStreamFile(ConnectionServerRest pConnectionServer,
                                                          string pStreamFileResourceName,
                                                          string pDirectoryHandlerObjectId,
                                                          int pLanguageId)

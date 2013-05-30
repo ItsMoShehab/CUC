@@ -26,7 +26,7 @@ namespace PWReset
         /// class is designed to allow you to have mutliple server instances in an application if this is what you want.  The instance is held here for easy 
         /// access from different parts of the application without having to pass an instance object around in method calls or the like.
         /// </summary>
-        public static ConnectionServer CurrentConnectionServer;
+        public static ConnectionServerRest CurrentConnectionServer;
 
         /// <summary>
         /// Simple helper function to call when exiting the application - generally used to make sure open resoruces like log files, databases and such are 

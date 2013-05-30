@@ -81,7 +81,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             RestTransportFunctions oFunctions = new RestTransportFunctions();
             var res = oFunctions.DownloadWavFile(null, "bogus", "bogus");
-            Assert.IsFalse(res.Success,"Calling DownloadWavFile with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success,"Calling DownloadWavFile with null ConnectionServerRest did not fail");
         }
 
         [TestMethod]
@@ -89,7 +89,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             RestTransportFunctions oFunctions = new RestTransportFunctions();
             var res = oFunctions.UploadWavFile("bogus", null, "bogus");
-            Assert.IsFalse(res.Success, "Calling UploadWavFile with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Calling UploadWavFile with null ConnectionServerRest did not fail");
         }
 
         [TestMethod]
@@ -98,9 +98,9 @@ namespace ConnectionCUPIFunctionsTest
             RestTransportFunctions oFunctions = new RestTransportFunctions();
 
             var res = oFunctions.UploadVoiceMessageWav(null, "bogus", "bogus", "bogus", "bogus");
-            Assert.IsFalse(res.Success, "Calling UplaodVoiceMessageWav null ConnectionServer did not fail.");
+            Assert.IsFalse(res.Success, "Calling UplaodVoiceMessageWav null ConnectionServerRest did not fail.");
 
-            res = oFunctions.UploadVoiceMessageWav(new ConnectionServer(oFunctions), "", "bogus", "bogus", "bogus");
+            res = oFunctions.UploadVoiceMessageWav(new ConnectionServerRest(oFunctions), "", "bogus", "bogus", "bogus");
             Assert.IsFalse(res.Success, "Calling UplaodVoiceMessageWav with empty local Wav file did not fail.");
         }
 
@@ -111,9 +111,9 @@ namespace ConnectionCUPIFunctionsTest
             RestTransportFunctions oFunctions = new RestTransportFunctions();
 
             var res = oFunctions.UploadVoiceMessageResourceId(null, "bogus", "bogus", "bogus", "bogus");
-            Assert.IsFalse(res.Success,"Calling UplaodVoiceMessageResourceId with null ConnectionServer did not fail.");
+            Assert.IsFalse(res.Success,"Calling UplaodVoiceMessageResourceId with null ConnectionServerRest did not fail.");
 
-            res = oFunctions.UploadVoiceMessageResourceId(new ConnectionServer(oFunctions), "", "bogus", "bogus", "bogus");
+            res = oFunctions.UploadVoiceMessageResourceId(new ConnectionServerRest(oFunctions), "", "bogus", "bogus", "bogus");
             Assert.IsFalse(res.Success, "Calling UplaodVoiceMessageResourceId with empty resourceId did not fail.");
         }
 
@@ -124,7 +124,7 @@ namespace ConnectionCUPIFunctionsTest
 
             string strRet;
             var res = oFunctions.UploadWavFileToStreamLibrary(null, "bogus",out strRet);
-            Assert.IsFalse(res.Success, "Calling UploadWavFileToStreamLibrary with null ConnectionServer did not fail.");
+            Assert.IsFalse(res.Success, "Calling UploadWavFileToStreamLibrary with null ConnectionServerRest did not fail.");
         }
 
     }

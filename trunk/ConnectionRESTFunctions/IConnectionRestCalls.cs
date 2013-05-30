@@ -205,7 +205,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... 
         /// associated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServer pConnectionServer,
+        WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServerRest pConnectionServer,
                                                     string pRequestBody,bool pJsonResponse = true);
 
 
@@ -231,7 +231,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... 
         /// associated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServer pConnectionServer,
+        WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServerRest pConnectionServer,
                                                     Dictionary<string, string> pRequestDictionary);
 
         #endregion
@@ -263,7 +263,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
         /// associiated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>    
-        WebCallResult DownloadWavFile(ConnectionServer pConnectionServer, string pLocalWavFilePath,
+        WebCallResult DownloadWavFile(ConnectionServerRest pConnectionServer, string pLocalWavFilePath,
                                       string pConnectionFileName);
 
 
@@ -296,7 +296,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
         /// associiated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>    
-        WebCallResult DownloadMessageAttachment(string pBaseUrl, ConnectionServer pConnectionServer,string pLocalWavFilePath,
+        WebCallResult DownloadMessageAttachment(string pBaseUrl, ConnectionServerRest pConnectionServer,string pLocalWavFilePath,
                                                 string pUserObjectId, string pMessageObjectId, int pAttachmentNumber);
 
         #endregion
@@ -324,7 +324,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
         /// associiated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        WebCallResult UploadWavFile(string pFullResourcePath, ConnectionServer pConnectionServer,string pLocalWavFilePath);
+        WebCallResult UploadWavFile(string pFullResourcePath, ConnectionServerRest pConnectionServer,string pLocalWavFilePath);
 
 
        /// <summary>
@@ -353,7 +353,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with details about the call and results recieved back from the server.
         /// </returns>
-        WebCallResult UploadVoiceMessageWav(ConnectionServer pConnectionServer, string pPathToLocalWav,
+        WebCallResult UploadVoiceMessageWav(ConnectionServerRest pConnectionServer, string pPathToLocalWav,
                                             string pMessageDetailsJsonString, string pSenderUserObjectId,
                                             string pRecipientJsonString,
                                             string pUriConstruction = "");
@@ -386,7 +386,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with details about the call and results recieved back from the server.
         /// </returns>
-        WebCallResult UploadVoiceMessageResourceId(ConnectionServer pConnectionServer, string pResourceId,
+        WebCallResult UploadVoiceMessageResourceId(ConnectionServerRest pConnectionServer, string pResourceId,
                                                    string pMessageDetailsJsonString, string pSenderUserObjectId,
                                                    string pRecipientJsonString,
                                                    string pUriConstruction = "");
@@ -412,7 +412,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
         /// associiated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        WebCallResult UploadWavFileToStreamLibrary(ConnectionServer pConnectionServer, string pLocalWavFilePath,
+        WebCallResult UploadWavFileToStreamLibrary(ConnectionServerRest pConnectionServer, string pLocalWavFilePath,
                                                    out string pConnectionStreamFileName);
 
         #endregion

@@ -17,7 +17,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         /// <summary>
         ///Gets or sets the test context which provides
@@ -46,7 +46,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                 _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                 _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                    mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -158,7 +158,7 @@ namespace ConnectionCUPIFunctionsTest
             PrivateList oNewPrivateList;
 
             var res = PrivateList.GetPrivateList(out oNewPrivateList, null, "blah");
-            Assert.IsFalse(res.Success, "Fetching private list with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Fetching private list with null ConnectionServerRest did not fail");
 
             res = PrivateList.GetPrivateList(out oNewPrivateList, _connectionServer, "blah");
             Assert.IsFalse(res.Success, "Fetching private list with invalid user objectId did not fail");
@@ -229,7 +229,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailures_AddMemberPublicList()
         {
             var res = PrivateList.AddMemberPublicList(null, "ObjectId", "PublicObjectId", "OwnerObjectId");
-            Assert.IsFalse(res.Success, "Adding private list public DL member via static method did not fail with null ConnectionServer ");
+            Assert.IsFalse(res.Success, "Adding private list public DL member via static method did not fail with null ConnectionServerRest ");
 
             res = PrivateList.AddMemberPublicList(_connectionServer, "", "PublicObjectId", "OwnerObjectId");
             Assert.IsFalse(res.Success, "Adding private list public DL member via static method did not fail with empty private list objectId");
@@ -239,7 +239,7 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticCallFailures_AddMemberUser()
         {
             var res = PrivateList.AddMemberUser(null, "ObjectId", "PublicObjectId", "OwnerObjectId");
-            Assert.IsFalse(res.Success, "Adding private list user member via static method did not fail with null ConnectionServer ");
+            Assert.IsFalse(res.Success, "Adding private list user member via static method did not fail with null ConnectionServerRest ");
 
             res = PrivateList.AddMemberUser(_connectionServer, "", "PublicObjectId", "OwnerObjectId");
             Assert.IsFalse(res.Success, "Adding private list user member via static method did not fail with empty private list objectId");
@@ -252,7 +252,7 @@ namespace ConnectionCUPIFunctionsTest
             //static method calls
             List<PrivateList> oLists;
             WebCallResult res = PrivateList.GetPrivateLists(null, "blah", out oLists);
-            Assert.IsFalse(res.Success, "Fetching private lists with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Fetching private lists with null ConnectionServerRest did not fail");
 
             res = PrivateList.GetPrivateLists(_connectionServer, _tempUser.ObjectId, out oLists);
             Assert.IsTrue(res.Success, "Failed fetching private lists for user:" + res);
@@ -398,7 +398,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetPrivateListMembers_HarnessFailures()
         {
-            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
 
             List<PrivateListMember> oMembers;
             var res = PrivateListMember.GetPrivateListMembers(oServer, "objectid", "EmptyResultText", out oMembers);
@@ -418,7 +418,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetPrivateLists_HarnessFailures()
         {
-            ConnectionServer oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
 
             List<PrivateList> oLists;
             var res = PrivateList.GetPrivateLists(oServer, "EmptyResultText", out oLists);

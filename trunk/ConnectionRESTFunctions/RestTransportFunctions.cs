@@ -237,11 +237,11 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (string.IsNullOrEmpty(pTypeNameOverride))
             {
-                strCleanJson = ConnectionServer.StripJsonOfObjectWrapper(pJson, typeof(T).Name, true);
+                strCleanJson = ConnectionServerRest.StripJsonOfObjectWrapper(pJson, typeof(T).Name, true);
             }
             else
             {
-                strCleanJson = ConnectionServer.StripJsonOfObjectWrapper(pJson, pTypeNameOverride, true);
+                strCleanJson = ConnectionServerRest.StripJsonOfObjectWrapper(pJson, pTypeNameOverride, true);
             }
 
             var oList= JsonConvert.DeserializeObject<List<T>>(strCleanJson, JsonSerializerSettings);
@@ -274,11 +274,11 @@ namespace Cisco.UnityConnection.RestFunctions
             string strCleanJson;
             if (string.IsNullOrEmpty(pTypeNameOverride))
             {
-                strCleanJson = ConnectionServer.StripJsonOfObjectWrapper(pJson, typeof(T).Name);
+                strCleanJson = ConnectionServerRest.StripJsonOfObjectWrapper(pJson, typeof(T).Name);
             }
             else
             {
-                strCleanJson = ConnectionServer.StripJsonOfObjectWrapper(pJson, pTypeNameOverride);
+                strCleanJson = ConnectionServerRest.StripJsonOfObjectWrapper(pJson, pTypeNameOverride);
             }
 
             try
@@ -302,7 +302,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Before a request goes out, tack on the basic authentication string and include the JSESSIONID and token
         /// strings from the server we're communiating with if we have them.
         /// </summary>
-        private void AddCredentialsAndTokens(ref HttpWebRequest pRequest, ConnectionServer pServer)
+        private void AddCredentialsAndTokens(ref HttpWebRequest pRequest, ConnectionServerRest pServer)
         {
             //always stick the authorization item in the header - the .NET library only does this on a challange
             //which wastes a trip
@@ -324,7 +324,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Whenever we get a response from the server check the headers in the response and fish out the cookies if it
         /// includes a JSESSIONID and save them for the next request to this server.
         /// </summary>
-        private void FetchCookieDetails(HttpWebResponse pResponse, ConnectionServer pServer)
+        private void FetchCookieDetails(HttpWebResponse pResponse, ConnectionServerRest pServer)
         {
             if (pResponse == null | pServer == null)
             {
@@ -381,7 +381,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
         /// with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        private WebCallResult GetHttpResponse(string pUrl, MethodType pMethod, ConnectionServer pConnectionServer,
+        private WebCallResult GetHttpResponse(string pUrl, MethodType pMethod, ConnectionServerRest pConnectionServer,
                         string pRequestBody, bool pIsJson = false)
         {
             WebCallResult res = new WebCallResult();
@@ -556,7 +556,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
         /// with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        public WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServer pConnectionServer,
+        public WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServerRest pConnectionServer,
                                                     Dictionary<string,string> pRequestDictionary)
         {
             StringBuilder strRequestBody = new StringBuilder();
@@ -615,7 +615,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
         /// with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        public WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServer pConnectionServer, string pRequestBody,
+        public WebCallResult GetCupiResponse(string pUrl, MethodType pMethod, ConnectionServerRest pConnectionServer, string pRequestBody,
             bool pJsonResponse = true)
         {
             if (pConnectionServer == null)
@@ -859,7 +859,7 @@ namespace Cisco.UnityConnection.RestFunctions
         ///     An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
         ///     associiated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>    
-        public WebCallResult DownloadWavFile(ConnectionServer pConnectionServer, string pLocalWavFilePath, string pConnectionFileName)
+        public WebCallResult DownloadWavFile(ConnectionServerRest pConnectionServer, string pLocalWavFilePath, string pConnectionFileName)
         {
             if (pConnectionServer == null)
             {
@@ -911,7 +911,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
         /// associiated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>    
-        public WebCallResult DownloadMessageAttachment(string pBaseUrl, ConnectionServer pConnectionServer, string pLocalWavFilePath, 
+        public WebCallResult DownloadMessageAttachment(string pBaseUrl, ConnectionServerRest pConnectionServer, string pLocalWavFilePath, 
                                                                 string pUserObjectId, string pMessageObjectId, int pAttachmentNumber)
         {
             //if the target file is already occupied, delete it here.
@@ -951,7 +951,7 @@ namespace Cisco.UnityConnection.RestFunctions
         ///     An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
         ///     associiated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>    
-        private WebCallResult DownloadMediaFile(string pFullUrl, ConnectionServer pConnectionServer, string pLocalWavFilePath)
+        private WebCallResult DownloadMediaFile(string pFullUrl, ConnectionServerRest pConnectionServer, string pLocalWavFilePath)
         {
 
             WebCallResult res = new WebCallResult();
@@ -1076,7 +1076,7 @@ namespace Cisco.UnityConnection.RestFunctions
         ///     An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
         ///     associiated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        public WebCallResult UploadWavFile(string pFullResourcePath, ConnectionServer pConnectionServer, string pLocalWavFilePath)
+        public WebCallResult UploadWavFile(string pFullResourcePath, ConnectionServerRest pConnectionServer, string pLocalWavFilePath)
         {
             WebCallResult res = new WebCallResult();
             byte[] buffer;
@@ -1252,7 +1252,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with details about the call and results recieved back from the server.
         /// </returns>
-        public WebCallResult UploadVoiceMessageWav(ConnectionServer pConnectionServer, string pPathToLocalWav,
+        public WebCallResult UploadVoiceMessageWav(ConnectionServerRest pConnectionServer, string pPathToLocalWav,
             string pMessageDetailsJsonString, string pSenderUserObjectId, string pRecipientJsonString, 
             string pUriConstruction="")
         {
@@ -1451,7 +1451,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with details about the call and results recieved back from the server.
         /// </returns>
-        public WebCallResult UploadVoiceMessageResourceId(ConnectionServer pConnectionServer, string pResourceId,
+        public WebCallResult UploadVoiceMessageResourceId(ConnectionServerRest pConnectionServer, string pResourceId,
             string pMessageDetailsJsonString, string pSenderUserObjectId, string pRecipientJsonString,
              string pUriConstruction = "")
         {
@@ -1636,7 +1636,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
         /// associiated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        public WebCallResult UploadWavFileToStreamLibrary(ConnectionServer pConnectionServer, string pLocalWavFilePath, out string pConnectionStreamFileName)
+        public WebCallResult UploadWavFileToStreamLibrary(ConnectionServerRest pConnectionServer, string pLocalWavFilePath, out string pConnectionStreamFileName)
         {
             pConnectionStreamFileName = "";
             if (pConnectionServer == null)
@@ -1680,7 +1680,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc...
         /// associiated with the call so the calling party can easily log details in the event of a failure.
         /// <returns></returns>
-        private WebCallResult GetTemporaryStreamFileName(ConnectionServer pConnectionServer,out string pTempFileName)
+        private WebCallResult GetTemporaryStreamFileName(ConnectionServerRest pConnectionServer,out string pTempFileName)
         {
             pTempFileName = "";
 

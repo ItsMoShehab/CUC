@@ -39,7 +39,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pUserObjectId">
         /// User to fetch mailbox details for.
         /// </param>
-        public MailboxInfo(ConnectionServer pConnectionServer, string pUserObjectId)
+        public MailboxInfo(ConnectionServerRest pConnectionServer, string pUserObjectId)
         {
             if (pConnectionServer == null)
             {
@@ -69,7 +69,7 @@ namespace Cisco.UnityConnection.RestFunctions
         #region Fields and Properties
 
         //reference to the ConnectionServer object 
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //not returned from server, saved from constructor
         public string UserObjectId { get; private set; }

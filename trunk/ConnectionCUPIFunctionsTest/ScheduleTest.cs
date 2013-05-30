@@ -17,7 +17,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         private static Schedule _tempSchedule;
         /// <summary>
@@ -43,7 +43,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                    mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -94,7 +94,7 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(UnityConnectionRestException))]
         public void ClassCreationFailure2()
         {
-            Schedule oTest = new Schedule(new ConnectionServer(new RestTransportFunctions()),"blah");
+            Schedule oTest = new Schedule(new ConnectionServerRest(new RestTransportFunctions()),"blah");
             Console.WriteLine(oTest);
         }
 
@@ -145,7 +145,7 @@ namespace ConnectionCUPIFunctionsTest
             List<Schedule> oSchedules;
 
             var res = Schedule.GetSchedules(null, out oSchedules);
-            Assert.IsFalse(res.Success, "Static call to getSchedules with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Static call to getSchedules with null ConnectionServerRest did not fail");
         }
 
         [TestMethod]
@@ -183,16 +183,16 @@ namespace ConnectionCUPIFunctionsTest
             List<Schedule> oSchedules;
 
             var res = Schedule.GetSchedules(null, out oSchedules);
-            Assert.IsFalse(res.Success, "Static call to getSchedules with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Static call to getSchedules with null ConnectionServerRest did not fail");
 
             res = Schedule.GetSchedules(_connectionServer, out oSchedules);
-            Assert.IsTrue(res.Success, "Static call to getSchedules with null ConnectionServer did not fail");
+            Assert.IsTrue(res.Success, "Static call to getSchedules with null ConnectionServerRest did not fail");
             Assert.IsTrue(oSchedules.Count > 0, "No schedules returned in fetch:" + res);
 
             //add schedule details
             res = Schedule.AddScheduleDetail(null, oSchedules[0].ObjectId, "subject", 0, 200, true, true, true,
                                              true, true, false, false);
-            Assert.IsFalse(res.Success, "Static call to addScheduleDetail with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Static call to addScheduleDetail with null ConnectionServerRest did not fail");
 
             res = Schedule.AddScheduleDetail(_connectionServer, "", "subject", 0, 200, true, true, true,
                                  true, true, false, false);
@@ -221,16 +221,16 @@ namespace ConnectionCUPIFunctionsTest
 
             //getSchedule
             WebCallResult res = Schedule.GetSchedule(out oSchedule, null);
-            Assert.IsFalse(res.Success, "Static call to get schedule with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Static call to get schedule with null ConnectionServerRest did not fail");
 
             res = Schedule.GetSchedule(out oSchedule, null, "bogus");
-            Assert.IsFalse(res.Success, "Static call to get schedule with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Static call to get schedule with null ConnectionServerRest did not fail");
 
             res = Schedule.GetSchedule(out oSchedule, _connectionServer);
             Assert.IsFalse(res.Success, "Static call to get schedule with empty objectId and name did not fail");
 
             res = Schedule.GetSchedule(out oSchedule, null, "", "bogus");
-            Assert.IsFalse(res.Success, "Static call to get schedule with null ConnectionServer did not fail");
+            Assert.IsFalse(res.Success, "Static call to get schedule with null ConnectionServerRest did not fail");
         }
 
 

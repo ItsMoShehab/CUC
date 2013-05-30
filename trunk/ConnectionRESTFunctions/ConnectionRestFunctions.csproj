@@ -52,7 +52,7 @@
     <Compile Include="IConnectionRestCalls.cs" />
     <Compile Include="ObjectTypes\AlternateExtension.cs" />
     <Compile Include="ObjectTypes\CallHandler.cs" />
-    <Compile Include="ConnectionServer.cs" />
+    <Compile Include="ConnectionServerRest.cs" />
     <Compile Include="ConnectionTypes.cs" />
     <Compile Include="ObjectTypes\CallHandlerTemplate.cs" />
     <Compile Include="ObjectTypes\ClassOfService.cs" />

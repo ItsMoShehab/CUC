@@ -24,7 +24,7 @@ namespace ConnectionCUPIFunctionsTest
 
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
-        private static ConnectionServer _connectionServer;
+        private static ConnectionServerRest _connectionServer;
 
         //used for editing/adding items to a temporary user that gets cleaned up after the tests are complete
         private static UserFull _tempUser;
@@ -53,7 +53,7 @@ namespace ConnectionCUPIFunctionsTest
             Thread.Sleep(300);
             try
             {
-                _connectionServer = new ConnectionServer(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
+                _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
                   mySettings.ConnectionPW);
                 _connectionServer.DebugMode = mySettings.DebugOn;
             }
@@ -139,7 +139,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Invalid user objectId should fail");
 
             res = AlternateExtension.DeleteAlternateExtension(null, _tempUser.ObjectId, "aaa");
-            Assert.IsFalse(res.Success, "Null ConnectionServer object should fail");
+            Assert.IsFalse(res.Success, "Null ConnectionServerRest object should fail");
 
         }
 
@@ -154,7 +154,7 @@ namespace ConnectionCUPIFunctionsTest
 
             //static GetAlternateExtensions calls
             res = AlternateExtension.GetAlternateExtensions(null, _tempUser.ObjectId, out oAltExts);
-            Assert.IsFalse(res.Success, "Null ConnectionServer object should fail");
+            Assert.IsFalse(res.Success, "Null ConnectionServerRest object should fail");
 
         }
 
@@ -199,7 +199,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Invalid ObjectId should fail");
 
             res = AlternateExtension.UpdateAlternateExtension(null, _tempUser.ObjectId, "aaa", oProps);
-            Assert.IsFalse(res.Success, "Null ConnectionServer object should fail");
+            Assert.IsFalse(res.Success, "Null ConnectionServerRest object should fail");
 
             res = AlternateExtension.UpdateAlternateExtension(_connectionServer, "", "aaa", oProps);
             Assert.IsFalse(res.Success, "Empty UserObjectID should fail");
@@ -398,10 +398,10 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetAlternateExtension_Harness()
         {
-            ConnectionServer oServer=null;
+            ConnectionServerRest oServer=null;
             try
             {
-                oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+                oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
             }
             catch (Exception ex)
             {
@@ -424,10 +424,10 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetAlternateExtensions_Harness()
         {
-            ConnectionServer oServer = null;
+            ConnectionServerRest oServer = null;
             try
             {
-                oServer = new ConnectionServer(new TestTransportFunctions(), "test", "test", "test");
+                oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
             }
             catch (Exception ex)
             {

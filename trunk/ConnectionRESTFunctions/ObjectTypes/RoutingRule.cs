@@ -37,7 +37,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// display name to look for - it's possible to have multiple display names that conflict so the first match 
         /// is returned in this case.
         /// </param>
-        public RoutingRule(ConnectionServer pConnectionServer, string pObjectId, string pDisplayName = "")
+        public RoutingRule(ConnectionServerRest pConnectionServer, string pObjectId, string pDisplayName = "")
             : this()
         {
             if (pConnectionServer == null)
@@ -71,7 +71,7 @@ namespace Cisco.UnityConnection.RestFunctions
         //used for displaying/selecting in grids/dropdowns
         public string UniqueIdentifier { get { return ObjectId; } }
 
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -268,7 +268,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetRoutingRules(ConnectionServer pConnectionServer, out List<RoutingRule> pRoutingRules
+        public static WebCallResult GetRoutingRules(ConnectionServerRest pConnectionServer, out List<RoutingRule> pRoutingRules
             , int pPageNumber = 1, int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res;
@@ -293,7 +293,7 @@ namespace Cisco.UnityConnection.RestFunctions
             temp.Add("pageNumber=" + pPageNumber);
             temp.Add("rowsPerPage=" + pRowsPerPage);
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "routingrules", temp.ToArray());
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "routingrules", temp.ToArray());
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -348,7 +348,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult GetRoutingRule(out RoutingRule pRoutingRule, ConnectionServer pConnectionServer,
+        public static WebCallResult GetRoutingRule(out RoutingRule pRoutingRule, ConnectionServerRest pConnectionServer,
             string pObjectId = "", string pDisplayName = "")
         {
             WebCallResult res = new WebCallResult();
@@ -416,7 +416,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddRoutingRule(ConnectionServer pConnectionServer, string pDisplayName,ConnectionPropertyList pPropList)
+        public static WebCallResult AddRoutingRule(ConnectionServerRest pConnectionServer, string pDisplayName,ConnectionPropertyList pPropList)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -485,7 +485,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddRoutingRule(ConnectionServer pConnectionServer,
+        public static WebCallResult AddRoutingRule(ConnectionServerRest pConnectionServer,
                                                         string pDisplayName,
                                                         ConnectionPropertyList pPropList,
                                                         out RoutingRule pRoutingRule)
@@ -524,7 +524,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult DeleteRoutingRule(ConnectionServer pConnectionServer, string pObjectId)
+        public static WebCallResult DeleteRoutingRule(ConnectionServerRest pConnectionServer, string pObjectId)
         {
             if (pConnectionServer == null)
             {
@@ -556,7 +556,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult UpdateRoutingRule(ConnectionServer pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
+        public static WebCallResult UpdateRoutingRule(ConnectionServerRest pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -609,7 +609,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with details of the output of the operation
         /// </returns>
-        public static WebCallResult UpdateOrderOfAllRoutingRules(ConnectionServer pConnectionServer,
+        public static WebCallResult UpdateOrderOfAllRoutingRules(ConnectionServerRest pConnectionServer,
                                                                  params string[] pParams)
         {
             if (pConnectionServer == null)

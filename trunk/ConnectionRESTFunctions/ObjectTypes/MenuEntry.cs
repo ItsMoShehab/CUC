@@ -52,7 +52,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pKey">
         /// Key name to fetch - can be 0-9, # or *
         /// </param>
-        public MenuEntry(ConnectionServer pConnectionServer, string pCallHandlerObjectId, string pKey = ""):this()
+        public MenuEntry(ConnectionServerRest pConnectionServer, string pCallHandlerObjectId, string pKey = ""):this()
         {
             if (pConnectionServer == null)
             {
@@ -96,7 +96,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this menu entry instance.
-        public ConnectionServer HomeServer { get; private set; }
+        public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -236,7 +236,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetMenuEntry(ConnectionServer pConnectionServer,
+        public static WebCallResult GetMenuEntry(ConnectionServerRest pConnectionServer,
                                                         string pCallHandlerObjectId,
                                                         string pKeyName,
                                                         out  MenuEntry pMenuEntry)
@@ -285,7 +285,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetMenuEntries(ConnectionServer pConnectionServer,
+        public static WebCallResult GetMenuEntries(ConnectionServerRest pConnectionServer,
                                                             string pCallHandlerObjectId,
                                                            out List<MenuEntry> pMenuEntries)
         {
@@ -357,7 +357,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult UpdateMenuEntry(ConnectionServer pConnectionServer, string pCallHandlerObjectId, string pKeyName, ConnectionPropertyList pPropList)
+        public static WebCallResult UpdateMenuEntry(ConnectionServerRest pConnectionServer, string pCallHandlerObjectId, string pKeyName, ConnectionPropertyList pPropList)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -476,7 +476,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(ConnectionServer.StripJsonOfObjectWrapper(res.ResponseText, "MenuEntry"), this, 
+                JsonConvert.PopulateObject(ConnectionServerRest.StripJsonOfObjectWrapper(res.ResponseText, "MenuEntry"), this, 
                     RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)

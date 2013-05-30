@@ -47,7 +47,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Optional display name search critiera - if both ObjectId and DisplayName are passed, ObjectId is used.  The display name search is not case
         /// sensitive.
         /// </param>
-        public InterviewHandler(ConnectionServer pConnectionServer, string pObjectId = "", string pDisplayName = "")
+        public InterviewHandler(ConnectionServerRest pConnectionServer, string pObjectId = "", string pDisplayName = "")
             : this()
         {
             if (pConnectionServer == null)
@@ -94,7 +94,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string UniqueIdentifier { get { return ObjectId; } }
 
         //reference to the ConnectionServer object used to create this handlers instance.
-        internal ConnectionServer HomeServer { get; private set; }
+        internal ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
@@ -317,7 +317,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetInterviewHandlers(ConnectionServer pConnectionServer, out List<InterviewHandler> pInterviewHandlers, params string[] pClauses)
+        public static WebCallResult GetInterviewHandlers(ConnectionServerRest pConnectionServer, out List<InterviewHandler> pInterviewHandlers, params string[] pClauses)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -330,7 +330,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strUrl = ConnectionServer.AddClausesToUri(pConnectionServer.BaseUrl + "handlers/interviewhandlers",pClauses);
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "handlers/interviewhandlers",pClauses);
 
             //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
@@ -399,7 +399,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
 
-        public static WebCallResult GetInterviewHandlers(ConnectionServer pConnectionServer,out List<InterviewHandler> pInterviewHandlers,
+        public static WebCallResult GetInterviewHandlers(ConnectionServerRest pConnectionServer,out List<InterviewHandler> pInterviewHandlers,
             int pPageNumber=1, int pRowsPerPage=20,params string[] pClauses)
         {
             //tack on the paging items to the parameters list
@@ -439,7 +439,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetInterviewHandler(out InterviewHandler pInterviewHandler, ConnectionServer pConnectionServer, 
+        public static WebCallResult GetInterviewHandler(out InterviewHandler pInterviewHandler, ConnectionServerRest pConnectionServer, 
             string pObjectId = "", string pDisplayName = "")
         {
             WebCallResult res = new WebCallResult();
@@ -501,7 +501,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddInterviewHandler(ConnectionServer pConnectionServer,
+        public static WebCallResult AddInterviewHandler(ConnectionServerRest pConnectionServer,
                                                             string pDisplayName,
                                                             string pRecipientUserObjectId,
                                                             string pRecipientDistributionListObjectId,
@@ -549,7 +549,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
-        public static WebCallResult AddInterviewHandler(ConnectionServer pConnectionServer,
+        public static WebCallResult AddInterviewHandler(ConnectionServerRest pConnectionServer,
                                                     string pDisplayName,
                                                     string pRecipientUserObjectId,
                                                     string pRecipientDistributionListObjectId,
@@ -639,7 +639,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult UpdateInterviewHandler(ConnectionServer pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
+        public static WebCallResult UpdateInterviewHandler(ConnectionServerRest pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -685,7 +685,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult DeleteInterviewHandler(ConnectionServer pConnectionServer, string pObjectId)
+        public static WebCallResult DeleteInterviewHandler(ConnectionServerRest pConnectionServer, string pObjectId)
         {
             if (pConnectionServer == null)
             {
@@ -720,7 +720,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetInterviewHandlerVoiceName(ConnectionServer pConnectionServer, string pTargetLocalFilePath, string pObjectId,
+        public static WebCallResult GetInterviewHandlerVoiceName(ConnectionServerRest pConnectionServer, string pTargetLocalFilePath, string pObjectId,
             string pConnectionWavFileName = "")
         {
             WebCallResult res = new WebCallResult();
@@ -797,7 +797,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult SetInterviewHandlerVoiceName(ConnectionServer pConnectionServer, string pSourceLocalFilePath, string pObjectId,
+        public static WebCallResult SetInterviewHandlerVoiceName(ConnectionServerRest pConnectionServer, string pSourceLocalFilePath, string pObjectId,
             bool pConvertToPcmFirst = false)
         {
             string strConvertedWavFilePath = "";
@@ -883,7 +883,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult SetInterviewHandlerVoiceNameToStreamFile(ConnectionServer pConnectionServer, string pObjectId,
+        public static WebCallResult SetInterviewHandlerVoiceNameToStreamFile(ConnectionServerRest pConnectionServer, string pObjectId,
                                                         string pStreamFileResourceName)
         {
             WebCallResult res = new WebCallResult();
@@ -1032,7 +1032,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                JsonConvert.PopulateObject(ConnectionServer.StripJsonOfObjectWrapper(res.ResponseText,"InterviewHandler"), this,
+                JsonConvert.PopulateObject(ConnectionServerRest.StripJsonOfObjectWrapper(res.ResponseText,"InterviewHandler"), this,
                     RestTransportFunctions.JsonSerializerSettings);
             }
             catch (Exception ex)
