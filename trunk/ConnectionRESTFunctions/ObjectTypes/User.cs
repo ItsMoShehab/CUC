@@ -1727,7 +1727,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             else 
             {
-                strUrl = string.Format("{0}users?query=(Alias is {1})", HomeServer.BaseUrl, pAlias);
+                strUrl = string.Format("{0}users?query=(Alias is {1})", HomeServer.BaseUrl, pAlias.UriSafe());
             }
 
             //issue the command to the CUPI interface
@@ -4039,7 +4039,7 @@ namespace Cisco.UnityConnection.RestFunctions
         private WebCallResult GetObjectIdFromAlias(string pAlias, out string pObjectId)
         {
             pObjectId = "";
-            string strUrl = string.Format("{0}users/?query=(Alias is {1})", HomeServer.BaseUrl, pAlias);
+            string strUrl = string.Format("{0}users/?query=(Alias is {1})", HomeServer.BaseUrl, pAlias.UriSafe());
 
             //issue the command to the CUPI interface
             WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");

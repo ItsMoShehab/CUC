@@ -1218,7 +1218,7 @@ namespace Cisco.UnityConnection.RestFunctions
             private string GetObjectIdFromName(string pName)
             {
                 // string strUrl = string.Format("{0}coses/?query=(DisplayName is {1})", HomeServer.BaseUrl, pCosName);
-                string strUrl = string.Format("{0}handlers/directoryhandlers/?query=(DisplayName is {1})", HomeServer.BaseUrl, pName);
+                string strUrl = string.Format("{0}handlers/directoryhandlers/?query=(DisplayName is {1})", HomeServer.BaseUrl, pName.UriSafe());
 
                 //issue the command to the CUPI interface
                 WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");

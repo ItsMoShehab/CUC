@@ -51,6 +51,41 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
+        /// Insert escape codes for items that need to appear on a URI as a parameter (i.e. for searching)
+        /// </summary>
+        public static string UriSafe(this string pString)
+        {
+            if (string.IsNullOrEmpty(pString))
+            {
+                return "";
+            }
+            string strTemp = pString.Replace(" ", "%20");
+            strTemp = strTemp.Replace("&", "%26");
+            strTemp = strTemp.Replace("<", "%3C");
+            strTemp = strTemp.Replace(">", "%3E");
+            strTemp = strTemp.Replace("#", "%23");
+            strTemp = strTemp.Replace("%", "%25");
+            strTemp = strTemp.Replace("{", "%7B");
+            strTemp = strTemp.Replace("}", "%7D");
+            strTemp = strTemp.Replace("|", "%7C");
+            strTemp = strTemp.Replace("\\", "%5C");
+            strTemp = strTemp.Replace("^", "%5E");
+            strTemp = strTemp.Replace("~", "%7E");
+            strTemp = strTemp.Replace("[", "%5B");
+            strTemp = strTemp.Replace("]", "%5D");
+            strTemp = strTemp.Replace("'", "%60");
+            strTemp = strTemp.Replace(";", "%3B");
+            strTemp = strTemp.Replace("/", "%2F");
+            strTemp = strTemp.Replace("?", "%3F");
+            strTemp = strTemp.Replace(":", "%3A");
+            strTemp = strTemp.Replace("@", "%40");
+            strTemp = strTemp.Replace("$", "%24");
+            strTemp = strTemp.Replace("=", "%3D");
+
+            return strTemp;
+        }
+
+        /// <summary>
         /// Trim off everything from the start of a string up to the end of the token passed in.
         /// </summary>
         /// <param name="pString"></param>

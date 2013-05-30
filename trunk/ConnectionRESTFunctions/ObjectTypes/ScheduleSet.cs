@@ -223,7 +223,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         private string GetObjectIdFromName(string pName)
         {
-            string strUrl = HomeServer.BaseUrl + string.Format("schedulesets/?query=(DisplayName is {0})", pName);
+            string strUrl = HomeServer.BaseUrl + string.Format("schedulesets/?query=(DisplayName is {0})", pName.UriSafe());
 
             //issue the command to the CUPI interface
             WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
