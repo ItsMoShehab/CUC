@@ -209,7 +209,8 @@ namespace Cisco.UnityConnection.RestFunctions
         //in its own routine just in case.
         private string EscapeCharactersInUrl(string pUri)
         {
-            return pUri.Replace(" ", "%20");
+            string strRet= pUri.Replace(" ", "%20");
+            return strRet;
         }
 
         /// <summary>

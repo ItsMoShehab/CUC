@@ -2151,7 +2151,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         private string GetObjectIdAlias(string pAlias)
         {
-            string strUrl = string.Format("{0}usertemplates?query=(Alias is {1})", HomeServer.BaseUrl, pAlias);
+            string strUrl = string.Format("{0}usertemplates?query=(Alias is {1})", HomeServer.BaseUrl, pAlias.UriSafe());
 
             //issue the command to the CUPI interface
             WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");

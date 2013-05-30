@@ -1539,7 +1539,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 {
                     retUri += "&";
                 }
-                retUri += pClauses[iCounter];
+                retUri += pClauses[iCounter].UriSafe();
             }
 
             return retUri;

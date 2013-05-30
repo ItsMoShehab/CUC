@@ -602,7 +602,7 @@ namespace Cisco.UnityConnection.RestFunctions
         private string GetObjectIdByPortGroupName(string pPhoneSystemName)
         {
 
-            string strUrl = string.Format("{0}portgroups/?query=(DisplayName is {1})", HomeServer.BaseUrl, pPhoneSystemName);
+            string strUrl = string.Format("{0}portgroups/?query=(DisplayName is {1})", HomeServer.BaseUrl, pPhoneSystemName.UriSafe());
 
             //issue the command to the CUPI interface
             WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");

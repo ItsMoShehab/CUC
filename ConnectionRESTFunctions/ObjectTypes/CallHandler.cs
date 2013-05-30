@@ -1278,7 +1278,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             else if (pDisplayName.Length > 0)
             {
-                strUrl = string.Format("{0}handlers/callhandlers/?query=(DisplayName is {1})", HomeServer.BaseUrl, pDisplayName);
+                strUrl = string.Format("{0}handlers/callhandlers/?query=(DisplayName is {1})", HomeServer.BaseUrl, pDisplayName.UriSafe());
             }
             else
             {

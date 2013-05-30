@@ -173,7 +173,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public static string GetObjectIdFromName(ConnectionServerRest pConnectionServer, string pRoleName)
         {
-            string strUrl = pConnectionServer.BaseUrl + string.Format("roles/?query=(RoleName is {0})", pRoleName);
+            string strUrl = pConnectionServer.BaseUrl + string.Format("roles/?query=(RoleName is {0})", pRoleName.UriSafe());
 
             //issue the command to the CUPI interface
             WebCallResult res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");

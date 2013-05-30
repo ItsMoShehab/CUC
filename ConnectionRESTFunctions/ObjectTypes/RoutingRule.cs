@@ -762,7 +762,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         private string GetObjectIdFromName(string pName)
         {
-            string strUrl = string.Format("{0}routingrules/?query=(DisplayName is {1})", HomeServer.BaseUrl, pName);
+            string strUrl = string.Format("{0}routingrules/?query=(DisplayName is {1})", HomeServer.BaseUrl, pName.UriSafe());
 
             //issue the command to the CUPI interface
             WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
