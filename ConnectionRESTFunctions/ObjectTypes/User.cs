@@ -1110,7 +1110,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //tack on the property value pair with appropriate tags
            strBody += string.Format("<MwiExtension>{0}</MwiExtension>", pExtension);
-           strBody += string.Format("<DisplayName>{0}</DisplayName>", pDisplayName);
+           strBody += string.Format("<DisplayName>{0}</DisplayName>", pDisplayName.HtmlBodySafe());
 
            strBody += "</Mwi>";
 

@@ -1163,7 +1163,7 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             //string strUrl = string.Format("{0}distributionlists?query=(Alias is {1})", HomeServer.BaseUrl, pAlias);
             string strUrl = ConnectionServerRest.AddClausesToUri(string.Format("{0}distributionlists", HomeServer.BaseUrl),
-                "query=(Alias is "+  pAlias+")");
+                "query=(Alias is "+  pAlias.UriSafe()+")");
 
             //issue the command to the CUPI interface
             WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");

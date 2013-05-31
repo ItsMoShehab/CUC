@@ -962,7 +962,7 @@ namespace Cisco.UnityConnection.RestFunctions
             string strBody = "<PortGroup>";
 
             //tack on the property value pair with appropriate tags
-            strBody += string.Format("<DisplayName>{0}</DisplayName>", pDisplayName);
+            strBody += string.Format("<DisplayName>{0}</DisplayName>", pDisplayName.HtmlBodySafe());
             strBody += string.Format("<MediaPortGroupTemplateObjectId>{0}</MediaPortGroupTemplateObjectId>", strMediaPortGroupTemplateObjectId);
             strBody += string.Format("<MediaSwitchObjectId>{0}</MediaSwitchObjectId>", pPhoneSystemObjectId);
             strBody += string.Format("<HostOrIPAddress>{0}</HostOrIPAddress>", pHostOrIpAddress);

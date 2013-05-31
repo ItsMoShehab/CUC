@@ -388,6 +388,8 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res = new WebCallResult();
             HttpWebResponse response = null;
 
+            pRequestBody = pRequestBody.HtmlBodySafe();
+
             //store the request parts in the resonse structure for ease of reference for error logging and such.
             res.Url = EscapeCharactersInUrl(pUrl);
             res.Method = pMethod.ToString();
