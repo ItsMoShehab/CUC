@@ -229,7 +229,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //not an error, return empty list
-            if (res.TotalObjectCount == 0)
+            if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
                 pPolicies=new List<Policy>();
                 return res;

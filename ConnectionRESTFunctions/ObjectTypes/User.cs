@@ -775,20 +775,22 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that does not mean an error - return true here along with an empty list.
+            //if this is empty thats an error.
             if (string.IsNullOrEmpty(res.ResponseText))
+            {
+                res.Success = false;
+                pUsers = new List<UserBase>();
+                return res;
+            }
+
+            //not an error, just return empty list
+            if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
                 pUsers = new List<UserBase>();
                 return res;
             }
 
             pUsers = pConnectionServer.GetObjectsFromJson<UserBase>(res.ResponseText, "User");
-
-            if (pUsers == null || (pUsers.Count == 1 && string.IsNullOrEmpty(pUsers[0].ObjectId)))
-            {
-                pUsers = new List<UserBase>();
-                return res;
-            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
@@ -4048,7 +4050,7 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 return res;
             }
-            if (res.TotalObjectCount == 0)
+            if (res.TotalObjectCount == 0 )
             {
                 res.Success = false;
                 res.ErrorText = "Could not find user by alias=" + pAlias;

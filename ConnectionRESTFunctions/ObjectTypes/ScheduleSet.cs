@@ -480,7 +480,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //no error here - just return the empty list.
-            if (res.TotalObjectCount == 0)
+            if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
                 return res;
             }

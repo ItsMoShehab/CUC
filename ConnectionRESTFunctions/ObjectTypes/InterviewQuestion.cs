@@ -148,7 +148,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //not an error, just return an empty list
-            if (res.TotalObjectCount == 0)
+            if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
                 pInterviewQuestions=new List<InterviewQuestion>();
                 return res;

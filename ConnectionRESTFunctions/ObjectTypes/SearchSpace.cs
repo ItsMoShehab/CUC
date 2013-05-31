@@ -410,7 +410,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //not an error, just return empty list
-            if (res.TotalObjectCount == 0)
+            if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
                 pSearchSpaces= new List<SearchSpace>();
                 return res;
@@ -475,7 +475,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //no error, just return an empty list
-            if (res.TotalObjectCount == 0)
+            if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
                 pPartitions= new List<Partition>();
                 return res;

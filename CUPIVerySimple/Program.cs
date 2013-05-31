@@ -66,18 +66,6 @@ namespace CUPIVerySimple
             //the WebCallResult is the structure returned on most calls into the CUPIFunctions library.
             WebCallResult res;
 
-            ConnectionServerRest  _connectionServerHarness = new ConnectionServerRest (new TestTransportFunctions());
-
-            Tenant oTenant = new Tenant(_connectionServerHarness);
-
-            List<ClassOfService> oCoses;
-            res = oTenant.GetClassesOfService(out oCoses, 1, 10, "EmptyResultText");
-
-            res = oTenant.GetClassesOfService(out oCoses, 1, 10, "InvalidResultText");
-
-            res = oTenant.GetClassesOfService(out oCoses, 1, 10, "ErrorResponse");
-
-
             //fetch user with alias of "jlindborg" - we will be sending the message from his 
             //mailbox.
             UserFull oUserTestDude;

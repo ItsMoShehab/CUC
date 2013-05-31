@@ -736,7 +736,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //not a failure, just return an empty list
-            if (res.TotalObjectCount == 0)
+            if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
                 pClassOfServices=new List<ClassOfService>();
                 return res;
