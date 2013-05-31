@@ -403,7 +403,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //not an error, just return empty list
-            if (res.TotalObjectCount == 0)
+            if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
                 pPorts=new List<Port>();
                 return res;

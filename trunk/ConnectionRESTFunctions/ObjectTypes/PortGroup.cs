@@ -753,7 +753,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //not an error, return empty list
-            if (res.TotalObjectCount == 0)
+            if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
                 pPortGroups = new List<PortGroup>();
                 return res;

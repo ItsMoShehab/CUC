@@ -682,7 +682,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //not an error, just no handlers returned in query - return empty list
-            if (res.TotalObjectCount == 0)
+            if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
                 pCallHandlers = new List<CallHandler>();
                 return res;

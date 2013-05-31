@@ -359,7 +359,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //no error, just return an empty list
-            if (res.TotalObjectCount == 0)
+            if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
                 pScheduleDetails=new List<ScheduleDetail>();
                 return res;
