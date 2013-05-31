@@ -1539,6 +1539,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 {
                     retUri += "&";
                 }
+                
+                //special case the query and sort parameters
                 retUri += pClauses[iCounter].UriSafe();
             }
 
