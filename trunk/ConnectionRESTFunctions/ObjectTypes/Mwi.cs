@@ -668,26 +668,8 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}users/{1}/mwis/{2}", HomeServer.BaseUrl,pUserObjectId, pObjectId);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
-
-            if (res.Success == false)
-            {
-                return res;
-            }
-
-            try
-            {
-                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
-            }
-            catch (Exception ex)
-            {
-                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
-                res.Success = false;
-            }
-
-            //all the updates above will flip pending changes into the queue - clear that here.
-            this.ClearPendingChanges();
-
+            var res = HomeServer.FillObjectWithRestGetResults(strUrl,this);
+            ClearPendingChanges();
             return res;
         }
 

@@ -656,24 +656,7 @@ namespace Cisco.UnityConnection.RestFunctions
                                          HomeServer.BaseUrl, pCallHandlerObjectId, pGreetingType.Description(),pLanguageCode);
 
             //issue the command to the CUPI interface
-            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
-
-            if (res.Success == false)
-            {
-                return res;
-            }
-
-            try
-            {
-                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
-            }
-            catch (Exception ex)
-            {
-                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
-                res.Success = false;
-            }
-
-            return res;
+            return HomeServer.FillObjectWithRestGetResults(strUrl,this);
         }
 
 
