@@ -16,18 +16,18 @@ xmlns="http://www.w3.org/TR/REC-html40">
   <o:Author>Jeff Lindborg</o:Author>
   <o:Template>AppsHelp.dot</o:Template>
   <o:LastAuthor>jlindborg</o:LastAuthor>
-  <o:Revision>447</o:Revision>
-  <o:TotalTime>7178</o:TotalTime>
-  <o:LastPrinted>2013-05-30T22:20:00Z</o:LastPrinted>
+  <o:Revision>450</o:Revision>
+  <o:TotalTime>7179</o:TotalTime>
+  <o:LastPrinted>2013-06-02T14:35:00Z</o:LastPrinted>
   <o:Created>2013-02-11T15:17:00Z</o:Created>
-  <o:LastSaved>2013-05-30T22:20:00Z</o:LastSaved>
-  <o:Pages>99</o:Pages>
+  <o:LastSaved>2013-06-02T14:35:00Z</o:LastSaved>
+  <o:Pages>1</o:Pages>
   <o:Words>43952</o:Words>
-  <o:Characters>250528</o:Characters>
+  <o:Characters>250527</o:Characters>
   <o:Company>Cisco Systems, Inc.</o:Company>
   <o:Lines>2087</o:Lines>
   <o:Paragraphs>587</o:Paragraphs>
-  <o:CharactersWithSpaces>293893</o:CharactersWithSpaces>
+  <o:CharactersWithSpaces>293892</o:CharactersWithSpaces>
   <o:Version>14.00</o:Version>
  </o:DocumentProperties>
  <o:OfficeDocumentSettings>
@@ -7231,9 +7231,9 @@ no-cache<o:p></o:p></span></p>
 
 <p class=MsoNormal style='margin-top:0in;margin-right:0in;margin-bottom:0in;
 margin-left:.5in;margin-bottom:.0001pt'><span style='font-size:8.0pt'>Cookie:
-JSESSIONIDSSO=188767B4B17C1F63B60F9D899C38AD75; Path=/; Secure;
-HttpOnly,JSESSIONID=DFB13585A6F71A70D9CE27A093102938; Path=/vmrest/; Secure;
-HttpOnly,REQUEST_TOKEN_KEY=7208623825002684176; Path=/; Secure; HttpOnly<o:p></o:p></span></p>
+JSESSIONIDSSO=188767B4B17C1F63B60F9D899C38AD75; Path=/; Secure; HttpOnly,JSESSIONID=DFB13585A6F71A70D9CE27A093102938;
+Path=/vmrest/; Secure; HttpOnly,REQUEST_TOKEN_KEY=7208623825002684176; Path=/;
+Secure; HttpOnly<o:p></o:p></span></p>
 
 <p class=MsoNormal style='margin-top:0in;margin-right:0in;margin-bottom:0in;
 margin-left:.5in;margin-bottom:.0001pt'><span style='font-size:8.0pt'>Content-Type:
@@ -7346,8 +7346,8 @@ is flawed in some way.<o:p></o:p></span></p>
 
 <p class=MsoNormal><span style='font-size:8.0pt'>This document uses a
 &#8220;task based&#8221; approach to demonstrating the use of the library
-&#8211; each major object class (user, call handler, name lookup handler,
-schedule etc&#8230;) has it&#8217;s section and small code snippets are shown
+&#8211; each major object class (user, call handler, name lookup handler, schedule
+etc&#8230;) has it&#8217;s section and small code snippets are shown
 demonstrating the items you&#8217;d typically want to do with those
 objects.<span style='mso-spacerun:yes'>&nbsp; </span>This does not attempt to
 document the entire data schema or get into too much theory.<span
@@ -7370,14 +7370,14 @@ server at a time (for instance a network of Connection clusters).<span
 style='mso-spacerun:yes'>&nbsp; </span>The first thing to note is that ALL HTTP
 traffic goes out a single static method that has a monitor construct on
 entry/exit &#8211; this means all Connection servers you may be attached to in
-your application will all wait in line nicely and issue their HTTP request/response
-pairs in sequence, not in parallel.<span style='mso-spacerun:yes'>&nbsp;
-</span>This avoid conflicts and &#8220;cross talk&#8221; issues cleanly,
-however for very heavy traffic applications wanting to talk to many servers at
-once, it&#8217;s not ideal.<span style='mso-spacerun:yes'>&nbsp; </span>So if
-you&#8217;re looking to build a load test framework for REST targeting many
-servers at once, you will need to dig into your own HTTP library that will
-handle parallel traffic patterns.<o:p></o:p></span></p>
+your application will all wait in line nicely and issue their HTTP
+request/response pairs in sequence, not in parallel.<span
+style='mso-spacerun:yes'>&nbsp; </span>This avoid conflicts and &#8220;cross
+talk&#8221; issues cleanly, however for very heavy traffic applications wanting
+to talk to many servers at once, it&#8217;s not ideal.<span
+style='mso-spacerun:yes'>&nbsp; </span>So if you&#8217;re looking to build a
+load test framework for REST targeting many servers at once, you will need to
+dig into your own HTTP library that will handle parallel traffic patterns.<o:p></o:p></span></p>
 
 <p class=MsoNormal><span style='font-size:8.0pt'>The other thing the SDK
 handles for you is authentication and cookie management.<span
@@ -7401,8 +7401,8 @@ authenticate with an account that had the administrator role and, optionally,
 the mailbox delegate role if you want to be working with messages in other
 user&#8217;s mailboxes.<span style='mso-spacerun:yes'>&nbsp; </span>The
 attachment logic is all in the class constructor, there are no static methods
-off the class so you simply need to create a new instance providing the server name,
-login and password like this:<o:p></o:p></span></p>
+off the class so you simply need to create a new instance providing the server
+name, login and password like this:<o:p></o:p></span></p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -27555,9 +27555,9 @@ background:white'><span style='font-size:8.5pt;font-family:Consolas;color:black'
 <h3><a name="_Toc357079153">Creating New Routing Rules</a></h3>
 
 <p class=MsoNormal><span style='font-size:8.0pt'>So the process here is to
-create a rule, decide where it goes in the list and where it will route calls when
-all its conditions are met and then to add conditions you want to constrain the
-rule against.<span style='mso-spacerun:yes'>&nbsp; </span><o:p></o:p></span></p>
+create a rule, decide where it goes in the list and where it will route calls
+when all its conditions are met and then to add conditions you want to
+constrain the rule against.<span style='mso-spacerun:yes'>&nbsp; </span><o:p></o:p></span></p>
 
 <p class=MsoNormal><span style='font-size:8.0pt'>So let&#8217;s create a new
 routing rule for our internal group of super-secret developers we&#8217;ll call
@@ -31962,8 +31962,8 @@ be careful with what you offer up to your &#8220;limited&#8221; administrators.<
 
 <h1><a name="_Toc357079178">Revision History</a></h1>
 
-<p class=MsoNormal><span style='font-size:8.0pt'>Version 3.0.19 &#8211;
-5/30/2013<o:p></o:p></span></p>
+<p class=MsoNormal><span style='font-size:8.0pt'>Version 3.0.29 &#8211;
+6/1/2013<o:p></o:p></span></p>
 
 <p class=MsoListParagraphCxSpFirst style='text-indent:-.25in;mso-list:l1 level1 lfo10'><![if !supportLists]><span
 style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
@@ -31979,8 +31979,7 @@ style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
 mso-bidi-font-family:Symbol'><span style='mso-list:Ignore'>&middot;<span
 style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><![endif]><span style='font-size:8.0pt'>Updated test
-project to implement test harness HTTP transport for additional test case
-coverage.<o:p></o:p></span></p>
+project to implement test harness HTTP transport for additional test case coverage.<o:p></o:p></span></p>
 
 <p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in;mso-list:l1 level1 lfo10'><![if !supportLists]><span
 style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
@@ -32037,8 +32036,8 @@ roof&#8221; now.<o:p></o:p></span></p>
 style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
 mso-bidi-font-family:Symbol'><span style='mso-list:Ignore'>&middot;<span
 style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><![endif]><span style='font-size:8.0pt'>Finish rework of
-base classes to provide string based ENUMs for conversation names, subscriber
+</span></span></span><![endif]><span style='font-size:8.0pt'>Finish rework of base
+classes to provide string based ENUMs for conversation names, subscriber
 conversation, contact rule types and greeting rule types.<span
 style='mso-spacerun:yes'>&nbsp; </span>Updated numerous classes and test
 drivers to accommodate. <o:p></o:p></span></p>
@@ -32120,8 +32119,8 @@ requirement.<o:p></o:p></span></p>
 style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
 mso-bidi-font-family:Symbol'><span style='mso-list:Ignore'>&middot;<span
 style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><![endif]><span style='font-size:8.0pt'>Added VmsServers list
-property to the ConnectrionServerRest class for easier handling of cluster
+</span></span></span><![endif]><span style='font-size:8.0pt'>Added VmsServers
+list property to the ConnectrionServerRest class for easier handling of cluster
 configuraitons.<o:p></o:p></span></p>
 
 <p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in;mso-list:l19 level1 lfo14'><![if !supportLists]><span
@@ -32129,8 +32128,8 @@ style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
 mso-bidi-font-family:Symbol'><span style='mso-list:Ignore'>&middot;<span
 style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><![endif]><span style='font-size:8.0pt'>Updated
-HTTPFunctions class to allow for adjusting timeout &#8211; defaults to 15
-seconds, allows 1 to 99.<o:p></o:p></span></p>
+HTTPFunctions class to allow for adjusting timeout &#8211; defaults to 15 seconds,
+allows 1 to 99.<o:p></o:p></span></p>
 
 <p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in;mso-list:l19 level1 lfo14'><![if !supportLists]><span
 style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
@@ -32154,8 +32153,8 @@ for all objects to handle UnityConnectionRestException throwing.<o:p></o:p></spa
 style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
 mso-bidi-font-family:Symbol'><span style='mso-list:Ignore'>&middot;<span
 style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><![endif]><span style='font-size:8.0pt'>Added interview
-handler question support for Unity Connection 10.0 and later.<o:p></o:p></span></p>
+</span></span></span><![endif]><span style='font-size:8.0pt'>Added interview handler
+question support for Unity Connection 10.0 and later.<o:p></o:p></span></p>
 
 <p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in;mso-list:l8 level1 lfo15'><![if !supportLists]><span
 style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
@@ -32183,7 +32182,8 @@ style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
 mso-bidi-font-family:Symbol'><span style='mso-list:Ignore'>&middot;<span
 style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><![endif]><span style='font-size:8.0pt'>Fixed error
-handling code for a few classes not handling empty strings passed into constructors.<o:p></o:p></span></p>
+handling code for a few classes not handling empty strings passed into
+constructors.<o:p></o:p></span></p>
 
 <p class=MsoNormal><span style='font-size:8.0pt'>Version 3.0.8 &#8211;
 4/21/2013<o:p></o:p></span></p>
@@ -32341,8 +32341,8 @@ style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
 mso-bidi-font-family:Symbol'><span style='mso-list:Ignore'>&middot;<span
 style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><![endif]><span style='font-size:8.0pt'>Updated
-ConnectrionServerRest class to do lazy fetches of primary location and
-VMSServer references directly.<o:p></o:p></span></p>
+ConnectrionServerRest class to do lazy fetches of primary location and VMSServer
+references directly.<o:p></o:p></span></p>
 
 <p class=MsoNormal><span style='font-size:8.0pt'>Version 2.0.15 - 3/22/2013<o:p></o:p></span></p>
 
@@ -32396,9 +32396,9 @@ add additional comments.<o:p></o:p></span></p>
 style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
 mso-bidi-font-family:Symbol'><span style='mso-list:Ignore'>&middot;<span
 style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><![endif]><span style='font-size:8.0pt'>Exposed
-CreateMessage methods for both local WAV file and resourceId for CUTI
-interfaces off the UserMessage class.<o:p></o:p></span></p>
+</span></span></span><![endif]><span style='font-size:8.0pt'>Exposed CreateMessage
+methods for both local WAV file and resourceId for CUTI interfaces off the
+UserMessage class.<o:p></o:p></span></p>
 
 <p class=MsoNormal><span style='font-size:8.0pt'>Version 2.0.12 &#8211;
 3/8/2013<o:p></o:p></span></p>
@@ -32459,10 +32459,10 @@ to include a quick option to get the ObjectId of a role by its name.<o:p></o:p><
 style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
 mso-bidi-font-family:Symbol'><span style='mso-list:Ignore'>&middot;<span
 style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><![endif]><span style='font-size:8.0pt'>Updated most object
-classes to return &#8220;true&#8221; on a fetch of a list of objects that
-returns no results along with an empty list instead of &#8220;false&#8221; and
-a null reference for ease of use.<o:p></o:p></span></p>
+</span></span></span><![endif]><span style='font-size:8.0pt'>Updated most
+object classes to return &#8220;true&#8221; on a fetch of a list of objects
+that returns no results along with an empty list instead of &#8220;false&#8221;
+and a null reference for ease of use.<o:p></o:p></span></p>
 
 <p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in;mso-list:l12 level1 lfo24'><![if !supportLists]><span
 style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
@@ -32492,16 +32492,15 @@ NotificationTemplate class to fetch HTML device templates.<o:p></o:p></span></p>
 style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
 mso-bidi-font-family:Symbol'><span style='mso-list:Ignore'>&middot;<span
 style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><![endif]><span style='font-size:8.0pt'>Updated
-NotificationDevice class to allow for creation of new HTML notification
-devices.<o:p></o:p></span></p>
+</span></span></span><![endif]><span style='font-size:8.0pt'>Updated NotificationDevice
+class to allow for creation of new HTML notification devices.<o:p></o:p></span></p>
 
 <p class=MsoListParagraphCxSpMiddle style='text-indent:-.25in;mso-list:l11 level1 lfo25'><![if !supportLists]><span
 style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
 mso-bidi-font-family:Symbol'><span style='mso-list:Ignore'>&middot;<span
 style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><![endif]><span style='font-size:8.0pt'>Added ConversationName
-enum to ConnectionTypes class.<o:p></o:p></span></p>
+</span></span></span><![endif]><span style='font-size:8.0pt'>Added
+ConversationName enum to ConnectionTypes class.<o:p></o:p></span></p>
 
 <p class=MsoListParagraphCxSpLast style='text-indent:-.25in;mso-list:l11 level1 lfo25'><![if !supportLists]><span
 style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
@@ -32632,8 +32631,8 @@ style='mso-spacerun:yes'>&nbsp; </span>CUMI coverage is minimal at this point.<o
 style='font-size:8.0pt;font-family:Symbol;mso-fareast-font-family:Symbol;
 mso-bidi-font-family:Symbol'><span style='mso-list:Ignore'>&middot;<span
 style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><![endif]><span style='font-size:8.0pt'>This completely supersedes
-the 1.x version of the CUPI REST library previously available.<o:p></o:p></span></p>
+</span></span></span><![endif]><span style='font-size:8.0pt'>This completely
+supersedes the 1.x version of the CUPI REST library previously available.<o:p></o:p></span></p>
 
 <p class=MsoToc1><span style='font-size:8.0pt'><o:p>&nbsp;</o:p></span></p>
 

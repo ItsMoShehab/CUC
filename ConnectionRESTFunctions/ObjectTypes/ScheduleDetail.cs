@@ -277,24 +277,7 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             string strUrl = string.Format("{0}schedules/{1}/scheduledetails/{2}", HomeServer.BaseUrl, pScheduleObjectId,pScheduleDetailObjectId);
 
-            //issue the command to the CUPI interface
-            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
-
-            if (res.Success == false)
-            {
-                return res;
-            }
-
-            try
-            {
-                JsonConvert.PopulateObject(res.ResponseText, this, RestTransportFunctions.JsonSerializerSettings);
-            }
-            catch (Exception ex)
-            {
-                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
-                res.Success = false;
-            }
-            return res;
+            return HomeServer.FillObjectWithRestGetResults(strUrl,this);
         }
 
 

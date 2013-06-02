@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Web.Script.Serialization;
 using System.Xml.Linq;
 using System.Diagnostics;
+using Newtonsoft.Json;
 using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 
 namespace Cisco.UnityConnection.RestFunctions
@@ -1269,6 +1270,41 @@ namespace Cisco.UnityConnection.RestFunctions
         public T GetObjectFromJson<T>(string pJson, string pTypeNameOverride = "") where T : new()
         {
             return _transportFunctions.GetObjectFromJson<T>(pJson, pTypeNameOverride);
+        }
+
+        /// <summary>
+        /// Helper method to do a fetch and fill the target object with values from the resulting response body.  Commmon operation 
+        /// needed for all object types.
+        /// The response itself and the full GET URI used to fetch it are included in the WebCallResult class returned.
+        /// </summary>
+        /// <param name="pUrl">
+        /// GET URI for fetchind the data for a single object of the type being filled in
+        /// </param>
+        /// <param name="pObject">
+        /// Instance of the object class to be filled in
+        /// </param>
+        /// <returns>
+        /// WebCallResult instance with the details of the request and response and failure if there is one.
+        /// </returns>
+        public WebCallResult FillObjectWithRestGetResults<T>(string pUrl, T pObject)
+        {
+            WebCallResult res = GetCupiResponse(pUrl, MethodType.GET, "");
+
+            if (res.Success == false)
+            {
+                return res;
+            }
+
+            try
+            {
+                JsonConvert.PopulateObject(res.ResponseText, pObject, RestTransportFunctions.JsonSerializerSettings);
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText = "Failure populating class instance from JSON response:" + ex;
+                res.Success = false;
+            }
+            return res;
         }
 
         /// <summary>
