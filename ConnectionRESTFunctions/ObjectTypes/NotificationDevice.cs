@@ -804,6 +804,54 @@ namespace Cisco.UnityConnection.RestFunctions
             return res;
         }
 
+
+        /// <summary>
+        /// Adds a new custom SMTP notification device for a user identified via ObjectId.  The device display name must be unique for devices
+        /// assigned to that useror the add will fail.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// The Connection server the user to add the device to lives on.
+        /// </param>
+        /// <param name="pUserObjectId">
+        /// GUID identifying the user to add the device to.
+        /// </param>
+        /// <param name="pDeviceDisplayName">
+        /// Unique display name to assign the notification device
+        /// </param>
+        /// <param name="pSmtpAddress">
+        /// SMTP address notification will be sent to.
+        /// </param>
+        /// <param name="pEventList">
+        /// One or more event types that this device will trigger on:
+        ///  AllMessage,NewFax,NewUrgentFax,NewVoiceMail,NewUrgentVoiceMail,DispatchMessage,UrgentDispatchMessage
+        /// </param>
+        /// <param name="pActivated">
+        /// True or false to indicate the device is active or not.
+        /// </param>
+        /// <param name="pDevice">
+        /// Instance of the notification device created is passed back on this out parameter
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult AddSmtpDevice(ConnectionServerRest pConnectionServer,
+                                                   string pUserObjectId,
+                                                   string pDeviceDisplayName,
+                                                   string pSmtpAddress,
+                                                   string pEventList,
+                                                   bool pActivated, out NotificationDevice pDevice)
+         {
+             pDevice = null;
+             var res = AddSmtpDevice(pConnectionServer, pUserObjectId, pDeviceDisplayName, pSmtpAddress, pEventList, pActivated);
+             if (res.Success)
+             {
+                 res = GetNotificationDeivce(pConnectionServer, pUserObjectId, res.ReturnedObjectId,"",out pDevice);
+             }
+
+             return res;
+         }
+        
+
         /// <summary>
         /// Adds a new custom HTML notification device for a user identified via ObjectId.  The device display name must be unique for devices
         /// assigned to that user or the add will fail.
@@ -891,6 +939,57 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
             }
 
+            return res;
+        }
+
+        /// <summary>
+        /// Adds a new custom HTML notification device for a user identified via ObjectId.  The device display name must be unique for devices
+        /// assigned to that user or the add will fail.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// The Connection server the user to add the device to lives on.
+        /// </param>
+        /// <param name="pUserObjectId">
+        /// GUID identifying the user to add the device to.
+        /// </param>
+        /// <param name="pTemplateObjectId">
+        /// ObjectId of the HTTP template to use when creating this device
+        /// </param>
+        /// <param name="pDeviceDisplayName">
+        /// Unique display name to assign the notification device
+        /// </param>
+        /// <param name="pSmtpAddress">
+        /// HTTP address notification will be sent to.
+        /// </param>
+        /// <param name="pEventList">
+        /// One or more event types that this device will trigger on:
+        ///  AllMessage,NewFax,NewUrgentFax,NewVoiceMail,NewUrgentVoiceMail,DispatchMessage,UrgentDispatchMessage
+        /// </param>
+        /// <param name="pActivated">
+        /// True or false to indicate the device is active or not.
+        /// </param>
+        /// <param name="pDevice">
+        /// Instance of the notification device just created will be returned on this out parameter
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult AddHtmlDevice(ConnectionServerRest pConnectionServer,
+                                                  string pUserObjectId,
+                                                  string pTemplateObjectId,
+                                                  string pDeviceDisplayName,
+                                                  string pSmtpAddress,
+                                                  string pEventList,
+                                                  bool pActivated,
+                                                  out NotificationDevice pDevice)
+        {
+            pDevice = null;
+
+            var res = AddHtmlDevice(pConnectionServer, pUserObjectId, pTemplateObjectId, pDeviceDisplayName, pSmtpAddress, pEventList, pActivated);
+            if (res.Success)
+            {
+                res = GetNotificationDeivce(pConnectionServer, pUserObjectId, res.ReturnedObjectId, "", out pDevice);
+            }
             return res;
         }
 
@@ -996,6 +1095,63 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
+        /// Adds a new custom SMTP notification device for a user identified via ObjectId.  The device display name must be unique for devices
+        /// assigned to that useror the add will fail.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// The Connection server the user to add the device to lives on.
+        /// </param>
+        /// <param name="pUserObjectId">
+        /// GUID identifying the user to add the device to.
+        /// </param>
+        /// <param name="pDeviceDisplayName">
+        /// Unique display name to assign the notification device
+        /// </param>
+        /// <param name="pSmppProviderObjectId">
+        /// The GUID identifying the SMS provider this device will use.
+        /// </param>
+        /// <param name="pRecipientAddress">
+        /// SMTP address notification will be sent to.
+        /// </param>
+        /// <param name="pSenderAddress">
+        /// SMTP address notification will be sent from.
+        /// </param>
+        /// <param name="pEventList">
+        /// One or more event types that this device will trigger on:
+        ///  AllMessage,NewFax,NewUrgentFax,NewVoiceMail,NewUrgentVoiceMail,DispatchMessage,UrgentDispatchMessage
+        /// </param>
+        /// <param name="pActivated">
+        /// True or false to indicate the device is active or not.
+        /// </param>
+        /// <param name="pDevice">
+        /// Instance of the notification device just created will be passed back on this out parameter
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult AddSmsDevice(ConnectionServerRest pConnectionServer,
+                                                 string pUserObjectId,
+                                                 string pDeviceDisplayName,
+                                                 string pSmppProviderObjectId,
+                                                 string pRecipientAddress,
+                                                 string pSenderAddress,
+                                                 string pEventList,
+                                                 bool pActivated,
+                                                 out NotificationDevice pDevice)
+        {
+            pDevice = null;
+
+            var res = AddSmsDevice(pConnectionServer, pUserObjectId, pDeviceDisplayName,pSmppProviderObjectId,
+                pRecipientAddress,pSenderAddress,pEventList,pActivated);
+            if (res.Success)
+            {
+                res = GetNotificationDeivce(pConnectionServer, pUserObjectId, res.ReturnedObjectId, "", out pDevice);
+            }
+            return res;
+        }
+
+
+        /// <summary>
         /// Add a phone notification device for a user.
         /// </summary>
         /// <param name="pConnectionServer">
@@ -1083,6 +1239,55 @@ namespace Cisco.UnityConnection.RestFunctions
             return res;
         }
 
+        /// <summary>
+        /// Add a phone notification device for a user.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Connection server the user to add the device for is homed on.
+        /// </param>
+        /// <param name="pUserObjectId">
+        /// Identifier for the user to add the device for
+        /// </param>
+        /// <param name="pDeviceDisplayName">
+        /// Unique display name for the device
+        /// </param>
+        /// <param name="pMediaSwitchObjectId">
+        /// Switch that the device is associated with - indicates which ports will be used when dialing out to this device.
+        /// </param>
+        /// <param name="pPhoneNumber">
+        /// Phone number to dial 
+        /// </param>
+        /// <param name="pEventList">
+        /// Comma separated list of events that trigger notification rules for this device:
+        /// AllMessage,NewFax,NewUrgentFax,NewVoiceMail,NewUrgentVoiceMail,DispatchMessage,UrgentDispatchMessage
+        /// </param>
+        /// <param name="pActivated">
+        /// Is the device enabled (active) or not.  Will fail if there is no phone number on the device
+        /// </param>
+        /// <param name="pDevice">
+        /// The newly created notification device will be passed back on this out parameter.
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class
+        /// </returns>
+        public static WebCallResult AddPhoneDevice(ConnectionServerRest pConnectionServer,
+                                                   string pUserObjectId,
+                                                   string pDeviceDisplayName,
+                                                   string pMediaSwitchObjectId,
+                                                   string pPhoneNumber,
+                                                   string pEventList,
+                                                   bool pActivated,
+                                                   out NotificationDevice pDevice)
+        {
+            pDevice = null;
+
+            var res = AddPhoneDevice(pConnectionServer, pUserObjectId, pDeviceDisplayName,pMediaSwitchObjectId,pPhoneNumber,pEventList,pActivated);
+            if (res.Success)
+            {
+                res = GetNotificationDeivce(pConnectionServer, pUserObjectId, res.ReturnedObjectId, "", out pDevice);
+            }
+            return res;
+        }
 
         /// <summary>
         /// Add a pager notification device for a user.
@@ -1172,6 +1377,56 @@ namespace Cisco.UnityConnection.RestFunctions
             return res;
         }
 
+
+        /// <summary>
+        /// Add a pager notification device for a user.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Connection server the user to add the device for is homed on.
+        /// </param>
+        /// <param name="pUserObjectId">
+        /// Identifier for the user to add the device for
+        /// </param>
+        /// <param name="pDeviceDisplayName">
+        /// Unique display name for the device
+        /// </param>
+        /// <param name="pMediaSwitchObjectId">
+        /// Switch that the device is associated with - indicates which ports will be used when dialing out to this device.
+        /// </param>
+        /// <param name="pPhoneNumber">
+        /// Phone number to dial 
+        /// </param>
+        /// <param name="pEventList">
+        /// Comma separated list of events that trigger notification rules for this device:
+        /// AllMessage,NewFax,NewUrgentFax,NewVoiceMail,NewUrgentVoiceMail,DispatchMessage,UrgentDispatchMessage
+        /// </param>
+        /// <param name="pActivated">
+        /// Is the device enabled (active) or not.  Will fail if there is no phone number on the device
+        /// </param>
+        /// <param name="pDevice">
+        /// An instance of the newly created notificaiton device is passed back on this out parameter
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class
+        /// </returns>
+        public static WebCallResult AddPagerDevice(ConnectionServerRest pConnectionServer,
+                                                   string pUserObjectId,
+                                                   string pDeviceDisplayName,
+                                                   string pMediaSwitchObjectId,
+                                                   string pPhoneNumber,
+                                                   string pEventList,
+                                                   bool pActivated,
+                                                   out NotificationDevice pDevice)
+        {
+            pDevice = null;
+
+            var res = AddPagerDevice(pConnectionServer, pUserObjectId, pDeviceDisplayName, pMediaSwitchObjectId,pPhoneNumber,pEventList,pActivated);
+            if (res.Success)
+            {
+                res = GetNotificationDeivce(pConnectionServer, pUserObjectId, res.ReturnedObjectId, "", out pDevice);
+            }
+            return res;
+        }
 
 
         /// <summary>
