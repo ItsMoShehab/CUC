@@ -39,7 +39,7 @@ namespace CUPIVerySimple
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
-                connectionServer = new ConnectionServerRest ("192.168.0.186", "CCMAdministrator", "ecsbulab");
+                connectionServer = new ConnectionServerRest ("lindborgload3.cisco.com", "CCMAdministrator", "ecsbulab");
             }
 
             catch (Exception ex)
@@ -77,7 +77,15 @@ namespace CUPIVerySimple
                 return;
             }
 
-            
+            //notification device
+            NotificationDevice oNotDevice;
+            res = NotificationDevice.AddSmtpDevice(connectionServer, oUserTestDude.ObjectId, "New SMTP Device",
+                                                   "testaddress@funtimes.com", "AllMessage",true );
+            res = NotificationDevice.GetNotificationDeivce(connectionServer, oUserTestDude.ObjectId,
+                                                           "", "New SMTP Device", out oNotDevice);
+            Console.WriteLine(res);
+
+
             List<UserMessage> oUserMessages;
             res = UserMessage.GetMessages(connectionServer, oUserTestDude.ObjectId, out oUserMessages);
 
