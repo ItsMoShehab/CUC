@@ -142,7 +142,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </param>
         /// <param name="pTenants">
         /// The list of tenants returned from the CUPI call (if any) is returned as a generic list of Tenant class instances via this out param.  
-        /// If no tenants are found NULL is returned for this parameter.
+        /// If no tenants are found an empty list is returned.
         /// </param>
         /// <param name="pClauses">
         /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
@@ -217,7 +217,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </param>
         /// <param name="pTenants">
         /// The list of tenants returned from the CUPI call (if any) is returned as a generic list of Tenant class instances via this out param.  
-        /// If no tenants are found NULL is returned for this parameter.
+        /// If no tenants are found an empty list is returned.
         /// </param>
         /// <param name="pRowsPerPage">
         /// How many rows to return with the fetch, defaults to 20

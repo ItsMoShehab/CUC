@@ -259,7 +259,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </param>
         /// <param name="pLocations">
         /// The list of Locations returned from the CUPI call (if any) is returned as a generic list of Location class instances via this out param.  
-        /// If no Locations are  found NULL is returned for this parameter.
+        /// If no Locations are  found found an empty list is returned.
         /// </param>
         /// <param name="pClauses">
         /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
@@ -338,7 +338,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </param>
         /// <param name="pLocations">
         /// The list of Locations returned from the CUPI call (if any) is returned as a generic list of Location class instances via this out param.  
-        /// If no Locations are  found NULL is returned for this parameter.
+        /// If no Locations are  found an empty list is returned.
         /// </param>
         /// <param name="pClauses">
         /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time

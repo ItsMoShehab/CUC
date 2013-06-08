@@ -199,7 +199,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </param>
         /// <param name="pPrivateLists">
         /// The list of private lists returned from the CUPI call (if any) is returned as a generic list of PrivateList class 
-        /// instances via this out param.  If no lists are found NULL is returned for this parameter.
+        /// instances via this out param.  If no lists are found found an empty list is returned.
         /// </param>
         /// <param name="pPageNumber">
         /// Results page to fetch - defaults to 1

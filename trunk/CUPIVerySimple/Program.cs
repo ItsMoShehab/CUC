@@ -39,7 +39,7 @@ namespace CUPIVerySimple
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
-                connectionServer = new ConnectionServerRest ("lindborgload3.cisco.com", "CCMAdministrator", "ecsbulab");
+                connectionServer = new ConnectionServerRest ("192.168.0.186", "CCMAdministrator", "ecsbulab");
             }
 
             catch (Exception ex)

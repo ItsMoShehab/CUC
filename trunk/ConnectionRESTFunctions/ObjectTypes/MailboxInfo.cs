@@ -223,7 +223,7 @@ namespace Cisco.UnityConnection.RestFunctions
             public int MessageCount { get; private set; }
         }
 
-        private enum FolderTypes {inbox, deleted, sent}
+        public enum FolderTypes {inbox, deleted, sent}
 
         /// <summary>
         /// Returns the message count for a specific folder type (inbox, sent, deleted)
@@ -237,7 +237,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with details of the fetch and results from the server
         /// </returns>
-        private WebCallResult GetFolderCount(FolderTypes pFolder, out int pCount)
+        public WebCallResult GetFolderCount(FolderTypes pFolder, out int pCount)
         {
             pCount = 0;
             string strUrl = string.Format("{0}mailbox/folders/{1}?userobjectid={2}", HomeServer.BaseUrl, pFolder.ToString(), UserObjectId);

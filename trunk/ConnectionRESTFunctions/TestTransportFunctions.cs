@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json;
 
@@ -152,6 +151,20 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             WebCallResult res = new WebCallResult {Success = true, StatusCode = 200};
 
+            //dummy up the version check
+            if (pUrl.Contains("vmrest/version"))
+            {
+                res.ResponseText = "{\"name\":\"vmrest\",\"version\":\"1.0.0.1\"}";
+                return res;
+            }
+
+            //dummy up the servers (cluster) check
+            if (pUrl.Contains("vmrest/vmsservers"))
+            {
+                res.ResponseText = "{\"@total\":\"1\",\"VmsServer\":[{\"URI\":\"/vmrest/vmsservers/99846e45-c254-4755-aec4-341503683cee\",\"ObjectId\":\"99846e45-c254-4755-aec4-341503683cee\",\"ServerName\":\"cuc10b164\",\"IpAddress\":\"192.168.0.186\",\"VmsServerObjectId\":\"99846e45-c254-4755-aec4-341503683cee\",\"ClusterMemberId\":\"0\",\"ServerState\":\"1\",\"HostName\":\"cuc10b164.jefflocal.org\",\"ServerDisplayState\":\"3\",\"SubToPerformReplicationRole\":\"false\"}]}";
+                return res;
+            }
+
             //contains string can come in on the url or in the body depending on the test
             string pSpecificString="";
             if (pRequestBody.Contains("ReturnSpecificText["))
@@ -206,19 +219,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //dummy up the version check
-            if (pUrl.Contains("vmrest/version"))
-            {
-                res.ResponseText = "{\"name\":\"vmrest\",\"version\":\"1.0.0.1\"}";
-                return res;
-            }
-
-            //dummy up the servers (cluster) check
-            if (pUrl.Contains("vmrest/vmsservers"))
-            {
-                res.ResponseText = "{\"@total\":\"1\",\"VmsServer\":[{\"URI\":\"/vmrest/vmsservers/99846e45-c254-4755-aec4-341503683cee\",\"ObjectId\":\"99846e45-c254-4755-aec4-341503683cee\",\"ServerName\":\"cuc10b164\",\"IpAddress\":\"192.168.0.186\",\"VmsServerObjectId\":\"99846e45-c254-4755-aec4-341503683cee\",\"ClusterMemberId\":\"0\",\"ServerState\":\"1\",\"HostName\":\"cuc10b164.jefflocal.org\",\"ServerDisplayState\":\"3\",\"SubToPerformReplicationRole\":\"false\"}]}";
-                return res;
-            }
+            
 
             return res;
         }
