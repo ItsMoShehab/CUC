@@ -118,6 +118,24 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Live Tests
+
+
+        [TestMethod]
+        public void MailboxInfo_MessageInfoFailure()
+        {
+            MailboxInfo oInfo = null;
+            try
+            {
+                oInfo = new MailboxInfo(_connectionServer, "junk");
+                Assert.Fail("Mailbox info with invalid objectId should fail");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exepcted failure:"+ex);
+            }
+        }
+
         [TestMethod]
         public void MailboxInfo_MessageInfoTests()
         {
@@ -170,5 +188,8 @@ namespace ConnectionCUPIFunctionsTest
 
         }
 
-    }
+        #endregion
+
+
+   }
 }

@@ -11,7 +11,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -741,7 +740,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </param>
         /// <param name="pUsers">
         /// The list of users returned from the CUPI call (if any) is returned as a generic list of User class instances via this out param.  
-        /// If no users are  found NULL is returned for this parameter.
+        /// If no users are found an empty list is returned.
         /// </param>
         /// <param name="pClauses">
         /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time
@@ -779,14 +778,12 @@ namespace Cisco.UnityConnection.RestFunctions
             if (string.IsNullOrEmpty(res.ResponseText))
             {
                 res.Success = false;
-                pUsers = new List<UserBase>();
                 return res;
             }
 
             //not an error, just return empty list
             if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
-                pUsers = new List<UserBase>();
                 return res;
             }
 
@@ -823,7 +820,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </param>
         /// <param name="pUsers">
         /// The list of users returned from the CUPI call (if any) is returned as a generic list of User class instances via this out param.  
-        /// If no users are  found NULL is returned for this parameter.
+        /// If no users are found an empty list is returned.
         /// </param>
         /// <param name="pClauses">
         /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  Only one query and one sort parameter at a time

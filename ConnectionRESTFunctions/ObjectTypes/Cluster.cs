@@ -104,7 +104,7 @@ namespace Cisco.UnityConnection.RestFunctions
         private WebCallResult GetServers(ConnectionServerRest pConnectionServer)
         {
             _servers = new List<Server>();
-
+            
             string strUrl = pConnectionServer.BaseUrl + "cluster";
 
             //issue the command to the CUPI interface
@@ -120,7 +120,6 @@ namespace Cisco.UnityConnection.RestFunctions
             //if this is empty that means an error in this case - should always be at least one template
             if (string.IsNullOrEmpty(res.ResponseText))
             {
-                _servers = new List<Server>();
                 res.Success = false;
                 return res;
             }

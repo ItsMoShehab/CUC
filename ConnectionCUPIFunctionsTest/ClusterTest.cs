@@ -84,8 +84,10 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
+        #region Live Tests
+
         [TestMethod]
-        public void TestMethod1()
+        public void FetchTests()
         {
             Cluster oCluster = new Cluster(_connectionServer);
 
@@ -97,7 +99,65 @@ namespace ConnectionCUPIFunctionsTest
             {
                 Console.WriteLine(oServer.ToString());
                 Console.WriteLine(oServer.DumpAllProps());
+                
             }
         }
+
+        #endregion
+
+
+        #region Harness Tests
+
+        [TestMethod]
+        public void HarnessTest_GetServers()
+        {
+            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "EmptyResultText", "test", "test");
+
+            Cluster oCluster=null;
+            
+            try
+            {
+                oCluster = new Cluster(oServer);
+                Assert.Fail("Creating cluster with test harness should fail");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("expected error:"+ex);
+            }
+
+            try
+            {
+                Console.WriteLine(oCluster.Servers.Count);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("Expected Failure getting servers count:"+ex);
+            }
+
+
+            oServer = new ConnectionServerRest(new TestTransportFunctions(), "ErrorResponse", "test", "test");
+
+            try
+            {
+                oCluster = new Cluster(oServer);
+                Assert.Fail("Creating cluster with test harness should fail");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("expected error:" + ex);
+            }
+
+            try
+            {
+                Console.WriteLine(oCluster.Servers.Count);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Expected Failure getting servers count:" + ex);
+            }
+
+        }
+
+        #endregion
     }
 }
