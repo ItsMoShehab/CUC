@@ -218,7 +218,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public static WebCallResult GetRoles(ConnectionServerRest pConnectionServer, out List<Role> pRoles, params string[] pClauses)
         {
             WebCallResult res;
-            pRoles = null;
+            pRoles = new List<Role>();
 
             if (pConnectionServer == null)
             {
@@ -241,7 +241,6 @@ namespace Cisco.UnityConnection.RestFunctions
             //if this is empty that means an error in this case - should always be at least one role
             if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
-                pRoles = new List<Role>();
                 res.Success = false;
                 return res;
             }

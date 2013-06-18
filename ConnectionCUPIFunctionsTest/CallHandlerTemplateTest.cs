@@ -4,6 +4,7 @@ using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using Moq;
 
 
 namespace ConnectionCUPIFunctionsTest
@@ -403,20 +404,52 @@ namespace ConnectionCUPIFunctionsTest
 
         #region Harness Tests
 
-        // EmptyResultText, InvalidResultText, ErrorResponse, ReturnSpecificText[
-
        [TestMethod]
        public void GetCallHandlerTemplates_HarnessFailures()
        {
-           ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(),"test","test","test");
+           var oTestTransport = new Mock<IConnectionRestCalls>();
+
+           oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+               It.IsAny<string>(), true)).Returns(new WebCallResult
+               {
+                   Success = true,
+                   ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
+               });
+
+           ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test", false);
+
+           //empty results
+           oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+               It.IsAny<string>(), true)).Returns(new WebCallResult
+               {
+                   Success = true,
+                   ResponseText = ""
+               });
 
            List<CallHandlerTemplate> oTemplates;
            var res = CallHandlerTemplate.GetCallHandlerTemplates(oServer, out oTemplates, 1, 5, "EmptyResultText");
            Assert.IsFalse(res.Success, "Calling GetCallHandlerTemplates with EmptyResultText did not fail");
 
+           //garbage response
+           oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                 It.IsAny<string>(), true)).Returns(new WebCallResult
+                                 {
+                                     Success = true,
+                                     ResponseText = "garbage result"
+                                 });
+
            res = CallHandlerTemplate.GetCallHandlerTemplates(oServer, out oTemplates, 1, 5, "InvalidResultText");
            Assert.IsTrue(res.Success, "Calling GetCallHandlerTemplates with InvalidResultText should not fail:"+res);
            Assert.IsTrue(oTemplates.Count==0,"Invalid result text should produce an empty list of templates");
+
+           //error response
+           oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                   It.IsAny<string>(), true)).Returns(new WebCallResult
+                                   {
+                                       Success = false,
+                                       ResponseText = "error text",
+                                       StatusCode = 404
+                                   });
 
            res = CallHandlerTemplate.GetCallHandlerTemplates(oServer, out oTemplates, 1, 5, "ErrorResponse");
            Assert.IsFalse(res.Success, "Calling GetCallHandlerTemplates with ErrorResponse did not fail");
@@ -425,15 +458,28 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void AddCallHandlerTemplate_HarnessFailures()
         {
-            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
+            var oTestTransport = new Mock<IConnectionRestCalls>();
 
-            ConnectionPropertyList oProps = new ConnectionPropertyList();
-            oProps.Add("ReturnSpecificText[/vmrest/callhandlertemplates/junk]", "junk");
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
+                });
+
+            ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test", false);
+
+            //invalid objectId response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                 It.IsAny<string>(), true)).Returns(new WebCallResult
+                                 {
+                                     Success = true,
+                                     ResponseText = "/vmrest/callhandlertemplates/junk"
+                                 });
 
             CallHandlerTemplate oTemplate;
-            var res = CallHandlerTemplate.AddCallHandlerTemplate(oServer, "test", "test", "", "test", oProps,out oTemplate);
+            var res = CallHandlerTemplate.AddCallHandlerTemplate(oServer, "test", "test", "", "test", null,out oTemplate);
             Assert.IsFalse(res.Success,"AddCallHandlerTemplate that produces invalid new ObjectId did not fail");
-
         }
 
         #endregion

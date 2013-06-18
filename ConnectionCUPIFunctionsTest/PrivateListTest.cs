@@ -4,6 +4,7 @@ using System.Threading;
 using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace ConnectionCUPIFunctionsTest
 {
@@ -398,36 +399,101 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetPrivateListMembers_HarnessFailures()
         {
-            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
+            var oTestTransport = new Mock<IConnectionRestCalls>();
+
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
+                });
+
+            ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test", false);
+
+            //empty results
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
 
             List<PrivateListMember> oMembers;
             var res = PrivateListMember.GetPrivateListMembers(oServer, "objectid", "EmptyResultText", out oMembers);
             Assert.IsFalse(res.Success, "Calling GetPrivateListMembers with EmptyResultText did not fail");
             Assert.IsTrue(oMembers.Count==0,"Empty result text should result in empty list returned");
 
+            //garbage response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
+
             res = PrivateListMember.GetPrivateListMembers(oServer, "objectid", "InvalidResultText", out oMembers);
             Assert.IsTrue(res.Success, "Calling GetPrivateListMembers with InvalidResultText should not fail:"+res);
             Assert.IsTrue(oMembers.Count == 0, "Invalid result text should result in empty list returned");
 
+            //error response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
+
             res = PrivateListMember.GetPrivateListMembers(oServer, "objectid", "ErrorResponse", out oMembers);
             Assert.IsFalse(res.Success, "Calling GetPrivateListMembers with ErrorResponse did not fail");
             Assert.IsTrue(oMembers.Count == 0, "Error result should result in empty list returned");
-
         }
 
         [TestMethod]
         public void GetPrivateLists_HarnessFailures()
         {
-            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
+            var oTestTransport = new Mock<IConnectionRestCalls>();
+
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
+                });
+
+            ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test", false);
+
+            //empty results
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
 
             List<PrivateList> oLists;
             var res = PrivateList.GetPrivateLists(oServer, "EmptyResultText", out oLists);
             Assert.IsFalse(res.Success, "Calling GetPrivateLists with EmptyResultText did not fail");
             Assert.IsTrue(oLists.Count == 0, "Empty result text should result in empty list returned");
 
+            //garbage response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
+
             res = PrivateList.GetPrivateLists(oServer, "InvalidResultText", out oLists);
             Assert.IsTrue(res.Success, "Calling GetPrivateLists with InvalidResultText should not fail:" + res);
             Assert.IsTrue(oLists.Count == 0, "Invalid result text should result in empty list returned");
+
+            //error response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
 
             res = PrivateList.GetPrivateLists(oServer, "ErrorResponse", out oLists);
             Assert.IsFalse(res.Success, "Calling GetPrivateLists with ErrorResponse did not fail");

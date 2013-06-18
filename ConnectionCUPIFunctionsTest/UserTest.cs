@@ -639,7 +639,7 @@ namespace ConnectionCUPIFunctionsTest
             res = _tempUser.ResetPin("234098234");
             Assert.IsTrue(res.Success, "Reset PIN failed:" + res.ToString());
 
-            res = _tempUser.ResetPassword("asdfasdfui09au8dsf");
+            res = _tempUser.ResetPassword("as!aAsdfui09au");
             Assert.IsTrue(res.Success, "Reset password failed:" + res.ToString());
 
         }

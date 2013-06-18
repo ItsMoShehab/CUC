@@ -4,6 +4,7 @@ using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using Moq;
 
 namespace ConnectionCUPIFunctionsTest
 {
@@ -602,17 +603,51 @@ namespace ConnectionCUPIFunctionsTest
         #region Harness Tests
 
        [TestMethod]
-        public void GetCallHAndlers_HarnessTestFailures()
-        {
-            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
+        public void GetCallHandlers_HarnessTestFailures()
+       {
+           var oTestTransport = new Mock<IConnectionRestCalls>();
+
+           oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(),It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+               It.IsAny<string>(),true)).Returns(new WebCallResult
+                      {
+                          Success = true,
+                          ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
+                      });
+
+           ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test",false);
+
+           //empty results
+           oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+               It.IsAny<string>(), true)).Returns(new WebCallResult
+               {
+                   Success = true,
+                   ResponseText = ""
+               });
 
             List<CallHandler> oHandlers;
             var res = CallHandler.GetCallHandlers(oServer, out oHandlers, 1, 5, "EmptyResultText");
             Assert.IsFalse(res.Success, "Calling GetCallHandlers with EmptyResultText did not fail");
 
+           //garbage response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(),true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
+
             res = CallHandler.GetCallHandlers(oServer, out oHandlers, 1, 5, "InvalidResultText");
             Assert.IsTrue(res.Success, "Calling GetCallHandlers with InvalidResultText should not fail:" + res);
-            Assert.IsTrue(oHandlers.Count == 0, "Invalid result text should produce an empty list of templates");
+            Assert.IsTrue(oHandlers.Count == 0, "Invalid result text should produce an empty list");
+
+           //error response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(),true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
 
             res = CallHandler.GetCallHandlers(oServer, out oHandlers, 1, 5, "ErrorResponse");
             Assert.IsFalse(res.Success, "Calling GetCallHandlers with ErrorResponse did not fail");
@@ -621,14 +656,49 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetCallHAndler_HarnessTestFailures()
         {
-            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
+            var oTestTransport = new Mock<IConnectionRestCalls>();
+
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
+                });
+
+            ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test", false);
+
+
+            //empty results
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
 
             CallHandler oHandler;
             var res = CallHandler.GetCallHandler(out oHandler, oServer, "EmptyResultText");
             Assert.IsFalse(res.Success, "Calling GetCallHandler with EmptyResultText did not fail");
 
+            //garbage response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
+
             res = CallHandler.GetCallHandler(out oHandler, oServer, "InvalidResultText");
             Assert.IsFalse(res.Success, "Calling GetCallHandler with InvalidResultText should fail");
+
+            //error response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
 
             res = CallHandler.GetCallHandler(out oHandler, oServer, "ErrorResponse");
             Assert.IsFalse(res.Success, "Calling GetCallHandler with ErrorResponse did not fail");
