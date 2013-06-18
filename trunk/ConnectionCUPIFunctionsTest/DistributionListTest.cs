@@ -5,6 +5,7 @@ using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using Moq;
 
 namespace ConnectionCUPIFunctionsTest
 {
@@ -546,15 +547,49 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetDistributionLists_HarnessTestFailures()
         {
-            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
+            var oTestTransport = new Mock<IConnectionRestCalls>();
+
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
+                });
+
+            ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test", false);
+
+            //empty results
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
 
             List<DistributionList> oLists;
             var res = DistributionList.GetDistributionLists(oServer, out oLists, 1, 5, "EmptyResultText");
             Assert.IsFalse(res.Success, "Calling GetDistributionLists with EmptyResultText did not fail");
 
+            //garbage response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
+
             res = DistributionList.GetDistributionLists(oServer, out oLists, 1, 5, "InvalidResultText");
             Assert.IsTrue(res.Success, "Calling GetDistributionLists with InvalidResultText should not fail:" + res);
             Assert.IsTrue(oLists.Count == 0, "Invalid result text should produce an empty list of templates");
+
+            //error response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
 
             res = DistributionList.GetDistributionLists(oServer, out oLists, 1, 5, "ErrorResponse");
             Assert.IsFalse(res.Success, "Calling GetDistributionLists with ErrorResponse did not fail");
@@ -563,7 +598,24 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void PublicListConstructor_HarnessTestFailure()
         {
-            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
+            var oTestTransport = new Mock<IConnectionRestCalls>();
+
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
+                });
+
+            ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test", false);
+
+            //garbage response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
 
             //fetch by ObjectId
             try
@@ -573,13 +625,29 @@ namespace ConnectionCUPIFunctionsTest
             }
             catch{}
 
-            //fetch by alias
+            //empty results
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
+
             try
             {
-                DistributionList oList = new DistributionList(oServer,"", "InvalidResultText");
+                DistributionList oList = new DistributionList(oServer,"", "EmptyResultText");
                 Assert.Fail("Creating new list with InvalidResultText should produce failure");
             }
             catch { }
+
+            //error response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
 
             try
             {
@@ -593,15 +661,49 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetDistributionListMembers_HarnessTestFailures()
         {
-            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
+            var oTestTransport = new Mock<IConnectionRestCalls>();
+
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
+                });
+
+            ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test", false);
+
+            //empty results
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
 
             List<DistributionListMember> oMembers;
             var res = DistributionListMember.GetDistributionListMembers(oServer, _tempList.ObjectId, out oMembers, 1, 5, "EmptyResultText");
             Assert.IsFalse(res.Success, "Calling GetDistributionListMembers with EmptyResultText did not fail");
 
+            //garbage response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
+
             res = DistributionListMember.GetDistributionListMembers(oServer,_tempList.ObjectId, out oMembers, 1, 5, "InvalidResultText");
             Assert.IsTrue(res.Success, "Calling GetDistributionListMembers with InvalidResultText should not fail:" + res);
             Assert.IsTrue(oMembers.Count == 0, "Invalid result text should produce an empty list of templates");
+
+            //error response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
 
             res = DistributionListMember.GetDistributionListMembers(oServer, _tempList.ObjectId, out oMembers, 1, 5, "ErrorResponse");
             Assert.IsFalse(res.Success, "Calling GetDistributionListMembers with ErrorResponse did not fail");

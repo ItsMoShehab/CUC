@@ -4,6 +4,8 @@ using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using Moq;
+
 namespace ConnectionCUPIFunctionsTest
 {
     [TestClass]
@@ -18,8 +20,11 @@ namespace ConnectionCUPIFunctionsTest
         //routine below.
         private static ConnectionServerRest _connectionServer;
 
-        //Class instance with mock version of transport for forcing specific server errors
-        private static ConnectionServerRest _connectionServerHarness;
+        //Mock transport interface - 
+        private static Mock<IConnectionRestCalls> _mockTransport;
+
+        //Mock REST server
+        private static ConnectionServerRest _mockServer;
 
         private static Tenant _tempTenant;
 
@@ -62,14 +67,17 @@ namespace ConnectionCUPIFunctionsTest
             WebCallResult res = Tenant.AddTenant(_connectionServer, strName, strName+".org", strName, out _tempTenant);
             Assert.IsTrue(res.Success, "Failed creating temporary tenant:" + res.ToString());
 
-           try
-           {
-               _connectionServerHarness = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
-           }
-           catch (Exception ex)
-           {
-               throw new Exception("Unable to create harness ConnectionServerRest version for Tenant test:"+ex.Message);
-           }
+           //setup mock server interface 
+           _mockTransport = new Mock<IConnectionRestCalls>();
+
+           _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+               It.IsAny<string>(), true)).Returns(new WebCallResult
+               {
+                   Success = true,
+                   ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
+               });
+
+           _mockServer = new ConnectionServerRest(_mockTransport.Object, "test", "test", "test", false);
         }
 
 
@@ -351,35 +359,90 @@ namespace ConnectionCUPIFunctionsTest
         #region Harness Tesst
 
         [TestMethod]
-        public void Tenant_FetchCoses_Harness()
+        public void Tenant_FetchCoses_Harness_ZeroCount()
         {
-            Tenant oTenant = new Tenant(_connectionServerHarness);
+            Tenant oTenant = new Tenant(_mockServer);
+            List<ClassOfService> oCoses;
+            //0 count response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result",
+                                      TotalObjectCount = 0
+                                  });
+
+            var res = oTenant.GetClassesOfService(out oCoses, 1, 10, "InvalidResultText");
+            Assert.IsTrue(res.Success, "Fetching COS with zero count should not fail:" + res);
+            Assert.IsTrue(oCoses.Count == 0, "No coses should be returned returned for invalid text");
+
+        }
+
+        [TestMethod]
+        public void Tenant_FetchCoses_Harness_GarbageResult()
+        {
+            Tenant oTenant = new Tenant(_mockServer);
+            List<ClassOfService> oCoses;
+            
+            //garbage response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result",
+                                      TotalObjectCount = 1
+
+                                  });
+
+            var res = oTenant.GetClassesOfService(out oCoses, 1, 10, "InvalidResultText");
+            Assert.IsFalse(res.Success, "Fetching COS with invalid text should fail:");
+            Assert.IsTrue(oCoses.Count == 0, "No coses should be returned returned for invalid text");
+        }
+
+        [TestMethod]
+        public void Tenant_FetchCoses_Harness_ErrorResult()
+        {
+            Tenant oTenant = new Tenant(_mockServer);
+            List<ClassOfService> oCoses;
+            //error response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
+
+            var res = oTenant.GetClassesOfService(out oCoses, 1, 10, "ErrorResponse");
+            Assert.IsFalse(res.Success, "Fetching COS should fail:");
+            Assert.IsTrue(oCoses.Count == 0, "No coses should be returned returned");
+
+        }
+
+        [TestMethod]
+        public void Tenant_FetchCoses_Harness_EmptyResult()
+        {
+            Tenant oTenant = new Tenant(_mockServer);
 
             List<ClassOfService> oCoses;
 
-            var res = oTenant.GetClassesOfService(out oCoses, 1, 10, null);
-            Assert.IsFalse(res.Success, "Fetching COS should fail:");
+            //empty results
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
+
+            var res = oTenant.GetClassesOfService(out oCoses,1,10, "EmptyResultText");
+            Assert.IsTrue(res.Success, "Fetching COS with empty results should not fail");
             Assert.IsTrue(oCoses.Count == 0, "No coses should be returned returned");
-
-            res = oTenant.GetClassesOfService(out oCoses,1,10, "EmptyResultText");
-            Assert.IsFalse(res.Success, "Fetching COS should fail:");
-            Assert.IsTrue(oCoses.Count == 0, "No coses should be returned returned");
-
-            res = oTenant.GetClassesOfService(out oCoses, 1, 10, "InvalidResultText");
-            Assert.IsTrue(res.Success, "Fetching COS with invalid text should not fail: "+res);
-            Assert.IsTrue(oCoses.Count == 0, "No coses should be returned returned for invalid text");
-
-            res = oTenant.GetClassesOfService(out oCoses, 1, 10, "ErrorResponse");
-            Assert.IsFalse(res.Success, "Fetching COS should fail:");
-            Assert.IsTrue(oCoses.Count == 0, "No coses should be returned returned");
-
-
         }
 
         [TestMethod]
         public void Tenant_FetchPhoneSystems_Harness()
         {
-            Tenant oTenant = new Tenant(_connectionServerHarness);
+            Tenant oTenant = new Tenant(_mockServer);
 
             List<PhoneSystem> oPhoneSystems;
 
@@ -387,55 +450,163 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Fetching phone systems should fail:");
             Assert.IsTrue(oPhoneSystems.Count == 0, "No phone systems should be returned returned");
 
+            //empty results
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
+
             res = oTenant.GetPhoneSystems(out oPhoneSystems, 1, 10, "EmptyResultText");
             Assert.IsFalse(res.Success, "Fetching phone systems should fail:");
             Assert.IsTrue(oPhoneSystems.Count == 0, "No phone systems should be returned returned");
 
+            //garbage response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
+
+            //tenants must have at least one phone system
             res = oTenant.GetPhoneSystems(out oPhoneSystems, 1, 10, "InvalidResultText");
-            Assert.IsTrue(res.Success, "Fetching phone systems with invalid text should not fail: " + res);
+            Assert.IsFalse(res.Success, "Fetching phone systems with invalid text should fail");
             Assert.IsTrue(oPhoneSystems.Count == 0, "No coses should be returned returned for invalid text");
+
+            //error response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
 
             res = oTenant.GetPhoneSystems(out oPhoneSystems, 1, 10, "ErrorResponse");
             Assert.IsFalse(res.Success, "Fetching phone systems should fail:");
             Assert.IsTrue(oPhoneSystems.Count == 0, "No phone systems should be returned returned");
         }
 
-        [TestMethod]
-        public void Tenant_Schedules_Harness()
-        {
-            Tenant oTenant = new Tenant(_connectionServerHarness);
 
+        [TestMethod]
+        public void Tenant_Schedules_Harness_ErrorResult()
+        {
+            Tenant oTenant = new Tenant(_mockServer);
             List<ScheduleSet> oSchedules;
 
-            var res = oTenant.GetScheduleSets(out oSchedules, 1, 10, null);
-            Assert.IsFalse(res.Success, "Fetching schedules should fail:");
-            Assert.IsTrue(oSchedules.Count == 0, "No schedules should be returned returned");
+            //error response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
 
-            res = oTenant.GetScheduleSets(out oSchedules, 1, 10, "EmptyResultText");
-            Assert.IsFalse(res.Success, "Fetching schedules should fail:");
-            Assert.IsTrue(oSchedules.Count == 0, "No schedules should be returned returned");
-
-            res = oTenant.GetScheduleSets(out oSchedules, 1, 10, "InvalidResultText");
-            Assert.IsTrue(res.Success, "Fetching schedules with invalid text should not fail: " + res);
-            Assert.IsTrue(oSchedules.Count == 0, "No schedules should be returned returned for invalid text");
-
-            res = oTenant.GetScheduleSets(out oSchedules, 1, 10, "ErrorResponse");
+            var res = oTenant.GetScheduleSets(out oSchedules, 1, 10, "ErrorResponse");
             Assert.IsFalse(res.Success, "Fetching schedules should fail:");
             Assert.IsTrue(oSchedules.Count == 0, "No schedules should be returned returned");
         }
 
         [TestMethod]
+        public void Tenant_Schedules_Harness_GarbageResult()
+        {
+            Tenant oTenant = new Tenant(_mockServer);
+            List<ScheduleSet> oSchedules;
+            
+            //garbage response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
+
+            var res = oTenant.GetScheduleSets(out oSchedules, 1, 10, "InvalidResultText");
+            Assert.IsTrue(res.Success, "Fetching schedules with invalid text should not fail:" + res);
+            Assert.IsTrue(oSchedules.Count == 0, "No schedules should be returned returned for invalid text");
+        }
+
+        [TestMethod]
+        public void Tenant_Schedules_Harness_ZeroCount()
+        {
+            Tenant oTenant = new Tenant(_mockServer);
+            List<ScheduleSet> oSchedules;
+            //0 count response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result",
+                                      TotalObjectCount = 0
+
+                                  });
+
+            var res = oTenant.GetScheduleSets(out oSchedules, 1, 10, "zerocountresponse");
+            Assert.IsTrue(res.Success, "Fetching schedules with zero count should not fail:");
+            Assert.IsTrue(oSchedules.Count == 0, "No schedules should be returned");
+        }
+
+        
+        [TestMethod]
+        public void Tenant_Schedules_Harness_EmptyResult()
+        {
+            Tenant oTenant = new Tenant(_mockServer);
+            List<ScheduleSet> oSchedules;
+
+            //empty results
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
+
+            var res = oTenant.GetScheduleSets(out oSchedules, 1, 10, "EmptyResultText");
+            Assert.IsTrue(res.Success, "Fetching schedules with empty result set should not fail:"+res);
+            Assert.IsTrue(oSchedules.Count == 0, "No schedules should be returned");
+        }
+
+
+        [TestMethod]
         public void Tenant_CreationErrors_Harness()
         {
             Tenant oTenant;
+            
+            //empty results
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
 
-            var res = Tenant.GetTenant(out oTenant, _connectionServerHarness, "EmptyResultText");
+            var res = Tenant.GetTenant(out oTenant, _mockServer, "EmptyResultText");
             Assert.IsFalse(res.Success,"Creating tenant with empty result text should fail");
 
-            res = Tenant.GetTenant(out oTenant, _connectionServerHarness, "InvalidResultText");
+            //garbage response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
+
+            res = Tenant.GetTenant(out oTenant, _mockServer, "InvalidResultText");
             Assert.IsFalse(res.Success, "Creating tenant with InvalidResultText should fail");
 
-            res = Tenant.GetTenant(out oTenant, _connectionServerHarness, "ErrorResponse");
+            //error response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
+
+            res = Tenant.GetTenant(out oTenant, _mockServer, "ErrorResponse");
             Assert.IsFalse(res.Success, "Creating tenant with eErrorResponse should fail");
 
         }
@@ -445,22 +616,45 @@ namespace ConnectionCUPIFunctionsTest
         {
             List<Tenant> oTenants;
 
-            var res = Tenant.GetTenants(_connectionServerHarness, out oTenants,1,10, "EmptyResultText");
+            //empty results
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
+
+            var res = Tenant.GetTenants(_mockServer, out oTenants, 1, 10, "EmptyResultText");
             Assert.IsFalse(res.Success, "Calling GetTenants with empty result text should fail");
             Assert.IsTrue(oTenants.Count==0, "Zero tenants should be returned");
 
-            res = Tenant.GetTenants(_connectionServerHarness, out oTenants, 1, 10, "InvalidResultText");
+            //garbage response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
+
+            res = Tenant.GetTenants(_mockServer, out oTenants, 1, 10, "InvalidResultText");
             Assert.IsTrue(res.Success, "Calling GetTenants with InvalidResultText should not fail:"+res);
             Assert.IsTrue(oTenants.Count == 0, "Zero tenants should be returned");
 
-            res = Tenant.GetTenants(_connectionServerHarness, out oTenants, 1, 10, "ErrorResponse");
-            Assert.IsFalse(res.Success, "Calling GetTenants with ErrorResponse should fail");
+            //error response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
 
+            res = Tenant.GetTenants(_mockServer, out oTenants, 1, 10, "ErrorResponse");
+            Assert.IsFalse(res.Success, "Calling GetTenants with ErrorResponse should fail");
         }
 
 
         #endregion
-
     
     }
 

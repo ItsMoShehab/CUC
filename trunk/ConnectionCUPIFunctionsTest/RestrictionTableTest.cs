@@ -4,6 +4,7 @@ using System.Threading;
 using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace ConnectionCUPIFunctionsTest
 {
@@ -18,6 +19,12 @@ namespace ConnectionCUPIFunctionsTest
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
         private static ConnectionServerRest _connectionServer;
+
+        //Mock transport interface - 
+        private static Mock<IConnectionRestCalls> _mockTransport;
+
+        //Mock REST server
+        private static ConnectionServerRest _mockServer;
 
         /// <summary>
         ///Gets or sets the test context which provides
@@ -52,6 +59,17 @@ namespace ConnectionCUPIFunctionsTest
                 throw new Exception("Unable to attach to Connection server to start RestrictionTable test:" + ex.Message);
             }
 
+            //setup mock server interface 
+            _mockTransport = new Mock<IConnectionRestCalls>();
+
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
+                });
+
+            _mockServer = new ConnectionServerRest(_mockTransport.Object, "test", "test", "test", false);
         }
 
         #endregion
@@ -244,6 +262,7 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
+
         #region Test Harness
 
         // EmptyResultText, InvalidResultText, ErrorResponse
@@ -278,18 +297,36 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetRestrictionPatterns_TestHarnessFailures()
         {
-            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
+            //empty results
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,ResponseText = ""
+                });
 
             List<RestrictionPattern> oPatterns;
-            var res = RestrictionPattern.GetRestrictionPatterns(oServer, "EmptyResultText", out oPatterns, 1, 2);
+            var res = RestrictionPattern.GetRestrictionPatterns(_mockServer, "EmptyResultText", out oPatterns, 1, 2);
             Assert.IsFalse(res.Success, "Calling GetRestrictionPatterns with empty result text should fail");
             Assert.IsTrue(oPatterns.Count==0,"Empty response text should result in an empty list");
 
-            res = RestrictionPattern.GetRestrictionPatterns(oServer, "InvalidResultText", out oPatterns, 1, 2);
+            //garbage response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,ResponseText = "garbage result"
+                                  });
+            res = RestrictionPattern.GetRestrictionPatterns(_mockServer, "InvalidResultText", out oPatterns, 1, 2);
             Assert.IsTrue(res.Success, "Calling GetRestrictionPatterns with InvalidResultText should not fail:"+res);
             Assert.IsTrue(oPatterns.Count == 0, "Invalid response text should result in an empty list");
 
-            res = RestrictionPattern.GetRestrictionPatterns(oServer, "ErrorResponse", out oPatterns, 1, 2);
+            //error response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,ResponseText = "error text",StatusCode = 404
+                                    });
+
+            res = RestrictionPattern.GetRestrictionPatterns(_mockServer, "ErrorResponse", out oPatterns, 1, 2);
             Assert.IsFalse(res.Success, "Calling GetRestrictionPatterns with ErrorResponse should fail");
             Assert.IsTrue(oPatterns.Count == 0, "Error response should result in an empty list");
         }
@@ -297,18 +334,41 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetRestrictionTables_TestHarnessFailure()
         {
-            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
+            //empty results
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
 
             List<RestrictionTable> oTables;
-            var res = RestrictionTable.GetRestrictionTables(oServer, out oTables, 1, 2, "EmptyResultText");
+            var res = RestrictionTable.GetRestrictionTables(_mockServer, out oTables, 1, 2, "EmptyResultText");
             Assert.IsFalse(res.Success, "Calling GetRestrictionTables with empty result text should fail");
             Assert.IsTrue(oTables.Count == 0, "Empty response text should result in an empty list");
 
-            res = RestrictionTable.GetRestrictionTables(oServer, out oTables, 1, 2, "InvalidResultText");
+            //garbage response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
+
+            res = RestrictionTable.GetRestrictionTables(_mockServer, out oTables, 1, 2, "InvalidResultText");
             Assert.IsTrue(res.Success, "Calling GetRestrictionTables with InvalidResultText should not fail:" + res);
             Assert.IsTrue(oTables.Count == 0, "Invalid response text should result in an empty list");
 
-            res = RestrictionTable.GetRestrictionTables(oServer, out oTables, 1, 2, "ErrorResponse");
+            //error response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
+
+            res = RestrictionTable.GetRestrictionTables(_mockServer, out oTables, 1, 2, "ErrorResponse");
             Assert.IsFalse(res.Success, "Calling GetRestrictionTables with ErrorResponse should fail");
             Assert.IsTrue(oTables.Count == 0, "Error response should result in an empty list");
             
@@ -317,25 +377,50 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void RestrictionTable_Construct_TestHarnessFailures()
         {
-            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
+            //empty results
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
 
             try
             {
-                RestrictionTable oTable = new RestrictionTable(oServer, "EmptyResultText");
+                RestrictionTable oTable = new RestrictionTable(_mockServer, "EmptyResultText");
                 Assert.Fail("Creating restriction table with empty response text should fail");
             }
             catch { }
 
+
+            //garbage response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
+
             try
             {
-                RestrictionTable oTable = new RestrictionTable(oServer, "InvalidResultText");
+                RestrictionTable oTable = new RestrictionTable(_mockServer, "InvalidResultText");
                 Assert.Fail("Creating restriction table with empty response text should fail");
             }
             catch { }
 
+
+            //error response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
+
             try
             {
-                RestrictionTable oTable = new RestrictionTable(oServer, "ErrorResponse");
+                RestrictionTable oTable = new RestrictionTable(_mockServer, "ErrorResponse");
                 Assert.Fail("Creating restriction table with empty response text should fail");
             }
             catch { }

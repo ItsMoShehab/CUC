@@ -3,6 +3,7 @@ using System.Threading;
 using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace ConnectionCUPIFunctionsTest
 {
@@ -111,14 +112,31 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void HarnessTest_GetServers()
         {
-            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "EmptyResultText", "test", "test");
+            var oTestTransport = new Mock<IConnectionRestCalls>();
+
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
+                });
+
+            ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test", false);
 
             Cluster oCluster=null;
-            
+
+            //empty results
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
+
             try
             {
                 oCluster = new Cluster(oServer);
-                Assert.Fail("Creating cluster with test harness should fail");
+                Assert.Fail("Creating cluster with empty response text should fail");
             }
             catch (Exception ex)
             {
@@ -128,34 +146,31 @@ namespace ConnectionCUPIFunctionsTest
             try
             {
                 Console.WriteLine(oCluster.Servers.Count);
+                Assert.Fail("Getting server count with invalid cluster fetch should fail");
             }
             catch(Exception ex)
             {
                 Console.WriteLine("Expected Failure getting servers count:"+ex);
             }
 
-
-            oServer = new ConnectionServerRest(new TestTransportFunctions(), "ErrorResponse", "test", "test");
+            //error response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
 
             try
             {
                 oCluster = new Cluster(oServer);
-                Assert.Fail("Creating cluster with test harness should fail");
+                Assert.Fail("Creating cluster with error response should fail");
             }
             catch (Exception ex)
             {
                 Console.WriteLine("expected error:" + ex);
             }
-
-            try
-            {
-                Console.WriteLine(oCluster.Servers.Count);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Expected Failure getting servers count:" + ex);
-            }
-
         }
 
         #endregion

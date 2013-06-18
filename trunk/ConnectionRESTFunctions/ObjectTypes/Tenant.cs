@@ -29,7 +29,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Constructors and Destructors
 
-
         /// <summary>
         /// Creates a new instance of the Tenant class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
         /// updating data for this tenant.  
@@ -643,8 +642,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
             string strUrl = ConnectionServerRest.AddClausesToUri(string.Format("{0}tenants/{1}/coses", HomeServer.BaseUrl, ObjectId),oParams.ToArray());
 
-            //string strUrl = string.Format("{0}tenants/{1}/coses", HomeServer.BaseUrl, ObjectId);
-
             WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
@@ -655,7 +652,6 @@ namespace Cisco.UnityConnection.RestFunctions
             //a tenant must always have at least one COS
             if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount==0)
             {
-                res.Success = false;
                 res.ErrorText = "Failed to find COS for tenant by objectid=" + ObjectId;
                 return res;
             }
@@ -663,6 +659,13 @@ namespace Cisco.UnityConnection.RestFunctions
             int iHoldTotalCount = res.TotalObjectCount;
 
             List<TenantCos> oCoses = HomeServer.GetObjectsFromJson<TenantCos>(res.ResponseText, "TenantCos");
+
+            if (oCoses == null)
+            {
+                res.Success = false;
+                res.ErrorText = "Could not parse response into COSes:" + res.ResponseText;
+                return res;
+            }
 
             foreach (var oCos in oCoses)
             {
@@ -729,6 +732,9 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pRowsPerPage">
         /// Results to return per page, default to 20
         /// </param>
+        /// <param name="pClauses">
+        /// Zero or more strings can be passed for clauses (filters, sorts, page directives).  
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResult class with details of the call and response from the server.
         /// </returns>
@@ -751,10 +757,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
             string strUrl = ConnectionServerRest.AddClausesToUri(string.Format("{0}tenants/{1}/phonesystems", HomeServer.BaseUrl, ObjectId), oParams.ToArray());
 
-
-            //fetch the ObjectIds
-            //string strUrl = string.Format("{0}tenants/{1}/phonesystems", HomeServer.BaseUrl, ObjectId);
-
             WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
@@ -772,8 +774,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             int iHoldTotalCount = res.TotalObjectCount;
 
-            List<TenantPhoneSystem> pPhones;
-            pPhones = HomeServer.GetObjectsFromJson<TenantPhoneSystem>(res.ResponseText, "TenantPhoneSystem");
+            List<TenantPhoneSystem> pPhones = HomeServer.GetObjectsFromJson<TenantPhoneSystem>(res.ResponseText, "TenantPhoneSystem");
 
             foreach (var oPhone in pPhones)
             {
@@ -838,8 +839,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
             string strUrl = ConnectionServerRest.AddClausesToUri(string.Format("{0}tenants/{1}/schedulesets", HomeServer.BaseUrl, ObjectId), oParams.ToArray());
 
-            //string strUrl = string.Format("{0}tenants/{1}/schedulesets", HomeServer.BaseUrl, ObjectId);
-
             WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
@@ -847,10 +846,9 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //a tenant must always have at least one schedule set
+            //a tenant must always have at least one schedule set, but a search string can still return zero entries
             if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
-                res.Success = false;
                 res.ErrorText = "Failed to find schedules for tenant by objectid=" + ObjectId;
                 return res;
             }
@@ -859,6 +857,13 @@ namespace Cisco.UnityConnection.RestFunctions
 
             List<TenantScheduleSet> pSchedules;
             pSchedules = HomeServer.GetObjectsFromJson<TenantScheduleSet>(res.ResponseText, "TenantScheduleSet");
+
+            if (pSchedules == null)
+            {
+                res.Success = false;
+                res.ErrorText = "Could not parse results text into schedules:" + res.ResponseText;
+                return res;
+            }
 
             foreach (var oSchedule in pSchedules)
             {
@@ -968,7 +973,8 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// Returns all handler (both system and primary) associated with this tenant.
+        /// Returns all system handlers sssociated with this tenant.  Primary call handlers are not included as of build
+        /// 107.
         /// </summary>
         /// <param name="pHandlers">
         /// List of associated call handlers is passed back as a generic list of CallHandler objects on this 
@@ -985,7 +991,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public WebCallResult GetCallHandlers(out List<CallHandler> pHandlers, int pPageNumber = 1, int pRowsPerPage = 20)
         {
-            string strQuery = "query=(PartitionObjectId is " + this.PartitionObjectId + ")";
+            string strQuery = "query=(PartitionObjectId is " + this.PartitionObjectId + " & IsPrimary is 0)";
             return CallHandler.GetCallHandlers(HomeServer, out pHandlers, pPageNumber, pRowsPerPage, strQuery);
         }
 

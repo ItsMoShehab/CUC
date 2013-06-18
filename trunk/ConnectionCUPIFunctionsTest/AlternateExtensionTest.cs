@@ -4,6 +4,7 @@ using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using Moq;
 
 namespace ConnectionCUPIFunctionsTest
 {
@@ -398,51 +399,102 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetAlternateExtension_Harness()
         {
-            ConnectionServerRest oServer=null;
-            try
-            {
-                oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail("Failed to create test harness version of ConnectionServer:"+ex);
-            }
+            var oTestTransport = new Mock<IConnectionRestCalls>();
+
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
+                });
+
+            ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test", false);
 
             AlternateExtension oAltExt;
-            // EmptyResultText, InvalidResultText, ErrorResponse
+
+            //error response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
 
             var res = AlternateExtension.GetAlternateExtension(oServer, "userObjectID", "ErrorResponse", out oAltExt);
-            Assert.IsFalse(res.Success,"Calling GEtAlternateExtension with server error response should fail");
+            Assert.IsFalse(res.Success,"Calling GetAlternateExtension with server error response should fail");
+
+            //garbage response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
 
             res = AlternateExtension.GetAlternateExtension(oServer, "userObjectID", "InvalidResultText", out oAltExt);
-            Assert.IsFalse(res.Success, "Calling GEtAlternateExtension with InvalidResultText should fail");
+            Assert.IsFalse(res.Success, "Calling GetAlternateExtension with InvalidResultText should fail");
+
+
+            //empty results
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
 
             res = AlternateExtension.GetAlternateExtension(oServer, "userObjectID", "EmptyResultText", out oAltExt);
-            Assert.IsFalse(res.Success, "Calling GEtAlternateExtension with EmptyResultText should fail");
+            Assert.IsFalse(res.Success, "Calling GetAlternateExtension with EmptyResultText should fail");
         }
 
         [TestMethod]
         public void GetAlternateExtensions_Harness()
         {
-            ConnectionServerRest oServer = null;
-            try
-            {
-                oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail("Failed to create test harness version of ConnectionServer:" + ex);
-            }
+            var oTestTransport = new Mock<IConnectionRestCalls>();
+
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
+                });
+
+            ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test", false);
 
             List<AlternateExtension> oAltExts;
-            // EmptyResultText, InvalidResultText, ErrorResponse
+
+            //error response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
 
             var res = AlternateExtension.GetAlternateExtensions(oServer, "ErrorResponse", out oAltExts);
             Assert.IsFalse(res.Success, "Calling GetAlternateExtensions with server error response should fail");
 
+            //garbage response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
+
             res = AlternateExtension.GetAlternateExtensions(oServer, "InvalidResultText", out oAltExts);
             Assert.IsTrue(res.Success, "Calling GetAlternateExtensions with InvalidResultText should not fail:"+res);
             Assert.IsTrue(oAltExts.Count==0,"Invalid text should result in empty list of alternate extensions being returned");
+
+            //empty results
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
 
             res = AlternateExtension.GetAlternateExtensions(oServer, "EmptyResultText", out oAltExts);
             Assert.IsTrue(res.Success, "Calling GetAlternateExtensions with EmptyResultText should not fail:"+res);

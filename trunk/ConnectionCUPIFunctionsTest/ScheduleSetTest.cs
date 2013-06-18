@@ -193,6 +193,7 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
+
         #region Static Call Failures
 
         [TestMethod]

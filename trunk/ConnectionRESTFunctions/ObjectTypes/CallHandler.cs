@@ -622,7 +622,7 @@ namespace Cisco.UnityConnection.RestFunctions
             temp.Add("pageNumber=" + pPageNumber);
             temp.Add("rowsPerPage=" + pRowsPerPage);
 
-            return GetCallHandlers(pConnectionServer, out pCallHandlers,temp.ToArray());
+            return GetCallHandlers(pConnectionServer, out pCallHandlers, temp.ToArray());
         }
 
         /// <summary>

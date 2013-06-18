@@ -281,7 +281,21 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
+            //not an error, just no extensions returned in query - return empty list
+            if (res.TotalObjectCount == 0 | res.ResponseText.Length < 10)
+            {
+                pAlternateExtensions = new List<AlternateExtension>();
+                return res;
+            }
+
             pAlternateExtensions = pConnectionServer.GetObjectsFromJson<AlternateExtension>(res.ResponseText);
+
+            if (pAlternateExtensions == null)
+            {
+                res.Success = false;
+                res.ErrorText = "Unable to parse response body into alternate extensions list:" + res.ResponseText;
+                return res;
+            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.

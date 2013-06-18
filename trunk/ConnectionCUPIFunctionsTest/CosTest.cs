@@ -4,6 +4,7 @@ using System.Threading;
 using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace ConnectionCUPIFunctionsTest
 {
@@ -276,21 +277,53 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetClassesOfService_HarnessTestFailures()
         {
-            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "test", "test", "test");
+            var oTestTransport = new Mock<IConnectionRestCalls>();
+
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
+                });
+
+            ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test", false);
+            
             List<ClassOfService> oCoses;
+
+            //empty results
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
 
             var res = ClassOfService.GetClassesOfService(oServer, out oCoses, 1, 5, "EmptyResultText");
             Assert.IsFalse(res.Success, "Calling GetClassesOfService with EmptyResultText did not fail");
+
+            //garbage response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
 
             res = ClassOfService.GetClassesOfService(oServer, out oCoses, 1, 5, "InvalidResultText");
             Assert.IsTrue(res.Success, "Calling GetClassesOfService with InvalidResultText should not fail:" + res);
             Assert.IsTrue(oCoses.Count == 0, "Invalid result text should produce an empty list of Coeses");
 
+            //error response
+            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
+
             res = ClassOfService.GetClassesOfService(oServer, out oCoses, 1, 5, "ErrorResponse");
             Assert.IsFalse(res.Success, "Calling GetClassesOfService with ErrorResponse did not fail");
-
-
-           
 
         }
 
