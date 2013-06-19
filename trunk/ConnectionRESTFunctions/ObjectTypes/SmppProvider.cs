@@ -155,7 +155,7 @@ namespace Cisco.UnityConnection.RestFunctions
             params string[] pClauses)
         {
             WebCallResult res;
-            pSmppProviders = null;
+            pSmppProviders = new List<SmppProvider>();
 
             if (pConnectionServer==null)
             {
@@ -176,14 +176,20 @@ namespace Cisco.UnityConnection.RestFunctions
             
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
             //if this is empty that's an error
-            if (string.IsNullOrEmpty(res.ResponseText))
+            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount==0)
             {
-                res.Success = false;
-                pSmppProviders = new List<SmppProvider>();
                 return res;
             }
 
             pSmppProviders = pConnectionServer.GetObjectsFromJson<SmppProvider>(res.ResponseText);
+
+            if (pSmppProviders == null)
+            {
+                pSmppProviders=new List<SmppProvider>();
+                res.Success = false;
+                res.ErrorText = "Failed to parse SmppProviders from response text:" + res.ResponseText;
+                return res;
+            }
 
             return res;
         }

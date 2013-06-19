@@ -4,6 +4,7 @@ using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using Moq;
 
 namespace ConnectionCUPIFunctionsTest
 {
@@ -24,7 +25,11 @@ namespace ConnectionCUPIFunctionsTest
         //routine below.
         private static ConnectionServerRest _connectionServer;
 
-        private static ConnectionServerRest _connectionServerTestHarness;
+        //Mock transport interface - 
+        private static Mock<IConnectionRestCalls> _mockTransport;
+
+        //Mock REST server
+        private static ConnectionServerRest _mockServer;
 
         /// <summary>
         ///Gets or sets the test context which provides
@@ -59,16 +64,17 @@ namespace ConnectionCUPIFunctionsTest
                 throw new Exception("Unable to attach to Connection server to start SmppProvider test:" + ex.Message);
             }
 
-            try
-            {
-                _connectionServerTestHarness = new ConnectionServerRest(new TestTransportFunctions(),
-                                                                    mySettings.ConnectionServer,
-                                                                    mySettings.ConnectionLogin, mySettings.ConnectionPW);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Unable to create test harness version of ConnectionServerRest to start SmppProvider tests:"+ex);
-            }
+            //setup mock server interface 
+            _mockTransport = new Mock<IConnectionRestCalls>();
+
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
+                });
+
+            _mockServer = new ConnectionServerRest(_mockTransport.Object, "test", "test", "test", false);
         }
 
         #endregion
@@ -138,6 +144,8 @@ namespace ConnectionCUPIFunctionsTest
                 Assert.Fail("Unable to fetch SMPP provider by valid ObjectId:"+ex);
             }
 
+            
+
         }
 
         [TestMethod]
@@ -157,9 +165,19 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void HarnessTest_GetSmppProvider()
         {
+
+            //error response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
+
             try
             {
-                SmppProvider oProvider = new SmppProvider(_connectionServerTestHarness, TestTransportFunctions.TestCommandValues.InvalidResultText.ToString());
+                SmppProvider oProvider = new SmppProvider(_mockServer);
                 Assert.Fail("Getting invalid response text back from server did not result in construciton failure");
             }
             catch (Exception ex)
@@ -171,21 +189,57 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void HarnessTest_GetSmppProviders()
         {
+
+            //error response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
             List<SmppProvider> oProviders;
-            var res = SmppProvider.GetSmppProviders(_connectionServerTestHarness, out oProviders, 1, 10,
-                                                    TestTransportFunctions.TestCommandValues.ErrorResponse.ToString());
+            var res = SmppProvider.GetSmppProviders(_mockServer, out oProviders, 1, 10);
             Assert.IsFalse(res.Success, "Forcing error response from server did not result in call failure");
 
-            res = SmppProvider.GetSmppProviders(_connectionServerTestHarness, out oProviders, 1, 10,
-                                        TestTransportFunctions.TestCommandValues.EmptyResultText.ToString());
-            Assert.IsFalse(res.Success, "Forcing empty result text from server should fail:"+res);
+
+            //empty results
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
+
+            res = SmppProvider.GetSmppProviders(_mockServer, out oProviders, 1, 10);
+            Assert.IsTrue(res.Success, "Forcing empty result text from server should not fail:"+res);
             Assert.IsTrue(oProviders.Count==0,"Empty response from server should result in 0 elements returned:"+oProviders.Count);
 
-            res = SmppProvider.GetSmppProviders(_connectionServerTestHarness, out oProviders, 1, 10,
-                                        TestTransportFunctions.TestCommandValues.InvalidResultText.ToString());
-            Assert.IsTrue(res.Success, "Forcing invalid result text from server should not fail:" + res);
+
+            //garbage response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result",
+                                      TotalObjectCount = 1
+                                  });
+
+            res = SmppProvider.GetSmppProviders(_mockServer, out oProviders, 1, 10);
+            Assert.IsFalse(res.Success, "Forcing invalid result text from server should fail:");
             Assert.IsTrue(oProviders.Count == 0, "Invalid response text from server should result in 0 elements returned:" + oProviders.Count);
 
+            //0 count response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result",
+                                      TotalObjectCount = 0
+                                  });
+            res = SmppProvider.GetSmppProviders(_mockServer, out oProviders, 1, 10);
+            Assert.IsTrue (res.Success, "Forcing zero count response from server should not fail:"+res);
+            Assert.IsTrue(oProviders.Count == 0, "Invalid response text from server should result in 0 elements returned:" + oProviders.Count);
         }
 
 

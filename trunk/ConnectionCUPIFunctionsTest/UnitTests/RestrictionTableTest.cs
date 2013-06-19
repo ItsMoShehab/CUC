@@ -269,25 +269,51 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void RestrctionPattern_Construct_TestHarnessFailures()
         {
-            ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(),"test","test","test");
+            //empty results
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
 
             try
             {
-                RestrictionPattern oPattern = new RestrictionPattern(oServer, "EmptyResultText", "objectid");
+                RestrictionPattern oPattern = new RestrictionPattern(_mockServer, "EmptyResultText", "objectid");
                 Assert.Fail("Creating restriction pattern with empty response text should fail");
             }
             catch {}
 
+
+            //garbage response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result",
+                                      TotalObjectCount = 1
+                                  });
+
             try
             {
-                RestrictionPattern oPattern = new RestrictionPattern(oServer, "InvalidResultText", "objectid");
+                RestrictionPattern oPattern = new RestrictionPattern(_mockServer, "InvalidResultText", "objectid");
                 Assert.Fail("Creating restriction pattern with empty response text should fail");
             }
             catch {}
 
+
+            //error response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
+
             try
             {
-                RestrictionPattern oPattern = new RestrictionPattern(oServer, "ErrorResponse", "objectid");
+                RestrictionPattern oPattern = new RestrictionPattern(_mockServer, "ErrorResponse", "objectid");
                 Assert.Fail("Creating restriction pattern with empty response text should fail");
             }
             catch { }

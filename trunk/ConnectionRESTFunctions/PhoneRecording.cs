@@ -128,7 +128,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //get the trailing number after the last "/"
             int iPos = res.ResponseText.LastIndexOf('/');
 
-            if (res.ResponseText.Length==iPos)
+            if (res.ResponseText.Length-1<=iPos)
             {
                 return res;
             }
@@ -159,13 +159,12 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl = string.Format("{0}calls/{1}", _homeServer.BaseUrl,_callId);
 
             WebCallResult res = _homeServer.GetCupiResponse(strUrl, MethodType.GET, "");
-            if (res.Success == false)
+            if (res.Success == false || res.JsonDictionary==null)
             {
                 return false;
             }
 
             object oValue;
-
             if (res.JsonDictionary.TryGetValue("connected", out oValue))
             {
                 if (oValue.ToString().Equals("true"))
@@ -212,6 +211,13 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (res.Success == false)
             {
+                return res;
+            }
+
+            if (res.JsonDictionary == null)
+            {
+                res.Success = false;
+                res.ErrorText = "JsonDictionary returned as null";
                 return res;
             }
 
@@ -389,9 +395,12 @@ namespace Cisco.UnityConnection.RestFunctions
             res.JsonDictionary.TryGetValue("lastResult", out oValue);
             if (oValue==null)
             {
-                _homeServer.RaiseErrorEvent("Error playing back message via CUTI, null value returned for last result");   
+                _homeServer.RaiseErrorEvent("Error playing back message via CUTI, null value returned for last result");
+                res.Success = false;
+                res.ErrorText = "Null result returned from play";
+                return res;
             }
-            else if (oValue.ToString().Equals("0") == false)
+            if (oValue.ToString().Equals("0") == false)
             {
                 res.Success = false;
                 res.ErrorText = "Result returned from play=" + oValue.ToString();
