@@ -5,6 +5,7 @@ using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using Moq;
 
 namespace ConnectionCUPIFunctionsTest
 {
@@ -23,6 +24,9 @@ namespace ConnectionCUPIFunctionsTest
         //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
         //routine below.
         private static ConnectionServerRest _connectionServer;
+
+        //Mock transport interface - 
+        private static Mock<IConnectionRestCalls> _mockTransport;
 
         /// <summary>
         ///Gets or sets the test context which provides
@@ -63,6 +67,8 @@ namespace ConnectionCUPIFunctionsTest
                 throw new Exception("Unable to attach to Connection server to start ConnectionServerRest test:" + ex.Message);
             }
 
+            //setup mock server interface 
+            _mockTransport = new Mock<IConnectionRestCalls>();
         }
 
         #endregion
@@ -106,9 +112,6 @@ namespace ConnectionCUPIFunctionsTest
 
             oServer = new ConnectionServerRest(new RestTransportFunctions());
             Assert.IsFalse(string.IsNullOrEmpty(oServer.Version.ToString()), "No version string for REstTransportFunctions constructor");
-
-            oServer = new ConnectionServerRest(new TestTransportFunctions());
-            Assert.IsFalse(string.IsNullOrEmpty(oServer.Version.ToString()), "No version string for TestTransportFunctions constructor");
         }
 
 
@@ -308,16 +311,6 @@ namespace ConnectionCUPIFunctionsTest
         {
             try
             {
-                ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "server", "login",
-                                                                "password", false);
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail("Failed creating server for version older than 9.x:" + ex);
-            }
-
-            try
-            {
                 ConnectionServerRest oServer = new ConnectionServerRest(_connectionServer.ServerName,_connectionServer.LoginName,
                     _connectionServer.LoginPw,false);
             }
@@ -326,9 +319,18 @@ namespace ConnectionCUPIFunctionsTest
                 Assert.Fail("Failed creating server without admin login:" + ex);
             }
 
+
+            //empty results
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                It.IsAny<string>(), true)).Returns(new WebCallResult
+                {
+                    Success = true,
+                    ResponseText = ""
+                });
+
             try
             {
-                ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "EmptyResultText", "login","password", false);
+                ConnectionServerRest oServer = new ConnectionServerRest(_mockTransport.Object, "EmptyResultText", "login","password", false);
                 Assert.Fail("Creating server with empty results text for version check did not fail");
             }
             catch (Exception ex)
@@ -336,9 +338,18 @@ namespace ConnectionCUPIFunctionsTest
                 Console.WriteLine("Expected creation failure:"+ex);
             }
 
+
+            //error response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
             try
             {
-                ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "ErrorResponse", "login", "password", false);
+                ConnectionServerRest oServer = new ConnectionServerRest(_mockTransport.Object, "ErrorResponse", "login", "password", false);
                 Assert.Fail("Creating server with error response for version check did not fail");
             }
             catch (Exception ex)
@@ -346,9 +357,18 @@ namespace ConnectionCUPIFunctionsTest
                 Console.WriteLine("Expected creation failure:" + ex);
             }
 
+
+            //garbage response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result",
+                                      TotalObjectCount = 1
+                                  });
             try
             {
-                ConnectionServerRest oServer = new ConnectionServerRest(new TestTransportFunctions(), "InvalidResultText", "login", "password", false);
+                ConnectionServerRest oServer = new ConnectionServerRest(_mockTransport.Object, "InvalidResultText", "login", "password", false);
                 Assert.Fail("Creating server with invalid results text for version check did not fail");
             }
             catch (Exception ex)
