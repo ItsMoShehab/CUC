@@ -446,10 +446,23 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public static WebCallResult DeleteAlternateExtension(ConnectionServerRest pConnectionServer, string pUserObjectId, string pObjectId)
         {
+            WebCallResult res = new WebCallResult {Success = false};
+            
             if (pConnectionServer == null)
             {
-                WebCallResult res = new WebCallResult();
                 res.ErrorText = "Null ConnectionServer referenced passed to DeleteAlternateExtension";
+                return res;
+            }
+
+            if (string.IsNullOrEmpty(pUserObjectId))
+            {
+                res.ErrorText = "Empty user objectId passed to DeleteAlternateExtension";
+                return res;
+            }
+
+            if (string.IsNullOrEmpty(pObjectId))
+            {
+                res.ErrorText = "Empty objectId passed to DeleteAlternateExtension";
                 return res;
             }
 

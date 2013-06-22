@@ -271,7 +271,12 @@ namespace Cisco.UnityConnection.RestFunctions
             //register for error and logging events to the transport mechanism. 
             _transportFunctions.DebugEvents += TransportFunctionsOnDebugEvents;
             _transportFunctions.ErrorEvents += TransportFunctionsOnErrorEvents;
-            RestTransportFunctions.JsonSerializerSettings.Error += JsonParseError;
+            
+            if (RestTransportFunctions.JsonSerializerSettings != null)
+            {
+                RestTransportFunctions.JsonSerializerSettings.Error += JsonParseError;
+            }
+
             ServerName = pServerName;
             LoginName = pLoginName;
             LoginPw = pLoginPw;

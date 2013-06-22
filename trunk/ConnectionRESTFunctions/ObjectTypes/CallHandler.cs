@@ -914,10 +914,16 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public static WebCallResult DeleteCallHandler(ConnectionServerRest pConnectionServer, string pObjectId)
         {
+            WebCallResult res = new WebCallResult{Success = false};
             if (pConnectionServer == null)
             {
-                WebCallResult res = new WebCallResult();
                 res.ErrorText = "Null ConnectionServer referenced passed to DeleteCallHandler";
+                return res;
+            }
+
+            if (string.IsNullOrEmpty(pObjectId))
+            {
+                res.ErrorText = "Empty ObjectId passed to DeleteCallHandler";
                 return res;
             }
 
