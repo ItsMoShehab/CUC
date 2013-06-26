@@ -974,7 +974,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
-        /// Add a user as a member of apublic distribution list
+        /// Add a user as a member of a public distribution list
         /// </summary>
         /// <param name="pConnectionServer"></param>
         /// <param name="pDistributionListObjectId"></param>
@@ -992,6 +992,27 @@ namespace Cisco.UnityConnection.RestFunctions
 
             return pConnectionServer.GetCupiResponse(strUrl, MethodType.POST, strBody, false);
         }
+
+        /// <summary>
+        /// Add a contact as a member of a public distribution list
+        /// </summary>
+        /// <param name="pConnectionServer"></param>
+        /// <param name="pDistributionListObjectId"></param>
+        /// <param name="pContactObjectId"></param>
+        /// <returns></returns>
+        public static WebCallResult AddMemberContact(ConnectionServerRest pConnectionServer, string pDistributionListObjectId, string pContactObjectId)
+        {
+            string strUrl = string.Format("{0}distributionlists/{1}/distributionlistmembers", pConnectionServer.BaseUrl, pDistributionListObjectId);
+
+            string strBody = "<DistributionListMember>\n\r";
+
+            strBody += string.Format("<MemberContactObjectId>{0}</MemberContactObjectId>\n\r", pContactObjectId);
+
+            strBody += "</DistributionListMember>\n\r";
+
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.POST, strBody, false);
+        }
+
 
 
         /// <summary>
