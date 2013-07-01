@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Cisco.UnityConnection.RestFunctions;
+using ConnectionCUPIFunctionsTest.UnitTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using Moq;
@@ -7,63 +8,18 @@ using Moq;
 namespace ConnectionCUPIFunctionsTest
 {
     /// <summary>
-    ///This is a test class for AlternateExtensionTest and is intended
-    ///to contain all AlternateExtensionTest Unit Tests
+    ///This is a test class for AlternateExtensionUnitTests and is intended
+    ///to contain all AlternateExtensionUnitTests Unit Tests
     ///</summary>
     [TestClass()]
-    public class AlternateExtensionTest
+    public class AlternateExtensionUnitTests : BaseUnitTests
     {
-
-        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
-        // ReSharper disable HeuristicUnreachableCode
-
-        #region Fields and Properties
-
-        //Mock transport interface - 
-        private static Mock<IConnectionRestCalls> _mockTransport = new Mock<IConnectionRestCalls>();
-
-        //Mock REST server
-        private static ConnectionServerRest _mockServer;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext { get; set; }
-
-
-        #endregion
-
-
-        #region Additional test attributes
-
-        //Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize]
-        public static void MyClassInitialize(TestContext testContext)
+        public new static void ClassInitialize(TestContext testContext)
         {
-            //setup mock server interface 
-            _mockTransport = new Mock<IConnectionRestCalls>();
-
-            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
-                It.IsAny<string>(), true)).Returns(new WebCallResult
-                {
-                    Success = true,
-                    ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
-                });
-
-            try
-            {
-                _mockServer = new ConnectionServerRest(_mockTransport.Object, "test", "test", "test", false);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Failed creating mock server instance:"+ex);
-            }
+            BaseUnitTests.ClassInitialize(testContext);
         }
 
-        #endregion
-
-        
         #region Class Construction Errors
 
         /// <summary>
@@ -181,7 +137,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Harness Tests
 
         [TestMethod]
-        public void GetAlternateExtension_Harness_ErrorResponse()
+        public void GetAlternateExtension_ErrorResponse_Failure()
         {
             AlternateExtension oAltExt;
 
@@ -200,7 +156,7 @@ namespace ConnectionCUPIFunctionsTest
 
         }
         [TestMethod]
-        public void GetAlternateExtension_Harness_GarbageResponse()
+        public void GetAlternateExtension_GarbageResponse_Failure()
         {
             AlternateExtension oAltExt;
             //garbage response
@@ -216,7 +172,7 @@ namespace ConnectionCUPIFunctionsTest
          }
 
         [TestMethod]
-        public void GetAlternateExtension_Harness_EmptyResult()
+        public void GetAlternateExtension_EmptyResult_Failure()
         {
             AlternateExtension oAltExt;
             //empty results
@@ -232,7 +188,7 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         [TestMethod]
-        public void GetAlternateExtension_Harness_ZeroCount()
+        public void GetAlternateExtension_ZeroCount_Failure()
         {
             AlternateExtension oAltExt;
             //empty results
@@ -251,7 +207,7 @@ namespace ConnectionCUPIFunctionsTest
 
 
         [TestMethod]
-        public void GetAlternateExtensions_Harness_ErrorResponse()
+        public void GetAlternateExtensions_ErrorResponse_Failure()
         {
             List<AlternateExtension> oAltExts;
 
@@ -271,7 +227,7 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         [TestMethod]
-        public void GetAlternateExtensions_Harness_GarbageResponse()
+        public void GetAlternateExtensions_GarbageResponse_Failure()
         {
             List<AlternateExtension> oAltExts;
             //garbage response
@@ -285,14 +241,12 @@ namespace ConnectionCUPIFunctionsTest
                                            });
 
             var res = AlternateExtension.GetAlternateExtensions(_mockServer, "InvalidResultText", out oAltExts);
-            Assert.IsTrue(res.Success, "Calling GetAlternateExtensions with InvalidResultText should not fail:" + res);
-            Assert.IsTrue(oAltExts.Count == 0,
-                          "Invalid text should result in empty list of alternate extensions being returned");
-
+            Assert.IsFalse(res.Success, "Calling GetAlternateExtensions with InvalidResultText should fail:");
+            Assert.IsTrue(oAltExts.Count == 0,"Invalid text should result in empty list of alternate extensions being returned");
         }
 
         [TestMethod]
-        public void GetAlternateExtensions_Harness_EmptyResponse()
+        public void GetAlternateExtensions_EmptyResponse_Success()
         {
             List<AlternateExtension> oAltExts;
 
@@ -310,7 +264,7 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         [TestMethod]
-        public void GetAlternateExtensions_Harness_ZeroCountResponse()
+        public void GetAlternateExtensions_ZeroCountResponse_Success()
         {
             List<AlternateExtension> oAltExts;
 

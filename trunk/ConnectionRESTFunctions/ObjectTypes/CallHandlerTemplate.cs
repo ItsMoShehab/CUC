@@ -832,9 +832,20 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             if (pConnectionServer == null)
             {
-                WebCallResult res = new WebCallResult();
-                res.ErrorText = "Null ConnectionServer referenced passed to DeleteCallHandlerTemplate";
-                return res;
+               return new WebCallResult
+                    {
+                        ErrorText = "Null ConnectionServer referenced passed to DeleteCallHandlerTemplate",
+                        Success = false
+                    };
+            }
+
+            if (string.IsNullOrEmpty(pObjectId))
+            {
+                return new WebCallResult
+                {
+                    ErrorText = "Emtpy objectId value passed to DeleteCallHandlerTemplate",
+                    Success = false
+                };
             }
 
             return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "callhandlertemplates/" + pObjectId,

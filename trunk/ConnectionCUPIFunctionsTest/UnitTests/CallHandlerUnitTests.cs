@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Cisco.UnityConnection.RestFunctions;
+using ConnectionCUPIFunctionsTest.UnitTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using Moq;
@@ -8,49 +9,22 @@ namespace ConnectionCUPIFunctionsTest
 {
 
     /// <summary>
-    ///This is a test class for CallHandlerTest and is intended
-    ///to contain all CallHandlerTest Unit Tests
+    ///This is a test class for CallHandlerUnitTests and is intended
+    ///to contain all CallHandlerUnitTests Unit Tests
     ///</summary>
     [TestClass]
-    public class CallHandlerTest
+    public class CallHandlerUnitTests : BaseUnitTests
     {
         // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
         // ReSharper disable HeuristicUnreachableCode
 
-        #region Fields and Properties
-
-        //Mock transport interface - 
-        private static Mock<IConnectionRestCalls> _mockTransport;
-
-        //Mock REST server
-        private static ConnectionServerRest _mockServer;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext { get; set; }
-
-        #endregion
-
-
-        #region Additional test attributes
+     #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
-            //setup mock server interface 
-            _mockTransport = new Mock<IConnectionRestCalls>();
-
-            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
-                It.IsAny<string>(), true)).Returns(new WebCallResult
-                {
-                    Success = true,
-                    ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
-                });
-
-            _mockServer = new ConnectionServerRest(_mockTransport.Object, "test", "test", "test", false);
+            BaseUnitTests.ClassInitialize(testContext);
         }
 
         #endregion

@@ -14,6 +14,8 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public static class ComboBoxHelper
     {
+        private static BindingList<IUnityDisplayInterface> _bindingObjects;
+
         /// <summary>
         /// Provide a list (IEnumerable) - a generic list is fine - of objects such as UserBase, CallHandler, Contact, UserTemplate,
         /// CallHandlerTemplate, Tenant etc... they will be presented to the user in a combo box using their display name or 
@@ -28,7 +30,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class 
         /// </returns>
-        public static WebCallResult FillDropDownWithObjects(ComboBox pComboBox, IEnumerable<IUnityDisplayInterface> pObjects)
+        public static WebCallResult FillDropDownWithObjects(ref ComboBox pComboBox, IEnumerable<IUnityDisplayInterface> pObjects)
         {
             WebCallResult res = new WebCallResult {Success = false};
 
@@ -48,16 +50,17 @@ namespace Cisco.UnityConnection.RestFunctions
             pComboBox.Items.Clear();
             try
             {
-                BindingList<IUnityDisplayInterface> bindingObjects = new BindingList<IUnityDisplayInterface>();
+                _bindingObjects = new BindingList<IUnityDisplayInterface>();
 
                 foreach (var oObject in pObjects)
                 {
-                    bindingObjects.Add(oObject);
+                    _bindingObjects.Add(oObject);
                 }
 
                 pComboBox.ValueMember = null;
                 pComboBox.DisplayMember = "SelectionDisplayString";
-                pComboBox.DataSource = bindingObjects;
+                pComboBox.DataSource = _bindingObjects;
+                pComboBox.ResetBindings();
             }
             catch (Exception ex)
             {

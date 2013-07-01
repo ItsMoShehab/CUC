@@ -255,7 +255,7 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res = new WebCallResult();
             res.Success = false;
 
-            pAlternateExtensions = null;
+            pAlternateExtensions = new List<AlternateExtension>();
 
             if (pConnectionServer == null)
             {
@@ -275,16 +275,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
             //if this is empty that does not mean an error - return true here along with an empty list.
-            if (string.IsNullOrEmpty(res.ResponseText))
+            if (string.IsNullOrEmpty(res.ResponseText)|| res.TotalObjectCount == 0 || res.ResponseText.Length < 10)
             {
-                pAlternateExtensions = new List<AlternateExtension>();
-                return res;
-            }
-
-            //not an error, just no extensions returned in query - return empty list
-            if (res.TotalObjectCount == 0 | res.ResponseText.Length < 10)
-            {
-                pAlternateExtensions = new List<AlternateExtension>();
                 return res;
             }
 
@@ -292,6 +284,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (pAlternateExtensions == null)
             {
+                pAlternateExtensions = new List<AlternateExtension>();
                 res.Success = false;
                 res.ErrorText = "Unable to parse response body into alternate extensions list:" + res.ResponseText;
                 return res;
