@@ -53,20 +53,24 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IntegrationTests\AlternateExtensionIntegrationTest.cs" />
-    <Compile Include="IntegrationTests\CallHandlerTemplateIntegrationTest.cs" />
-    <Compile Include="IntegrationTests\ClusterIntegrationTest.cs" />
-    <Compile Include="UnitTests\AlternateExtensionTest.cs" />
-    <Compile Include="UnitTests\CallHandlerTemplateTest.cs" />
-    <Compile Include="UnitTests\CallHandlerTest.cs" />
-    <Compile Include="UnitTests\ComboBoxHelperTest.cs" />
-    <Compile Include="UnitTests\ConnectionServerTest.cs" />
+    <Compile Include="IntegrationTests\AlternateExtensionIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\BaseIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\CallHandlerTemplateIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\ClusterIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\ConfigurationValueIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\ConnectionServerIntegrationTests.cs" />
+    <Compile Include="UnitTests\AlternateExtensionUnitTests.cs" />
+    <Compile Include="UnitTests\BaseUnitTests.cs" />
+    <Compile Include="UnitTests\CallHandlerTemplateUnitTest.cs" />
+    <Compile Include="UnitTests\CallHandlerUnitTests.cs" />
+    <Compile Include="UnitTests\ComboBoxHelperUnitTests.cs" />
+    <Compile Include="UnitTests\ConnectionServerUnitTests.cs" />
     <Compile Include="UnitTests\CredentialTest.cs" />
     <Compile Include="UnitTests\DirectoryHandlerTest.cs" />
     <Compile Include="UnitTests\DistributionListTest.cs" />
     <Compile Include="UnitTests\GreetingTest.cs" />
     <Compile Include="UnitTests\HTTPFunctionsTest.cs" />
-    <Compile Include="IntegrationTests\CallHandlerIntegrationTest.cs" />
+    <Compile Include="IntegrationTests\CallHandlerIntegrationTests.cs" />
     <Compile Include="UnitTests\InterviewHandlerTest.cs" />
     <Compile Include="UnitTests\LanguageHelperTest.cs" />
     <Compile Include="UnitTests\MenuEntryTest.cs" />
@@ -91,13 +95,13 @@
     <Compile Include="UnitTests\TransferOptionTest.cs" />
     <Compile Include="UnitTests\TimeZoneTest.cs" />
     <Compile Include="UnitTests\MailboxInfoTest.cs" />
-    <Compile Include="UnitTests\ClusterTest.cs" />
+    <Compile Include="UnitTests\ClusterUnitTests.cs" />
     <Compile Include="UnitTests\InstalledLanguageTest.cs" />
     <Compile Include="UnitTests\PortGroupTest.cs" />
     <Compile Include="UnitTests\PortTest.cs" />
     <Compile Include="UnitTests\ScheduleTest.cs" />
     <Compile Include="UnitTests\StringExtensionTests.cs" />
-    <Compile Include="UnitTests\ConfigurationValueTest.cs" />
+    <Compile Include="UnitTests\ConfigurationValueUnitTest.cs" />
     <Compile Include="UnitTests\RoleTest.cs" />
     <Compile Include="UnitTests\SearchSpaceAndPartitionTest.cs" />
     <Compile Include="UnitTests\RestrictionTableTest.cs" />
