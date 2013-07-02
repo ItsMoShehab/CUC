@@ -1041,9 +1041,18 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             if (pConnectionServer == null)
             {
-                WebCallResult res = new WebCallResult();
-                res.ErrorText = "Null ConnectionServer referenced passed to DeleteClassOfService";
-                return res;
+                return new WebCallResult
+                    {
+                        ErrorText = "Null ConnectionServer referenced passed to DeleteClassOfService"
+                    };
+            }
+
+            if (string.IsNullOrEmpty(pObjectId))
+            {
+                return new WebCallResult
+                {
+                    ErrorText = "Empty ObjectId passed to DeleteCalssOfService"
+                };
             }
 
             return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "coses/" + pObjectId, MethodType.DELETE, "");

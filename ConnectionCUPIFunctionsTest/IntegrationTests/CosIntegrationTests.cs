@@ -1,30 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using Cisco.UnityConnection.RestFunctions;
-using ConnectionCUPIFunctionsTest.Properties;
+using ConnectionCUPIFunctionsTest.IntegrationTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 
 namespace ConnectionCUPIFunctionsTest
 {
     [TestClass]
-    public class CosTest
+    public class CosIntegrationTests : BaseIntegrationTests 
     {
         // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
         // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
-
-        //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
-        //routine below.
-        private static ConnectionServerRest _connectionServer;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext { get; set; }
 
         private static ClassOfService _tempCos;
 
@@ -35,25 +23,9 @@ namespace ConnectionCUPIFunctionsTest
 
         //Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize]
-        public static void MyClassInitialize(TestContext testContext)
+        public new static void MyClassInitialize(TestContext testContext)
         {
-            //create a connection server instance used for all tests - rather than using a mockup 
-            //for fetching data I prefer this "real" testing approach using a public server I keep up
-            //and available for the purpose - the conneciton information is stored in the test project's 
-            //settings and can be changed to a local instance easily.
-            Settings mySettings = new Settings();
-            Thread.Sleep(300);
-            try
-            {
-                _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
-                   mySettings.ConnectionPW);
-                _connectionServer.DebugMode = mySettings.DebugOn;
-            }
-
-            catch (Exception ex)
-            {
-                throw new Exception("Unable to attach to Connection server to start Class of Service test:" + ex.Message);
-            }
+            BaseIntegrationTests.MyClassInitialize(testContext);
 
             //create new handler with GUID in the name to ensure uniqueness
             String strName = "TempCOS_" + Guid.NewGuid().ToString().Replace("-", "");
@@ -106,14 +78,8 @@ namespace ConnectionCUPIFunctionsTest
         public void StaticMethodFailures_DeleteClassOfService()
         {
             //DeleteClassOfService
-            var res = ClassOfService.DeleteClassOfService(null, "bogus");
-            Assert.IsFalse(res.Success, "Static call to DeleteClassOfService did not fail with: null connectionServer");
-
-            res = ClassOfService.DeleteClassOfService(_connectionServer, "bogus");
+            var res = ClassOfService.DeleteClassOfService(_connectionServer, "bogus");
             Assert.IsFalse(res.Success, "Static call to DeleteClassOfService did not fail with: invalid objectid");
-
-            res = ClassOfService.DeleteClassOfService(_connectionServer, "");
-            Assert.IsFalse(res.Success, "Static call to DeleteClassOfService did not fail with: empty objectid");
         }
 
         [TestMethod]
@@ -121,28 +87,17 @@ namespace ConnectionCUPIFunctionsTest
         {
             //GetClassOfService
             ClassOfService oCos;
-            var res = ClassOfService.GetClassOfService(out oCos, null, "bogus", "bogus");
-            Assert.IsFalse(res.Success, "Static call to GetClassOfService did not fail with: null ConnectionServer");
-
-            res = ClassOfService.GetClassOfService(out oCos, _connectionServer, "bogus", "bogus");
+            var res = ClassOfService.GetClassOfService(out oCos, _connectionServer, "bogus", "bogus");
             Assert.IsFalse(res.Success, "Static call to GetClassOfService did not fail with: invalid ObjectId");
-
-            res = ClassOfService.GetClassOfService(out oCos, _connectionServer);
-            Assert.IsFalse(res.Success, "Static call to GetClassOfService did not fail with: empty objectId and Name");
-        }
+       }
 
         [TestMethod]
         public void StaticMethodFailures_UpdateClassOfService()
         {
             //GetClassesOfService
-            var res = ClassOfService.UpdateClassOfService(null, "bogus", null);
-            Assert.IsFalse(res.Success, "Static call to UpdateClassOfService did not fail with: null ConnectionServer");
 
-            res = ClassOfService.UpdateClassOfService(_connectionServer, "bogus", null);
+            var res = ClassOfService.UpdateClassOfService(_connectionServer, "bogus", null);
             Assert.IsFalse(res.Success, "Static call to UpdateClassOfService did not fail with: invalid objectId");
-
-            res = ClassOfService.UpdateClassOfService(_connectionServer, "", null);
-            Assert.IsFalse(res.Success, "Static call to UpdateClassOfService did not fail with: empty objectId");
         }
 
         [TestMethod]
@@ -271,62 +226,5 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
-
-        #region Harness Tests
-
-        [TestMethod]
-        public void GetClassesOfService_HarnessTestFailures()
-        {
-            var oTestTransport = new Mock<IConnectionRestCalls>();
-
-            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
-                It.IsAny<string>(), true)).Returns(new WebCallResult
-                {
-                    Success = true,
-                    ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
-                });
-
-            ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test", false);
-            
-            List<ClassOfService> oCoses;
-
-            //empty results
-            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
-                It.IsAny<string>(), true)).Returns(new WebCallResult
-                {
-                    Success = true,
-                    ResponseText = ""
-                });
-
-            var res = ClassOfService.GetClassesOfService(oServer, out oCoses, 1, 5, "EmptyResultText");
-            Assert.IsFalse(res.Success, "Calling GetClassesOfService with EmptyResultText did not fail");
-
-            //garbage response
-            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
-                                  It.IsAny<string>(), true)).Returns(new WebCallResult
-                                  {
-                                      Success = true,
-                                      ResponseText = "garbage result"
-                                  });
-
-            res = ClassOfService.GetClassesOfService(oServer, out oCoses, 1, 5, "InvalidResultText");
-            Assert.IsTrue(res.Success, "Calling GetClassesOfService with InvalidResultText should not fail:" + res);
-            Assert.IsTrue(oCoses.Count == 0, "Invalid result text should produce an empty list of Coeses");
-
-            //error response
-            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
-                                    It.IsAny<string>(), true)).Returns(new WebCallResult
-                                    {
-                                        Success = false,
-                                        ResponseText = "error text",
-                                        StatusCode = 404
-                                    });
-
-            res = ClassOfService.GetClassesOfService(oServer, out oCoses, 1, 5, "ErrorResponse");
-            Assert.IsFalse(res.Success, "Calling GetClassesOfService with ErrorResponse did not fail");
-
-        }
-
-        #endregion
     }
 }
