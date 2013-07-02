@@ -882,9 +882,19 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 if (pConnectionServer == null)
                 {
-                    WebCallResult res = new WebCallResult();
-                    res.ErrorText = "Null ConnectionServer referenced passed to DeleteDirectoryHandler";
-                    return res;
+                    return new WebCallResult
+                        {
+                            ErrorText = "Null ConnectionServer referenced passed to DeleteDirectoryHandler"
+                        };
+                }
+
+                if (string.IsNullOrEmpty(pObjectId))
+                {
+                    return new WebCallResult
+                    {
+                        ErrorText = "Empty ObjectId passed to DeleteDirectoryHandler"
+                    };
+                    
                 }
 
                 return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "handlers/directoryhandlers/" + pObjectId,
