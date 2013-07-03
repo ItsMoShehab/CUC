@@ -63,6 +63,9 @@
     <Compile Include="IntegrationTests\CosIntegrationTests.cs" />
     <Compile Include="IntegrationTests\CredentialIntegrationTests.cs" />
     <Compile Include="IntegrationTests\DirectoryHandlerIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\DistributionListIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\GlobalUserIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\GreetingIntegrationTests.cs" />
     <Compile Include="UnitTests\AlternateExtensionUnitTests.cs" />
     <Compile Include="UnitTests\BaseUnitTests.cs" />
     <Compile Include="UnitTests\CallHandlerTemplateUnitTest.cs" />
@@ -71,8 +74,8 @@
     <Compile Include="UnitTests\ConnectionServerUnitTests.cs" />
     <Compile Include="UnitTests\CredentialUnitTests.cs" />
     <Compile Include="UnitTests\DirectoryHandlerUnitTests.cs" />
-    <Compile Include="UnitTests\DistributionListTest.cs" />
-    <Compile Include="UnitTests\GreetingTest.cs" />
+    <Compile Include="UnitTests\DistributionListUnitTests.cs" />
+    <Compile Include="UnitTests\GreetingUnitTests.cs" />
     <Compile Include="UnitTests\HTTPFunctionsTest.cs" />
     <Compile Include="IntegrationTests\CallHandlerIntegrationTests.cs" />
     <Compile Include="UnitTests\InterviewHandlerTest.cs" />
@@ -112,7 +115,7 @@
     <Compile Include="UnitTests\LocationTest.cs" />
     <Compile Include="UnitTests\PrivateListTest.cs" />
     <Compile Include="UnitTests\PolicyTest.cs" />
-    <Compile Include="UnitTests\GlobalUserTest.cs" />
+    <Compile Include="UnitTests\GlobalUserUnitTests.cs" />
     <Compile Include="UnitTests\ContactUnitTests.cs" />
     <Compile Include="UnitTests\ScheduleSetTest.cs" />
     <Compile Include="UnitTests\PhoneRecordingTest.cs" />

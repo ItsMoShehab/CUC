@@ -128,6 +128,12 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
+            if (string.IsNullOrEmpty(pDistributionListObjectId))
+            {
+                res.ErrorText = "Empty DistributionListObjectId passed to GetDistributionListMembers";
+                return res;
+            }
+
             //tack on the paging items to the parameters list
             List<string> temp;
             if (pClauses == null)

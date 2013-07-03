@@ -333,6 +333,12 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
+            if (pGreetingType == GreetingTypes.Invalid)
+            {
+                res.ErrorText = "Invalid greeting type passed to GetGreetingStreamFile";
+                return res;
+            }
+
             //create a new greeting instance passing the greeting type name and language which fills out the data automatically
             try
             {
