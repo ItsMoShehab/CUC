@@ -26,6 +26,7 @@ namespace ConnectionCUPIFunctionsTest.UnitTests
 
         #endregion
 
+
         #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class

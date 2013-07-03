@@ -4,11 +4,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace ConnectionCUPIFunctionsTest
 {
     /// <summary>
-    ///This is a test class for LanguageHelperTest and is intended
-    ///to contain all LanguageHelperTest Unit Tests
+    ///This is a test class for LanguageHelperUnitTests and is intended
+    ///to contain all LanguageHelperUnitTests Unit Tests
     ///</summary>
     [TestClass]
-    public class LanguageHelperTest
+    public class LanguageHelperUnitTests
     {
         // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
         // ReSharper disable HeuristicUnreachableCode

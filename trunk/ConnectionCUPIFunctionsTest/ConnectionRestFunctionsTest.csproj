@@ -66,6 +66,10 @@
     <Compile Include="IntegrationTests\DistributionListIntegrationTests.cs" />
     <Compile Include="IntegrationTests\GlobalUserIntegrationTests.cs" />
     <Compile Include="IntegrationTests\GreetingIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\HttpFunctionsIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\InstalledLanguageIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\InterviewHandlerIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\LocationIntegrationTests.cs" />
     <Compile Include="UnitTests\AlternateExtensionUnitTests.cs" />
     <Compile Include="UnitTests\BaseUnitTests.cs" />
     <Compile Include="UnitTests\CallHandlerTemplateUnitTest.cs" />
@@ -76,10 +80,10 @@
     <Compile Include="UnitTests\DirectoryHandlerUnitTests.cs" />
     <Compile Include="UnitTests\DistributionListUnitTests.cs" />
     <Compile Include="UnitTests\GreetingUnitTests.cs" />
-    <Compile Include="UnitTests\HTTPFunctionsTest.cs" />
+    <Compile Include="UnitTests\HttpFunctionsUnitTests.cs" />
     <Compile Include="IntegrationTests\CallHandlerIntegrationTests.cs" />
-    <Compile Include="UnitTests\InterviewHandlerTest.cs" />
-    <Compile Include="UnitTests\LanguageHelperTest.cs" />
+    <Compile Include="UnitTests\InterviewHandlerUnitTests.cs" />
+    <Compile Include="UnitTests\LanguageHelperUnitTests.cs" />
     <Compile Include="UnitTests\MenuEntryTest.cs" />
     <Compile Include="UnitTests\NotificationDeviceTest.cs" />
     <Compile Include="UnitTests\PhoneSystemTest.cs" />
@@ -103,7 +107,7 @@
     <Compile Include="UnitTests\TimeZoneTest.cs" />
     <Compile Include="UnitTests\MailboxInfoTest.cs" />
     <Compile Include="UnitTests\ClusterUnitTests.cs" />
-    <Compile Include="UnitTests\InstalledLanguageTest.cs" />
+    <Compile Include="UnitTests\InstalledLanguageUnitTests.cs" />
     <Compile Include="UnitTests\PortGroupTest.cs" />
     <Compile Include="UnitTests\PortTest.cs" />
     <Compile Include="UnitTests\ScheduleTest.cs" />
@@ -112,7 +116,7 @@
     <Compile Include="UnitTests\RoleTest.cs" />
     <Compile Include="UnitTests\SearchSpaceAndPartitionTest.cs" />
     <Compile Include="UnitTests\RestrictionTableTest.cs" />
-    <Compile Include="UnitTests\LocationTest.cs" />
+    <Compile Include="UnitTests\LocationUnitTests.cs" />
     <Compile Include="UnitTests\PrivateListTest.cs" />
     <Compile Include="UnitTests\PolicyTest.cs" />
     <Compile Include="UnitTests\GlobalUserUnitTests.cs" />
