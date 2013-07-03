@@ -1,29 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
+using ConnectionCUPIFunctionsTest.IntegrationTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Cisco.UnityConnection.RestFunctions;
-using ConnectionCUPIFunctionsTest.Properties;
 
 
 namespace ConnectionCUPIFunctionsTest
 {
     /// <summary>
-    ///This is a test class for InterviewHandlerTest and is intended
+    ///This is a test class for InterviewHandlerIntegrationTests and is intended
     ///to contain all InterviewHandler Unit Tests
     ///</summary>
     [TestClass]
-    public class InterviewHandlerTest
+    public class InterviewHandlerIntegrationTests : BaseIntegrationTests
     {
         // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
         // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
-
-        //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
-        //routine below.
-        private static ConnectionServerRest _connectionServer;
 
         private static InterviewHandler _tempHandler;
 
@@ -34,25 +29,9 @@ namespace ConnectionCUPIFunctionsTest
 
         //Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize]
-        public static void MyClassInitialize(TestContext testContext)
+        public new static void MyClassInitialize(TestContext testContext)
         {
-            //create a connection server instance used for all tests - rather than using a mockup 
-            //for fetching data I prefer this "real" testing approach using a public server I keep up
-            //and available for the purpose - the conneciton information is stored in the test project's 
-            //settings and can be changed to a local instance easily.
-            Settings mySettings = new Settings();
-            Thread.Sleep(300);
-            try
-            {
-                _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
-                     mySettings.ConnectionPW);
-                _connectionServer.DebugMode = mySettings.DebugOn;
-            }
-
-            catch (Exception ex)
-            {
-                throw new Exception("Unable to attach to Connection server to start InterviewHandler test:" + ex.Message);
-            }
+            BaseIntegrationTests.MyClassInitialize(testContext);
 
             //grab the first user in the directory to use as a recipient
             List<UserBase> oUsers;
@@ -81,17 +60,6 @@ namespace ConnectionCUPIFunctionsTest
 
 
         #region Interview Handler Class Construction Failures
-
-        /// <summary>
-        /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure_NullServer()
-        {
-            InterviewHandler oTestInterviewer = new InterviewHandler(null);
-            Console.WriteLine(oTestInterviewer);
-        }
 
         /// <summary>
         /// throw a UnityConnectionRestException if an invalid objectId is passed
@@ -143,17 +111,6 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         /// <summary>
-        /// Throw an ArgumentException for null Connection server
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void Question_ClassCreationFailure_NullConnection()
-        {
-            var oTest = new InterviewQuestion(null, "bogus", 1);
-            Console.WriteLine(oTest);
-        }
-
-        /// <summary>
         /// Throw an ARgumentException for an empty objectId
         /// </summary>
         [TestMethod]
@@ -169,78 +126,40 @@ namespace ConnectionCUPIFunctionsTest
 
         #region Interview Handler Tests
 
-        [TestMethod]
-        public void StaticMethodFailures_AddInterviewHandler()
+        private InterviewQuestion GetInterviewQuestionFromTemporaryHandler()
         {
-            InterviewHandler oInterviewer;
-
-            var res = InterviewHandler.AddInterviewHandler(null, "display name", "", "", null, out oInterviewer);
-            Assert.IsFalse(res.Success, "Calling static method AddInterviewHandler did not fail with: null ConnectionServer");
-
-            res = InterviewHandler.AddInterviewHandler(_connectionServer, "", "bogus", "", null, out oInterviewer);
-            Assert.IsFalse(res.Success, "Calling static method AddInterviewHandler did not fail with: empty objectid ");
-
-            res = InterviewHandler.AddInterviewHandler(_connectionServer, "bogus", "", "", null, out oInterviewer);
-            Assert.IsFalse(res.Success, "Calling static method AddInterviewHandler did not fail with: empty recipient objectIds");
+            var oQuestions = _tempHandler.GetInterviewQuestions();
+            Assert.IsNotNull(oQuestions, "Null returned for questions fetch");
+            Assert.IsTrue(oQuestions.Count > 1, "No questions returned from fetch");
+            return oQuestions[0];
         }
 
         [TestMethod]
-        public void StaticMethodFailures_UpdateInterviewHandler()
+        public void UpdateInterviewHandler_InvalidObjectId_Failure()
         {
-            var res = InterviewHandler.UpdateInterviewHandler(null, "objectId", null);
-            Assert.IsFalse(res.Success, "Calling static method UpdateInterviewHandler did not fail with: null ConnectionServer");
-
-            res = InterviewHandler.UpdateInterviewHandler(_connectionServer, "", null);
-            Assert.IsFalse(res.Success, "Calling static method UpdateInterviewHandler did not fail with: empty object id");
-
-            res = InterviewHandler.UpdateInterviewHandler(_connectionServer, "ObjectId", null);
-            Assert.IsFalse(res.Success, "Calling static method UpdateInterviewHandler did not fail with: empty property list");
-
             ConnectionPropertyList oProps = new ConnectionPropertyList();
             oProps.Add("bogus", "bogusvalue");
 
-            res = InterviewHandler.UpdateInterviewHandler(_connectionServer, "ObjectId", oProps);
+            var res = InterviewHandler.UpdateInterviewHandler(_connectionServer, "ObjectId", oProps);
             Assert.IsFalse(res.Success, "Calling static method UpdateInterviewHandler did not fail with: invalid objectId");
         }
 
                 [TestMethod]
-        public void StaticMethodFailures_DeleteInterviewHandler()
+        public void DeleteInterviewHandler_InvalidObjectId_Failure()
         {
-            var res = InterviewHandler.DeleteInterviewHandler(null, "objectid");
-            Assert.IsFalse(res.Success, "Calling static method DeleteInterviewHandler did not fail with: null ConnectionServer");
-
-            res = InterviewHandler.DeleteInterviewHandler(_connectionServer, "ObjectId");
+            var res = InterviewHandler.DeleteInterviewHandler(_connectionServer, "ObjectId");
             Assert.IsFalse(res.Success, "Calling static method DeleteInterviewHandler did not fail with: invalid objectid");
         }
 
           [TestMethod]
-          public void StaticMethodFailures_GetInterviewHandler()
+          public void GetInterviewHandler_InvalidObjectId_Failure()
           {
               InterviewHandler oInterviewer;
   
-              var res = InterviewHandler.GetInterviewHandler(out oInterviewer, null, "objectId", "DisplayName");
-              Assert.IsFalse(res.Success, "Calling static method GetInterviewHandler did not fail with: null ConnectionServer");
-
-              res = InterviewHandler.GetInterviewHandler(out oInterviewer, _connectionServer);
-              Assert.IsFalse(res.Success, "Calling static method GetInterviewHandler did not fail with: empty objectID and display name");
-
-              res = InterviewHandler.GetInterviewHandler(out oInterviewer, _connectionServer, "objectId", "DisplayName");
+              var res = InterviewHandler.GetInterviewHandler(out oInterviewer, _connectionServer, "objectId", "DisplayName");
               Assert.IsFalse(res.Success, "Calling static method GetInterviewHandler did not fail with: invalid objectId and display name");
               
           }
-
-        [TestMethod]
-        public void StaticMethodFailures_GetInterviewHandlers()
-        {
-            
-            List<InterviewHandler> oHandlers;
-            WebCallResult res = InterviewHandler.GetInterviewHandlers(null, out oHandlers);
-            Assert.IsFalse(res.Success,"Calling static method GetInterviewHandlers did not fail with: null ConnectionServer");
-
-            res = InterviewHandler.GetInterviewHandlers(null, out oHandlers, null);
-            Assert.IsFalse(res.Success, "GetInterviewHandler should fail with null ConnectionServerRest passed to it");
-
-        }
 
         /// <summary>
         /// GET first handler in directory using static method call, iterate over it and use the ToString and DumpAllProps
@@ -292,111 +211,157 @@ namespace ConnectionCUPIFunctionsTest
 
 
         [TestMethod]
-        public void InterviewHandlers_VoiceName()
+        public void GetVoiceName_EmptyVoiceNameFetch_Failure()
         {
             //try to download voice name- this should fail
             WebCallResult res = _tempHandler.GetVoiceName(@"c:\temp.wav");
             Assert.IsFalse(res.Success, "Empty voice name fetch should return false for newly created handler");
 
+                    }
+
+
+        [TestMethod]
+        public void SetVoiceName_InvalidWavFileFormat_Failure()
+        {
             //try and upload a bogus WAV file which should fail - the exe will be in the output folder when running unit
             //tests and makes a handy file that will fail to convert or upload
-            res = _tempHandler.SetVoiceName("wavcopy.exe", true);
+            var res = _tempHandler.SetVoiceName("wavcopy.exe", true);
             Assert.IsFalse(res.Success, "Invalid WAV file should fail to convert");
+         }
 
+
+        [TestMethod]
+        public void SetVoiceName_Success()
+        {
             //upload a voice name to the handler
-            res = _tempHandler.SetVoiceName("Dummy.wav", true);
+            var res = _tempHandler.SetVoiceName("Dummy.wav", true);
             Assert.IsTrue(res.Success, "Updating voice name on new call handler failed: " + res.ToString());
+       }
 
+
+        [TestMethod]
+        public void GetVoiceName_Success()
+        {
             //download the wav file we just uploaded
-            res = _tempHandler.GetVoiceName("DummyDownload.wav");
+            var res = _tempHandler.GetVoiceName("DummyDownload.wav");
             Assert.IsTrue(res.Success, "Downloading voice name for call handler failed:" + res.ToString());
         }
 
         [TestMethod]
-        public void InterviewHandlers_GetInterviewHandlerVoiceName()
+        public void GetInterviewHandlerVoiceName_InvalidObjectId_Failure()
         {
-            WebCallResult res = InterviewHandler.GetInterviewHandlerVoiceName(null, "c:\\test.wav", "objectId");
-            Assert.IsFalse(res.Success,"Fetching interview handler voice name did not fail with null connection server");
+            var res = InterviewHandler.GetInterviewHandlerVoiceName(_connectionServer, "c:\\test.wav", "bogus");
+            Assert.IsFalse(res.Success, "Fetching interview handler voice name did not fail with invalid objectid");
+        }
 
-            res = InterviewHandler.GetInterviewHandlerVoiceName(_connectionServer, "c:\\test.wav", "");
-            Assert.IsFalse(res.Success, "Fetching interview handler voice name did not fail with empty objectid");
-
-            res = InterviewHandler.GetInterviewHandlerVoiceName(_connectionServer, "c:\\test.wav", "bogus");
-            Assert.IsFalse(res.Success, "Fetching interview handler voice name did not fail with invalid objecti");
-
-            res = InterviewHandler.GetInterviewHandlerVoiceName(_connectionServer, "", "bogus");
-            Assert.IsFalse(res.Success, "Fetching interview handler voice name did not fail with empty path");
-
-            res = InterviewHandler.SetInterviewHandlerVoiceName(null, "c:\\test.wav", "objectid", true);
-            Assert.IsFalse(res.Success, "Setting interview handler voice name did not fail with null connection server");
-
-            res = InterviewHandler.SetInterviewHandlerVoiceName(_connectionServer, "c:\\test.wav", "objectid", true);
+        [TestMethod]
+        public void SetInterviewHandlerVoiceName_InvalidObjectId_Failure()
+        {
+            var res = InterviewHandler.SetInterviewHandlerVoiceName(_connectionServer, "c:\\test.wav", "objectid", true);
             Assert.IsFalse(res.Success, "Setting interview handler voice name did not fail with invalid objectid");
+        }
 
-            res = InterviewHandler.SetInterviewHandlerVoiceName(_connectionServer, "c:\\test.wav", "", true);
-            Assert.IsFalse(res.Success, "Setting interview handler voice name did not fail with empty objectid");
+        [TestMethod]
+        public void SetInterviewHandlerVoiceName_InvalidWavPath_Failure()
+        {
 
-            res = InterviewHandler.SetInterviewHandlerVoiceName(_connectionServer, "c:\\bogus.wav", _tempHandler.ObjectId, true);
+        var res = InterviewHandler.SetInterviewHandlerVoiceName(_connectionServer, "c:\\bogus.wav", _tempHandler.ObjectId, true);
             Assert.IsFalse(res.Success, "Setting interview handler voice name did not fail with invalid wav file path");
 
-            res = InterviewHandler.SetInterviewHandlerVoiceName(_connectionServer, "wavcopy.exe", _tempHandler.ObjectId, true);
+        }
+        [TestMethod]
+        public void SetInterviewHandlerVoiceName_InvalieWavFileFormat_Failure()
+        {
+            var res = InterviewHandler.SetInterviewHandlerVoiceName(_connectionServer, "wavcopy.exe", _tempHandler.ObjectId, true);
             Assert.IsFalse(res.Success, "Setting interview handler voice name did not fail with non wav file reference");
         }
 
         [TestMethod]
-        public void InterviewHandlers_SetInterviewHandlerVoiceNameToStreamFile()
+        public void SetInterviewHandlerVoiceNameToStreamFile_InvalidObjectId_Failure()
         {
-            var res = InterviewHandler.SetInterviewHandlerVoiceNameToStreamFile(null, "objectid", "streamid");
-            Assert.IsFalse(res.Success, "Setting interview handler voice name to stream file did not fail with null connection server");
-
-            res = InterviewHandler.SetInterviewHandlerVoiceNameToStreamFile(_connectionServer, "", "streamid");
-            Assert.IsFalse(res.Success, "Setting interview handler voice name to stream file did not fail with empty objectid");
-
-            res = InterviewHandler.SetInterviewHandlerVoiceNameToStreamFile(_connectionServer, "objectid", "streamid");
+            var res = InterviewHandler.SetInterviewHandlerVoiceNameToStreamFile(_connectionServer, "objectid", "streamid");
             Assert.IsFalse(res.Success, "Setting interview handler voice name to stream file did not fail with invalid objectid");
 
-            res = InterviewHandler.SetInterviewHandlerVoiceNameToStreamFile(_connectionServer, _tempHandler.ObjectId, "streamid");
-            Assert.IsFalse(res.Success, "Setting interview handler voice name to stream file did not fail with invalid stream id");
+                    }
 
-            res = InterviewHandler.SetInterviewHandlerVoiceNameToStreamFile(_connectionServer, _tempHandler.ObjectId, "");
-            Assert.IsFalse(res.Success, "Setting interview handler voice name to stream file did not fail with empty stream id");
+        [TestMethod]
+        public void SetInterviewHandlerVoiceNameToStreamFile_InvalidStreamId_Failure()
+        {
+            var res = InterviewHandler.SetInterviewHandlerVoiceNameToStreamFile(_connectionServer, _tempHandler.ObjectId, "streamid");
+            Assert.IsFalse(res.Success, "Setting interview handler voice name to stream file did not fail with invalid stream id");
         }
 
 
         [TestMethod]
-        public void InterviewHandlers_Questions()
+        public void GetInterviewQuestions_Fetch_Success()
         {
             var oQuestions = _tempHandler.GetInterviewQuestions();
             Assert.IsNotNull(oQuestions,"Null returned for questions fetch");
             Assert.IsTrue(oQuestions.Count>1,"No questions returned from fetch");
 
+            //exercise tostring and dumpallprops interfaces
             InterviewQuestion oQuestion = oQuestions[0];
             Console.WriteLine(oQuestions.ToString());
             Console.WriteLine(oQuestion.DumpAllProps());
+        }
+
+
+        [TestMethod]
+        public void GetQuestionRecording_Failure()
+        {
+            InterviewQuestion oQuestion = GetInterviewQuestionFromTemporaryHandler();
 
             //try and fetch stream
             string strTemp = Path.GetTempFileName() + ".wav";
             var res = oQuestion.GetQuestionRecording(strTemp);
-            Assert.IsFalse(res.Success,"Fetching recording that does not exist did not fail");
+            Assert.IsFalse(res.Success, "Fetching recording that does not exist did not fail");
+        }
+
+        [TestMethod]
+        public void SetQuestionRecording_Success()
+        {
+            InterviewQuestion oQuestion = GetInterviewQuestionFromTemporaryHandler();
 
             //set stream
-            res = oQuestion.SetQuestionRecording("Dummy.wav", true);
+            var res = oQuestion.SetQuestionRecording("Dummy.wav", true);
             Assert.IsTrue(res.Success,"Setting recording to wav file failed:"+res);
 
+            //fetch it again, make sure it downloads
             res = oQuestion.RefetchInterviewHandlerData();
             Assert.IsTrue(res.Success,"failed to refetch interview handler data");
 
-            //fetch it again
+            string strTemp= Path.GetTempFileName() + ".wav";
             res = oQuestion.GetQuestionRecording(strTemp);
             Assert.IsTrue(res.Success, "Fetching recording that was just uploaded failed:"+res);
             Assert.IsTrue(File.Exists(strTemp),"Wav file target does not exist after download:"+strTemp);
             
+            try
+            {
+                File.Delete(strTemp);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Failure deleting temporary file for question recording fetch:"+ex);
+            }
+       }
+
+        [TestMethod]
+        public void InterviewQuestion_Update_Success()
+        {
+            InterviewQuestion oQuestion = GetInterviewQuestionFromTemporaryHandler();
+
             //change description text
-            res =oQuestion.Update(true, 11, "testing");
+            var res =oQuestion.Update(true, 11, "testing");
             Assert.IsTrue(res.Success,"Failed to update question values:"+res);
+        }
+
+        [TestMethod]
+        public void InterviewQuestion_Update_Failure()
+        {
+            InterviewQuestion oQuestion = GetInterviewQuestionFromTemporaryHandler();
 
             //set invalid property
-            res = oQuestion.Update(true, 2222, "testing");
+            var res = oQuestion.Update(true, 2222, "testing");
             Assert.IsFalse(res.Success, "Trying to set invalid question response length did not fail.");
         }
 
@@ -434,26 +399,45 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         [TestMethod]
-        public void InterviewHandler_UpdateTests()
+        public void Update_NoPendingChanges_Failure()
         {
             WebCallResult res = _tempHandler.Update();
             Assert.IsFalse(res.Success,"Updating interview handler with no pending changes did not fail");
 
-            _tempHandler.DisplayName = "Updated"+Guid.NewGuid();
-            res = _tempHandler.Update();
-            Assert.IsTrue(res.Success,"Failed to update interview handler display name:"+res);
+        }
 
+        [TestMethod]
+        public void Update_DisplayName_Success()
+        {
+            _tempHandler.DisplayName = "Updated" + Guid.NewGuid();
+            var res = _tempHandler.Update();
+            Assert.IsTrue(res.Success, "Failed to update interview handler display name:" + res);
+
+        }
+
+        [TestMethod]
+        public void Update_AfterMessageAction_Success()
+        {
             _tempHandler.AfterMessageAction = ActionTypes.GoTo;
             _tempHandler.AfterMessageTargetConversation = ConversationNames.PHInterview;
             _tempHandler.AfterMessageTargetHandlerObjectId = _tempHandler.ObjectId;
-            res = _tempHandler.Update();
-            Assert.IsTrue(res.Success,"Failed to update interview handler after message action");
+            var res = _tempHandler.Update();
+            Assert.IsTrue(res.Success, "Failed to update interview handler after message action");
+        }
 
+        [TestMethod]
+        public void Update_RecipientSubscriber_Failure()
+        {
             _tempHandler.RecipientSubscriberObjectId = "bogus";
-            res = _tempHandler.Update();
+            var res = _tempHandler.Update();
             Assert.IsFalse(res.Success,"Setting recipient subscriber to invalid string did not return an error");
 
-            res =_tempHandler.SetVoiceNameToStreamFile("bogus");
+        }
+
+        [TestMethod]
+        public void SetVoiceNameToSTreamFile_InvalidStreamName_Failure()
+        {
+            var res =_tempHandler.SetVoiceNameToStreamFile("bogus");
             Assert.IsFalse(res.Success,"Setting voice name to invalid streamId did not fail");
         }
 

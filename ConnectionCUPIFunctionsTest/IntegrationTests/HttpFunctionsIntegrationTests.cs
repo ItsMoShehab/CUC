@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Threading;
 using Cisco.UnityConnection.RestFunctions;
-using ConnectionCUPIFunctionsTest.Properties;
+using ConnectionCUPIFunctionsTest.IntegrationTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ConnectionCUPIFunctionsTest
@@ -11,60 +10,23 @@ namespace ConnectionCUPIFunctionsTest
     ///to contain all HTTPFunctionsTest Unit Tests
     ///</summary>
     [TestClass]
-    public class HttpFunctionsTest
+    public class HttpFunctionsIntegrationTests : BaseIntegrationTests
     {
         // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
         // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
 
-        //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
-        //routine below.
-        private static ConnectionServerRest _connectionServer;
-
-        private static DirectoryHandler _tempHandler;
-
         #endregion
 
 
         #region Additional test attributes
+
         //Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize]
-        public static void MyClassInitialize(TestContext testContext)
+        public new static void MyClassInitialize(TestContext testContext)
         {
-            //create a connection server instance used for all tests - rather than using a mockup 
-            //for fetching data I prefer this "real" testing approach using a public server I keep up
-            //and available for the purpose - the conneciton information is stored in the test project's 
-            //settings and can be changed to a local instance easily.
-            Settings mySettings = new Settings();
-            Thread.Sleep(300);
-            try
-            {
-                _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin, mySettings.ConnectionPW);
-                _connectionServer.DebugMode = mySettings.DebugOn;
-            }
-
-            catch (Exception ex)
-            {
-                throw new Exception("Unable to attach to Connection server to start DirectoryHandler test:" + ex.Message);
-            }
-
-            //create new handler with GUID in the name to ensure uniqueness
-            String strName = "TempHandler_" + Guid.NewGuid().ToString().Replace("-", "");
-
-            WebCallResult res = DirectoryHandler.AddDirectoryHandler(_connectionServer, strName, false, null, out _tempHandler);
-            Assert.IsTrue(res.Success, "Failed creating temporary directory handler:" + res.ToString());
-        }
-
-
-        [ClassCleanup]
-        public static void MyClassCleanup()
-        {
-            if (_tempHandler != null)
-            {
-                WebCallResult res = _tempHandler.Delete();
-                Assert.IsTrue(res.Success, "Failed to delete temporary directory handler on cleanup.");
-            }
+            BaseIntegrationTests.MyClassInitialize(testContext);
         }
 
         #endregion
