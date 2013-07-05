@@ -49,11 +49,8 @@ namespace ConnectionCUPIFunctionsTest
 
         #region Static Method Call Failure Tests
 
-        /// <summary>
-        /// exercise failure points
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailure_GetCallHandlers()
+        public void GetCallHandlers_NullConnectionServer_Failure()
         {
             List<CallHandler> oHandlerList;
 
@@ -63,138 +60,174 @@ namespace ConnectionCUPIFunctionsTest
         }
 
 
-        /// <summary>
-        /// exercise failure points
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailure_GetCallHandler()
+        public void GetCallHandler_NullConnectionServer_Failure()
         {
             CallHandler oHandler;
 
             WebCallResult res = CallHandler.GetCallHandler(out oHandler, null);
             Assert.IsFalse(res.Success, "GetCallHandler should fail if the ConnectionServerRest is null");
+        }
 
-            res = CallHandler.GetCallHandler(out oHandler, _mockServer);
+
+        [TestMethod]
+        public void GetCallHandler_EmptyObjectIdAndDisplayName_Failure()
+        {
+            CallHandler oHandler;
+
+            var res = CallHandler.GetCallHandler(out oHandler, _mockServer);
             Assert.IsFalse(res.Success, "GetCallHandler should fail if the ObjectId and display name are both blank");
         }
 
 
-        /// <summary>
-        /// exercise failure points
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailure_AddCallHandler()
+        public void AddCallHandler_NullConnectionServer_Failure()
         {
             WebCallResult res = CallHandler.AddCallHandler(null, "", "", "", null);
             Assert.IsFalse(res.Success, "AddCallHandler should fail if the ConnectionServerRest parameter is null");
 
-            res = CallHandler.AddCallHandler(_mockServer, "", "aaa", "123", null);
+         }
+
+
+        [TestMethod]
+        public void AddCallHandler_EmptyTemplateId_Failure()
+        {
+            var res = CallHandler.AddCallHandler(_mockServer, "", "aaa", "123", null);
             Assert.IsFalse(res.Success, "AddCallHandler should fail if the template parameter is empty");
 
-            res = CallHandler.AddCallHandler(_mockServer, "voicemailtemplate", "aaa", "", null);
+            }
+
+
+        [TestMethod]
+        public void AddCallHandler_EmptyExtension_Failure()
+        {
+            var res = CallHandler.AddCallHandler(_mockServer, "voicemailtemplate", "aaa", "", null);
             Assert.IsFalse(res.Success, "AddCallHandler should fail if the extension parameter is empty");
 
-            res = CallHandler.AddCallHandler(_mockServer, "voicemailtemplate", "", "1234", null);
+            }
+
+
+        [TestMethod]
+        public void AddCallHandler_EmptyDisplayName_Failure()
+        {
+            var res = CallHandler.AddCallHandler(_mockServer, "voicemailtemplate", "", "1234", null);
             Assert.IsFalse(res.Success, "AddCallHandler should fail if the DisplayName parameter is empty");
         }
 
 
-
-        /// <summary>
-        /// exercise failure points
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailure_DeleteCallHandler()
+        public void DeleteCallHandler_NullConnectionServer_Failure()
         {
             WebCallResult res = CallHandler.DeleteCallHandler(null, "");
             Assert.IsFalse(res.Success, "DeleteCallHandler should fail if the ConnectionServerRest parameter is null");
 
-            res = CallHandler.DeleteCallHandler(_mockServer, "");
+         }
+
+        [TestMethod]
+        public void DeleteCallHandler_EmptyObjectId_Failure()
+        {
+            var res = CallHandler.DeleteCallHandler(_mockServer, "");
             Assert.IsFalse(res.Success, "DeleteCallHandler should fail if the ObjectId parameter is blank");
         }
 
 
-        /// <summary>
-        /// exercise failure points
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailure_UpdateCallHandler()
+        public void UpdateCallHandler_NullConnectionServer_Failure()
         {
             ConnectionPropertyList oPropList = new ConnectionPropertyList();
 
             WebCallResult res = CallHandler.UpdateCallHandler(null, "", oPropList);
             Assert.IsFalse(res.Success, "UpdateCallHandler should fail if the ConnectionServerRest parameter is null");
+         }
 
-            res = CallHandler.UpdateCallHandler(_mockServer, "", oPropList);
+
+        [TestMethod]
+        public void UpdateCallHandler_EmptyObjectId_Failure()
+        {
+            ConnectionPropertyList oPropList = new ConnectionPropertyList();
+
+            var res = CallHandler.UpdateCallHandler(_mockServer, "", oPropList);
             Assert.IsFalse(res.Success, "UpdateCallHandler should fail if the ObjectId parameter is blank");
+         }
 
-            res = CallHandler.UpdateCallHandler(_mockServer, "aaa", oPropList);
+
+        [TestMethod]
+        public void UpdateCallHandler_EmptyPropertyList_Failure()
+        {
+            ConnectionPropertyList oPropList = new ConnectionPropertyList();
+            var res = CallHandler.UpdateCallHandler(_mockServer, "aaa", oPropList);
             Assert.IsFalse(res.Success, "UpdateCallHandler should fail if the property list is empty");
         }
 
-        /// <summary>
-        /// exercise failure points
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailure_GetCallHandlerVoiceName()
+        public void GetCallHandlerVoiceName_NullConnectionServer_Failure()
         {
-            //use the same string for the alias and display name here
-            const string strWavName = @"c:\";
-
-            //invalid local WAV file name
-            WebCallResult res = CallHandler.GetCallHandlerVoiceName(null, "aaa", "");
+            var res = CallHandler.GetCallHandlerVoiceName(null, "aaa", "");
             Assert.IsFalse(res.Success, "GetCallHandlerVoiceName did not fail for null Conneciton server");
-
-            //empty target file path
-            res = CallHandler.GetCallHandlerVoiceName(_mockServer, "aaa", "aaa");
-            Assert.IsFalse(res.Success, "GetCallHandlerVoiceName did not fail with invalid target path passed");
-
-            //invalid objectId 
-            res = CallHandler.GetCallHandlerVoiceName(_mockServer, "", strWavName);
-            Assert.IsFalse(res.Success, "GetCallHandlerVoiceName did not fail with invalid ObjectId passed");
-
-
         }
 
-
-        /// <summary>
-        /// exercise failure points
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailure_SetCallHandlerVoiceName()
+        public void GetCallHandlerVoiceName_InvalidTargetPath_Failure()
         {
-            //use the same string for the alias and display name here
+            var res = CallHandler.GetCallHandlerVoiceName(_mockServer, "aaa", "aaa");
+            Assert.IsFalse(res.Success, "GetCallHandlerVoiceName did not fail with invalid target path passed");
+        }
+
+        [TestMethod]
+        public void GetCallHandlerVoiceName_EmptyObjectId_Failure()
+        {
             const string strWavName = @"c:\";
 
+            var res = CallHandler.GetCallHandlerVoiceName(_mockServer, "", strWavName);
+            Assert.IsFalse(res.Success, "GetCallHandlerVoiceName did not fail with empty ObjectId passed");
+        }
+
+        [TestMethod]
+        public void SetCallHandlerVoiceName_NullConnectionServer_Failure()
+        {
             //invalid Connection server
             WebCallResult res = CallHandler.SetCallHandlerVoiceName(null, "", "");
             Assert.IsFalse(res.Success, "SetCallHandlerVoiceName did not fail with null Connection server passed.");
+         }
 
+        [TestMethod]
+        public void SetCallHandlerVoiceName_InvalidTargetPath_Failure()
+        {
             //invalid target path
-            res = CallHandler.SetCallHandlerVoiceName(_mockServer, "aaa", "aaa");
+            var res = CallHandler.SetCallHandlerVoiceName(_mockServer, "aaa", "aaa");
             Assert.IsFalse(res.Success, "SetCallHandlerVoiceName did not fail with invalid target path");
-
-            //invalid ObjectId
-            res = CallHandler.SetCallHandlerVoiceName(_mockServer, strWavName, "");
-            Assert.IsFalse(res.Success, "SetCallHandlerVoiceName did not fail with invalid obejctID");
-
         }
 
         [TestMethod]
-        public void StaticCallFailure_SetCallHandlerVoiceNameToStreamFile()
+        public void SetCallHandlerVoiceName_EmptyObjectId_Failure()
+        {
+            const string strWavName = @"c:\";
+            var res = CallHandler.SetCallHandlerVoiceName(_mockServer, strWavName, "");
+            Assert.IsFalse(res.Success, "SetCallHandlerVoiceName did not fail with empty obejctID");
+        }
+
+
+        [TestMethod]
+        public void SetCallHandlerVoiceNameToStreamFile_NullConnectionServer_Failure()
         {
             var res = CallHandler.SetCallHandlerVoiceNameToStreamFile(null, "objectid", "StreamId");
             Assert.IsFalse(res.Success,"Calling SetCallHandlerVoiceNameToStreamFile with null ConnectionServerRest did not fail");
+         }
 
-            res = CallHandler.SetCallHandlerVoiceNameToStreamFile(_mockServer, "objectid", "StreamId");
-            Assert.IsFalse(res.Success, "Calling SetCallHandlerVoiceNameToStreamFile with invalid ObjectId did not fail");
 
-            res = CallHandler.SetCallHandlerVoiceNameToStreamFile(_mockServer, "", "StreamId");
+        [TestMethod]
+        public void SetCallHandlerVoiceNameToStreamFile_EmptyObjectId_Failure()
+        {
+            var res = CallHandler.SetCallHandlerVoiceNameToStreamFile(_mockServer, "", "StreamId");
             Assert.IsFalse(res.Success, "Calling SetCallHandlerVoiceNameToStreamFile with empty objectId did not fail");
+        }
 
-            res = CallHandler.SetCallHandlerVoiceNameToStreamFile(_mockServer, "ObjectId", "");
+
+        [TestMethod]
+        public void SetCallHandlerVoiceNameToStreamFile_EmptyStreamId_Failure()
+        {
+            var res = CallHandler.SetCallHandlerVoiceNameToStreamFile(_mockServer, "ObjectId", "");
             Assert.IsFalse(res.Success, "Calling SetCallHandlerVoiceNameToStreamFile with empty stream ID did not fail");
-
         }
 
 

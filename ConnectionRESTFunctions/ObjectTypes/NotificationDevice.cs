@@ -1456,9 +1456,18 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (pConnectionServer == null)
             {
-                res = new WebCallResult();
-                res.ErrorText = "Null ConnectionServer referenced passed to DeleteNotificationDevice";
-                return res;
+                return new WebCallResult
+                    {
+                        ErrorText = "Null ConnectionServer referenced passed to DeleteNotificationDevice"
+                    };
+            }
+
+            if (string.IsNullOrEmpty(pUserObjectId) | string.IsNullOrEmpty(pObjectId))
+            {
+                return new WebCallResult
+                {
+                    ErrorText = "Empty UserObjectID or device ObjectId passed to DeleteNotificationDevice"
+                };
             }
 
             string strUrl = GetUrlPathForDeviceType(pDeviceType, pConnectionServer, pUserObjectId, pObjectId);

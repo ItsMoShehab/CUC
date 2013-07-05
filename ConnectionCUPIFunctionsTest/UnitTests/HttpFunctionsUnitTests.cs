@@ -1,7 +1,6 @@
 ﻿using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.UnitTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 
 namespace ConnectionCUPIFunctionsTest
 {
@@ -31,22 +30,28 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
-        /// <summary>
-        ///Test for WAV upload call failures.
-        /// Note that "Dummy.wav" does exist in the output folder the test is being run from.
-        ///</summary>
         [TestMethod]
-        public void UploadWavFile_Failure()
-                {
+        public void UploadWavFile_InvalidResourcePath_Failure()
+        {
             WebCallResult res = _mockServer.UploadWavFile("bogusresourcepath", "Dummy.wav");
-                    Assert.IsFalse(res.Success,"Invalid resource path should fail");
+            Assert.IsFalse(res.Success, "Invalid resource path should fail");
+        }
 
-                    res = _mockServer.UploadWavFile("", "Dummy.wav");
-                    Assert.IsFalse(res.Success, "Empty resource path should fail");
+        [TestMethod]
+        public void UploadWavFile_EmptyResourcePath_Failure()
+        {
 
-                    res = _mockServer.UploadWavFile("bogusresourcepath", "");
-                    Assert.IsFalse(res.Success, "File path that does not exist should fail");
-                }
+            var res = _mockServer.UploadWavFile("", "Dummy.wav");
+            Assert.IsFalse(res.Success, "Empty resource path should fail");
+
+        }
+        [TestMethod]
+        public void UploadWavFile_NonExistentPath_Failure()
+        {
+            var res = _mockServer.UploadWavFile("bogusresourcepath", "");
+            Assert.IsFalse(res.Success, "File path that does not exist should fail");
+                
+        }
 
    }
 }

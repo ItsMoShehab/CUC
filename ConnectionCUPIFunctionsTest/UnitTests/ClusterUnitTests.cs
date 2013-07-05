@@ -60,18 +60,19 @@ namespace ConnectionCUPIFunctionsTest
         #region Harness Tests
 
         [TestMethod]
-        public void HarnessTest_GetServers()
+        public void ClusterConstructor_EmptyResult_Failure()
         {
 
-            Cluster oCluster=null;
+            Cluster oCluster = null;
 
             //empty results
-            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
-                It.IsAny<string>(), true)).Returns(new WebCallResult
-                {
-                    Success = true,
-                    ResponseText = ""
-                });
+            _mockTransport.Setup(
+                x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                       It.IsAny<string>(), true)).Returns(new WebCallResult
+                                           {
+                                               Success = true,
+                                               ResponseText = ""
+                                           });
 
             try
             {
@@ -80,7 +81,7 @@ namespace ConnectionCUPIFunctionsTest
             }
             catch (Exception ex)
             {
-                Console.WriteLine("expected error:"+ex);
+                Console.WriteLine("expected error:" + ex);
             }
 
             try
@@ -88,10 +89,17 @@ namespace ConnectionCUPIFunctionsTest
                 Console.WriteLine(oCluster.Servers.Count);
                 Assert.Fail("Getting server count with invalid cluster fetch should fail");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                Console.WriteLine("Expected Failure getting servers count:"+ex);
+                Console.WriteLine("Expected Failure getting servers count:" + ex);
             }
+        }
+
+
+        [TestMethod]
+        public void ClusterConstructor_ErrorResponse_Failure()
+        {
+            Cluster oCluster = null;
 
             //error response
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),

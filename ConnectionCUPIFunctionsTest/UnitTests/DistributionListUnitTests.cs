@@ -53,29 +53,25 @@ namespace ConnectionCUPIFunctionsTest
 
         #region Static Call Failures
 
-        /// <summary>
-        /// Test common failure scenarios distribution list functions
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailures_GetDistributionListTest()
+        public void GetDistributionList_NullConnectionServer_Failure()
         {
-            //create new list with GUID in the name to ensure uniqueness
             DistributionList oList;
 
-            //null connection server object
             WebCallResult res = DistributionList.GetDistributionList(out oList, null, "", "allvoicemailusers");
             Assert.IsFalse(res.Success, "Null Connection server on GetDistributionList did not fail.");
 
-            //invalid alias/objectId pair
-            res = DistributionList.GetDistributionList(out oList, _mockServer);
+        }
+        [TestMethod]
+        public void GetDistributionList_BlankAliasAndName_Failure()
+        {
+            DistributionList oList;
+            var res = DistributionList.GetDistributionList(out oList, _mockServer);
             Assert.IsFalse(res.Success, "Blank alias/objectID params on GetDistributionList did not fail");
         }
 
-        /// <summary>
-        /// exercise GetDistributionLists failure points
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailures_GetDistributionLists()
+        public void GetDistributionLists_NullConnectionServer_Failure()
         {
             List<DistributionList> oList;
             WebCallResult res = DistributionList.GetDistributionLists(null, out oList, null);
@@ -83,127 +79,116 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "GetDistributionLists failed to catch null ConnectionServerRest object");
         }
 
-        /// <summary>
-        /// Exercise AddDistributionList failure points.
-        /// </summary>
+
         [TestMethod]
-        public void StaticCallFailures_AddDistributionList()
+        public void AddDistributionList_NullConnectionServer_Failure()
         {
             WebCallResult res = DistributionList.AddDistributionList(null, "aaa", "aaa", "123", null);
             Assert.IsFalse(res.Success, "AddDistributionList failed to catch null ConnectionServerRest object");
+        }
 
-
-            res = DistributionList.AddDistributionList(_mockServer, "", "", "123", null);
+        [TestMethod]
+        public void AddDistributionList_EmptyAliasAndName_Failure()
+        {
+            var res = DistributionList.AddDistributionList(_mockServer, "", "", "123", null);
             Assert.IsFalse(res.Success, "AddDistributionList failed to catch empty alias and display name params");
         }
 
-        /// <summary>
-        /// Exercise GetDistributionListMember failure points.
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailures_GetDistributionListMember()
+        public void GetDistributionListMembers_NullConnectionServer_Failure()
         {
             List<DistributionListMember> oListMember;
 
             WebCallResult res = DistributionListMember.GetDistributionListMembers(null, "", out oListMember);
-            Assert.IsFalse(res.Success, "Fetch of distribution list members should fail with null Connection Server object passed");
+            Assert.IsFalse(res.Success,
+                           "Fetch of distribution list members should fail with null Connection Server object passed");
+        }
 
-            res = DistributionListMember.GetDistributionListMembers(_mockServer, "", out oListMember, 1, 2, null);
+        [TestMethod]
+        public void GetDistributionListMembers_EmptyListObjectId_Failure()
+        {
+            List<DistributionListMember> oListMember;
+            var res = DistributionListMember.GetDistributionListMembers(_mockServer, "", out oListMember, 1, 2, null);
             Assert.IsFalse(res.Success, "GetDistributionListMember should fail with an empty DistributionListObjectID passed to it");
         }
 
 
-        /// <summary>
-        /// Exercise UpdateDistrubitonList failure points
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailures_UpdateDistributionList()
+        public void UpdateDistributionList_NullConnectionServer_Failure()
         {
             WebCallResult res = DistributionList.UpdateDistributionList(null, "aaa", null);
             Assert.IsFalse(res.Success, "UpdateDistributionList failed to catch null ConnectionServerRest object");
 
+        }
 
-            res = DistributionList.UpdateDistributionList(_mockServer, "aaa", null);
+        [TestMethod]
+        public void UpdateDistributionList_EmptyPropertyList_Failure()
+        {
+            var res = DistributionList.UpdateDistributionList(_mockServer, "aaa", null);
             Assert.IsFalse(res.Success, "UpdateDistributionList failed to catch empty property list");
         }
 
 
-        /// <summary>
-        /// Exercise DeleteDistributionList failure points
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailures_DeleteDistributionList()
+        public void DeleteDistributionList_NullConnectionServer_Failure()
         {
             WebCallResult res = DistributionList.DeleteDistributionList(null, "aaa");
             Assert.IsFalse(res.Success, "DeleteDistributionList failed to catch null ConnectionServerRest object");
         }
 
 
-        /// <summary>
-        /// Exercise GetDistributionList failure points
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailures_GetDistributionList()
+        public void GetDistributionList_EmptyObjectIdAndAlias_Failure()
         {
             DistributionList oList;
-
-            WebCallResult res = DistributionList.GetDistributionList(out oList, null);
-            Assert.IsFalse(res.Success, "GetDistributionList failed to catch null ConnectionServerRest object");
-
-            res = DistributionList.GetDistributionList(out oList, _mockServer);
+            var res = DistributionList.GetDistributionList(out oList, _mockServer);
             Assert.IsFalse(res.Success, "GetDistributionList failed to catch empty alias and ObjectId being passed");
 
-            res = DistributionList.GetDistributionList(out oList, _mockServer, "", "bogus alias");
-            Assert.IsFalse(res.Success, "GetDistributionList failed to catch bogus alias and empty ObjectId being passed");
-
         }
 
 
-
-        /// <summary>
-        /// Exercise GetDistributionListVoiceName failure points
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailures_GetDistributionListVoiceName()
+        public void GetDistributionListVoiceName_NullConnectionServer_Failure()
         {
-            //use the same string for the alias and display name here
-            const string strWavName = @"c:\";
-
-            //invalid local WAV file name
             WebCallResult res = DistributionList.GetDistributionListVoiceName(null, "aaa", "");
             Assert.IsFalse(res.Success, "GetDistributionListVoiceName did not fail for null Conneciton server");
-
-            //empty target file path
-            res = DistributionList.GetDistributionListVoiceName(_mockServer, "aaa", "aaa");
-            Assert.IsFalse(res.Success, "GetDistributionListVoiceName did not fail with invalid target path passed");
-
-            //invalid objectId 
-            res = DistributionList.GetDistributionListVoiceName(_mockServer, "", strWavName);
-            Assert.IsFalse(res.Success, "GetDistributionListVoiceName did not fail with invalid ObjectId passed");
-
         }
 
-        /// <summary>
-        /// Exercise SetDistributionListVoiceName failure points
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailures_SetDistributionListVoiceName()
+        public void GetDistributionListVoiceName_InvalidTargetWavPath_Failure()
         {
-            //use the same string for the alias and display name here
-            const string strWavName = @"c:\";
+            var res = DistributionList.GetDistributionListVoiceName(_mockServer, "aaa", "aaa");
+            Assert.IsFalse(res.Success, "GetDistributionListVoiceName did not fail with invalid target path passed");
+        }
 
-            //invalid Connection server
+        [TestMethod]
+        public void GetDistributionListVoiceName_EmptyObjectId_Failure()
+        {
+            const string strWavName = @"c:\";
+            var res = DistributionList.GetDistributionListVoiceName(_mockServer, "", strWavName);
+            Assert.IsFalse(res.Success, "GetDistributionListVoiceName did not fail with empty ObjectId passed");
+        }
+
+        [TestMethod]
+        public void SetDistributionListVoiceName_NullConnectionServer_Failure()
+        {
             WebCallResult res = DistributionList.SetDistributionListVoiceName(null, "", "");
             Assert.IsFalse(res.Success, "SetDistributionListVoiceName did not fail with null Connection server passed.");
+        }
 
-            //invalid target path
-            res = DistributionList.SetDistributionListVoiceName(_mockServer, "aaa", "aaa");
+        [TestMethod]
+        public void SetDistributionListVoiceName_InvalidTargetWavPath_Failure()
+        {
+            var res = DistributionList.SetDistributionListVoiceName(_mockServer, "aaa", "aaa");
             Assert.IsFalse(res.Success, "SetDistributionListVoiceName did not fail with invalid target path");
+        }
 
-            //invalid ObjectId
-            res = DistributionList.SetDistributionListVoiceName(_mockServer, strWavName, "");
-            Assert.IsFalse(res.Success, "SetDistributionListVoiceName did not fail with invalid obejctID");
-
+        [TestMethod]
+        public void SetDistributionListVoiceName_EmptyObjectId_Failure()
+        {
+            const string strWavName = @"c:\";
+            var res = DistributionList.SetDistributionListVoiceName(_mockServer, strWavName, "");
+            Assert.IsFalse(res.Success, "SetDistributionListVoiceName did not fail with empty obejctID");
         }
 
 
@@ -211,18 +196,23 @@ namespace ConnectionCUPIFunctionsTest
         /// Exercise SetDistributionListVoiceName failure points
         /// </summary>
         [TestMethod]
-        public void StaticCallFailures_SetDistributionListVoiceNameToStreamFile()
+        public void SetDistributionListVoiceNameToStreamFile_NullConnectionServer_Failure()
         {
             var res = DistributionList.SetDistributionListVoiceNameToStreamFile(null, "objectid", "resourceId");
-            Assert.IsFalse(res.Success, "Calling SetDistributionListVoiceNameToStreamFile with null ConnectionServerRest did not fail");
+            Assert.IsFalse(res.Success,"Calling SetDistributionListVoiceNameToStreamFile with null ConnectionServerRest did not fail");
+        }
 
-            res = DistributionList.SetDistributionListVoiceNameToStreamFile(_mockServer, "objectid", "resourceId");
-            Assert.IsFalse(res.Success, "Calling SetDistributionListVoiceNameToStreamFile with invalid objectId did not fail");
-
-            res = DistributionList.SetDistributionListVoiceNameToStreamFile(_mockServer, "", "resourceId");
+        [TestMethod]
+        public void SetDistributionListVoiceNameToStreamFile_EmptyObjectId_Failure()
+        {
+            var res = DistributionList.SetDistributionListVoiceNameToStreamFile(_mockServer, "", "resourceId");
             Assert.IsFalse(res.Success, "Calling SetDistributionListVoiceNameToStreamFile with empty objectId did not fail");
+        }
 
-            res = DistributionList.SetDistributionListVoiceNameToStreamFile(_mockServer, "objectid", "");
+        [TestMethod]
+        public void SetDistributionListVoiceNameToStreamFile_EmptyResourceId_Failure()
+        {
+            var res = DistributionList.SetDistributionListVoiceNameToStreamFile(_mockServer, "objectid", "");
             Assert.IsFalse(res.Success, "Calling SetDistributionListVoiceNameToStreamFile with empty resource ID did not fail");
         }
 
@@ -232,45 +222,45 @@ namespace ConnectionCUPIFunctionsTest
         #region Harness Tests
 
         [TestMethod]
-        public void GetDistributionLists_HarnessTestFailures()
+        public void GetDistributionLists_EmptyResults_Failure()
         {
-            var oTestTransport = new Mock<IConnectionRestCalls>();
-
-            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
-                It.IsAny<string>(), true)).Returns(new WebCallResult
-                {
-                    Success = true,
-                    ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
-                });
-
-            ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test", false);
-
             //empty results
-            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
-                It.IsAny<string>(), true)).Returns(new WebCallResult
-                {
-                    Success = true,
-                    ResponseText = ""
-                });
+            _mockTransport.Setup(
+                x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                       It.IsAny<string>(), true)).Returns(new WebCallResult
+                                           {
+                                               Success = true,
+                                               ResponseText = ""
+                                           });
 
             List<DistributionList> oLists;
-            var res = DistributionList.GetDistributionLists(oServer, out oLists, 1, 5, "EmptyResultText");
+            var res = DistributionList.GetDistributionLists(_mockServer, out oLists, 1, 5, "EmptyResultText");
             Assert.IsFalse(res.Success, "Calling GetDistributionLists with EmptyResultText did not fail");
 
-            //garbage response
-            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+        }
+
+        [TestMethod]
+        public void GetDistributionLists_GarbageResult_Success()
+        {
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                   It.IsAny<string>(), true)).Returns(new WebCallResult
                                   {
                                       Success = true,
                                       ResponseText = "garbage result"
                                   });
 
-            res = DistributionList.GetDistributionLists(oServer, out oLists, 1, 5, "InvalidResultText");
+            List<DistributionList> oLists;
+            var res = DistributionList.GetDistributionLists(_mockServer, out oLists, 1, 5, "InvalidResultText");
             Assert.IsTrue(res.Success, "Calling GetDistributionLists with InvalidResultText should not fail:" + res);
             Assert.IsTrue(oLists.Count == 0, "Invalid result text should produce an empty list of templates");
 
+            }
+
+        [TestMethod]
+        public void GetDistributionLists_ErrorResult_Failure()
+        {
             //error response
-            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
                                         Success = false,
@@ -278,76 +268,36 @@ namespace ConnectionCUPIFunctionsTest
                                         StatusCode = 404
                                     });
 
-            res = DistributionList.GetDistributionLists(oServer, out oLists, 1, 5, "ErrorResponse");
+            List<DistributionList> oLists;
+            var res = DistributionList.GetDistributionLists(_mockServer, out oLists, 1, 5, "ErrorResponse");
             Assert.IsFalse(res.Success, "Calling GetDistributionLists with ErrorResponse did not fail");
         }
 
         [TestMethod]
-        public void PublicListConstructor_HarnessTestFailure()
+        public void PublicListConstructor_GarbageResponse_Failure()
         {
-            var oTestTransport = new Mock<IConnectionRestCalls>();
-
-            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
-                It.IsAny<string>(), true)).Returns(new WebCallResult
-                {
-                    Success = true,
-                    ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
-                });
-
-            ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test", false);
-
-            //garbage response
-            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
-                                  It.IsAny<string>(), true)).Returns(new WebCallResult
-                                  {
-                                      Success = true,
-                                      ResponseText = "garbage result"
-                                  });
-
-            //fetch by ObjectId
-            try
-            {
-                DistributionList oList = new DistributionList(oServer, "InvalidResultText");
-                Assert.Fail("Creating new list with InvalidResultText should produce failure");
-            }
-            catch{}
-
-            //empty results
-            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
-                It.IsAny<string>(), true)).Returns(new WebCallResult
-                {
-                    Success = true,
-                    ResponseText = ""
-                });
+            _mockTransport.Setup(
+                x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                       It.IsAny<string>(), true)).Returns(new WebCallResult
+                                           {
+                                               Success = true,
+                                               ResponseText = "garbage result"
+                                           });
 
             try
             {
-                DistributionList oList = new DistributionList(oServer,"", "EmptyResultText");
+                DistributionList oList = new DistributionList(_mockServer, "InvalidResultText");
                 Assert.Fail("Creating new list with InvalidResultText should produce failure");
             }
-            catch { }
-
-            //error response
-            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
-                                    It.IsAny<string>(), true)).Returns(new WebCallResult
-                                    {
-                                        Success = false,
-                                        ResponseText = "error text",
-                                        StatusCode = 404
-                                    });
-
-            try
+            catch
             {
-                DistributionList oList = new DistributionList(oServer, "", "ErrorResponse");
-                Assert.Fail("Creating new list with InvalidResultText should produce failure");
             }
-            catch { }
-
         }
 
         [TestMethod]
-        public void GetDistributionListMembers_HarnessTestFailures()
+        public void PublicListConstructor_EmptyResponse_Failure()
         {
+
             //empty results
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                 It.IsAny<string>(), true)).Returns(new WebCallResult
@@ -356,22 +306,18 @@ namespace ConnectionCUPIFunctionsTest
                     ResponseText = ""
                 });
 
-            List<DistributionListMember> oMembers;
-            var res = DistributionListMember.GetDistributionListMembers(_mockServer, "objectid", out oMembers, 1, 5, "EmptyResultText");
-            Assert.IsFalse(res.Success, "Calling GetDistributionListMembers with EmptyResultText did not fail");
+            try
+            {
+                DistributionList oList = new DistributionList(_mockServer, "", "EmptyResultText");
+                Assert.Fail("Creating new list with InvalidResultText should produce failure");
+            }
+            catch { }
 
-            //garbage response
-            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
-                                  It.IsAny<string>(), true)).Returns(new WebCallResult
-                                  {
-                                      Success = true,
-                                      ResponseText = "garbage result"
-                                  });
+            }
 
-            res = DistributionListMember.GetDistributionListMembers(_mockServer, "objectid", out oMembers, 1, 5, "InvalidResultText");
-            Assert.IsTrue(res.Success, "Calling GetDistributionListMembers with InvalidResultText should not fail:" + res);
-            Assert.IsTrue(oMembers.Count == 0, "Invalid result text should produce an empty list of templates");
-
+        [TestMethod]
+        public void PublicListConstructor_ErrorResponse_Failure()
+        {
             //error response
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
@@ -381,7 +327,63 @@ namespace ConnectionCUPIFunctionsTest
                                         StatusCode = 404
                                     });
 
-            res = DistributionListMember.GetDistributionListMembers(_mockServer, "objectid", out oMembers, 1, 5, "ErrorResponse");
+            try
+            {
+                DistributionList oList = new DistributionList(_mockServer, "", "ErrorResponse");
+                Assert.Fail("Creating new list with InvalidResultText should produce failure");
+            }
+            catch { }
+
+        }
+
+        [TestMethod]
+        public void GetDistributionListMembers_EmptyResult_Failure()
+        {
+            //empty results
+            _mockTransport.Setup(
+                x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                       It.IsAny<string>(), true)).Returns(new WebCallResult
+                                           {
+                                               Success = true,
+                                               ResponseText = ""
+                                           });
+
+            List<DistributionListMember> oMembers;
+            var res = DistributionListMember.GetDistributionListMembers(_mockServer, "objectid", out oMembers, 1, 5,
+                                                                        "EmptyResultText");
+            Assert.IsFalse(res.Success, "Calling GetDistributionListMembers with EmptyResultText did not fail");
+        }
+
+        [TestMethod]
+        public void GetDistributionListMembers_GarbageResponse_Success()
+        {
+            //garbage response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
+
+            List<DistributionListMember> oMembers;
+            var res = DistributionListMember.GetDistributionListMembers(_mockServer, "objectid", out oMembers, 1, 5, "InvalidResultText");
+            Assert.IsTrue(res.Success, "Calling GetDistributionListMembers with InvalidResultText should not fail:" + res);
+            Assert.IsTrue(oMembers.Count == 0, "Invalid result text should produce an empty list of templates");
+        }
+
+        [TestMethod]
+        public void GetDistributionListMembers_ErrorResponse_Failure()
+        {
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
+
+            List<DistributionListMember> oMembers;
+            var res = DistributionListMember.GetDistributionListMembers(_mockServer, "objectid", out oMembers, 1, 5, "ErrorResponse");
             Assert.IsFalse(res.Success, "Calling GetDistributionListMembers with ErrorResponse did not fail");
         }
 

@@ -58,78 +58,103 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
-        public void StaticCallFailures_GetCallHandlerTemplates()
+        public void GetCallHandlerTemplates_NullConnectionServer_Failure()
         {
             List<CallHandlerTemplate> oTemplates;
             WebCallResult res = CallHandlerTemplate.GetCallHandlerTemplates(null, out oTemplates,1,10,null);
             Assert.IsFalse(res.Success, "Passing null connection server should fail.");
-
-
         }
 
-        /// <summary>
-        /// exercise failure points
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailures__AddCallHandlerTemplate()
+        public void AddCallHandlerTemplate_NullConnectionServer_Failure()
         {
-
             CallHandlerTemplate oTemplate;
             var res = CallHandlerTemplate.AddCallHandlerTemplate(null, "display name", "mediaswitchobjectid", "recipientlist","recipientuser", 
                 null, out oTemplate);
             Assert.IsFalse(res.Success,"AddCallHandlerTemplate with null ConnectionServerRest did not fail");
+         }
 
-            res = CallHandlerTemplate.AddCallHandlerTemplate(_mockServer, "", "mediaswitchobjectid", "recipientlist", "recipientuser",null, out oTemplate);
+        [TestMethod]
+        public void AddCallHandlerTemplate_EmptyDisplayName_Failure()
+        {
+            CallHandlerTemplate oTemplate; 
+            var res = CallHandlerTemplate.AddCallHandlerTemplate(_mockServer, "", "mediaswitchobjectid", "recipientlist", "recipientuser", null, out oTemplate);
             Assert.IsFalse(res.Success, "AddCallHandlerTemplate with empty display name did not fail");
+            }
 
-            res = CallHandlerTemplate.AddCallHandlerTemplate(_mockServer, "displayname", "", "recipientlist", "recipientuser", null, out oTemplate);
+        [TestMethod]
+        public void AddCallHandlerTemplate_EmptyMediaSwitchId_Failure()
+        {
+            CallHandlerTemplate oTemplate; 
+            var res = CallHandlerTemplate.AddCallHandlerTemplate(_mockServer, "displayname", "", "recipientlist", "recipientuser", null, out oTemplate);
             Assert.IsFalse(res.Success, "AddCallHandlerTemplate with empty mediaswitch objectId did not fail");
-
-            res = CallHandlerTemplate.AddCallHandlerTemplate(_mockServer, "displayname", "mediaswitchobjectid", "", "", null, out oTemplate);
-            Assert.IsFalse(res.Success, "AddCallHandlerTemplate with no recipients did not fail");
-
         }
 
         [TestMethod]
-        public void StaticCallFailures__DeleteCallHandlerTemplate()
+        public void AddCallHandlerTemplate_EmptyRecipients_Failure()
         {
-            var res= CallHandlerTemplate.DeleteCallHandlerTemplate(null, "objectid");
-            Assert.IsFalse(res.Success, "DeleteCallHandlerTemplate with null connection server did not fail");
+            CallHandlerTemplate oTemplate; 
+            var res = CallHandlerTemplate.AddCallHandlerTemplate(_mockServer, "displayname", "mediaswitchobjectid", "", "", null, out oTemplate);
+            Assert.IsFalse(res.Success, "AddCallHandlerTemplate with no recipients did not fail");
+        }
 
-            res = CallHandlerTemplate.DeleteCallHandlerTemplate(_mockServer, "");
+
+
+        [TestMethod]
+        public void DeleteCallHandlerTemplate_NullconnectionServer_Failure()
+        {
+            var res = CallHandlerTemplate.DeleteCallHandlerTemplate(null, "objectid");
+            Assert.IsFalse(res.Success, "DeleteCallHandlerTemplate with null connection server did not fail");
+        }
+
+        [TestMethod]
+        public void DeleteCallHandlerTemplate_EmptyObjectId_Failure()
+        {
+            var res = CallHandlerTemplate.DeleteCallHandlerTemplate(_mockServer, "");
             Assert.IsFalse(res.Success, "DeleteCallHandlerTemplate with empty objectid did not fail");
         }
 
 
         [TestMethod]
-        public void StaticCallFailures__GetCallHandlerTemplate()
+        public void GetCallHandlerTemplate_NullConnectionServer_Failure()
         {
             CallHandlerTemplate oTemplate;
             var res= CallHandlerTemplate.GetCallHandlerTemplate(out oTemplate, null, "objectid", "displayname");
             Assert.IsFalse(res.Success, "GetCallHandlerTemplate with null ConnectionServerRest did not fail");
-
-            res = CallHandlerTemplate.GetCallHandlerTemplate(out oTemplate, _mockServer, "", "");
-            Assert.IsFalse(res.Success, "GetCallHandlerTemplate with empty objectId and name did not fail");
-
-            res = CallHandlerTemplate.GetCallHandlerTemplate(out oTemplate, _mockServer, "", "_bogus_");
-            Assert.IsFalse(res.Success, "GetCallHandlerTemplate with invalid name did not fail");
-
         }
 
+
         [TestMethod]
-        public void StaticCallFailures__UpdateCallHandlerTemplate()
+        public void GetCallHandlerTemplate_EmptyObjectId_Failure()
+        {
+            CallHandlerTemplate oTemplate;
+            var res = CallHandlerTemplate.GetCallHandlerTemplate(out oTemplate, _mockServer, "", "");
+            Assert.IsFalse(res.Success, "GetCallHandlerTemplate with empty objectId and name did not fail");
+         }
+
+
+        [TestMethod]
+        public void UpdateCallHandlerTemplate_NullConnectionServer_Failure()
         {
             var res= CallHandlerTemplate.UpdateCallHandlerTemplate(null, "objectId", null);
             Assert.IsFalse(res.Success, "UpdateCallHandlerTemplate with null Connection server did not fail");
+         }
 
-            res = CallHandlerTemplate.UpdateCallHandlerTemplate(_mockServer, "", null);
+
+        [TestMethod]
+        public void UpdateCallHandlerTemplate_EmptyObjectId_Failure()
+        {
+            var res = CallHandlerTemplate.UpdateCallHandlerTemplate(_mockServer, "", null);
             Assert.IsFalse(res.Success, "UpdateCallHandlerTemplate with empty object did not fail");
+        }
 
+
+        [TestMethod]
+        public void UpdateCallHandlerTemplate_EmptyPropertyList_Failure()
+        {
             ConnectionPropertyList oProps = new ConnectionPropertyList();
-
-            res = CallHandlerTemplate.UpdateCallHandlerTemplate(_mockServer, "objectId", oProps);
+            var res = CallHandlerTemplate.UpdateCallHandlerTemplate(_mockServer, "objectId", oProps);
             Assert.IsFalse(res.Success, "UpdateCallHandlerTemplate with empty property list did not fail");
-
         }
 
         #endregion
@@ -137,46 +162,45 @@ namespace ConnectionCUPIFunctionsTest
 
         #region Harness Tests
 
-       [TestMethod]
-       public void GetCallHandlerTemplates_HarnessFailures()
-       {
-           var oTestTransport = new Mock<IConnectionRestCalls>();
+        [TestMethod]
+        public void GetCallHandlerTemplates_EmptyResults_Failure()
+        {
+            //empty results
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                       It.IsAny<string>(), true)).Returns(new WebCallResult
+                                           {
+                                               Success = true,
+                                               ResponseText = ""
+                                           });
 
-           oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
-               It.IsAny<string>(), true)).Returns(new WebCallResult
-               {
-                   Success = true,
-                   ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
-               });
+            List<CallHandlerTemplate> oTemplates;
+            var res = CallHandlerTemplate.GetCallHandlerTemplates(_mockServer, out oTemplates, 1, 5, "EmptyResultText");
+            Assert.IsFalse(res.Success, "Calling GetCallHandlerTemplates with EmptyResultText did not fail");
+        }
 
-           ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test", false);
-
-           //empty results
-           oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
-               It.IsAny<string>(), true)).Returns(new WebCallResult
-               {
-                   Success = true,
-                   ResponseText = ""
-               });
-
-           List<CallHandlerTemplate> oTemplates;
-           var res = CallHandlerTemplate.GetCallHandlerTemplates(oServer, out oTemplates, 1, 5, "EmptyResultText");
-           Assert.IsFalse(res.Success, "Calling GetCallHandlerTemplates with EmptyResultText did not fail");
-
-           //garbage response
-           oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+        [TestMethod]
+        public void GetCallHandlerTemplates_GarbageResults_Success()
+        {
+            //garbage response
+           _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                  It.IsAny<string>(), true)).Returns(new WebCallResult
                                  {
                                      Success = true,
                                      ResponseText = "garbage result"
                                  });
 
-           res = CallHandlerTemplate.GetCallHandlerTemplates(oServer, out oTemplates, 1, 5, "InvalidResultText");
+           List<CallHandlerTemplate> oTemplates;
+           var res = CallHandlerTemplate.GetCallHandlerTemplates(_mockServer, out oTemplates, 1, 5, "InvalidResultText");
            Assert.IsTrue(res.Success, "Calling GetCallHandlerTemplates with InvalidResultText should not fail:"+res);
            Assert.IsTrue(oTemplates.Count==0,"Invalid result text should produce an empty list of templates");
+       }
 
-           //error response
-           oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+
+        [TestMethod]
+        public void GetCallHandlerTemplates_ErrorResult_Failure()
+        {
+            //error response
+           _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                    It.IsAny<string>(), true)).Returns(new WebCallResult
                                    {
                                        Success = false,
@@ -184,26 +208,17 @@ namespace ConnectionCUPIFunctionsTest
                                        StatusCode = 404
                                    });
 
-           res = CallHandlerTemplate.GetCallHandlerTemplates(oServer, out oTemplates, 1, 5, "ErrorResponse");
+           List<CallHandlerTemplate> oTemplates;
+           var res = CallHandlerTemplate.GetCallHandlerTemplates(_mockServer, out oTemplates, 1, 5, "ErrorResponse");
            Assert.IsFalse(res.Success, "Calling GetCallHandlerTemplates with ErrorResponse did not fail");
        }
 
+
         [TestMethod]
-        public void AddCallHandlerTemplate_HarnessFailures()
+        public void AddCallHandlerTemplate_JunkObjectIdReturn_Failure()
         {
-            var oTestTransport = new Mock<IConnectionRestCalls>();
-
-            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
-                It.IsAny<string>(), true)).Returns(new WebCallResult
-                {
-                    Success = true,
-                    ResponseText = "{\"name\":\"vmrest\",\"version\":\"10.0.0.189\"}"
-                });
-
-            ConnectionServerRest oServer = new ConnectionServerRest(oTestTransport.Object, "test", "test", "test", false);
-
             //invalid objectId response
-            oTestTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                  It.IsAny<string>(), true)).Returns(new WebCallResult
                                  {
                                      Success = true,
@@ -211,8 +226,56 @@ namespace ConnectionCUPIFunctionsTest
                                  });
 
             CallHandlerTemplate oTemplate;
-            var res = CallHandlerTemplate.AddCallHandlerTemplate(oServer, "test", "test", "", "test", null,out oTemplate);
+            var res = CallHandlerTemplate.AddCallHandlerTemplate(_mockServer, "test", "test", "", "test", null,out oTemplate);
             Assert.IsFalse(res.Success,"AddCallHandlerTemplate that produces invalid new ObjectId did not fail");
+        }
+
+        [TestMethod]
+        public void AddCallHandlerTemplate_EmptyResponse_Failure()
+        {
+            //invalid objectId response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                 It.IsAny<string>(), true)).Returns(new WebCallResult
+                                 {
+                                     Success = true,
+                                     ResponseText = ""
+                                 });
+
+            CallHandlerTemplate oTemplate;
+            var res = CallHandlerTemplate.AddCallHandlerTemplate(_mockServer, "test", "test", "", "test", null, out oTemplate);
+            Assert.IsFalse(res.Success, "AddCallHandlerTemplate that returns empty response did not fail");
+        }
+        [TestMethod]
+        public void AddCallHandlerTemplate_GarbageResponse_Failure()
+        {
+            //invalid objectId response
+            //garbage response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(),It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      ResponseText = "garbage result"
+                                  });
+
+            CallHandlerTemplate oTemplate;
+            var res = CallHandlerTemplate.AddCallHandlerTemplate(_mockServer, "test", "test", "", "test", null, out oTemplate);
+            Assert.IsFalse(res.Success, "AddCallHandlerTemplate that produces garbage response text did not fail");
+        }
+
+        [TestMethod]
+        public void AddCallHandlerTemplate_ErrorResult_Failure()
+        {
+            //invalid objectId response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                 It.IsAny<string>(), true)).Returns(new WebCallResult
+                                 {
+                                     Success = false,
+                                     StatusCode = 404,
+                                 });
+
+            CallHandlerTemplate oTemplate;
+            var res = CallHandlerTemplate.AddCallHandlerTemplate(_mockServer, "test", "test", "", "test", null, out oTemplate);
+            Assert.IsFalse(res.Success, "AddCallHandlerTemplate that produces error response did not fail");
         }
 
         #endregion

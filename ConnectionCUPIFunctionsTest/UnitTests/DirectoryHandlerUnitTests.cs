@@ -54,7 +54,7 @@ namespace ConnectionCUPIFunctionsTest
         /// exercise failure points
         /// </summary>
         [TestMethod]
-        public void StaticCallFailures_GetDirectoryHandlers()
+        public void GetDirectoryHandlers_NullConnectionServer_Failure()
         {
             List<DirectoryHandler> oHandlerList;
 
@@ -64,154 +64,217 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         [TestMethod]
-        public void StaticCallFailures_AddDirectoryHandler()
+        public void AddDirectoryHandler_NullConnectionServer_Failure()
         {
             DirectoryHandler oHandler;
             var res = DirectoryHandler.AddDirectoryHandler(null, "display name", true, null, out oHandler);
             Assert.IsFalse(res.Success, "Calling AddHandler with null ConnectionServerRest did not fail");
 
-            res = DirectoryHandler.AddDirectoryHandler(_mockServer, "", true, null, out oHandler);
+            }
+
+        [TestMethod]
+        public void AddDirectoryHandler_EmptyDisplayName_Failure()
+        {
+            DirectoryHandler oHandler;
+            var res = DirectoryHandler.AddDirectoryHandler(_mockServer, "", true, null, out oHandler);
             Assert.IsFalse(res.Success, "Calling AddHandler with empty display name did not fail");
         }
 
+
         [TestMethod]
-        public void StaticCallFailures_DeleteDirectoryHandler()
+        public void DeleteDirectoryHandler_NullConnectionServer_Failure()
         {
             var res = DirectoryHandler.DeleteDirectoryHandler(null, "objectid");
             Assert.IsFalse(res.Success, "Calling DeleteDirectoryHandler with null ConnectionServerRest did not fail");
+        }
 
-            res = DirectoryHandler.DeleteDirectoryHandler(_mockServer, "");
+
+        [TestMethod]
+        public void DeleteDirectoryHandler_EmptyObjectId_Failure()
+        {
+            var res = DirectoryHandler.DeleteDirectoryHandler(_mockServer, "");
             Assert.IsFalse(res.Success, "Calling DeleteDirectoryHandler with empty objectId did not fail");
         }
 
         [TestMethod]
-        public void StaticCallFailures_UpdateDirectoryHandler()
+        public void UpdateDirectoryHandler_NullConnectionServer_Failure()
         {
             var res = DirectoryHandler.UpdateDirectoryHandler(null, "objectid", null);
             Assert.IsFalse(res.Success, "Calling UpdateDirectoryHandler with null ConnectionServerRest did not fail");
 
-            res = DirectoryHandler.UpdateDirectoryHandler(_mockServer, "objectid", null);
+            }
+
+        [TestMethod]
+        public void UpdateDirectoryHandler_NullPropertyList_Failure()
+        {
+            var res = DirectoryHandler.UpdateDirectoryHandler(_mockServer, "objectid", null);
             Assert.IsFalse(res.Success, "Calling UpdateDirectoryHandler with null property list did not fail");
 
-            res = DirectoryHandler.UpdateDirectoryHandler(_mockServer, "", null);
+            }
+
+        [TestMethod]
+        public void UpdateDirectoryHandler_EmptyObjectId_Failure()
+        {
+            var res = DirectoryHandler.UpdateDirectoryHandler(_mockServer, "", null);
             Assert.IsFalse(res.Success, "Calling UpdateDirectoryHandler with empty objectid did not fail");
 
-            res = DirectoryHandler.UpdateDirectoryHandler(_mockServer, "objectid", new ConnectionPropertyList());
-            Assert.IsFalse(res.Success, "Calling UpdateDirectoryHandler with empty property list did not fail");
+            }
 
-            res = DirectoryHandler.UpdateDirectoryHandler(_mockServer, "objectid", new ConnectionPropertyList("name", "value"));
-            Assert.IsFalse(res.Success, "Calling UpdateDirectoryHandler with invalid objectId did not fail");
+        [TestMethod]
+        public void UpdateDirectoryHandler_EmptyPropertyList_Failure()
+        {
+            var res = DirectoryHandler.UpdateDirectoryHandler(_mockServer, "objectid", new ConnectionPropertyList());
+            Assert.IsFalse(res.Success, "Calling UpdateDirectoryHandler with empty property list did not fail");
         }
 
-        /// <summary>
-        /// exercise failure points
-        /// </summary>
+
         [TestMethod]
-        public void StaticCallFailures_GetDirectoryHandler()
+        public void GetDirectoryHandler_NullConnectionServer_Failure()
         {
             DirectoryHandler oHandler;
 
             WebCallResult res = DirectoryHandler.GetDirectoryHandler(out oHandler, null);
             Assert.IsFalse(res.Success, "GetDirectoryHandler should fail if the ConnectionServerRest is null");
-
-            res = DirectoryHandler.GetDirectoryHandler(out oHandler, _mockServer);
-            Assert.IsFalse(res.Success, "GetDirectoryHandler should fail if the ObjectId and display name are both blank");
         }
 
         [TestMethod]
-        public void StaticCallFailures_GetGreetingStreamFiles()
+        public void GetDirectoryHandler_BlankNameAndObjectId_Failure()
         {
-            //GetGreetingStreamFiles
+            DirectoryHandler oHandler;
+            var res = DirectoryHandler.GetDirectoryHandler(out oHandler, _mockServer);
+            Assert.IsFalse(res.Success, "GetDirectoryHandler should fail if the ObjectId and display name are both blank");
+        }
+
+
+        [TestMethod]
+        public void GetGreetingStreamFiles_NullConnectionServer_Failure()
+        {
             List<DirectoryHandlerGreetingStreamFile> oStreams;
             var res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFiles(null, "objectid", out oStreams);
             Assert.IsFalse(res.Success, "Calling GetGreetingStreamFiles with null ConnectionServer should fail");
+        }
 
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFiles(_mockServer, "objectid", out oStreams);
-            Assert.IsTrue(res.Success, "Fetching greeting stream files with an invalid objectId shouldn't fail:" + res);
-            Assert.IsTrue(oStreams.Count == 0, "Fetching streams with an invalid objectId should return an empty list");
 
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFiles(_mockServer, "", out oStreams);
+        [TestMethod]
+        public void GetGreetingStreamFiles_EmptyObjectId_Failure()
+        {
+            List<DirectoryHandlerGreetingStreamFile> oStreams;
+            var res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFiles(_mockServer, "", out oStreams);
             Assert.IsFalse(res.Success, "Calling GetGreetingStreamFiles with empty objectId should fail");
         }
 
         [TestMethod]
-        public void StaticCallFailures_GetGreetingWavFile()
+        public void GetGreetingWavFile_NullConnectionServer_Failure()
         {
-            //GetGreetingWavFile
             var res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(null, "c:\\temp.wav", "streamname.wav");
             Assert.IsFalse(res.Success, "Calling GetGreetinWavFile with null ConnectionServer should fail");
 
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_mockServer, "c:\\temp.wav", "streamname.wav");
-            Assert.IsFalse(res.Success, "Calling GetGreetinWavFile with invalid StreamName shoudl fail");
+         }
 
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_mockServer, "", "streamname.wav");
+        [TestMethod]
+        public void GetGreetingWavFile_EmptyWavPath_Failure()
+        {
+            var res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_mockServer, "", "streamname.wav");
             Assert.IsFalse(res.Success, "Calling GetGreetinWavFile with empty local wav path should fail");
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_mockServer, "c:\\temp.wav", "");
-            Assert.IsFalse(res.Success, "Calling GetGreetinWavFile with empty stream name should fail");
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(null, "c:\\temp.wav", "objectId", 1033);
-            Assert.IsFalse(res.Success, "Calling GetGreetinWavFile with null ConnectionServer should fail");
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_mockServer, "c:\\temp.wav", "objectId", 1033);
-            Assert.IsFalse(res.Success, "Calling GetGreetinWavFile with invalid OBjectId should fail");
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_mockServer, "", "objectId", 1033);
-            Assert.IsFalse(res.Success, "Calling GetGreetinWavFile with empty local wav file path should fail");
-
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_mockServer, "c:\\temp.wav", "", 1033);
-            Assert.IsFalse(res.Success, "Calling GetGreetinWavFile with empty objectId should fail");
-
         }
 
         [TestMethod]
-        public void StaticCallFailures_SetGreetingWavFile()
+        public void GetGreetingWavFile_EmptyStreamName_Failure()
+        {
+            var res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_mockServer, "c:\\temp.wav", "");
+            Assert.IsFalse(res.Success, "Calling GetGreetinWavFile with empty stream name should fail");
+        }
+
+        [TestMethod]
+        public void GetGreetingWavFile2_NullConnectionServer_Failure()
+        {
+            var res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(null, "c:\\temp.wav", "objectId", 1033);
+            Assert.IsFalse(res.Success, "Calling GetGreetinWavFile with null ConnectionServer should fail");
+        }
+
+        [TestMethod]
+        public void GetGreetingWavFile2_EmptyWavPath_Failure()
+        {
+            var res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_mockServer, "", "objectId", 1033);
+            Assert.IsFalse(res.Success, "Calling GetGreetinWavFile with empty local wav file path should fail");
+
+            }
+
+        [TestMethod]
+        public void GetGreetingWavFile2_EmptyObjectId_Failure()
+        {
+            var res = DirectoryHandlerGreetingStreamFile.GetGreetingWavFile(_mockServer, "c:\\temp.wav", "", 1033);
+            Assert.IsFalse(res.Success, "Calling GetGreetinWavFile with empty objectId should fail");
+        }
+
+        [TestMethod]
+        public void SetGreetingWavFile_NullConnectionServer_Failure()
         {
             //SetGreetingWavFile
             var res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(null, "objectid", 1033, "bogus.wav", true);
             Assert.IsFalse(res.Success, "calling SetGreetingWavFile with null ConnectionServer should fail");
+         }
 
-            res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_mockServer, "objectid", 1033, "bogus.wav", true);
+        [TestMethod]
+        public void SetGreetingWavFile_InvalidLocalWavFilePath_Failure()
+        {
+            var res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_mockServer, "objectid", 1033, "bogus.wav", true);
             Assert.IsFalse(res.Success, "calling SetGreetingWavFile with invalid local wav file should fail");
-
-            res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_mockServer, "", 1033, "bogus.wav", true);
-            Assert.IsFalse(res.Success, "calling SetGreetingWavFile with Empty ObjectId should fail");
-
-            res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_mockServer, "objectid", 1033, "", true);
-            Assert.IsFalse(res.Success, "calling SetGreetingWavFile with empty local wav file path should fail");
-
         }
 
         [TestMethod]
-        public void StaticCallFailures_SetGreetingStreamFile()
+        public void SetGreetingWavFile_EmptyObjectId_Failure()
+        {
+            var res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_mockServer, "", 1033, "bogus.wav", true);
+            Assert.IsFalse(res.Success, "calling SetGreetingWavFile with Empty ObjectId should fail");
+        }
+
+        [TestMethod]
+        public void SetGreetingWavFile_EmptyWavFilePath_Failure()
+        {
+            var res = DirectoryHandlerGreetingStreamFile.SetGreetingWavFile(_mockServer, "objectid", 1033, "", true);
+            Assert.IsFalse(res.Success, "calling SetGreetingWavFile with empty local wav file path should fail");
+        }
+
+
+        [TestMethod]
+        public void SetGreetingRecordingToStreamFile_NullConnectionServer_Failure()
         {
             var res = DirectoryHandler.SetGreetingRecordingToStreamFile(null, "streamname", "objectId", 1033);
             Assert.IsFalse(res.Success, "Calling SetGreetingRecordingToStreamFile with null ConnectionServerRest did not fail");
+         }
 
-            res = DirectoryHandler.SetGreetingRecordingToStreamFile(_mockServer, "streamname", "objectId", 1033);
-            Assert.IsFalse(res.Success, "Calling SetGreetingRecordingToStreamFile with invalid objectId did not fail");
-
-            res = DirectoryHandler.SetGreetingRecordingToStreamFile(_mockServer, "", "objectId", 1033);
-            Assert.IsFalse(res.Success, "Calling SetGreetingRecordingToStreamFile with empty streamID did not fail");
-
-            res = DirectoryHandler.SetGreetingRecordingToStreamFile(_mockServer, "streamname", "", 1033);
-            Assert.IsFalse(res.Success, "Calling SetGreetingRecordingToStreamFile with empty objecTId did not fail");
-
-            res = DirectoryHandler.SetGreetingRecordingToStreamFile(_mockServer, "streamname", "objectId", 9999);
-            Assert.IsFalse(res.Success, "Calling SetGreetingRecordingToStreamFile with invalid language ID did not fail");
-        }
 
         [TestMethod]
-        public void StaticCallFailures_GetGreetingStreamFile()
+        public void SetGreetingRecordingToStreamFile_EmptyStreamId_Failure()
         {
-            //GetGreetingStreamFile
+            var res = DirectoryHandler.SetGreetingRecordingToStreamFile(_mockServer, "", "objectId", 1033);
+            Assert.IsFalse(res.Success, "Calling SetGreetingRecordingToStreamFile with empty streamID did not fail");
+        }
+
+
+        [TestMethod]
+        public void SetGreetingRecordingToStreamFile_EmptyObjectId_Failure()
+        {
+            var res = DirectoryHandler.SetGreetingRecordingToStreamFile(_mockServer, "streamname", "", 1033);
+            Assert.IsFalse(res.Success, "Calling SetGreetingRecordingToStreamFile with empty objecTId did not fail");
+        }
+
+
+        [TestMethod]
+        public void GetGreetingStreamFile_NullConnectionServer_Failure()
+        {
             DirectoryHandlerGreetingStreamFile oStream;
             var res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFile(null, "objectid", 1033, out oStream);
             Assert.IsFalse(res.Success, "Calling GetGreetingStreamFile with null ConnectionServer should fail");
+        }
 
-            res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFile(_mockServer, "", 1033, out oStream);
+        [TestMethod]
+        public void GetGreetingStreamFile_EmptyObjectId_Failure()
+        {
+            DirectoryHandlerGreetingStreamFile oStream;
+            var res = DirectoryHandlerGreetingStreamFile.GetGreetingStreamFile(_mockServer, "", 1033, out oStream);
             Assert.IsFalse(res.Success, "Calling GetGreetingStreamFile with empty objectId should fail");
-
         }
 
 
