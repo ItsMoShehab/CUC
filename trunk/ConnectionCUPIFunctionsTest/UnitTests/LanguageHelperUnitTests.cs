@@ -34,29 +34,34 @@ namespace ConnectionCUPIFunctionsTest
         ///A test for GetLanguageIdFromLanguageEnum
         ///</summary>
         [TestMethod]
-        public void GetLanguageIdFromLanguageEnumTest()
+        public void GetLanguageIdFromLanguageEnum_GetEnglish_Success()
         {
             int iRet = LanguageHelper.GetLanguageIdFromLanguageEnum(LanguageCodes.EnglishUnitedStates);
-
             Assert.AreEqual(iRet, 1033, "US English ID of 1033 not returned for language code");
+        }
 
-            iRet = LanguageHelper.GetLanguageIdFromLanguageEnum((LanguageCodes) 10);
+        [TestMethod]
+        public void GetLanguageIdFromLanguageEnum_GetInvalidLanguageId_Failure()
+        {
+            int iRet = LanguageHelper.GetLanguageIdFromLanguageEnum((LanguageCodes) 10);
             Assert.AreEqual(iRet,-1,"Invalid enum reference should return -1");
-
         }
 
         /// <summary>
         ///A test for GetLanguageNameFromLanguageID
         ///</summary>
         [TestMethod]
-        public void GetLanguageNameFromLanguageIdTest()
+        public void GetLanguageNameFromLanguageId_GetEnglish_Success()
         {
             string strRet = LanguageHelper.GetLanguageNameFromLanguageId(1033);
-            Assert.AreEqual(strRet,"EnglishUnitedStates","US English name not returned for 1033");
+            Assert.AreEqual(strRet, "EnglishUnitedStates", "US English name not returned for 1033");
+        }
 
-            strRet = LanguageHelper.GetLanguageNameFromLanguageId(10);
+        [TestMethod]
+        public void GetLanguageNameFromLanguageId_GetInvalidLanguageId_Failure()
+        {
+            string strRet = LanguageHelper.GetLanguageNameFromLanguageId(10);
             Assert.AreEqual(strRet, "Undefined","Invalid language ID should return 'Invalid' string for name");
-
         }
     }
 }

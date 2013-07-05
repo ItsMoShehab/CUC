@@ -47,87 +47,113 @@ namespace ConnectionCUPIFunctionsTest
 
         #region Static Call Failures
 
-        /// <summary>
-        /// testing failure conditiions
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailures_DeleteAlternateExtension()
+        public void DeleteAlternateExtension_EmptyObjectId_Failure()
         {
             //static delete failure calls
             var res = AlternateExtension.DeleteAlternateExtension(_mockServer, "objectid", "");
             Assert.IsFalse(res.Success, "Empty ObjectId should fail");
+        }
 
-            res = AlternateExtension.DeleteAlternateExtension(_mockServer, "", "aaa");
+        [TestMethod]
+        public void DeleteAlternateExtension_EmptyUserObjectId_Failure()
+        {
+            var res = AlternateExtension.DeleteAlternateExtension(_mockServer, "", "aaa");
             Assert.IsFalse(res.Success, "Empty user objectId should fail");
 
-            res = AlternateExtension.DeleteAlternateExtension(null, "objectid", "aaa");
+            }
+
+        [TestMethod]
+        public void DeleteAlternateExtension_NullConnectionServer_Failure()
+        {
+            var res = AlternateExtension.DeleteAlternateExtension(null, "objectid", "aaa");
             Assert.IsFalse(res.Success, "Null ConnectionServerRest object should fail");
 
         }
 
-        ///<summary>
-        /// testing failure conditiions
-        /// </summary>
+
         [TestMethod]
-        public void StaticCallFailures_GetAlternateExtensions()
+        public void GetAlternateExtensions_NullConnectionServer_Failure()
         {
             List<AlternateExtension> oAltExts;
 
             //static GetAlternateExtensions calls
             var res = AlternateExtension.GetAlternateExtensions(null, "objectid", out oAltExts);
             Assert.IsFalse(res.Success, "Null ConnectionServerRest object should fail");
-
         }
 
-        ///<summary>
-        /// testing failure conditiions
-        /// </summary>
+
         [TestMethod]
-        public void StaticCallFailures_GetAlternateExtension()
+        public void GetAlternateExtension_NullConnectionServer_Failure()
         {
             AlternateExtension oAltExt;
 
             var res = AlternateExtension.GetAlternateExtension(null, "objectid", "aaa", out oAltExt);
             Assert.IsFalse(res.Success, "Null ConnectonServer object should fail");
-
-            res = AlternateExtension.GetAlternateExtension(_mockServer, "", "aaa", out oAltExt);
-            Assert.IsFalse(res.Success, "Empty UServerObjectID should fail");
         }
 
 
-        ///<summary>
-        /// testing failure conditiions
-        /// </summary>
         [TestMethod]
-        public void StaticCallFailures_UpdateAlternateExtension()
+        public void GetAlternateExtension_EmptyUserObjectId_Failure()
         {
-            //static UpdateAlternateExtension calls
+            AlternateExtension oAltExt;
+
+            var res = AlternateExtension.GetAlternateExtension(_mockServer, "", "aaa", out oAltExt);
+            Assert.IsFalse(res.Success, "Empty UserverObjectId should fail");
+        }
+
+
+        [TestMethod]
+        public void UpdateAlternateExtension_NullConnectionServer_Failure()
+        {
             ConnectionPropertyList oProps = new ConnectionPropertyList();
             oProps.Add("name", "value");
 
             var res = AlternateExtension.UpdateAlternateExtension(null, "objectid", "aaa", oProps);
             Assert.IsFalse(res.Success, "Null ConnectionServerRest object should fail");
+        }
 
-            res = AlternateExtension.UpdateAlternateExtension(_mockServer, "", "aaa", oProps);
+
+        [TestMethod]
+        public void UpdateAlternateExtension_EmptyUserObjectId_Failure()
+        {
+            ConnectionPropertyList oProps = new ConnectionPropertyList();
+            oProps.Add("name", "value");
+
+            var res = AlternateExtension.UpdateAlternateExtension(_mockServer, "", "aaa", oProps);
             Assert.IsFalse(res.Success, "Empty UserObjectID should fail");
+        }
 
-            res = AlternateExtension.UpdateAlternateExtension(_mockServer, "objectid", "aaa", null);
+
+        [TestMethod]
+        public void UpdateAlternateExtension_EmptyPropertyList_Failure()
+        {
+            var res = AlternateExtension.UpdateAlternateExtension(_mockServer, "objectid", "aaa", null);
             Assert.IsFalse(res.Success, "Empty property list should fail");
         }
 
-        /// <summary>
-        /// testing failure conditiions
-        /// </summary>
+
         [TestMethod]
-        public void StaticCallFailures_AddAlternateExtension()
+        public void AddAlternateExtension_NullConnectionServer_Failure()
         {
             var res = AlternateExtension.AddAlternateExtension(null,"objectid", 1, "1234");
             Assert.IsFalse(res.Success, "Null Connection server object should fail");
 
-            res = AlternateExtension.AddAlternateExtension(_mockServer, "", 1, "1234");
-            Assert.IsFalse(res.Success, "Empty UserObjectID should fail");
+         }
 
-            res = AlternateExtension.AddAlternateExtension(_mockServer, "objectid", 1, "");
+
+        [TestMethod]
+        public void AddAlternateExtension_EmptyUserObjectId_Failure()
+        {
+            var res = AlternateExtension.AddAlternateExtension(_mockServer, "", 1, "1234");
+            Assert.IsFalse(res.Success, "Empty UserObjectID should fail");
+        }
+
+
+        [TestMethod]
+        public void AddAlternateExtension_EmptyExtension_Failure()
+        {
+            var res = AlternateExtension.AddAlternateExtension(_mockServer, "objectid", 1, "");
             Assert.IsFalse(res.Success, "Empty extension string should fail");
         }
 

@@ -70,6 +70,9 @@
     <Compile Include="IntegrationTests\InstalledLanguageIntegrationTests.cs" />
     <Compile Include="IntegrationTests\InterviewHandlerIntegrationTests.cs" />
     <Compile Include="IntegrationTests\LocationIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\MailboxInfoIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\MenuEntryIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\NotificationDeviceIntegrationTests.cs" />
     <Compile Include="UnitTests\AlternateExtensionUnitTests.cs" />
     <Compile Include="UnitTests\BaseUnitTests.cs" />
     <Compile Include="UnitTests\CallHandlerTemplateUnitTest.cs" />
@@ -84,8 +87,8 @@
     <Compile Include="IntegrationTests\CallHandlerIntegrationTests.cs" />
     <Compile Include="UnitTests\InterviewHandlerUnitTests.cs" />
     <Compile Include="UnitTests\LanguageHelperUnitTests.cs" />
-    <Compile Include="UnitTests\MenuEntryTest.cs" />
-    <Compile Include="UnitTests\NotificationDeviceTest.cs" />
+    <Compile Include="UnitTests\MenuEntryUnitTests.cs" />
+    <Compile Include="UnitTests\NotificationDeviceUnitTests.cs" />
     <Compile Include="UnitTests\PhoneSystemTest.cs" />
     <Compile Include="UnitTests\PortGroupCodecTest.cs" />
     <Compile Include="UnitTests\PortGroupServerTest.cs" />
@@ -105,7 +108,7 @@
     <Compile Include="UnitTests\TenantTest.cs" />
     <Compile Include="UnitTests\TransferOptionTest.cs" />
     <Compile Include="UnitTests\TimeZoneTest.cs" />
-    <Compile Include="UnitTests\MailboxInfoTest.cs" />
+    <Compile Include="UnitTests\MailboxInfoUnitTests.cs" />
     <Compile Include="UnitTests\ClusterUnitTests.cs" />
     <Compile Include="UnitTests\InstalledLanguageUnitTests.cs" />
     <Compile Include="UnitTests\PortGroupTest.cs" />

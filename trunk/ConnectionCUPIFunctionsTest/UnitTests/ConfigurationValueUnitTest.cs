@@ -64,29 +64,47 @@ namespace ConnectionCUPIFunctionsTest
         #region Static Call Failures
 
         [TestMethod]
-        public void StaticCallFailure_GetConfigurationValues()
+        public void GetConfigurationValues_ValidQuery_Success()
         {
             List<ConfigurationValue> oValues;
 
-            var res = ConfigurationValue.GetConfigurationValues(_mockServer, out oValues, 1, 20, "query=(FullName startswith System)");
-            Assert.IsTrue(res.Success, "Static method to fetch configuration values failed with query construction:" + res);
+            var res = ConfigurationValue.GetConfigurationValues(_mockServer, out oValues, 1, 20,
+                                                                "query=(FullName startswith System)");
+            Assert.IsTrue(res.Success,"Static method to fetch configuration values failed with query construction:" + res);
 
-            res = ConfigurationValue.GetConfigurationValues(_mockServer, out oValues);
+        }
+
+        [TestMethod]
+        public void GetConfigurationValues_EmptyQuery_Success()
+        {
+            List<ConfigurationValue> oValues;
+
+           var res = ConfigurationValue.GetConfigurationValues(_mockServer, out oValues);
             Assert.IsTrue(res.Success, "Static method to fetch configuration values failed with empty query construction:" + res);
+        }
 
-            res = ConfigurationValue.GetConfigurationValues(null, out oValues, 1, 20, "query=(FullName startswith System)");
+        [TestMethod]
+        public void GetConfigurationValues_NullConnectionServer_Failure()
+        {
+            List<ConfigurationValue> oValues; 
+            var res = ConfigurationValue.GetConfigurationValues(null, out oValues, 1, 20, "query=(FullName startswith System)");
             Assert.IsFalse(res.Success, "Static method to fetch configuration values did not fail with null ConnectionServer");
         }
 
         [TestMethod]
-        public void StaticCallFailure_GetConfigurationValue()
+        public void GetConfigurationValue_NullConnectionServer_Failure()
         {
             ConfigurationValue oNewValue;
 
             var res = ConfigurationValue.GetConfigurationValue(out oNewValue, null, "dummy");
             Assert.IsFalse(res.Success, "Call to GetConfigurationValue static method did not fail with null ConnectionServer");
+        }
 
-            res = ConfigurationValue.GetConfigurationValue(out oNewValue, _mockServer, "");
+        [TestMethod]
+        public void GetConfigurationValue_EmptyKeyName_Failure()
+        {
+            ConfigurationValue oNewValue;
+            var res = ConfigurationValue.GetConfigurationValue(out oNewValue, _mockServer, "");
             Assert.IsFalse(res.Success, "Call to GetConfigurationValue static method did not fail with empty key name");
         }
 

@@ -27,12 +27,12 @@ namespace ConnectionCUPIFunctionsTest
         public void ConstructorTest()
         {
             InstalledLanguage oLanguages = new InstalledLanguage(null);
-
             Assert.IsFalse(oLanguages.IsLanguageInstalled(1033),"Checking language install without loading languages from server should return false");
         }
 
+
         [TestMethod]
-        public void FailedLanguagesFetchTEst()
+        public void InstalledLanguage_Constructor_InvalidConnectionServer_Failure()
         {
             try
             {

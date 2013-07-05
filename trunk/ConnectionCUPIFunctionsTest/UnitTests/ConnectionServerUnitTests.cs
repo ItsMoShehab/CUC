@@ -18,11 +18,6 @@ namespace ConnectionCUPIFunctionsTest
 
         #region Fields and Properties
 
-        /// <summary>
-        /// Used for making sure json parsing errors raise events properly
-        /// </summary>
-        private static int _errorsRaised = 0;
-
         #endregion
 
 
@@ -67,15 +62,17 @@ namespace ConnectionCUPIFunctionsTest
 
 
         [TestMethod]
-        public void ConstructorsWithDifferentTransports()
+        public void ConnectionServerRestConstructor_NullTransport_NoEmptyVersionString()
         {
-            ConnectionServerRest oServer;
-            
-            oServer= new ConnectionServerRest(null);
-            Assert.IsFalse(string.IsNullOrEmpty(oServer.Version.ToString()),"No version string for default constructor");
+            ConnectionServerRest oServer = new ConnectionServerRest(null);
+            Assert.IsFalse(string.IsNullOrEmpty(oServer.Version.ToString()), "No version string for default constructor");
+        }
 
-            oServer = new ConnectionServerRest(new RestTransportFunctions());
-            Assert.IsFalse(string.IsNullOrEmpty(oServer.Version.ToString()), "No version string for REstTransportFunctions constructor");
+        [TestMethod]
+        public void ConnectionServerRestConstructor_DefaultConstructor_NoEmptyVersionString()
+        {
+            ConnectionServerRest oServer = new ConnectionServerRest(new RestTransportFunctions());
+            Assert.IsFalse(string.IsNullOrEmpty(oServer.Version.ToString()), "No version string for RestTransportFunctions constructor");
         }
 
 
@@ -124,32 +121,119 @@ namespace ConnectionCUPIFunctionsTest
         /// corrupt other tests.
         ///</summary>
         [TestMethod]
-        public void ParseVersionString_Failure()
+        public void ParseVersionString_EmptyString_Failure()
         {
             ConnectionServerRest oTempServer = new ConnectionServerRest(new RestTransportFunctions());
 
             Assert.IsFalse(oTempServer.ParseVersionString(""), "Empty string");
-            Assert.IsFalse(oTempServer.ParseVersionString("1"), "Invalid number of version parts");
-            Assert.IsFalse(oTempServer.ParseVersionString("1.2"), "Invalid number of version parts");
-            Assert.IsFalse(oTempServer.ParseVersionString("a.2.3"), "Invalid major");
-            Assert.IsFalse(oTempServer.ParseVersionString("1.a.3"), "Invalid minor");
-            Assert.IsFalse(oTempServer.ParseVersionString("1.2.a"), "Invalid rev");
-            Assert.IsFalse(oTempServer.ParseVersionString("1.2.3.a"), "Invalid build");
-            Assert.IsFalse(oTempServer.ParseVersionString("1.2.3.4ES4ES"), "Invalid ES");
-
-            Assert.IsTrue(oTempServer.ParseVersionString("1.2.3"), "Failed to parse legal version string with 3 elements");
-
-            Assert.IsTrue(oTempServer.ParseVersionString("1.2.3.4ES5"),"Failed to parse legal version string");
-            Assert.AreEqual(oTempServer.Version.Major, 1, "Major is not parsed out correctly");
-            Assert.AreEqual(oTempServer.Version.Minor, 2, "Minor is not parsed out correctly");
-            Assert.AreEqual(oTempServer.Version.Rev, 3, "Rev is not parsed out correctly");
-            Assert.AreEqual(oTempServer.Version.Build,4,"Build is not parsed out correctly");
-            Assert.AreEqual(oTempServer.Version.Es, 5, "ES is not parsed out correctly");
-
         }
 
         [TestMethod]
-        public void HarnessTest_Constructor()
+        public void ParseVersionString_InvalidParts1_Failure()
+        {
+            ConnectionServerRest oTempServer = new ConnectionServerRest(new RestTransportFunctions());
+
+            Assert.IsFalse(oTempServer.ParseVersionString("1"), "Invalid number of version parts");
+            }
+
+        [TestMethod]
+        public void ParseVersionString_InvalidParts2_Failure()
+        {
+            ConnectionServerRest oTempServer = new ConnectionServerRest(new RestTransportFunctions());
+            Assert.IsFalse(oTempServer.ParseVersionString("1.2"), "Invalid number of version parts");
+            }
+
+        [TestMethod]
+        public void ParseVersionString_InvalidMajorVersionValue_Failure()
+        {
+            ConnectionServerRest oTempServer = new ConnectionServerRest(new RestTransportFunctions());
+            Assert.IsFalse(oTempServer.ParseVersionString("a.2.3"), "Invalid major");
+            }
+
+        [TestMethod]
+        public void ParseVersionString_InvalidMinorVersionValue_Failure()
+        {
+            ConnectionServerRest oTempServer = new ConnectionServerRest(new RestTransportFunctions());
+            Assert.IsFalse(oTempServer.ParseVersionString("1.a.3"), "Invalid minor");
+            }
+
+        [TestMethod]
+        public void ParseVersionString_InvalidRevValue_Failure()
+        {
+            ConnectionServerRest oTempServer = new ConnectionServerRest(new RestTransportFunctions());
+            Assert.IsFalse(oTempServer.ParseVersionString("1.2.a"), "Invalid rev");
+            }
+
+        [TestMethod]
+        public void ParseVersionString_InvaliudBuildValue_Failure()
+        {
+            ConnectionServerRest oTempServer = new ConnectionServerRest(new RestTransportFunctions());
+            Assert.IsFalse(oTempServer.ParseVersionString("1.2.3.a"), "Invalid build");
+            }
+
+        [TestMethod]
+        public void ParseVersionString_InvalidEsValue_Failure()
+        {
+            ConnectionServerRest oTempServer = new ConnectionServerRest(new RestTransportFunctions());
+            Assert.IsFalse(oTempServer.ParseVersionString("1.2.3.4ES4ES"), "Invalid ES");
+            }
+
+        [TestMethod]
+        public void ParseVersionString_Legal3PartValue_Success()
+        {
+            ConnectionServerRest oTempServer = new ConnectionServerRest(new RestTransportFunctions());
+            Assert.IsTrue(oTempServer.ParseVersionString("1.2.3"), "Failed to parse legal version string with 3 elements");
+        }
+
+        [TestMethod]
+        public void ParseVersionString_LegalValueWithEs_Success()
+        {
+            ConnectionServerRest oTempServer = new ConnectionServerRest(new RestTransportFunctions());
+            Assert.IsTrue(oTempServer.ParseVersionString("1.2.3.4ES5"), "Failed to parse legal version string");
+        }
+
+        [TestMethod]
+        public void ParseVersionString_CheckMajorValue_Success()
+        {
+            ConnectionServerRest oTempServer = new ConnectionServerRest(new RestTransportFunctions());
+            Assert.IsTrue(oTempServer.ParseVersionString("1.2.3.4ES5"), "Failed to parse legal version string");
+            Assert.AreEqual(oTempServer.Version.Major, 1, "Major is not parsed out correctly");
+        }
+
+        [TestMethod]
+        public void ParseVersionString_CheckMinorValue_Success()
+        {
+            ConnectionServerRest oTempServer = new ConnectionServerRest(new RestTransportFunctions());
+            Assert.IsTrue(oTempServer.ParseVersionString("1.2.3.4ES5"), "Failed to parse legal version string");
+            Assert.AreEqual(oTempServer.Version.Minor, 2, "Minor is not parsed out correctly");
+        }
+
+        [TestMethod]
+        public void ParseVersionString_CheckRevValue_Success()
+        {
+            ConnectionServerRest oTempServer = new ConnectionServerRest(new RestTransportFunctions());
+            Assert.IsTrue(oTempServer.ParseVersionString("1.2.3.4ES5"), "Failed to parse legal version string");
+            Assert.AreEqual(oTempServer.Version.Rev, 3, "Rev is not parsed out correctly");
+        }
+
+        [TestMethod]
+        public void ParseVersionString_CheckBuildValue_Success()
+        {
+            ConnectionServerRest oTempServer = new ConnectionServerRest(new RestTransportFunctions());
+            Assert.IsTrue(oTempServer.ParseVersionString("1.2.3.4ES5"), "Failed to parse legal version string");
+            Assert.AreEqual(oTempServer.Version.Build, 4, "Build is not parsed out correctly");
+        }
+
+        [TestMethod]
+        public void ParseVersionString_CheckEsValue_Success()
+        {
+            ConnectionServerRest oTempServer = new ConnectionServerRest(new RestTransportFunctions());
+            Assert.IsTrue(oTempServer.ParseVersionString("1.2.3.4ES5"), "Failed to parse legal version string");
+            Assert.AreEqual(oTempServer.Version.Es, 5, "ES is not parsed out correctly");
+        }
+
+        [TestMethod]
+        public void ConnectionServerRest_Constructor_EmptyResults_Failure()
         {
            //empty results
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
@@ -169,7 +253,11 @@ namespace ConnectionCUPIFunctionsTest
                 Console.WriteLine("Expected creation failure:"+ex);
             }
 
+            }
 
+        [TestMethod]
+        public void ConnectionServerRest_Constructor_ErrorResponse_Failure()
+        {
             //error response
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
@@ -188,7 +276,11 @@ namespace ConnectionCUPIFunctionsTest
                 Console.WriteLine("Expected creation failure:" + ex);
             }
 
+            }
 
+        [TestMethod]
+        public void ConnectionServerRest_Constructor_GarbageResponse_Failure()
+        {
             //garbage response
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                                   It.IsAny<string>(), true)).Returns(new WebCallResult
@@ -208,24 +300,5 @@ namespace ConnectionCUPIFunctionsTest
             }
         }
 
-
-        public class TestClass
-        {
-            public string URI { get; set; }
-            public System.Int16 Int16 { get; set; }
-            public System.Int32 Int32 { get; set; }
-            public System.Int64 Int64 { get; set; }
-            public string String { get; set; }
-            public bool Boolean { get; set; }
-            public DateTime DateTime { get; set; }
-            public Cisco.UnityConnection.RestFunctions.SubscriberConversationTui SubscriberConversationTui { get; set; }
-            public Cisco.UnityConnection.RestFunctions.TransferOptionTypes TransferOptionType { get; set; }
-            public Cisco.UnityConnection.RestFunctions.GreetingTypes GreetingType { get; set; }
-            public Cisco.UnityConnection.RestFunctions.ConversationNames ConversationName { get; set; }
-            public Cisco.UnityConnection.RestFunctions.MessageType MessageType { get; set; }
-            public Cisco.UnityConnection.RestFunctions.SensitivityType SensitivityType { get; set; }
-            public Cisco.UnityConnection.RestFunctions.PriorityType PriorityType { get; set; }
-            public Cisco.UnityConnection.RestFunctions.SipTransportEnum Bogus { get; set; }
-        }
     }
 }
