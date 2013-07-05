@@ -73,6 +73,10 @@
     <Compile Include="IntegrationTests\MailboxInfoIntegrationTests.cs" />
     <Compile Include="IntegrationTests\MenuEntryIntegrationTests.cs" />
     <Compile Include="IntegrationTests\NotificationDeviceIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\NotificationTemplateIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\PhoneRecordingIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\PhoneSystemIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\PolicyIntegrationTests.cs" />
     <Compile Include="UnitTests\AlternateExtensionUnitTests.cs" />
     <Compile Include="UnitTests\BaseUnitTests.cs" />
     <Compile Include="UnitTests\CallHandlerTemplateUnitTest.cs" />
@@ -89,7 +93,7 @@
     <Compile Include="UnitTests\LanguageHelperUnitTests.cs" />
     <Compile Include="UnitTests\MenuEntryUnitTests.cs" />
     <Compile Include="UnitTests\NotificationDeviceUnitTests.cs" />
-    <Compile Include="UnitTests\PhoneSystemTest.cs" />
+    <Compile Include="UnitTests\PhoneSystemUnitTests.cs" />
     <Compile Include="UnitTests\PortGroupCodecTest.cs" />
     <Compile Include="UnitTests\PortGroupServerTest.cs" />
     <Compile Include="UnitTests\PortGroupTemplateTest.cs" />
@@ -121,13 +125,13 @@
     <Compile Include="UnitTests\RestrictionTableTest.cs" />
     <Compile Include="UnitTests\LocationUnitTests.cs" />
     <Compile Include="UnitTests\PrivateListTest.cs" />
-    <Compile Include="UnitTests\PolicyTest.cs" />
+    <Compile Include="UnitTests\PolicyUnitTests.cs" />
     <Compile Include="UnitTests\GlobalUserUnitTests.cs" />
     <Compile Include="UnitTests\ContactUnitTests.cs" />
     <Compile Include="UnitTests\ScheduleSetTest.cs" />
-    <Compile Include="UnitTests\PhoneRecordingTest.cs" />
+    <Compile Include="UnitTests\PhoneRecordingUnitTests.cs" />
     <Compile Include="UnitTests\CosUnitTest.cs" />
-    <Compile Include="UnitTests\NotificationTemplateTest.cs" />
+    <Compile Include="UnitTests\NotificationTemplateUnitTests.cs" />
     <Compile Include="UnitTests\UserLdapTests.cs" />
     <Compile Include="UnitTests\UserMessageTest.cs" />
     <Compile Include="UnitTests\UserTemplateTest.cs" />

@@ -783,9 +783,18 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             if (pConnectionServer == null)
             {
-                WebCallResult res = new WebCallResult();
-                res.ErrorText = "Null ConnectionServer referenced passed to DeletePhoneSystem";
-                return res;
+                return new WebCallResult
+                    {
+                        ErrorText = "Null ConnectionServer referenced passed to DeletePhoneSystem"
+                    };
+            }
+
+            if (string.IsNullOrEmpty(pObjectId))
+            {
+                return new WebCallResult
+                {
+                    ErrorText = "Blank ObjectId passed to DeletePhoneSystem"
+                };
             }
 
             return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "phonesystems/" + pObjectId,
@@ -823,6 +832,12 @@ namespace Cisco.UnityConnection.RestFunctions
             if (pConnectionServer == null)
             {
                 res.ErrorText = "Null ConnectionServer referenced passed to GetPhoneSystemAssociation";
+                return res;
+            }
+
+            if (string.IsNullOrEmpty(pObjectId))
+            {
+                res.ErrorText = "Blank ObjectId passed to GetPhonesystemAssociations";
                 return res;
             }
 
