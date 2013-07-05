@@ -1,37 +1,27 @@
 ﻿using System.Collections.Generic;
-using System.Threading;
 using Cisco.UnityConnection.RestFunctions;
-using ConnectionCUPIFunctionsTest.Properties;
+using ConnectionCUPIFunctionsTest.IntegrationTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
 namespace ConnectionCUPIFunctionsTest
 {
     /// <summary>
-    ///This is a test class for PhoneSystemTest and is intended
-    ///to contain all PhoneSystemTest Unit Tests
+    ///This is a test class for PhoneSystemIntegrationTests and is intended
+    ///to contain all PhoneSystemIntegrationTests Unit Tests
     ///</summary>
     [TestClass]
-    public class PhoneSystemTest
+    public class PhoneSystemIntegrationTests : BaseIntegrationTests
     {
         // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
         // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
 
-        //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
-        //routine below.
-        private static ConnectionServerRest _connectionServer;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext { get; set; }
-
         private static PhoneSystem _phoneSystem;
 
         private static PortGroup _portGroup;
+
         #endregion
 
 
@@ -39,31 +29,13 @@ namespace ConnectionCUPIFunctionsTest
 
         //Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize]
-        public static void MyClassInitialize(TestContext testContext)
+        public new static void MyClassInitialize(TestContext testContext)
         {
-            //create a connection server instance used for all tests - rather than using a mockup 
-            //for fetching data I prefer this "real" testing approach using a public server I keep up
-            //and available for the purpose - the conneciton information is stored in the test project's 
-            //settings and can be changed to a local instance easily.
-            Settings mySettings = new Settings();
-            Thread.Sleep(300);
-            try
-            {
-                 _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
-                   mySettings.ConnectionPW);
-                _connectionServer.DebugMode = mySettings.DebugOn;
-            }
-
-            catch (Exception ex)
-            {
-                throw new Exception("Unable to attach to Connection server to start DistributionList test:" + ex.Message);
-            }
-
+            BaseIntegrationTests.MyClassInitialize(testContext);
 
             WebCallResult res = PhoneSystem.AddPhoneSystem(_connectionServer, "UnitTest_" + Guid.NewGuid(), out _phoneSystem);
             Assert.IsTrue(res.Success, "Creating new temporary phone system failed:" + res);
 
-            
             res = PortGroup.AddPortGroup(_connectionServer, "UnitTest_" + Guid.NewGuid(), _phoneSystem.ObjectId,
                                          _connectionServer.ServerName, TelephonyIntegrationMethodEnum.SIP, "", out _portGroup);
             Assert.IsTrue(res.Success, "Creating new temporary port group failed:" + res);
@@ -92,22 +64,11 @@ namespace ConnectionCUPIFunctionsTest
         #region Class Creation Failures
 
         /// <summary>
-        /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreation_Failure()
-        {
-            PhoneSystem oTest = new PhoneSystem(null, "aaa");
-            Console.WriteLine(oTest);
-        }
-
-        /// <summary>
         /// Throw UnityConnectionRestException on invalid objectId
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreation_Failure2()
+        public void ClassCreation_InvalidObjectId_Failure()
         {
             PhoneSystem oTest = new PhoneSystem(_connectionServer, "aaa");
             Console.WriteLine(oTest);
@@ -120,62 +81,43 @@ namespace ConnectionCUPIFunctionsTest
         #region Static Call Failures 
 
         [TestMethod]
-        public void StaticCallFailures_AddPhoneSystem()
+        public void DeletePhoneSystem_InvalidObjectId_Failure()
         {
-            WebCallResult res = PhoneSystem.AddPhoneSystem(null, "bogus");
-            Assert.IsFalse(res.Success, "Static call to AddPhoneSystem with null ConnectionServerRest did not fail");
-
-            res = PhoneSystem.AddPhoneSystem(_connectionServer, "");
-            Assert.IsFalse(res.Success, "Static call to AddPhoneSystem with empty name did not fail");
-        }
-
-        [TestMethod]
-        public void StaticCallFailures_DeletePhoneSystem()
-        {
-            var res = PhoneSystem.DeletePhoneSystem(null, "objectid");
-            Assert.IsFalse(res.Success, "Static call to DeletePhoneSystem with null ConnectionServerRest did not fail");
-
-            res = PhoneSystem.DeletePhoneSystem(_connectionServer, "objectid");
+            var res = PhoneSystem.DeletePhoneSystem(_connectionServer, "ObjectId");
             Assert.IsFalse(res.Success, "Static call to DeletePhoneSystem with invalid ObjectId did not fail");
         }
 
         [TestMethod]
-        public void StaticCallFailures_UpdatePhoneSystem()
+        public void UpdatePhoneSystem_InvalidObjectId_Failure()
         {
-            var res = PhoneSystem.UpdatePhoneSystem(null, "objectid", null);
-            Assert.IsFalse(res.Success, "Static call to UpdatePhoneSystem with null ConnectionServerRest did not fail");
-
-            res = PhoneSystem.UpdatePhoneSystem(_connectionServer, "objectid", null);
-            Assert.IsFalse(res.Success, "Static call to UpdatePhoneSystem with invalid ObjectId did not fail");
+            var res = PhoneSystem.UpdatePhoneSystem(_connectionServer, "objectid", null);
+            Assert.IsFalse(res.Success, "Static call to UpdatePhoneSystem with blank ObjectId did not fail");
         }
 
         [TestMethod]
-        public void StaticCallFailures_GetPhoneSystemAssociations()
+        public void GetPhoneSystemAssociations_InvalidObjectId_Success()
         {
             List<PhoneSystemAssociation> oList;
-            var res = PhoneSystem.GetPhoneSystemAssociations(null, "objectid", out oList);
-            Assert.IsFalse(res.Success, "Static call to GetPhoneSystemAssociations with null ConnectionServerRest did not fail");
-
-            res = PhoneSystem.GetPhoneSystemAssociations(_connectionServer, "objectid", out oList);
+            var res = PhoneSystem.GetPhoneSystemAssociations(_connectionServer, "objectid", out oList);
             Assert.IsTrue(res.Success, "Fetching phone system associations with invalid objectid should not fail:" + res);
             Assert.IsTrue(oList.Count == 0, "Static call to GetPhoneSystemAssociations with invalid ObjectId did not return empty list");
         }
 
 
         [TestMethod]
-        public void StaticCallFailures_GetPhoneSystem()
+        public void GetPhoneSystem_InvalidObjectId_Failure()
         {
             PhoneSystem oPhoneSystem;
-            var res = PhoneSystem.GetPhoneSystem(out oPhoneSystem, null, "objectid");
-            Assert.IsFalse(res.Success, "Static call to GetPhoneSystem with null ConnectionServerRest did not fail");
 
-            res = PhoneSystem.GetPhoneSystem(out oPhoneSystem, _connectionServer, "bogus");
+            var res = PhoneSystem.GetPhoneSystem(out oPhoneSystem, _connectionServer, "bogus");
             Assert.IsFalse(res.Success, "Static call to GetPhoneSystem with invalid ObjectId did not fail");
+        }
 
-            res = PhoneSystem.GetPhoneSystem(out oPhoneSystem, _connectionServer, "");
-            Assert.IsFalse(res.Success, "Static call to GetPhoneSystem with invalid empty objectId and name did not fail");
-
-            res = PhoneSystem.GetPhoneSystem(out oPhoneSystem, _connectionServer, "","bogus");
+        [TestMethod]
+        public void GetPhoneSystem_InvalidDisplayName_Failure()
+        {
+            PhoneSystem oPhoneSystem; 
+            var res = PhoneSystem.GetPhoneSystem(out oPhoneSystem, _connectionServer, "", "bogus");
             Assert.IsFalse(res.Success, "Static call to GetPhoneSystem with invalid display name did not fail");
         }
 

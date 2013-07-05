@@ -298,6 +298,11 @@ namespace Cisco.UnityConnection.RestFunctions
         public static WebCallResult GetPoliciesForUser(ConnectionServerRest pConnectionServer,string pUserObjectId,
                                                        out List<Policy> pPolicies)
         {
+            if (string.IsNullOrEmpty(pUserObjectId))
+            {
+                pPolicies=new List<Policy>();
+                return new WebCallResult {ErrorText = "Empty UserObjectId passed to GetPoliciesForUser"};
+            }
             string strClause = string.Format("query=(UserObjectId is {0})",pUserObjectId);
 
             return GetPolicies(pConnectionServer, out pPolicies, strClause);
@@ -329,9 +334,13 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 return new WebCallResult
                     {
-                        Success = false,
                         ErrorText = "Null Connecton server passed to GetRoleNamesForUser"
                     };
+            }
+
+            if (string.IsNullOrEmpty(pUserObjectId))
+            {
+                return new WebCallResult {ErrorText = "Empty UserObjectId passed to GetRoleNamesForUser"};
             }
 
             //fetch the list of policies the user has assigned to them (if any)
@@ -388,6 +397,12 @@ namespace Cisco.UnityConnection.RestFunctions
         public static WebCallResult GetPoliciesForRole(ConnectionServerRest pConnectionServer, string pRoleObjectId,
                                                        out List<Policy> pPolicies)
         {
+            if (string.IsNullOrEmpty(pRoleObjectId))
+            {
+                pPolicies=new List<Policy>();
+                return new WebCallResult {ErrorText = "Empty RoleObjectId passed to GetPoliciesForRole"};
+            }
+
             string strClause = string.Format("query=(RoleObjectId is {0})", pRoleObjectId);
 
             return GetPolicies(pConnectionServer, out pPolicies, strClause);
