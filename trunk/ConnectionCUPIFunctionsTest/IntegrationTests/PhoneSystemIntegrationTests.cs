@@ -68,7 +68,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreation_InvalidObjectId_Failure()
+        public void Constructor_InvalidObjectId_Failure()
         {
             PhoneSystem oTest = new PhoneSystem(_connectionServer, "aaa");
             Console.WriteLine(oTest);

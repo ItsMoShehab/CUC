@@ -42,7 +42,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void CallHandlerTemplate_ClassCreationFailure()
+        public void Constructor_NullConnectionServer_Failure()
         {
             CallHandlerTemplate oTestTemplate = new CallHandlerTemplate(null, "aaa");
             Console.WriteLine(oTestTemplate);

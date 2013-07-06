@@ -66,7 +66,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof (ArgumentException))]
-        public void ClassCreationFailure()
+        public void Constructor_NullConnectionServer_Failure()
         {
             PhoneRecording oTemp = new PhoneRecording(null, "1234");
             Console.WriteLine(oTemp);
@@ -77,7 +77,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof (ArgumentException))]
-        public void ClassCreationFailure2()
+        public void Constructor_EmptyPhoneNumber_Failure()
         {
             PhoneRecording oTemp = new PhoneRecording(_mockServer, "");
             Console.WriteLine(oTemp);

@@ -41,7 +41,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure()
+        public void Constructor_NullConnectionServer_Failure()
         {
             NotificationDevice oTemp = new NotificationDevice(null, "aaa");
             Console.WriteLine(oTemp);
@@ -52,7 +52,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure4()
+        public void Constructor_EmptyObjectId_Failure()
         {
             NotificationDevice oTemp = new NotificationDevice(_mockServer, "");
             Console.WriteLine(oTemp);

@@ -41,7 +41,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreation_Failure()
+        public void Constructor_NullConnectionServer_Failure()
         {
 
             DistributionList oTestList = new DistributionList(null);

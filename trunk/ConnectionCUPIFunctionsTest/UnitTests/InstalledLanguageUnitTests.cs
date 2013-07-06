@@ -24,7 +24,7 @@ namespace ConnectionCUPIFunctionsTest
 
 
         [TestMethod]
-        public void ConstructorTest()
+        public void Constructor_NullConnectionServer_Failure()
         {
             InstalledLanguage oLanguages = new InstalledLanguage(null);
             Assert.IsFalse(oLanguages.IsLanguageInstalled(1033),"Checking language install without loading languages from server should return false");

@@ -56,14 +56,11 @@ namespace ConnectionCUPIFunctionsTest
 
         #region Constructor Tests
 
-        /// <summary>
-        /// Make sure an ArgumentException is thrown if a blank user objectId is passed
-        /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure2()
+        [ExpectedException(typeof(UnityConnectionRestException))]
+        public void Constructor_InvalidObjectId_Failure()
         {
-            MailboxInfo otest = new MailboxInfo(_connectionServer, "");
+            MailboxInfo otest = new MailboxInfo(_connectionServer, "bogus");
             Console.WriteLine(otest);
         }
 

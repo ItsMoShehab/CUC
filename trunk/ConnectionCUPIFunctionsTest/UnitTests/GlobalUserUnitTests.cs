@@ -34,7 +34,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure()
+        public void Constructor_NullConnectionServer_Failure()
         {
             GlobalUser oTest = new GlobalUser(null);
             Console.WriteLine(oTest);

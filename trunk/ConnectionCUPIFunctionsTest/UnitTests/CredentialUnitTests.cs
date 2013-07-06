@@ -39,7 +39,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure_NullServer()
+        public void Constructor_NullConnectionServer_Failure()
         {
             Credential oTest = new Credential(null,"blah",CredentialType.Pin);
             Console.WriteLine(oTest);
@@ -50,7 +50,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure_EmptyObjectId()
+        public void Constructor_EmptyObjectId_Failure()
         {
             Credential oTest = new Credential(_mockServer, "", CredentialType.Pin);
             Console.WriteLine(oTest);

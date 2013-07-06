@@ -40,19 +40,16 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure()
+        public void Constructor_BlankServerName_Failure()
         {
             //invalid login value - empty server name
             ConnectionServerRest oTestServer = new ConnectionServerRest(new RestTransportFunctions(), "", "login", "Pw");
             Console.WriteLine(oTestServer);
         }
 
-        /// <summary>
-        /// Make sure an Exception is thrown if 
-        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailureBadLogin()
+        public void Constructor_InvalidLogin_Failure()
         {
             ConnectionServerRest oTestServer = new ConnectionServerRest(new RestTransportFunctions(),  "badservername", "badloginname", "badpassword");
             Console.WriteLine(oTestServer);

@@ -50,24 +50,19 @@ namespace ConnectionCUPIFunctionsTest
 
         #region Class Creation Failures
 
-        /// <summary>
-        /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure()
+        [ExpectedException(typeof(Exception))]
+        public void Constructor_InvalidObjectId_Failure()
         {
-            ClassOfService oTemp = new ClassOfService(null);
+            ClassOfService oTemp = new ClassOfService(_connectionServer,"bogus");
             Console.WriteLine(oTemp);
         }
 
         [ExpectedException(typeof(Exception))]
-        public void ClassCreationFailure2()
+        public void Constructor_InvalidName_Failure()
         {
-            ClassOfService oTemp = new ClassOfService(null,"bogus");
+            ClassOfService oTemp = new ClassOfService(_connectionServer, "","_bogus_");
             Console.WriteLine(oTemp);
         }
-
 
         #endregion
 

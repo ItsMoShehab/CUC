@@ -77,6 +77,7 @@
     <Compile Include="IntegrationTests\PhoneRecordingIntegrationTests.cs" />
     <Compile Include="IntegrationTests\PhoneSystemIntegrationTests.cs" />
     <Compile Include="IntegrationTests\PolicyIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\PortGroupCodecIntegrationTests.cs" />
     <Compile Include="UnitTests\AlternateExtensionUnitTests.cs" />
     <Compile Include="UnitTests\BaseUnitTests.cs" />
     <Compile Include="UnitTests\CallHandlerTemplateUnitTest.cs" />
@@ -94,7 +95,7 @@
     <Compile Include="UnitTests\MenuEntryUnitTests.cs" />
     <Compile Include="UnitTests\NotificationDeviceUnitTests.cs" />
     <Compile Include="UnitTests\PhoneSystemUnitTests.cs" />
-    <Compile Include="UnitTests\PortGroupCodecTest.cs" />
+    <Compile Include="UnitTests\PortGroupCodecUnitTests.cs" />
     <Compile Include="UnitTests\PortGroupServerTest.cs" />
     <Compile Include="UnitTests\PortGroupTemplateTest.cs" />
     <Compile Include="UnitTests\PostGreetingRecordingTest.cs" />

@@ -37,14 +37,14 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure()
+        public void Constuctor_NullConnectionServer_Failure()
         {
             ClassOfService oTemp = new ClassOfService(null);
             Console.WriteLine(oTemp);
         }
 
         [ExpectedException(typeof(Exception))]
-        public void ClassCreationFailure2()
+        public void Constructor_NullConnectionServerWithNonEmptyOBjectId_Failure()
         {
             ClassOfService oTemp = new ClassOfService(null,"bogus");
             Console.WriteLine(oTemp);

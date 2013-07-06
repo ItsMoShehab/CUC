@@ -55,7 +55,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure2()
+        public void Constructor_InvalidObjectId_Failure()
         {
             Contact oTemp = new Contact(_connectionServer,"bogus");
             Console.WriteLine(oTemp);
@@ -66,7 +66,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure3()
+        public void Constructor_InvalidAlias_Failure()
         {
             Contact oTemp = new Contact(_connectionServer,"","bogus");
             Console.WriteLine(oTemp);

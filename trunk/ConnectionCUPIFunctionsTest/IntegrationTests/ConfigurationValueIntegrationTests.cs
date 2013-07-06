@@ -39,7 +39,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure3()
+        public void Constructor_InvalidFullName_Failure()
         {
             ConfigurationValue oTest = new ConfigurationValue(_connectionServer, "blah");
             Console.WriteLine(oTest);

@@ -205,6 +205,12 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
+            if (string.IsNullOrEmpty(pPortGroupObjectId))
+            {
+                res.ErrorText = "Empty PortGroupObjectId passed to GetPortGroupCodecs";
+                return res;
+            }
+
             string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "portgroups/" + pPortGroupObjectId+"/portgroupcodecs");
 
             //issue the command to the CUPI interface

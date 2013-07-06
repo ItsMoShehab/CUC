@@ -40,7 +40,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void CallHandlerMenuEntry_ClassCreationFailure()
+        public void Constructor_NullConnectionServer_Failure()
         {
             MenuEntry oTest = new MenuEntry(null, "aaaa");
             Console.WriteLine(oTest);
@@ -51,7 +51,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void CallHandlerMenuEntry_ClassCreationFailure2()
+        public void Constructor_EmptyObjectId_Failure()
         {
             MenuEntry oTest = new MenuEntry(_mockServer, "");
             Console.WriteLine(oTest);

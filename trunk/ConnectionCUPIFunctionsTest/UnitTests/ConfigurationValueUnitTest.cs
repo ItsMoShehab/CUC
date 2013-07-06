@@ -39,7 +39,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure()
+        public void Constructor_NullConnectionServer_Failure()
         {
             ConfigurationValue oTest = new ConfigurationValue(null);
             Console.WriteLine(oTest);
@@ -51,7 +51,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure2()
+        public void Constructor_EmptyConnectionServer_Failure()
         {
             ConfigurationValue oTest = new ConfigurationValue(new ConnectionServerRest(new RestTransportFunctions()),"blah");
             Console.WriteLine(oTest);

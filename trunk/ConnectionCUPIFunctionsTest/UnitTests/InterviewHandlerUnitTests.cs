@@ -40,7 +40,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure_NullServer()
+        public void Constructor_NullConnectionServer_Failure()
         {
             InterviewHandler oTestInterviewer = new InterviewHandler(null);
             Console.WriteLine(oTestInterviewer);
@@ -56,7 +56,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void Question_ClassCreationFailure_NullConnection()
+        public void Question_Consturctor_NullConnectionServer_Failure()
         {
             var oTest = new InterviewQuestion(null, "bogus", 1);
             Console.WriteLine(oTest);
@@ -67,7 +67,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void Question_ClassCreationFailure_EmptyObjectId()
+        public void Question_Constructor_EmptyObjectId_Failure()
         {
             var oTest = new InterviewQuestion(_mockServer, "", 1);
             Console.WriteLine(oTest);

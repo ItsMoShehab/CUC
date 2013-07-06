@@ -36,7 +36,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreation_NullConnectionServer_Failure()
+        public void Constructor_NullConnectionServer_Failure()
         {
             Policy oTest = new Policy(null);
             Console.WriteLine(oTest);

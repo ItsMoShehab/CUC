@@ -39,7 +39,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure_InvalidObjectId()
+        public void Constructor_InvalidObjectId_Failure()
         {
             Credential oTest = new Credential(_connectionServer, "blah", CredentialType.Pin);
             Console.WriteLine(oTest);

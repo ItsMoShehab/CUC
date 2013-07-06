@@ -39,7 +39,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure()
+        public void Constructor_NullConnectionServer_Failure()
         {
             DirectoryHandler oTestHandler = new DirectoryHandler(null);
             Console.WriteLine(oTestHandler);

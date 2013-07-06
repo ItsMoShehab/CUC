@@ -39,7 +39,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure()
+        public void Constructor_NullConnectionServer_Failure()
         {
             Cluster oTest = new Cluster(null);
         }
@@ -49,7 +49,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure2()
+        public void Constructor_EmptyConnectionServer_Failure()
         {
             Cluster oTest = new Cluster(new ConnectionServerRest(new RestTransportFunctions()));
         }
