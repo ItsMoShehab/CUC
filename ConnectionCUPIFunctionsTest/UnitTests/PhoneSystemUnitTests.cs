@@ -40,7 +40,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreation_Failure()
+        public void Constructor_NullConnectionServer_Failure()
         {
             PhoneSystem oTest = new PhoneSystem(null, "aaa");
             Console.WriteLine(oTest);

@@ -27,7 +27,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure()
+        public void Constructor_NullConnectionServer_Failure()
         {
             AlternateExtension oTemp = new AlternateExtension(null, "aaa");
         }
@@ -37,9 +37,9 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure2()
+        public void Constructor_EmptyObjectId_Failure()
         {
-            AlternateExtension oTemp = new AlternateExtension(new ConnectionServerRest(new RestTransportFunctions()), "");
+            AlternateExtension oTemp = new AlternateExtension(_mockServer, "");
         }
 
         #endregion

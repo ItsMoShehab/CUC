@@ -68,7 +68,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure2()
+        public void Constructor_InvalidObjectId_Failure()
         {
             NotificationDevice oTemp = new NotificationDevice(_connectionServer, "bogus","bogus");
             Console.WriteLine(oTemp);
@@ -79,7 +79,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure3()
+        public void Constructor_InvalidName_Failure()
         {
             NotificationDevice oTemp = new NotificationDevice(_connectionServer, "bogus","","bogus");
             Console.WriteLine(oTemp);

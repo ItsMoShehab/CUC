@@ -35,7 +35,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure()
+        public void Constructor_NullConnectionServer_Failure()
         {
             MailboxInfo otest = new MailboxInfo(null,"");
             Console.WriteLine(otest);
@@ -46,7 +46,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure3()
+        public void Constructor_EmptyConnectionServer_Failure()
         {
             MailboxInfo otest = new MailboxInfo(new ConnectionServerRest(new RestTransportFunctions()), "blah");
             Console.WriteLine(otest);

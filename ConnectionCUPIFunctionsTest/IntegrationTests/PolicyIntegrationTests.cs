@@ -35,7 +35,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure_InvalidObjectId_Failure()
+        public void Constructor_InvalidObjectId_Failure()
         {
             Policy oTest = new Policy(_connectionServer,"bogus");
             Console.WriteLine(oTest);

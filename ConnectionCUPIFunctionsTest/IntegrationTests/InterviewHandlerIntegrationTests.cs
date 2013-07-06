@@ -66,7 +66,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure_InvalidObjectId()
+        public void Constructor_InvalidObjectId_Failure()
         {
             InterviewHandler oTestInterviewer = new InterviewHandler(_connectionServer,"blah");
             Console.WriteLine(oTestInterviewer);
@@ -77,7 +77,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure_InvalidName()
+        public void Constructor_InvalidName_Failure()
         {
             InterviewHandler oTestInterviewer = new InterviewHandler(_connectionServer, "","blah");
             Console.WriteLine(oTestInterviewer);
@@ -93,7 +93,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void Question_ClassCreationFailure_InvalidObjectId()
+        public void Question_Constructor_InvalidObjectId_Failure()
         {
             var oTest = new InterviewQuestion (_connectionServer, "bogus",1);
             Console.WriteLine(oTest);
@@ -104,7 +104,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void Question_ClassCreationFailure_InvalidQuestionNumber()
+        public void Question_Constructor_InvalidQuestionNumber_Failure()
         {
             var oTest = new InterviewQuestion(_connectionServer, _tempHandler.ObjectId, 999);
             Console.WriteLine(oTest);
@@ -115,7 +115,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void Question_ClassCreationFailure_EmptyObjectId()
+        public void Question_Constructor_EmptyObjectId_Failure()
         {
             var oTest = new InterviewQuestion(_connectionServer, "", 1);
             Console.WriteLine(oTest);

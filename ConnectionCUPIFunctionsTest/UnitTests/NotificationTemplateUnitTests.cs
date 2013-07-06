@@ -35,13 +35,14 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure()
+        public void Constructor_NullConnectionServer_Failure()
         {
             NotificationTemplate oTemp = new NotificationTemplate(null, "aaa");
             Console.WriteLine(oTemp);
         }
 
         #endregion
+
 
         [TestMethod]
         public void GetNotificationTemplate_NullConnectionServer_Failure()

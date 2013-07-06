@@ -35,7 +35,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure()
+        public void Constructor_InvalidObjectId_Failure()
         {
             NotificationTemplate oTemp = new NotificationTemplate(_connectionServer, "aaa");
             Console.WriteLine(oTemp);

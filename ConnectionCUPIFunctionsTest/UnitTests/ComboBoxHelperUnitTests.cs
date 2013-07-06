@@ -67,6 +67,7 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
+
         [TestMethod]
         public void UnityDisplayObjectCompare_Sort_Ascending()
         {

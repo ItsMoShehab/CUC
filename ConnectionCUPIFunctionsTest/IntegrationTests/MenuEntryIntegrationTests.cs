@@ -68,7 +68,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void CallHandlerMenuEntry_ClassCreationFailure2()
+        public void Constructor_InvalidObjectIdAndKeyName_Failure()
         {
             MenuEntry oTest = new MenuEntry(_connectionServer, "bogus","bogus");
             Console.WriteLine(oTest);

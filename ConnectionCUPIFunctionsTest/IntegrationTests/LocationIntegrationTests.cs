@@ -36,18 +36,18 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure2()
+        public void Constructor_InvalidObjectId_Failure()
         {
             Location oTestLocation = new Location(_connectionServer, "bogus");
             Console.WriteLine(oTestLocation);
         }
 
         /// <summary>
-        /// Throw an UnityConnectionRestException if an invalid name address is passed
+        /// Throw an UnityConnectionRestException if an invalid name is passed
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure3()
+        public void Constructor_InvalidName_Failure()
         {
             Location oTestLocation = new Location(_connectionServer, "", "bogus");
             Console.WriteLine(oTestLocation);

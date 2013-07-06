@@ -36,7 +36,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure2()
+        public void Constructor_InvalidObjectId_Failure()
         {
             GlobalUser oTest = new GlobalUser(_connectionServer,"bogus");
             Console.WriteLine(oTest);
@@ -47,7 +47,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure3()
+        public void Constructor_InvalidAlias_Failure()
         {
             GlobalUser oTest = new GlobalUser(_connectionServer,"","bogus");
             Console.WriteLine(oTest);

@@ -18,7 +18,7 @@ namespace ConnectionCUPIFunctionsTest
         // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
         // ReSharper disable HeuristicUnreachableCode
 
-     #region Additional test attributes
+        #region Additional test attributes
 
         //Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize]
@@ -37,7 +37,7 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure()
+        public void Constructor_NullConnectionServer_Failure()
         {
             CallHandler oTestHandler = new CallHandler(null);
             Console.WriteLine(oTestHandler);
