@@ -642,6 +642,16 @@ namespace Cisco.UnityConnection.RestFunctions
                 return new WebCallResult { ErrorText = "Null ConnectionServer referenced passed to DeletePortGroupServer" };
             }
 
+            if (string.IsNullOrEmpty(pObjectId))
+            {
+                return new WebCallResult { ErrorText = "Empty ObjectId passed to DeletePortGroupServer" };
+            }
+
+            if (string.IsNullOrEmpty(pPortGroupObjectId))
+            {
+                return new WebCallResult { ErrorText = "Empty PortGroupServerObjectId passed to DeletePortGroupServer" };
+            }
+
             return pConnectionServer.GetCupiResponse(string.Format("{0}portgroups/{1}/portgroupservers/{2}", pConnectionServer.BaseUrl, 
                     pPortGroupObjectId, pObjectId),MethodType.DELETE, "");
         }
