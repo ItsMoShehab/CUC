@@ -636,9 +636,18 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             if (pConnectionServer == null)
             {
-                WebCallResult res = new WebCallResult();
-                res.ErrorText = "Null ConnectionServer referenced passed to DeletePort";
-                return res;
+                return new WebCallResult
+                    {
+                        ErrorText = "Null ConnectionServer referenced passed to DeletePort"
+                    };
+            }
+
+            if (string.IsNullOrEmpty(pObjectId))
+            {
+                return new WebCallResult
+                {
+                    ErrorText = "Empty ObjectId passed to DeletePort"
+                };
             }
 
             return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "ports/" + pObjectId,

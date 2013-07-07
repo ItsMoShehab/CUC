@@ -78,6 +78,12 @@
     <Compile Include="IntegrationTests\PhoneSystemIntegrationTests.cs" />
     <Compile Include="IntegrationTests\PolicyIntegrationTests.cs" />
     <Compile Include="IntegrationTests\PortGroupCodecIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\PortGroupServerIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\PortGroupTemplateIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\PortGroupIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\PortIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\PostGreetingRecordingIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\PrivateListIntegrationTests.cs" />
     <Compile Include="UnitTests\AlternateExtensionUnitTests.cs" />
     <Compile Include="UnitTests\BaseUnitTests.cs" />
     <Compile Include="UnitTests\CallHandlerTemplateUnitTest.cs" />
@@ -96,9 +102,9 @@
     <Compile Include="UnitTests\NotificationDeviceUnitTests.cs" />
     <Compile Include="UnitTests\PhoneSystemUnitTests.cs" />
     <Compile Include="UnitTests\PortGroupCodecUnitTests.cs" />
-    <Compile Include="UnitTests\PortGroupServerTest.cs" />
-    <Compile Include="UnitTests\PortGroupTemplateTest.cs" />
-    <Compile Include="UnitTests\PostGreetingRecordingTest.cs" />
+    <Compile Include="UnitTests\PortGroupServerUnitTests.cs" />
+    <Compile Include="UnitTests\PortGroupTemplateUnitTests.cs" />
+    <Compile Include="UnitTests\PostGreetingRecordingUnitTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -116,8 +122,8 @@
     <Compile Include="UnitTests\MailboxInfoUnitTests.cs" />
     <Compile Include="UnitTests\ClusterUnitTests.cs" />
     <Compile Include="UnitTests\InstalledLanguageUnitTests.cs" />
-    <Compile Include="UnitTests\PortGroupTest.cs" />
-    <Compile Include="UnitTests\PortTest.cs" />
+    <Compile Include="UnitTests\PortGroupUnitTests.cs" />
+    <Compile Include="UnitTests\PortUnitTests.cs" />
     <Compile Include="UnitTests\ScheduleTest.cs" />
     <Compile Include="UnitTests\StringExtensionTests.cs" />
     <Compile Include="UnitTests\ConfigurationValueUnitTest.cs" />
@@ -125,7 +131,7 @@
     <Compile Include="UnitTests\SearchSpaceAndPartitionTest.cs" />
     <Compile Include="UnitTests\RestrictionTableTest.cs" />
     <Compile Include="UnitTests\LocationUnitTests.cs" />
-    <Compile Include="UnitTests\PrivateListTest.cs" />
+    <Compile Include="UnitTests\PrivateListUnitTests.cs" />
     <Compile Include="UnitTests\PolicyUnitTests.cs" />
     <Compile Include="UnitTests\GlobalUserUnitTests.cs" />
     <Compile Include="UnitTests\ContactUnitTests.cs" />

@@ -223,6 +223,12 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
+            if (string.IsNullOrEmpty(pOwnerUserObjectId))
+            {
+                res.ErrorText = "Empty OWnerUserObjectId passed to GetPrivateLists";
+                return res;
+            }
+
             string strUrl = ConnectionServerRest.AddClausesToUri(string.Format("{0}users/{1}/privatelists", pConnectionServer.BaseUrl, pOwnerUserObjectId),
                 "pageNumber=" + pPageNumber, "rowsPerPage=" + pRowsPerPage);
 
@@ -534,9 +540,18 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             if (pConnectionServer == null)
             {
-                WebCallResult res = new WebCallResult();
-                res.ErrorText = "Null ConnectionServer referenced passed to DeletePrivateList";
-                return res;
+               return new WebCallResult
+                    {
+                        ErrorText = "Null ConnectionServer referenced passed to DeletePrivateList"
+                    };
+            }
+
+            if (string.IsNullOrEmpty(pObjectId) | string.IsNullOrEmpty(pUserOwnerObjectId))
+            {
+                return new WebCallResult
+                {
+                    ErrorText = "Empty ObjectId passed to DeletePrivateList"
+                };
             }
 
             return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + string.Format("users/{0}/privatelists/{1}", 
@@ -955,6 +970,11 @@ namespace Cisco.UnityConnection.RestFunctions
             
             //all the updates above will flip pending changes into the queue - clear that here.
             this.ClearPendingChanges();
+
+            if (string.IsNullOrEmpty(this.ObjectId))
+            {
+                res.Success = false;
+            }
 
             return res;
         }
