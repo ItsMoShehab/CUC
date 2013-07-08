@@ -528,9 +528,18 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             if (pConnectionServer == null)
             {
-                WebCallResult res = new WebCallResult();
-                res.ErrorText = "Null ConnectionServer referenced passed to DeleteRoutingRule";
-                return res;
+                return new WebCallResult
+                    {
+                        ErrorText = "Null ConnectionServer referenced passed to DeleteRoutingRule"
+                    };
+            }
+
+            if (string.IsNullOrEmpty(pObjectId))
+            {
+                return new WebCallResult
+                {
+                    ErrorText = "Empty ObjectId passed to DeleteroutingRule"
+                };
             }
 
             return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "routingrules/" + pObjectId,

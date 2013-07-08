@@ -1,30 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using Cisco.UnityConnection.RestFunctions;
-using ConnectionCUPIFunctionsTest.Properties;
+using ConnectionCUPIFunctionsTest.IntegrationTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 
 namespace ConnectionCUPIFunctionsTest
 {
      [TestClass]
-    public class RoutingRuleTest 
+    public class RoutingRuleIntegrationTests : BaseIntegrationTests
     {
         // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
         // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
-
-        //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
-        //routine below.
-        private static ConnectionServerRest _connectionServer;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext { get; set; }
 
         private static RoutingRule _tempRule;
 
@@ -35,25 +24,9 @@ namespace ConnectionCUPIFunctionsTest
 
         //Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize]
-        public static void MyClassInitialize(TestContext testContext)
+        public new static void MyClassInitialize(TestContext testContext)
         {
-            //create a connection server instance used for all tests - rather than using a mockup 
-            //for fetching data I prefer this "real" testing approach using a public server I keep up
-            //and available for the purpose - the conneciton information is stored in the test project's 
-            //settings and can be changed to a local instance easily.
-            Settings mySettings = new Settings();
-            Thread.Sleep(300);
-            try
-            {
-                 _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
-                   mySettings.ConnectionPW);
-                _connectionServer.DebugMode = mySettings.DebugOn;
-            }
-
-            catch (Exception ex)
-            {
-                throw new Exception("Unable to attach to Connection server to start routing rule test:" + ex.Message);
-            }
+            BaseIntegrationTests.MyClassInitialize(testContext);
 
             //create new handler with GUID in the name to ensure uniqueness
             String strName = "TempRule_" + Guid.NewGuid().ToString().Replace("-", "");
@@ -79,24 +52,13 @@ namespace ConnectionCUPIFunctionsTest
         #region Construction Failure Tests
 
         /// <summary>
-        /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure()
-        {
-            RoutingRule oTemp = new RoutingRule(null,"objectid","displayname");
-            Console.WriteLine(oTemp);
-        }
-
-        /// <summary>
         /// throw an UnityConnectionRestException is thrown if an invalid objectId is passed
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure2()
+        public void RoutingRule_Constructor_InvalidObjectId_Failure()
         {
-            RoutingRule oTemp = new RoutingRule(_connectionServer, "bogus");
+            RoutingRule oTemp = new RoutingRule(_connectionServer, "ObjectId");
             Console.WriteLine(oTemp);
         }
 
@@ -105,110 +67,73 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure3()
+        public void RoutingRule_Constructor_InvalidDisplayName_Failure()
         {
-            RoutingRule oTemp = new RoutingRule(_connectionServer, "", "bogus");
+            RoutingRule oTemp = new RoutingRule(_connectionServer, "", "Bogus display anme");
             Console.WriteLine(oTemp);
         }
 
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure4()
+        public void RoutingRuleCondition_Constructor_InvalidObjectId_Failure()
         {
-            RoutingRuleCondition oTemp = new RoutingRuleCondition(_connectionServer, "bogus", "bogus");
+            RoutingRuleCondition oTemp = new RoutingRuleCondition(_connectionServer, "ObjectId", "ObjectId");
             Console.WriteLine(oTemp);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure5()
-        {
-            RoutingRuleCondition oTemp = new RoutingRuleCondition(null, "bogus", "bogus");
-            Console.WriteLine(oTemp);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure6()
-        {
-            RoutingRuleCondition oTemp = new RoutingRuleCondition(_connectionServer, "", "bogus");
-            Console.WriteLine(oTemp);
-        }
-
-        
         #endregion
 
 
         #region Routing Rule Static Failure Tests
 
          [TestMethod]
-         public void StaticMethodFailure_AddRoutingRule()
+        public void DeleteRoutingRule_InvalidObjectId_Failure()
          {
-             var res = RoutingRule.AddRoutingRule(null, "display name", null);
-             Assert.IsFalse(res.Success,"Calling AddRoutingRule with null ConnectionServerRest should fail");
-
-             res = RoutingRule.AddRoutingRule(_connectionServer, "",null);
-             Assert.IsFalse(res.Success, "Calling AddRoutingRule with empty display name should fail");
-         }
-
-         [TestMethod]
-         public void StaticMethodFailure_DeleteRoutingRule()
-         {
-             var res = RoutingRule.DeleteRoutingRule(null, "objectid");
-             Assert.IsFalse(res.Success, "Calling DeleteRoutingRule with null ConnectionServerRest should fail");
-
-             res = RoutingRule.DeleteRoutingRule(_connectionServer, "objectid");
+             var res = RoutingRule.DeleteRoutingRule(_connectionServer, "objectid");
              Assert.IsFalse(res.Success, "Calling DeleteRoutingRule with invalid ObjectId should fail");
-
-             res = RoutingRule.DeleteRoutingRule(_connectionServer, "");
-             Assert.IsFalse(res.Success, "Calling DeleteRoutingRule with empty ObjectId should fail");
          }
 
          [TestMethod]
-         public void StaticMethodFailure_GetRoutingRule()
+         public void GetRoutingRule_InvalidObjectId_Failure()
          {
              RoutingRule oRule;
-             var res = RoutingRule.GetRoutingRule(out oRule, null, "objectId", "displayname");
-             Assert.IsFalse(res.Success, "Calling GetRoutingRule with null ConnectionServerRest should fail");
-
-             res = RoutingRule.GetRoutingRule(out oRule, _connectionServer, "objectId", "");
+             var res = RoutingRule.GetRoutingRule(out oRule, _connectionServer, "objectId");
              Assert.IsFalse(res.Success, "Calling GetRoutingRule with invalid objectId should fail");
+         }
 
-             res = RoutingRule.GetRoutingRule(out oRule, _connectionServer, "", "");
-             Assert.IsFalse(res.Success, "Calling GetRoutingRule with empty objectId and display name should fail");
-
-             res = RoutingRule.GetRoutingRule(out oRule, _connectionServer, "", "bogus");
+         [TestMethod]
+         public void GetRoutingRule_InvalidDisplayName_Failure()
+         {
+             RoutingRule oRule;
+             var res = RoutingRule.GetRoutingRule(out oRule, _connectionServer, "", "bogus");
              Assert.IsFalse(res.Success, "Calling GetRoutingRule with invalid dispaly name should fail");
          }
 
          [TestMethod]
-         public void StaticMethodFailure_GetRoutingRules()
+         public void GetRoutingRules_InvalidQuery_Failure()
          {
              List<RoutingRule> oRules;
-             var res = RoutingRule.GetRoutingRules(null, out oRules);
-             Assert.IsFalse(res.Success, "Calling GetRoutingRules with null ConnectionServerRest should fail");
-
-             res = RoutingRule.GetRoutingRules(_connectionServer, out oRules,1,20,"query=(blah is blah)");
-             Assert.IsFalse(res.Success, "Calling GetRoutingRules with invalid query should fail:"+res);
+             var res = RoutingRule.GetRoutingRules(_connectionServer, out oRules,1,20,"query=(blah is blah)");
+             Assert.IsFalse(res.Success, "Calling GetRoutingRules with invalid query should fail:");
              Assert.IsTrue(oRules.Count==0,"Getting rules with invalid query should return 0 rules, returned:"+oRules.Count);
+         }
+
+         [TestMethod]
+         public void GetRoutingRules_ValidQuery_NoResults()
+         {
+             List<RoutingRule> oRules;
+             var res = RoutingRule.GetRoutingRules(_connectionServer, out oRules, 1, 20, "query=(ObjectId is blah)");
+             Assert.IsTrue(res.Success, "Calling GetRoutingRules with valid query should not fail:"+res);
+             Assert.IsTrue(oRules.Count == 0, "Getting rules with valid query for no results should return 0 rules, returned:" + oRules.Count);
          }
 
          [TestMethod]
          public void StaticMethodFailure_UpdateRoutingRule()
          {
              ConnectionPropertyList oProps = new ConnectionPropertyList();
-
-             var res = RoutingRule.UpdateRoutingRule(null, "objectid", oProps);
-             Assert.IsFalse(res.Success, "Calling UpdateRoutingRule with null ConnectionServerRest should fail");
-
-             res = RoutingRule.UpdateRoutingRule(_connectionServer, "objectid", null);
-             Assert.IsFalse(res.Success, "Calling UpdateRoutingRule with null properties should fail");
-
-             res = RoutingRule.UpdateRoutingRule(_connectionServer, "", oProps);
-             Assert.IsFalse(res.Success, "Calling UpdateRoutingRule with empty objectId should fail");
-
-             res = RoutingRule.UpdateRoutingRule(_connectionServer, "objectid", oProps);
-             Assert.IsFalse(res.Success, "Calling UpdateRoutingRule with empty properties should fail");
+             oProps.Add("test","test");
+             var res = RoutingRule.UpdateRoutingRule(_connectionServer, "objectid", oProps);
+             Assert.IsFalse(res.Success, "Calling UpdateRoutingRule with invalid ObjectId should fail");
          }
 
          #endregion
