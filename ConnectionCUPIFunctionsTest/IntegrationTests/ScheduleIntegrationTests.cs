@@ -1,30 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using Cisco.UnityConnection.RestFunctions;
-using ConnectionCUPIFunctionsTest.Properties;
+using ConnectionCUPIFunctionsTest.IntegrationTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ConnectionCUPIFunctionsTest
 {
     [TestClass]
-    public class ScheduleTest
+    public class ScheduleIntegrationTests : BaseIntegrationTests
     {
         // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
         // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
 
-        //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
-        //routine below.
-        private static ConnectionServerRest _connectionServer;
-
         private static Schedule _tempSchedule;
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext { get; set; }
 
         #endregion
 
@@ -33,27 +23,9 @@ namespace ConnectionCUPIFunctionsTest
 
         //Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize]
-        public static void MyClassInitialize(TestContext testContext)
+        public new static void MyClassInitialize(TestContext testContext)
         {
-            //create a connection server instance used for all tests - rather than using a mockup 
-            //for fetching data I prefer this "real" testing approach using a public server I keep up
-            //and available for the purpose - the conneciton information is stored in the test project's 
-            //settings and can be changed to a local instance easily.
-            Settings mySettings = new Settings();
-            Thread.Sleep(300);
-            try
-            {
-                _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
-                   mySettings.ConnectionPW);
-                _connectionServer.DebugMode = mySettings.DebugOn;
-            }
-
-            catch (Exception ex)
-            {
-                throw new Exception("Unable to attach to Connection server to start Schedule test:" + ex.Message);
-            }
-
-            
+            BaseIntegrationTests.MyClassInitialize(testContext);
 
             WebCallResult res = Schedule.AddSchedule(_connectionServer, "Temp_" + Guid.NewGuid().ToString(),
                                                      _connectionServer.PrimaryLocationObjectId, "", false, out _tempSchedule);
@@ -75,26 +47,21 @@ namespace ConnectionCUPIFunctionsTest
 
         #region Class Creation Tests
 
-        /// <summary>
-        /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure()
-        {
-            Schedule oTest = new Schedule(null);
-            Console.WriteLine(oTest);
-        }
-        
-        
-        /// <summary>
-        /// Make sure an UnityConnectionRestException is thrown if an invalid ConnectionServer is passed in.
-        /// </summary>
+       
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure2()
+        public void Schedule_Constructor_InvalidObjectId_Failure()
         {
-            Schedule oTest = new Schedule(new ConnectionServerRest(new RestTransportFunctions()),"blah");
+            Schedule oTest = new Schedule(_connectionServer,"ObjectId");
+            Console.WriteLine(oTest);
+        }
+
+
+        [TestMethod]
+        [ExpectedException(typeof(UnityConnectionRestException))]
+        public void Schedule_Constructor_InvalidDisplayName_Failure()
+        {
+            Schedule oTest = new Schedule(_connectionServer, "","bogus Display Name");
             Console.WriteLine(oTest);
         }
 
@@ -104,33 +71,10 @@ namespace ConnectionCUPIFunctionsTest
         /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure3()
+        public void ScheduleDetail_Constructor_InvalidObjectIds_Failure()
         {
-            Schedule oTest = new Schedule(_connectionServer,"blah");
-            Console.WriteLine(oTest);
-        }
-
-
-        /// <summary>
-        /// Make sure an UnityConnectionRestException is thrown if an invalid ObjectId is passed
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(UnityConnectionRestException))]
-        public void ClassCreationFailure4()
-        {
-            ScheduleDetail oDetail = new ScheduleDetail(_connectionServer,"blah","blah");
+            ScheduleDetail oDetail = new ScheduleDetail(_connectionServer,"ScheduleObjectId","ScheduleDetailObjectId");
             Console.WriteLine(oDetail);
-        }
-
-        /// <summary>
-        /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void ClassCreationFailure5()
-        {
-            ScheduleDetail oTest = new ScheduleDetail(null);
-            Console.WriteLine(oTest);
         }
 
         #endregion
@@ -139,100 +83,59 @@ namespace ConnectionCUPIFunctionsTest
         #region Static Call Failures 
 
         [TestMethod]
-        public void StaticCallFailures_GetSchedules()
+        public void AddSchedule_InvalidOwnerLocationObjectId_Failure()
         {
-            //get schedules
-            List<Schedule> oSchedules;
-
-            var res = Schedule.GetSchedules(null, out oSchedules);
-            Assert.IsFalse(res.Success, "Static call to getSchedules with null ConnectionServerRest did not fail");
-        }
-
-        [TestMethod]
-        public void StaticCallFailures_AddSchedule()
-        {
-            //Add Schedule
-            var res = Schedule.AddSchedule(null, "bogus", "bogus", "", false);
-            Assert.IsFalse(res.Success, "Static call to create new schedule with null Connection server did not fail");
-
-            res = Schedule.AddSchedule(_connectionServer, "", "bogus", "", false);
-            Assert.IsFalse(res.Success, "Static call to create new schedule with empty name did not fail");
-
-            res = Schedule.AddSchedule(_connectionServer, _connectionServer.PrimaryLocationObjectId, "", "", false);
-            Assert.IsFalse(res.Success, "Static call to create new schedule with empty location did not fail");
-
-            res = Schedule.AddSchedule(_connectionServer, _connectionServer.PrimaryLocationObjectId, "bogus", "bogus", false);
+            var res = Schedule.AddSchedule(_connectionServer, _connectionServer.PrimaryLocationObjectId, "OwnerLocationObjectID", "", false);
             Assert.IsFalse(res.Success, "Static call to create new schedule with invalid user objectId owner did not fail");
         }
 
         [TestMethod]
-        public void StaticCallFailures_DeleteSchedule()
+        public void AddSchedule_InvalidOwnerSubscriberObjectId_Failure()
         {
-            //Delete Schedule
-            var res = Schedule.DeleteSchedule(null, "");
-            Assert.IsFalse(res.Success, "Static call to delete schedule with null connection server did not fail");
+            var res = Schedule.AddSchedule(_connectionServer, _connectionServer.PrimaryLocationObjectId, "", "OwnerSubscriberObjectId", false);
+            Assert.IsFalse(res.Success, "Static call to create new schedule with invalid user objectId owner did not fail");
+        }
+        
 
-            res = Schedule.DeleteSchedule(_connectionServer, "");
+        [TestMethod]
+        public void DeleteSchedule_InvalidObjectId_Failure()
+        {
+            var res = Schedule.DeleteSchedule(_connectionServer, "ScheduleObjectId");
             Assert.IsFalse(res.Success, "Static call to delete schedule with empty objectId did not fail");
         }
 
         [TestMethod]
-        public void StaticCallFailures_AddScheduleDetail()
+        public void GetSchedules_Success()
         {
-            //get schedules
             List<Schedule> oSchedules;
-
-            var res = Schedule.GetSchedules(null, out oSchedules);
-            Assert.IsFalse(res.Success, "Static call to getSchedules with null ConnectionServerRest did not fail");
-
-            res = Schedule.GetSchedules(_connectionServer, out oSchedules);
+            var res = Schedule.GetSchedules(_connectionServer, out oSchedules);
             Assert.IsTrue(res.Success, "Static call to getSchedules with null ConnectionServerRest did not fail");
             Assert.IsTrue(oSchedules.Count > 0, "No schedules returned in fetch:" + res);
-
-            //add schedule details
-            res = Schedule.AddScheduleDetail(null, oSchedules[0].ObjectId, "subject", 0, 200, true, true, true,
-                                             true, true, false, false);
-            Assert.IsFalse(res.Success, "Static call to addScheduleDetail with null ConnectionServerRest did not fail");
-
-            res = Schedule.AddScheduleDetail(_connectionServer, "", "subject", 0, 200, true, true, true,
-                                 true, true, false, false);
-            Assert.IsFalse(res.Success, "Static call to addScheduleDetail with empty ScheduleObjectId did not fail");
         }
 
         [TestMethod]
-        public void StaticCallFailures_DeleteScheduleDetail()
+        public void DeleteScheduleDetail_InvalidObjectIds_Failure()
         {
-            //schedule detail
-            var res = ScheduleDetail.DeleteScheduleDetail(null, "scheduleobjectId", "detailobjectid");
-            Assert.IsFalse(res.Success, "Static call to DeleteScheduleDetail did not fail with null Connection server");
-
-            res = ScheduleDetail.DeleteScheduleDetail(_connectionServer, "", "detailobjectid");
-            Assert.IsFalse(res.Success, "Static call to DeleteScheduleDetail did not fail with blank schedule ObjectId");
-
-            res = ScheduleDetail.DeleteScheduleDetail(_connectionServer, "scheduleId", "");
+            var res = ScheduleDetail.DeleteScheduleDetail(_connectionServer, "scheduleId", "ScheduleDetailObjectId");
             Assert.IsFalse(res.Success, "Static call to DeleteScheduleDetail did not fail with blank objectId ");
         }
 
 
         [TestMethod]
-        public void StaticCallFailures_GetSchedule()
+        public void GetSchedule_InvalidObjectId_Failure()
         {
             Schedule oSchedule;
-
-            //getSchedule
-            WebCallResult res = Schedule.GetSchedule(out oSchedule, null);
-            Assert.IsFalse(res.Success, "Static call to get schedule with null ConnectionServerRest did not fail");
-
-            res = Schedule.GetSchedule(out oSchedule, null, "bogus");
-            Assert.IsFalse(res.Success, "Static call to get schedule with null ConnectionServerRest did not fail");
-
-            res = Schedule.GetSchedule(out oSchedule, _connectionServer);
-            Assert.IsFalse(res.Success, "Static call to get schedule with empty objectId and name did not fail");
-
-            res = Schedule.GetSchedule(out oSchedule, null, "", "bogus");
-            Assert.IsFalse(res.Success, "Static call to get schedule with null ConnectionServerRest did not fail");
+            var res = Schedule.GetSchedule(out oSchedule, _connectionServer, "ObjectId");
+            Assert.IsFalse(res.Success, "Static call to get schedule with invalid ObjectId did not fail");
         }
 
+        [TestMethod]
+        public void GetSchedule_InvalidDisplayName_Failure()
+        {
+            Schedule oSchedule;
+            var res = Schedule.GetSchedule(out oSchedule, _connectionServer, "","Bogus Display Name");
+            Assert.IsFalse(res.Success, "Static call to get schedule with invalid display name did not fail");
+        }
 
         #endregion
 

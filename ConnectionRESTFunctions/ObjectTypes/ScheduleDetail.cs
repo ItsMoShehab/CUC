@@ -378,19 +378,15 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public static WebCallResult DeleteScheduleDetail(ConnectionServerRest pConnectionServer, string pScheduleObjectId, string pScheduleDetailObjectId)
         {
-            WebCallResult res;
+            WebCallResult res= new WebCallResult();
             if (pConnectionServer == null)
             {
-                res = new WebCallResult();
-                res.Success = false;
                 res.ErrorText = "Null ConnectionServer reference passed to DeleteScheduleDetail";
                 return res;
             }
 
-            if (string.IsNullOrEmpty(pScheduleDetailObjectId))
+            if (string.IsNullOrEmpty(pScheduleDetailObjectId) | string.IsNullOrEmpty(pScheduleObjectId))
             {
-                res = new WebCallResult();
-                res.Success = false;
                 res.ErrorText = "Empty objectId passed to DeleteScheduleDetail";
                 return res;
             }

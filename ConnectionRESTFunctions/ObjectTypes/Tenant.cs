@@ -443,11 +443,19 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             if (pConnectionServer == null)
             {
-                WebCallResult res = new WebCallResult();
-                res.ErrorText = "Null ConnectionServer referenced passed to DeleteTenant";
-                return res;
+                return new WebCallResult
+                {
+                    ErrorText = "Null ConnectionServer referenced passed to DeleteTenant"
+                };
             }
 
+            if (string.IsNullOrEmpty(pObjectId))
+            {
+                return new WebCallResult
+                {
+                    ErrorText = "Empty pObjectId passed to DeleteTenant"
+                };
+            }
             return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "tenants/" + pObjectId,
                                             MethodType.DELETE, "");
         }
