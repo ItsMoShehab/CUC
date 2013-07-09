@@ -1,33 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using Cisco.UnityConnection.RestFunctions;
-using ConnectionCUPIFunctionsTest.Properties;
+using ConnectionCUPIFunctionsTest.IntegrationTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ConnectionCUPIFunctionsTest
 {
     [TestClass]
-    public class SearchSpaceAndPartitionTest
+    public class SearchSpaceAndPartitionIntegrationTests : BaseIntegrationTests
     {
         // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
         // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
 
-        //class wide instance of a ConnectionServer object used for all tests - this is attached to in the class initialize
-        //routine below.
-        private static ConnectionServerRest _connectionServer;
-
         private static SearchSpace _searchSpace;
 
         private static Partition _partition;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext { get; set; }
 
         #endregion
 
@@ -36,32 +25,14 @@ namespace ConnectionCUPIFunctionsTest
 
         //Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize]
-        public static void MyClassInitialize(TestContext testContext)
+        public new static void MyClassInitialize(TestContext testContext)
         {
-            //create a connection server instance used for all tests - rather than using a mockup 
-            //for fetching data I prefer this "real" testing approach using a public server I keep up
-            //and available for the purpose - the conneciton information is stored in the test project's 
-            //settings and can be changed to a local instance easily.
-            Settings mySettings = new Settings();
-            Thread.Sleep(300);
-            try
-            {
-                 _connectionServer = new ConnectionServerRest(new RestTransportFunctions(), mySettings.ConnectionServer, mySettings.ConnectionLogin,
-                   mySettings.ConnectionPW);
-                _connectionServer.DebugMode = mySettings.DebugOn;
-            }
-
-            catch (Exception ex)
-            {
-                throw new Exception("Unable to attach to Connection server to start SearchSpaceAndPartition test:" + ex.Message);
-            }
-
+            BaseIntegrationTests.MyClassInitialize(testContext);
             
             string strName = "Temp_" + Guid.NewGuid().ToString();
             WebCallResult res = SearchSpace.AddSearchSpace(_connectionServer, out _searchSpace, strName, "SearchSpace added by Unit Test");
             Assert.IsTrue(res.Success, "Creation of new SearchSpace failed");
 
-            
             strName = "Temp_" + Guid.NewGuid().ToString();
             res = Partition.AddPartition(_connectionServer, out _partition, strName, "Partition added by Unit Test");
             Assert.IsTrue(res.Success, "Creation of new partition failed");
@@ -90,69 +61,35 @@ namespace ConnectionCUPIFunctionsTest
 
         #region Class Construction Error Checks
 
-        /// <summary>
-        /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void PartitionClassCreationFailure()
-        {
-            Partition oTest = new Partition(null);
-            Console.WriteLine(oTest);
-        }
-
-        /// <summary>
-        /// Make sure an UnityConnectionRestException is thrown if an invalid ObjectId is passed
-        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void PartitionClassCreationFailure2()
+        public void Partition_Constructor_InvalidObjectId_Failure()
         {
-            Partition oTest = new Partition(_connectionServer,"bogus");
+            Partition oTest = new Partition(_connectionServer,"ObjectId");
             Console.WriteLine(oTest);
         }
 
-        /// <summary>
-        /// Make sure an UnityConnectionRestException is thrown if an invalid name is passed
-        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void PartitionClassCreationFailure3()
+        public void Partition_Constructor_InvalidDisplayName_Failure()
         {
-            Partition oTest = new Partition(_connectionServer,"","bogus");
+            Partition oTest = new Partition(_connectionServer,"","bogus display name");
             Console.WriteLine(oTest);
         }
 
-
-        /// <summary>
-        /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void SearchSpaceClassCreationFailure()
-        {
-            SearchSpace oTest = new SearchSpace(null);
-            Console.WriteLine(oTest);
-        }
-
-        /// <summary>
-        /// Make sure an UnityConnectionRestException is thrown if an invalid objectId is passed
-        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void SearchSpaceClassCreationFailure2()
+        public void SearchSpace_Constructor_InvalidObjectID_Failure()
         {
-            SearchSpace oTest = new SearchSpace(_connectionServer,"bogus");
+            SearchSpace oTest = new SearchSpace(_connectionServer,"ObjectId");
             Console.WriteLine(oTest);
         }
-        /// <summary>
-        /// Make sure an UnityConnectionRestException is thrown if an invalid name is passed
-        /// </summary>
+
         [TestMethod]
         [ExpectedException(typeof(UnityConnectionRestException))]
-        public void SearchSpaceClassCreationFailure3()
+        public void SearchSpace_Constructor_InvalidDisplayName_Failure()
         {
-            SearchSpace oTest = new SearchSpace(_connectionServer,"","bogus");
+            SearchSpace oTest = new SearchSpace(_connectionServer,"","bogus display name");
             Console.WriteLine(oTest);
         }
 
@@ -162,67 +99,33 @@ namespace ConnectionCUPIFunctionsTest
         #region Search Space Static Call Failure Tests
 
         [TestMethod]
-        public void StaticCallFailure_DeleteSearchSpaceMember()
+        public void DeleteSearchSpaceMember_InvalidObjectIds_Failure()
         {
-            var res = SearchSpace.DeleteSearchSpaceMember(null, "blah", "blah");
-            Assert.IsFalse(res.Success, "Static method for delete searchspace member did not fail with null Connection server ");
-
-            res = SearchSpace.DeleteSearchSpaceMember(_connectionServer, "", "");
-            Assert.IsFalse(res.Success, "Static method for delete searchspace member did not fail with blank search space and partition ids");
-
-            res = SearchSpace.DeleteSearchSpaceMember(_connectionServer, "blah", "");
-            Assert.IsFalse(res.Success, "Static method for delete searchspace member did not fail with bogus search space ID");
-
-            res = SearchSpace.DeleteSearchSpaceMember(_connectionServer, "blah", "blah");
+            var res = SearchSpace.DeleteSearchSpaceMember(_connectionServer, "SearchSpaceId", "PartitionId");
             Assert.IsFalse(res.Success, "Static method for delete searchspace member did not fail with bogus search space and partition Id");
         }
 
         [TestMethod]
-        public void StaticCallFailure_AddSearchSpaceMember()
+        public void AddSearchSpaceMember_InvalidObjectIds_Failure()
         {
-            var res = SearchSpace.AddSearchSpaceMember(null, "blah", "blah", 1);
-            Assert.IsFalse(res.Success, "Static method for add searchspace member did not fail with null Connection server ");
-
-            res = SearchSpace.AddSearchSpaceMember(_connectionServer, "", "", 1);
-            Assert.IsFalse(res.Success, "Static method for add searchspace member did not fail with empty search space ID and partition ");
-
-            res = SearchSpace.AddSearchSpaceMember(_connectionServer, "blah", "", 1);
-            Assert.IsFalse(res.Success, "Static method for add searchspace member did not fail with bogus search space ID");
-
-            res = SearchSpace.AddSearchSpaceMember(_connectionServer, "blah", "blah", 1);
+            var res = SearchSpace.AddSearchSpaceMember(_connectionServer, "SearchSpaceId", "PartitionId", 1);
             Assert.IsFalse(res.Success, "Static method for add searchspace member did not fail with bogus search space and partition IDs ");
         }
 
         [TestMethod]
-        public void StaticCallFailure_DeleteSearchSpace()
+        public void UpdateSearchSpace_InvalidObjectId_Failure()
         {
-            var res = SearchSpace.DeleteSearchSpace(null, "bogus");
-            Assert.IsFalse(res.Success, "Static method for delete SearchSpace did not fail with null Connection");
-
-            res = SearchSpace.DeleteSearchSpace(_connectionServer, "");
-            Assert.IsFalse(res.Success, "Static method for delete SearchSpace did not fail with empty SearchSpace ObjectId");
-
-            res = SearchSpace.UpdateSearchSpace(null, "bogus");
-            Assert.IsFalse(res.Success, "Static method for update SearchSpace did not fail with null ConnectionServer");
-
-            res = SearchSpace.UpdateSearchSpace(_connectionServer, "");
+            var res = SearchSpace.UpdateSearchSpace(_connectionServer, "ObjectId");
             Assert.IsFalse(res.Success, "Static method for update SearchSpace did not fail with empty SearchSpace ObjectId");
         }
 
         [TestMethod]
-        public void StaticCallFailure_AddSearchSpace()
+        public void AddSearchSpace_InvalidLocationId_Failure()
         {
-            //empty name
             SearchSpace oSearchSpace;
-            var res = SearchSpace.AddSearchSpace(_connectionServer, out oSearchSpace, "");
-            Assert.IsFalse(res.Success, "Static method for add SearchSpace did not fail with empty name");
-
-            //null ConnectionServer 
-            res = SearchSpace.AddSearchSpace(null, out oSearchSpace, "name");
-            Assert.IsFalse(res.Success, "Static method for add SearchSpace did not fail with null ConnectionServer");
 
             //invalid locaiton
-            res = SearchSpace.AddSearchSpace(_connectionServer, out oSearchSpace, "name", "description", "boguslocation");
+            var res = SearchSpace.AddSearchSpace(_connectionServer, out oSearchSpace, "name", "description", "boguslocation");
             Assert.IsFalse(res.Success, "Static method for add SearchSpace did not fail with invalid Location");
         }
 
@@ -232,42 +135,32 @@ namespace ConnectionCUPIFunctionsTest
         #region Partition Static Call Failure Tests
 
         [TestMethod]
-        public void StaticCallFailure_DeletePartition()
+        public void DeletePartition_InvalidPartitionObjectId_Failure()
         {
-            var res = Partition.DeletePartition(null, "bogus");
-            Assert.IsFalse(res.Success, "Static method for delete partition did not fail with null Connection");
-
-            res = Partition.DeletePartition(_connectionServer, "");
-            Assert.IsFalse(res.Success, "Static method for delete partition did not fail with empty partition ObjectId");
+            var res = Partition.DeletePartition(_connectionServer, "PartitionObjectId");
+            Assert.IsFalse(res.Success, "Static method for delete partition did not fail with invalid partition ObjectId");
         }
 
         [TestMethod]
-        public void StaticCallFailure_UpdatePartition()
+        public void UpdatePartition_Success()
         {
             var res = Partition.UpdatePartition(_connectionServer, _partition.ObjectId, "NewName" + Guid.NewGuid().ToString(), "NewDescription");
             Assert.IsTrue(res.Success, "Update of partition via static method failed:" + res);
-
-            res = Partition.UpdatePartition(null, "bogus");
-            Assert.IsFalse(res.Success, "Static method for update partition did not fail with null ConnectionServer");
-
-            res = Partition.UpdatePartition(_connectionServer, "");
-            Assert.IsFalse(res.Success, "Static method for update partition did not fail with empty Partition ObjectId");
         }
 
         [TestMethod]
-        public void StaticCallFailure_AddPartition()
+        public void UpdatePartition_InvalidObjectId_Failure()
+        {
+            var res = Partition.UpdatePartition(_connectionServer,"ObjectId");
+            Assert.IsFalse(res.Success, "Static method for update partition did not fail with invalid Partition ObjectId");
+        }
+
+        [TestMethod]
+        public void AddPartition_InvalidLocationId_Failure()
         {
             Partition oPartition;
-            //empty name
-            var res = Partition.AddPartition(_connectionServer, out oPartition, "");
-            Assert.IsFalse(res.Success, "Static method for add partition did not fail with empty name");
 
-            //null ConnectionServer 
-            res = Partition.AddPartition(null, out oPartition, "name");
-            Assert.IsFalse(res.Success, "Static method for add partition did not fail with null ConnectionServer");
-
-            //invalid locaiton
-            res = Partition.AddPartition(_connectionServer, out oPartition, "name", "description", "boguslocation");
+            var res = Partition.AddPartition(_connectionServer, out oPartition, "name", "description", "boguslocation");
             Assert.IsFalse(res.Success, "Static method for add partition did not fail with invalid Location");
         }
 

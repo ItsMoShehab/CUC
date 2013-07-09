@@ -1149,7 +1149,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //the update command takes a body in the request, construct it based on the name/value pair of properties passed in.  
             //at lest one such pair needs to be present
-            if (pPropList.Count < 1)
+            if (pPropList == null || pPropList.Count < 1)
             {
                 res.ErrorText = "empty property list passed to UpdateUserMessage";
                 return res;
