@@ -96,6 +96,9 @@
     <Compile Include="IntegrationTests\TransferOptionIntegrationTests.cs" />
     <Compile Include="IntegrationTests\UserLdapIntegrationTests.cs" />
     <Compile Include="IntegrationTests\UserMessageIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\UserTemplateIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\UserIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\VmsServerIntegrationTests.cs" />
     <Compile Include="UnitTests\AlternateExtensionUnitTests.cs" />
     <Compile Include="UnitTests\BaseUnitTests.cs" />
     <Compile Include="UnitTests\CallHandlerTemplateUnitTest.cs" />
@@ -153,9 +156,9 @@
     <Compile Include="UnitTests\NotificationTemplateUnitTests.cs" />
     <Compile Include="UnitTests\UserLdapUnitTests.cs" />
     <Compile Include="UnitTests\UserMessageUnitTests.cs" />
-    <Compile Include="UnitTests\UserTemplateTest.cs" />
-    <Compile Include="UnitTests\UserTest.cs" />
-    <Compile Include="UnitTests\VmsServerTest.cs" />
+    <Compile Include="UnitTests\UserTemplateUnitTests.cs" />
+    <Compile Include="UnitTests\UserUnitTests.cs" />
+    <Compile Include="UnitTests\VmsServerUnitTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ConnectionRESTFunctions\ConnectionRestFunctions.csproj">
