@@ -164,7 +164,14 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (_cos == null)
             {
-                _cos = new ClassOfService(this.HomeServer, this.CosObjectId);
+                try
+                {
+                    _cos = new ClassOfService(this.HomeServer, this.CosObjectId);
+                }
+                catch
+                {
+                    _cos = null;
+                }
             }
 
             return _cos;
@@ -184,7 +191,14 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             if (_pin == null)
             {
-                _pin = new Credential(this.HomeServer, this.ObjectId, CredentialType.Pin);
+                try
+                {
+                    _pin = new Credential(this.HomeServer, this.ObjectId, CredentialType.Pin);
+                }
+                catch
+                {
+                    _pin = null;
+                }
             }
 
             return _pin;
@@ -204,7 +218,14 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             if (_password == null)
             {
-                _password = new Credential(this.HomeServer, this.ObjectId, CredentialType.Password);
+                try
+                {
+                    _password = new Credential(this.HomeServer, this.ObjectId, CredentialType.Password);
+                }
+                catch
+                {
+                    _password = null;
+                }
             }
 
             return _password;
@@ -2115,24 +2136,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             string strUrl = string.Format("{0}usertemplates/{1}", HomeServer.BaseUrl, strObjectId);
 
-            //issue the command to the CUPI interface
-            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
-
-            if (res.Success == false)
-            {
-                return res;
-            }
-
-            try
-            {
-                JsonConvert.PopulateObject(ConnectionServerRest.StripJsonOfObjectWrapper(res.ResponseText, "UserTemplate"), this,
-                    RestTransportFunctions.JsonSerializerSettings);
-            }
-            catch (Exception ex)
-            {
-                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
-                res.Success = false;
-            }
+            var res = HomeServer.FillObjectWithRestGetResults(strUrl, this);    
 
             //the above fetch will set the proeprties as "changed", need to clear them out here
             _changedPropList.Clear();
@@ -2163,7 +2167,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             List<UserTemplate> oTemplates = HomeServer.GetObjectsFromJson<UserTemplate>(res.ResponseText);
 
-            if (oTemplates.Count != 1)
+            if (oTemplates==null || oTemplates.Count != 1)
             {
                 return "";
             }

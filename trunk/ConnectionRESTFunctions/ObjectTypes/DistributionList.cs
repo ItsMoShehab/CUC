@@ -393,6 +393,14 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pDistributionLists = pConnectionServer.GetObjectsFromJson<DistributionList>(res.ResponseText);
 
+            if (pDistributionLists == null)
+            {
+                pDistributionLists=new List<DistributionList>();
+                res.Success = false;
+                res.ErrorText = "Failed to parse response into distribution lists:" + res.ResponseText;
+                return res;
+            }
+
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
             foreach (var oObject in pDistributionLists)

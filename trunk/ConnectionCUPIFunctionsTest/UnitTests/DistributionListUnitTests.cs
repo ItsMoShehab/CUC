@@ -240,21 +240,39 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         [TestMethod]
-        public void GetDistributionLists_GarbageResult_Success()
+        public void GetDistributionLists_GarbageResult_Failure()
         {
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                   It.IsAny<string>(), true)).Returns(new WebCallResult
                                   {
                                       Success = true,
+                                      TotalObjectCount = 1,
+                                      ResponseText = "garbage result that will fail to be parsed as DistributionList JSON"
+                                  });
+
+            List<DistributionList> oLists;
+            var res = DistributionList.GetDistributionLists(_mockServer, out oLists, 1, 5, "InvalidResultText");
+            Assert.IsFalse(res.Success, "Calling GetDistributionLists with InvalidResultText should fail");
+            Assert.IsTrue(oLists.Count == 0, "Invalid result text should produce an empty list");
+
+            }
+
+        [TestMethod]
+        public void GetDistributionLists_ZeroCount_Success()
+        {
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                  It.IsAny<string>(), true)).Returns(new WebCallResult
+                                  {
+                                      Success = true,
+                                      TotalObjectCount = 0,
                                       ResponseText = "garbage result"
                                   });
 
             List<DistributionList> oLists;
             var res = DistributionList.GetDistributionLists(_mockServer, out oLists, 1, 5, "InvalidResultText");
-            Assert.IsTrue(res.Success, "Calling GetDistributionLists with InvalidResultText should not fail:" + res);
-            Assert.IsTrue(oLists.Count == 0, "Invalid result text should produce an empty list of templates");
-
-            }
+            Assert.IsTrue(res.Success, "Calling GetDistributionLists with zero result failed:"+res);
+            Assert.IsTrue(oLists.Count == 0, "Zero result should produce an empty list");
+        }
 
         [TestMethod]
         public void GetDistributionLists_ErrorResult_Failure()
@@ -281,7 +299,8 @@ namespace ConnectionCUPIFunctionsTest
                                        It.IsAny<string>(), true)).Returns(new WebCallResult
                                            {
                                                Success = true,
-                                               ResponseText = "garbage result"
+                                               TotalObjectCount = 1,
+                                               ResponseText = "garbage result that will fail to be parsed as Public List JSON"
                                            });
 
             try

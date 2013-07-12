@@ -296,7 +296,7 @@ namespace ConnectionCUPIFunctionsTest
         }
 
         [TestMethod]
-        public void GetScheduleSets_GarbageResult_Success()
+        public void GetScheduleSets_GarbageResult_Failure()
         {
             Tenant oTenant = new Tenant(_mockServer);
             List<ScheduleSet> oSchedules;
@@ -306,12 +306,13 @@ namespace ConnectionCUPIFunctionsTest
                                   It.IsAny<string>(), true)).Returns(new WebCallResult
                                   {
                                       Success = true,
-                                      ResponseText = "garbage result"
+                                      TotalObjectCount = 1,
+                                      ResponseText = "garbage result that will fail to be parsed as ScheduleSet JSON"
                                   });
 
             var res = oTenant.GetScheduleSets(out oSchedules, 1, 10, "InvalidResultText");
-            Assert.IsTrue(res.Success, "Fetching schedules with invalid text should not fail:" + res);
-            Assert.IsTrue(oSchedules.Count == 0, "No schedules should be returned returned for invalid text");
+            Assert.IsFalse(res.Success, "Fetching schedules with invalid text should fail");
+            Assert.IsTrue(oSchedules.Count == 0, "Invalid text schedules should return and empty list");
         }
 
         [TestMethod]

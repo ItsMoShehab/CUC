@@ -338,6 +338,12 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
+            if (string.IsNullOrEmpty(pUserObjectId))
+            {
+                res.ErrorText = "Empty UserObjectId passed to GetMwiDevices";
+                return res;
+            }
+
             string strUrl = string.Format("{0}users/{1}/mwis", pConnectionServer.BaseUrl, pUserObjectId);
 
             //issue the command to the CUPI interface
@@ -485,20 +491,15 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (pConnectionServer == null)
             {
-                res = new WebCallResult();
-                res.ErrorText = "Null ConnectionServer referenced passed to DeleteMwiDevice";
-                return res;
+                return new WebCallResult {ErrorText = "Null ConnectionServer referenced passed to DeleteMwiDevice"};
+            }
+
+            if (string.IsNullOrEmpty(pUserObjectId) | string.IsNullOrEmpty(pObjectId))
+            {
+                return new WebCallResult {ErrorText = "Empty ObjectId value passed to DeleteMwiDevice"};
             }
 
             string strUrl = string.Format("{0}users/{1}/mwis/{2}", pConnectionServer.BaseUrl, pUserObjectId,pObjectId);
-
-            //if empty comes back it's because it didn't recognize the device type
-            if (String.IsNullOrEmpty(strUrl))
-            {
-                res = new WebCallResult();
-                res.ErrorText = "Invalid device type passed to DeleteMwiDevice:" + pObjectId;
-                return res;
-            }
 
             return pConnectionServer.GetCupiResponse(strUrl, MethodType.DELETE, "");
         }
@@ -620,11 +621,12 @@ namespace Cisco.UnityConnection.RestFunctions
             //check if the extension intance has any pending changes, if not return false with an appropriate error message
             if (!_changedPropList.Any())
             {
-                res = new WebCallResult();
-                res.Success = false;
-                res.ErrorText = string.Format("Update called but there are no pending changes for MWI Device:{0}, objectid=[{1}]",
-                                              this, this.ObjectId);
-                return res;
+                return new WebCallResult
+                    {
+                        Success = false,
+                        ErrorText =string.Format("Update called but there are no pending changes for MWI Device:{0}, objectid=[{1}]",
+                                this, this.ObjectId)
+                    };
             }
 
             //just call the static method with the info from the instance 

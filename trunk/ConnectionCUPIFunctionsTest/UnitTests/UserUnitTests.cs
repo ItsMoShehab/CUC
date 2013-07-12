@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.UnitTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace ConnectionCUPIFunctionsTest
 {
@@ -16,7 +17,9 @@ namespace ConnectionCUPIFunctionsTest
         // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
-
+        
+        UserFull _tempUserFull = new UserFull(_mockServer);
+        
         #endregion
 
 
@@ -31,7 +34,7 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
-        #region Class Creation Failures
+        #region Class Creation Tests
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
@@ -51,6 +54,17 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(oTemp == null, "Empty class creation did not create a UserBase");
         }
 
+        [TestMethod]
+        public void UserFull_EmptyConstructor_Success()
+        {
+            UserBase oTemp = new UserFull(_mockServer);
+            Assert.IsFalse(oTemp == null, "Empty class creation did not create a UserFull");
+            Console.WriteLine(oTemp.ToString());
+            Console.WriteLine(oTemp.DumpAllProps());
+            Console.WriteLine(oTemp.SelectionDisplayString);
+            Console.WriteLine(oTemp.UniqueIdentifier);
+        }
+
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
@@ -64,30 +78,6 @@ namespace ConnectionCUPIFunctionsTest
         }
 
        
-        /// <summary>
-        /// ArgumentException on null ConnectionServer
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void Mwi_Constructor_NullConnectionServer_Failure()
-        {
-            Mwi oTemp = new Mwi(null,"UserObjectId");
-            Console.WriteLine(oTemp);
-        }
-
-
-        /// <summary>
-        /// ArgumentException on empty objectId
-        /// </summary>
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void Mwi_Constructor_EmptyUserObjectId_Failure()
-        {
-            Mwi oTemp = new Mwi(_mockServer, "", "ObjectId");
-            Console.WriteLine(oTemp);
-        }
-
-
         #endregion
 
 
@@ -376,5 +366,47 @@ namespace ConnectionCUPIFunctionsTest
 
         
         #endregion
+
+        
+        #region Harness Tests
+
+        [ExpectedException(typeof(UnityConnectionRestException))]
+        [TestMethod]
+        public void UserFull_Constructor_ErrorResponse_Failure()
+        {
+            //error response
+            _mockTransport.Setup(
+                x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                       It.IsAny<string>(), true)).Returns(new WebCallResult
+                                           {
+                                               Success = false,
+                                               ResponseText = "error text",
+                                               StatusCode = 404
+                                           });
+            
+          UserFull oUser = new UserFull(_mockServer,"objectid");
+        }
+
+
+        [TestMethod]
+        public void UserFull_GetUser_ErrorResponse_Failure()
+        {
+            //error response
+            _mockTransport.Setup(
+                x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                       It.IsAny<string>(), true)).Returns(new WebCallResult
+                                       {
+                                           Success = false,
+                                           ResponseText = "error text",
+                                           StatusCode = 404
+                                       });
+
+            UserFull oUser;
+            var res = UserFull.GetUser(_mockServer, "objectid", out oUser);
+            Assert.IsFalse(res.Success,"Calling GetUser with error respone should fail");
+        }
+
+        #endregion
+
     }
 }

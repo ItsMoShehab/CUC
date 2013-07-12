@@ -69,6 +69,20 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTest);
         }
 
+        [TestMethod]
+        public void ScheduleSetMember_Constructor_Empty_Success()
+        {
+            var oMember = new ScheduleSetMember();
+            Console.WriteLine(oMember);
+        }
+
+        [TestMethod]
+        public void ScheduleSetMember_Constructor_ObjectId_Success()
+        {
+            var oMember = new ScheduleSetMember("ObjectId");
+            Console.WriteLine(oMember);
+        }
+
         #endregion
 
 
