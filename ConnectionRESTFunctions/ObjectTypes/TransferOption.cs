@@ -722,6 +722,19 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
+        /// Pull the data from the Connection server for this object again - if changes have been made external this will 
+        /// "refresh" the object
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResult class.
+        /// </returns>
+        public WebCallResult RefetchTransferOptionData()
+        {
+            return GetTransferOption(this.TransferOptionType);
+        }
+
+
+        /// <summary>
         /// Fetches a transfer option object filled with all the properties for a specific entry identified with the ObjectId
         /// of the call handler that owns it and the name of the transfer rule (Standard, Alternate, Off Hours)
         /// </summary>
@@ -792,7 +805,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public WebCallResult Update()
+        public WebCallResult Update(bool pRefetchDataAfterSuccessfulUpdate = false)
         {
             WebCallResult res;
 
@@ -813,6 +826,10 @@ namespace Cisco.UnityConnection.RestFunctions
             if (res.Success)
             {
                 _changedPropList.Clear();
+                if (pRefetchDataAfterSuccessfulUpdate)
+                {
+                    return RefetchTransferOptionData();
+                }
             }
 
             return res;

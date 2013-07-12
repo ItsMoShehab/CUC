@@ -1037,7 +1037,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
                     //the response SHOULD be blank if all goes well - if it's not blank but did not raise an error, that's weird but 
                     //not technically something to get worked up about - note it.
-                    if (strResponse.Length > 0)
+                    if (!string.IsNullOrEmpty(strResponse))
                     {
                         res.ErrorText = "(warning) response handle returned in DownloadMessageAttachment:" + strResponse;
                         RaiseErrorEvent(res.ErrorText);
@@ -1187,7 +1187,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
                 //the response SHOULD be blank if all goes well - if it's not blank but did not raise an error, that's weird but 
                 //not technically something to get worked up about - note it.
-                if (strResponse.Length > 0)
+                if (!string.IsNullOrEmpty(strResponse))
                 {
                     res.ErrorText = "(warning) response handle returned in UploadWAVFile:" + strResponse;
                     RaiseErrorEvent(res.ErrorText);
