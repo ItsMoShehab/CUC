@@ -106,6 +106,9 @@ namespace Cisco.UnityConnection.RestFunctions
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
 
+        //for checking on pending changes
+        public ConnectionPropertyList ChangeList { get { return _changedPropList; } }
+
         #endregion
 
 
@@ -823,6 +826,18 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
+        /// Pull the data from the Connection server for this object again - if changes have been made external this will 
+        /// "refresh" the object
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResult class.
+        /// </returns>
+        public WebCallResult RefetchGreetingData()
+        {
+            return GetGreeting(this.CallHandlerObjectId,this.GreetingType);
+        }
+
+        /// <summary>
         /// Fetches a greeting object filled with all the properties for a specific entry identified with the ObjectId
         /// of the call handler that owns it and the name of the greeting (Standard, Alternate, Off Hours etc...)
         /// </summary>
@@ -1001,7 +1016,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public WebCallResult Update()
+        public WebCallResult Update(bool pRefetchDataAfterSuccessfulUpdate = false)
         {
             WebCallResult res;
 
@@ -1022,6 +1037,10 @@ namespace Cisco.UnityConnection.RestFunctions
             if (res.Success)
             {
                 _changedPropList.Clear();
+                if (pRefetchDataAfterSuccessfulUpdate)
+                {
+                    return RefetchGreetingData();
+                }
             }
 
             return res;

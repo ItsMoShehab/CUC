@@ -48,6 +48,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ComboBoxHelper.cs" />
+    <Compile Include="ConnectionObjectPropertyPair.cs" />
+    <Compile Include="ConnectionPropertyList.cs" />
     <Compile Include="EnumExtensions.cs" />
     <Compile Include="IConnectionRestCalls.cs" />
     <Compile Include="ObjectTypes\AlternateExtension.cs" />

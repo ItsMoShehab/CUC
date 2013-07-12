@@ -99,6 +99,9 @@ namespace Cisco.UnityConnection.RestFunctions
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
 
+        //for checking on pending changes
+        public ConnectionPropertyList ChangeList { get { return _changedPropList; } }
+
         //The list of questions is NULL by default but get fetched on the fly when referenced
         //presended as a method instead of a property here so it doesn't try and bind when in
         //a list tied to a grid or the like.
@@ -998,11 +1001,11 @@ namespace Cisco.UnityConnection.RestFunctions
             string strUrl;
 
             //when fetching a handler use the query construct in both cases so the XML parsing is identical
-            if (pObjectId.Length > 0)
+            if (!string.IsNullOrEmpty(pObjectId))
             {
                 strUrl = string.Format("{0}handlers/interviewhandlers/?query=(ObjectId is {1})", HomeServer.BaseUrl, pObjectId);
             }
-            else if (pDisplayName.Length > 0)
+            else if (!string.IsNullOrEmpty(pDisplayName))
             {
                 strUrl = string.Format("{0}handlers/interviewhandlers/?query=(DisplayName is {1})", HomeServer.BaseUrl, pDisplayName.UriSafe());
             }
@@ -1055,7 +1058,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public WebCallResult Update()
+        public WebCallResult Update(bool pRefetchDataAfterSuccessfulUpdate = false)
         {
             WebCallResult res;
 
@@ -1075,6 +1078,10 @@ namespace Cisco.UnityConnection.RestFunctions
             if (res.Success)
             {
                 _changedPropList.Clear();
+                if (pRefetchDataAfterSuccessfulUpdate)
+                {
+                    return RefetchInterviewHandlerData();
+                }
             }
 
             return res;

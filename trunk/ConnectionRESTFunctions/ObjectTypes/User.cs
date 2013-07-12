@@ -1899,7 +1899,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public WebCallResult Update()
+        public WebCallResult Update(bool pRefetchDataAfterSuccessfulUpdate = false)
         {
             WebCallResult res;
 
@@ -1918,6 +1918,10 @@ namespace Cisco.UnityConnection.RestFunctions
             if (res.Success)
             {
                 this.ClearPendingChanges();
+                if (pRefetchDataAfterSuccessfulUpdate)
+                {
+                    return RefetchUserData();
+                }
             }
 
             return res;

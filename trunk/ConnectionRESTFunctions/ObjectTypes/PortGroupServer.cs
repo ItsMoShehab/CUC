@@ -251,6 +251,18 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
+        /// Pull the data from the Connection server for this object again - if changes have been made external this will 
+        /// "refresh" the object
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResult class.
+        /// </returns>
+        public WebCallResult RefetchPortGroupServerData()
+        {
+            return GetPortGroupServer(this.ObjectId, this.PortGroupObjectId);
+        }
+
+        /// <summary>
         /// Fetch details for a single port group server by ObjectId and populate the local instance's properties with it
         /// </summary>
         /// <param name="pObjectId">
@@ -278,7 +290,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public WebCallResult Update()
+        public WebCallResult Update(bool pRefetchDataAfterSuccessfulUpdate = false)
         {
             //check if the transfer option intance has any pending changes, if not return false with an appropriate error message
             if (!_changedPropList.Any())
@@ -298,6 +310,10 @@ namespace Cisco.UnityConnection.RestFunctions
             if (res.Success)
             {
                 _changedPropList.Clear();
+                if (pRefetchDataAfterSuccessfulUpdate)
+                {
+                    return RefetchPortGroupServerData();
+                }
             }
 
             return res;

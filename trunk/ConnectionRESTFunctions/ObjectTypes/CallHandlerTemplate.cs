@@ -86,6 +86,9 @@ namespace Cisco.UnityConnection.RestFunctions
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
 
+        //for checking on pending changes
+        public ConnectionPropertyList ChangeList { get { return _changedPropList; } }
+
         public ConnectionServerRest HomeServer { get; private set; }
 
         #endregion
@@ -974,7 +977,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public WebCallResult Update()
+        public WebCallResult Update(bool pRefetchDataAfterSuccessfulUpdate = false)
         {
             WebCallResult res;
             //check if the handler intance has any pending changes, if not return false with an appropriate error message
@@ -990,6 +993,10 @@ namespace Cisco.UnityConnection.RestFunctions
             if (res.Success)
             {
                 ClearPendingChanges();
+                if (pRefetchDataAfterSuccessfulUpdate)
+                {
+                    return RefetchUserTemplateData();
+                }
             }
             return res;
         }

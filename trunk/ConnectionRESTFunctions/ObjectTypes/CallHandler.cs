@@ -98,6 +98,8 @@ namespace Cisco.UnityConnection.RestFunctions
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
 
+        //for checking on pending changes
+        public ConnectionPropertyList ChangeList { get { return _changedPropList; } }
 
         #endregion
 
@@ -148,7 +150,7 @@ namespace Cisco.UnityConnection.RestFunctions
             set
             {
                 _callSearchSpaceObjectId = value;
-                _changedPropList.Add("CallSearchSpaceHandlerObjectId", value);
+                _changedPropList.Add("CallSearchSpaceObjectId", value);
             }
         }
 
@@ -572,7 +574,14 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (_scheduleSet == null)
             {
-                _scheduleSet = new ScheduleSet(HomeServer,ScheduleSetObjectId);
+                try
+                {
+                    _scheduleSet = new ScheduleSet(HomeServer, ScheduleSetObjectId);
+                }
+                catch
+                {
+                    _scheduleSet = null;
+                }
             }
             return _scheduleSet;
         }
@@ -689,6 +698,14 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             pCallHandlers = pConnectionServer.GetObjectsFromJson<CallHandler>(res.ResponseText);
+
+            if (pCallHandlers == null)
+            {
+                pCallHandlers=new List<CallHandler>();
+                res.Success = false;
+                res.ErrorText = "Unable to parse call handler data from response:" + res.ResponseText;
+                return res;
+            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
@@ -1105,13 +1122,7 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 strConvertedWavFilePath = pConnectionServer.ConvertWavFileToPcm(pSourceLocalFilePath);
 
-                if (string.IsNullOrEmpty(strConvertedWavFilePath))
-                {
-                    res.ErrorText = "Failed converting WAV file into PCM format in SetCallHandlerVoiceName.";
-                    return res;
-                }
-
-                if (File.Exists(strConvertedWavFilePath) == false)
+                if (string.IsNullOrEmpty(strConvertedWavFilePath) || File.Exists(strConvertedWavFilePath) == false)
                 {
                     res.ErrorText = "Converted PCM WAV file path not found in SetCallHandlerVoiceName: " + strConvertedWavFilePath;
                     return res;
@@ -1130,7 +1141,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //if we converted a file to G711 in the process clean up after ourselves here. Only delete it if the upload was good - otherwise
             //keep it around as it may be useful for diagnostic purposes.
-            if (res.Success && !string.IsNullOrEmpty(strConvertedWavFilePath) && File.Exists(strConvertedWavFilePath))
+            if (!string.IsNullOrEmpty(strConvertedWavFilePath) && File.Exists(strConvertedWavFilePath))
             {
                 try
                 {
@@ -1268,7 +1279,7 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res;
 
             //when fetching a handler use the query construct in both cases so the XML parsing is identical
-            if (pObjectId.Length > 0)
+            if (!string.IsNullOrEmpty(pObjectId))
             {
                 //primary handlers of user templates are stored down a seperate URI even though they're in the same table for whatever reason - 
                 //have to special case it here.
@@ -1282,7 +1293,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
                 
             }
-            else if (pDisplayName.Length > 0)
+            else if (!string.IsNullOrEmpty(pDisplayName))
             {
                 strUrl = string.Format("{0}handlers/callhandlers/?query=(DisplayName is {1})", HomeServer.BaseUrl, pDisplayName.UriSafe());
             }
@@ -1346,7 +1357,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public WebCallResult Update()
+        public WebCallResult Update(bool pRefetchDataAfterSuccessfulUpdate=false)
         {
             WebCallResult res;
             
@@ -1366,6 +1377,10 @@ namespace Cisco.UnityConnection.RestFunctions
             if (res.Success)
             {
               	_changedPropList.Clear();
+                if (pRefetchDataAfterSuccessfulUpdate)
+                {
+                    return RefetchCallHandlerData();
+                }
             }
 
             return res;
