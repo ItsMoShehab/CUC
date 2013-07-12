@@ -5,6 +5,7 @@ using System.Threading;
 using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.IntegrationTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace ConnectionCUPIFunctionsTest
 {
     /// <summary>

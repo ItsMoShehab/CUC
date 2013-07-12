@@ -11,16 +11,19 @@ namespace ConnectionCUPIFunctionsTest
     ///This is a test class for AlternateExtensionUnitTests and is intended
     ///to contain all AlternateExtensionUnitTests Unit Tests
     ///</summary>
-    [TestClass()]
+    [TestClass]
     public class AlternateExtensionUnitTests : BaseUnitTests
     {
+        // ReSharper does not handle the Assert. calls in unit test property - turn off checking for unreachable code
+        // ReSharper disable HeuristicUnreachableCode
+
         [ClassInitialize]
         public new static void ClassInitialize(TestContext testContext)
         {
             BaseUnitTests.ClassInitialize(testContext);
         }
 
-        #region Class Construction Errors
+        #region Class Construction Tests
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
@@ -30,6 +33,7 @@ namespace ConnectionCUPIFunctionsTest
         public void Constructor_NullConnectionServer_Failure()
         {
             AlternateExtension oTemp = new AlternateExtension(null, "aaa");
+            Console.WriteLine(oTemp.ToString());
         }
 
         /// <summary>
@@ -40,12 +44,23 @@ namespace ConnectionCUPIFunctionsTest
         public void Constructor_EmptyObjectId_Failure()
         {
             AlternateExtension oTemp = new AlternateExtension(_mockServer, "");
+            Console.WriteLine(oTemp.ToString());
+        }
+
+        [TestMethod]
+        public void Constructor_Default_Success()
+        {
+            var oTemp = new AlternateExtension();
+            Console.WriteLine(oTemp.ToString());
+            Console.WriteLine(oTemp.DumpAllProps());
+            Console.WriteLine(oTemp.SelectionDisplayString);
+            Console.WriteLine(oTemp.UniqueIdentifier);
         }
 
         #endregion
 
 
-        #region Static Call Failures
+        #region Static Call Tests
 
         [TestMethod]
         public void DeleteAlternateExtension_EmptyObjectId_Failure()
@@ -149,6 +164,12 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Empty UserObjectID should fail");
         }
 
+        [TestMethod]
+        public void AddAlternateExtension_InvalidIdIndex_Failure()
+        {
+            var res = AlternateExtension.AddAlternateExtension(_mockServer, "objectid", 99999, "1234");
+            Assert.IsFalse(res.Success, "IdIndex greater than 20 should fail");
+        }
 
         [TestMethod]
         public void AddAlternateExtension_EmptyExtension_Failure()
@@ -306,6 +327,137 @@ namespace ConnectionCUPIFunctionsTest
             var res = AlternateExtension.GetAlternateExtensions(_mockServer, "EmptyResultText", out oAltExts);
             Assert.IsTrue(res.Success, "Calling GetAlternateExtensions with zero count should not fail:" + res);
             Assert.IsTrue(oAltExts.Count == 0, "Zero count response should result in empty list of alternate extensions being returned");
+        }
+
+
+        [TestMethod]
+        public void DeleteAlternateExtension_ErrorResponse_Failure()
+        {
+            //error response
+            _mockTransport.Setup(
+                x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                       It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
+                                       {
+                                           Success = false,
+                                           ResponseText = "error text",
+                                           StatusCode = 404
+                                       });
+
+            var res = AlternateExtension.DeleteAlternateExtension(_mockServer, "UserObjectId", "ObjectId");
+            Assert.IsFalse(res.Success, "Calling DeleteAlternateExtension with server error response should fail");
+
+        }
+
+        [TestMethod]
+        public void Update_NoPendingChanges_Failure()
+        {
+            AlternateExtension oAltExt = new AlternateExtension();
+            var res = oAltExt.Update(true);
+            Assert.IsFalse(res.Success,"Calling Update with no pending changes should fail");
+        }
+
+        [TestMethod]
+        public void Update_ErrorResponse_Failure()
+        {
+            //error response
+            _mockTransport.Setup(
+                x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                       It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
+                                       {
+                                           Success = false,
+                                           ResponseText = "dummy text",
+                                           StatusCode = 444
+                                       });
+
+            AlternateExtension oAltExt = new AlternateExtension(_mockServer,"UserObjectId");
+            oAltExt.DisplayName = "updated display name";
+            var res = oAltExt.Update(true);
+            Assert.IsFalse(res.Success,"Calling update with an error response should fail:"+res);
+            Assert.IsTrue(res.StatusCode==444,"Status code returned from updated call did not match error code issues in moq:"+res.StatusCode);
+        }
+
+        #endregion
+
+        #region Property Tests
+
+        [TestMethod]
+        public void PropertyGetFetch_IdIndex()
+        {
+            AlternateExtension oAltExt = new AlternateExtension();
+            const int expectedValue = 2;
+            oAltExt.IdIndex = expectedValue;
+            Assert.IsTrue(oAltExt.ChangeList.ValueExists("IdIndex", expectedValue),"IdIndex value get fetch failed");
+        }
+
+        [TestMethod]
+        public void PropertyGetFetch_DisplayName()
+        {
+            AlternateExtension oAltExt = new AlternateExtension();
+            const string expectedValue = "test string value";
+            oAltExt.DisplayName = expectedValue;
+            Assert.IsTrue(oAltExt.ChangeList.ValueExists("DisplayName", expectedValue), "DisplayName value get fetch failed");
+        }
+
+        [TestMethod]
+        public void PropertyGetFetch_DtmfAccessId()
+        {
+            AlternateExtension oAltExt = new AlternateExtension();
+            const string expectedValue = "test string value";
+            oAltExt.DtmfAccessId = expectedValue;
+            Assert.IsTrue(oAltExt.ChangeList.ValueExists("DtmfAccessId", expectedValue), "DtmfAccessId value get fetch failed");
+        }
+
+        [TestMethod]
+        public void PropertyGetFetch_LocationObjectId()
+        {
+            AlternateExtension oAltExt = new AlternateExtension();
+            const string expectedValue = "test string value";
+            oAltExt.LocationObjectId = expectedValue;
+            Assert.IsTrue(oAltExt.ChangeList.ValueExists("LocationObjectId", expectedValue), "LocationObjectId value get fetch failed");
+        }
+
+        [TestMethod]
+        public void PropertyGetFetch_PartitionObjectId()
+        {
+            AlternateExtension oAltExt = new AlternateExtension();
+            const string expectedValue = "test string value";
+            oAltExt.PartitionObjectId = expectedValue;
+            Assert.IsTrue(oAltExt.ChangeList.ValueExists("PartitionObjectId", expectedValue), "PartitionObjectId value get fetch failed");
+        }
+
+        [TestMethod]
+        public void AddAlternateExtension_ErrorResponse_Failure()
+        {
+            //error response
+            _mockTransport.Setup(
+                x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                       It.IsAny<string>(), true)).Returns(new WebCallResult
+                                       {
+                                           Success = false,
+                                           ResponseText = "error text",
+                                           StatusCode = 404
+                                       });
+
+            AlternateExtension oAltExt;
+            var res = AlternateExtension.AddAlternateExtension(_mockServer, "userObjectID", 1,"1234",out oAltExt);
+            Assert.IsFalse(res.Success, "Calling AddAlternateExtension with server error response should fail");
+
+        }
+
+        [TestMethod]
+        public void AddCallHandler_JunkObjectIdReturn_Failure()
+        {
+            //invalid objectId response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                 It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
+                                 {
+                                     Success = true,
+                                     ResponseText = "/vmrest/users/userObjectID/alternateextensions/junk"
+                                 });
+
+            AlternateExtension oAltExt;
+            var res = AlternateExtension.AddAlternateExtension(_mockServer, "userObjectID", 1, "1234", out oAltExt);
+            Assert.IsFalse(res.Success, "Calling AddAlternateExtension with invalid return objectId should fail");
         }
 
         #endregion
