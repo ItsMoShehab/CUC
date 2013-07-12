@@ -55,6 +55,14 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTestServer);
         }
 
+        [TestMethod]
+        public void Server_Constructor_Empty_Success()
+        {
+            var oServer = new Server();
+            Console.WriteLine(oServer.ToString());
+            Console.WriteLine(oServer.DumpAllProps());
+        }
+
         #endregion
 
 

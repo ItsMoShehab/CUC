@@ -230,6 +230,13 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pUsers = pConnectionServer.GetObjectsFromJson<GlobalUser>(res.ResponseText);
 
+            if (pUsers == null)
+            {
+                pUsers = new List<GlobalUser>();
+                res.Success = false;
+                res.ErrorText = "Failed to parse JSON for GlobalUsers:" + res.ResponseText;
+                return res;
+            }
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
             foreach (var oObject in pUsers)

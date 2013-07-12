@@ -129,6 +129,14 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsFalse(res.Success, "Static call to GetPhoneSystem with invalid empty objectId and name did not fail");
         }
 
+        [TestMethod]
+        public void PhoneSystemAssociation_ToString()
+        {
+            PhoneSystemAssociation oPhoneSystemAssociation = new PhoneSystemAssociation();
+            Console.WriteLine(oPhoneSystemAssociation.ToString());
+        }
+
+
         #endregion
 
     }

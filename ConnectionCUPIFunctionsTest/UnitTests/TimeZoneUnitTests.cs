@@ -53,7 +53,15 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTest);
         }
 
+        [TestMethod]
+        public void Constructor_ConnectionTimeZone_Success()
+        {
+            var CxnTimeZone = new ConnectionTimeZone();
+            Console.WriteLine(CxnTimeZone.ToString());
+        }
+
         #endregion
+
 
     }
 }

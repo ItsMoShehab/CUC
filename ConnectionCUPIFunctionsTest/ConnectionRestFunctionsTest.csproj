@@ -114,6 +114,7 @@
     <Compile Include="UnitTests\InterviewHandlerUnitTests.cs" />
     <Compile Include="UnitTests\LanguageHelperUnitTests.cs" />
     <Compile Include="UnitTests\MenuEntryUnitTests.cs" />
+    <Compile Include="UnitTests\MwiUnitTests.cs" />
     <Compile Include="UnitTests\NotificationDeviceUnitTests.cs" />
     <Compile Include="UnitTests\PhoneSystemUnitTests.cs" />
     <Compile Include="UnitTests\PortGroupCodecUnitTests.cs" />

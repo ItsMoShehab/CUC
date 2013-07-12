@@ -63,6 +63,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
+
         #endregion
 
 
@@ -250,14 +251,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            Folder oFolder;
-            try
+            Folder oFolder= HomeServer.GetObjectFromJson<Folder>(res.ResponseText, "Folder");
+
+            if (oFolder==null)
             {
-                oFolder = HomeServer.GetObjectFromJson<Folder>(res.ResponseText, "Folder");
-            }
-            catch (Exception ex)
-            {
-                res.ErrorText = "Failure populating class instance form JSON response:" + ex;
+                res.ErrorText = "Failure parsing JSON response into MailboxInfo class:" + res.ResponseText;
                 res.Success = false;
                 return res;
             }

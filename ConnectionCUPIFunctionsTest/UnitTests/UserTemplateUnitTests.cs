@@ -41,6 +41,26 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oTemp);
         }
 
+       
+        [TestMethod]
+        [ExpectedException(typeof(UnityConnectionRestException))]
+        public void Constructor_Alias_Failure()
+        {
+            UserTemplate oTemp = new UserTemplate(_mockServer, "","InvalidAlias");
+            Console.WriteLine(oTemp);
+        }
+
+        [TestMethod]
+        public void Constructor_Empty_Success()
+        {
+            UserTemplate oTemp = new UserTemplate();
+            Console.WriteLine(oTemp.ToString());
+            Console.WriteLine(oTemp.SelectionDisplayString);
+            Console.WriteLine(oTemp.DumpAllProps());
+            Console.WriteLine(oTemp.UniqueIdentifier);
+        }
+
+
         #endregion
 
 
@@ -148,6 +168,59 @@ namespace ConnectionCUPIFunctionsTest
         {
             var res = UserTemplate.AddUserTemplate(_mockServer, "", "alias", "name", null);
             Assert.IsFalse(res.Success, "Static call to AddUserTemplate did not fail with: empty template alias");
+        }
+
+        #endregion
+
+
+        #region Harness Tests
+
+        [TestMethod]
+        public void PhoneSystem_Fetch_Null()
+        {
+            UserTemplate oTemp = new UserTemplate();
+            var oPhoneSystem = oTemp.PhoneSystem(true);
+            Assert.IsNull(oPhoneSystem,"Fetching phone system from empty class should return null");
+        }
+
+        [TestMethod]
+        public void NotifricationDevices_Fetch_Null()
+        {
+            UserTemplate oTemp = new UserTemplate();
+            var oNotificationDevices = oTemp.NotificationDevices(true);
+            Assert.IsNull(oNotificationDevices, "Fetching notification devices from empty class should return null");
+        }
+
+        [TestMethod]
+        public void Cos_Fetch_Null()
+        {
+            UserTemplate oTemp = new UserTemplate();
+            var oObject = oTemp.Cos(true);
+            Assert.IsNull(oObject, "Fetching COS from empty class should return null");
+        }
+
+        [TestMethod]
+        public void Pin_Fetch_Null()
+        {
+            UserTemplate oTemp = new UserTemplate();
+            var oObject = oTemp.Pin();
+            Assert.IsNull(oObject, "Fetching PIN from empty class should return null");
+        }
+
+        [TestMethod]
+        public void Password_Fetch_Null()
+        {
+            UserTemplate oTemp = new UserTemplate();
+            var oObject = oTemp.Password();
+            Assert.IsNull(oObject, "Fetching Password from empty class should return null");
+        }
+
+        [TestMethod]
+        public void PrimaryCallHandler_Fetch_Null()
+        {
+            UserTemplate oTemp = new UserTemplate();
+            var oObject = oTemp.PrimaryCallHandler(true);
+            Assert.IsNull(oObject, "Fetching primary call handler from empty class should return null");
         }
 
         #endregion

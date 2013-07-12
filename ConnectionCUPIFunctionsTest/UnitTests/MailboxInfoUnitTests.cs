@@ -2,6 +2,7 @@
 using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.UnitTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace ConnectionCUPIFunctionsTest
 {
@@ -52,7 +53,76 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(otest);
         }
 
+        /// <summary>
+        /// Make sure an ArgumentException is thrown if an empty user objectId is passed
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void Constructor_EmptyObjectId_Failure()
+        {
+            MailboxInfo otest = new MailboxInfo(_mockServer, "");
+            Console.WriteLine(otest);
+        }
+
         #endregion
 
-   }
+
+        #region Harness Tests
+
+        [TestMethod]
+        public void GetFolderCount_ErrorResponse_Failure()
+        {
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = true,
+                                        ResponseText = "{\"DisplayName\":\"Voice Mailbox\"}"
+                                    });
+
+            MailboxInfo oInfo = new MailboxInfo(_mockServer,"objectid");
+
+            //error response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = false,
+                                        ResponseText = "error text",
+                                        StatusCode = 404
+                                    });
+
+            int iCount;
+            var res = oInfo.GetFolderCount(MailboxInfo.FolderTypes.deleted, out iCount);
+            Assert.IsFalse(res.Success,"Calling GetFolderCount with error response should fail");
+        }
+
+        [TestMethod]
+        public void GetFolderCount_GarbageResponse_Failure()
+        {
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                   It.IsAny<string>(), true)).Returns(new WebCallResult
+                                   {
+                                       Success = true,
+                                       ResponseText = "{\"DisplayName\":\"Voice Mailbox\"}"
+                                   });
+
+            MailboxInfo oInfo = new MailboxInfo(_mockServer, "objectid");
+
+            Console.WriteLine(oInfo.DumpAllProps());
+
+            //garbage response
+            _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), true)).Returns(new WebCallResult
+                                    {
+                                        Success = true,
+                                        TotalObjectCount = 1,
+                                        ResponseText = "garbage response that cannot be parsed for mailbox info",
+                                    });
+
+            int iCount;
+            var res = oInfo.GetFolderCount(MailboxInfo.FolderTypes.deleted, out iCount);
+            Assert.IsFalse(res.Success, "Calling GetFolderCount with garbage response should fail");
+        }
+
+        #endregion
+    }
 }
