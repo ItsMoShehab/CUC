@@ -123,6 +123,9 @@ namespace Cisco.UnityConnection.RestFunctions
         public string EndDate { get; private set; }
 
         [JsonProperty]
+        public bool EndOfDay { get; private set; }
+
+        [JsonProperty]
         public string Subject { get; private set; }
 
         #endregion

@@ -90,6 +90,7 @@
     <Compile Include="IntegrationTests\ScheduleSetIntegrationTests.cs" />
     <Compile Include="IntegrationTests\ScheduleIntegrationTests.cs" />
     <Compile Include="IntegrationTests\SearchSpaceAndPartitionIntegrationTests.cs" />
+    <Compile Include="IntegrationTests\ServerResponseJsonParsingTests.cs" />
     <Compile Include="IntegrationTests\SmppProviderIntegrationTests.cs" />
     <Compile Include="IntegrationTests\TenantIntegrationTests.cs" />
     <Compile Include="IntegrationTests\TimeZoneIntegrationTests.cs" />
