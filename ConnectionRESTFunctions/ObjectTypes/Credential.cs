@@ -157,7 +157,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetCredential(ConnectionServerRest pConnectionServer, string pUserObjectId,CredentialType pCredentialType , out Credential pCredential)
+        public static WebCallResult GetCredential(ConnectionServerRest pConnectionServer, string pUserObjectId,CredentialType pCredentialType , 
+            out Credential pCredential)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -263,7 +264,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #endregion
-
 
     }
 }

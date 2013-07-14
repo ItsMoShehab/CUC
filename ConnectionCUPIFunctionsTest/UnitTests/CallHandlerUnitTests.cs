@@ -68,7 +68,6 @@ namespace ConnectionCUPIFunctionsTest
 
             WebCallResult res = CallHandler.GetCallHandlers(null, out oHandlerList, null);
             Assert.IsFalse(res.Success, "GetHandler should fail with null ConnectionServerRest passed to it");
-
         }
 
         [TestMethod]

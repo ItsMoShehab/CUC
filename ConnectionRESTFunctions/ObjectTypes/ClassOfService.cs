@@ -11,7 +11,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -589,6 +588,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 _restrictionTableTransfer = null;
             }
 
+            if (string.IsNullOrEmpty(this.XferRestrictionObjectId))
+            {
+                return null;
+            }
+
             if (_restrictionTableTransfer == null)
             {
                 try
@@ -598,7 +602,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 catch (Exception ex)
                 {
                     HomeServer.RaiseErrorEvent("Failed fetching TransferRestrictionTable:" + ex);
-                    return null;
+                    _restrictionTableTransfer = null;
                 }
             }
 
@@ -625,6 +629,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 _restrictionTableFax = null;
             }
 
+            if (string.IsNullOrEmpty(this.FaxRestrictionObjectId))
+            {
+                return null;
+            }
+
             if (_restrictionTableFax == null)
             {
                 try
@@ -634,7 +643,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 catch (Exception ex)
                 {
                     HomeServer.RaiseErrorEvent("Failed fetching FaxRestrictionTable:"+ex);
-                    return null;
+                    _restrictionTableFax = null;
                 }
             }
 
@@ -660,6 +669,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 _restrictionTableOutcall = null;
             }
 
+            if (string.IsNullOrEmpty(this.OutcallRestrictionObjectId))
+            {
+                return null;
+            }
+
             if (_restrictionTableOutcall == null)
             {
                 try
@@ -669,7 +683,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 catch (Exception ex)
                 {
                     HomeServer.RaiseErrorEvent("Failed fetching OutcallRestrictionTable:"+ex);
-                    return null;
+                    _restrictionTableOutcall = null;
                 }
             }
 
@@ -746,6 +760,14 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             pClassOfServices = pConnectionServer.GetObjectsFromJson<ClassOfService>(res.ResponseText, "cos");
+
+            if (pClassOfServices == null)
+            {
+                pClassOfServices = new List<ClassOfService>();
+                res.ErrorText = "Could not parse JSON into COS objects:" + res.ResponseText;
+                res.Success = false;
+                return res;
+            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
@@ -1191,6 +1213,11 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             List<ClassOfService> oCoses = HomeServer.GetObjectsFromJson<ClassOfService>(res.ResponseText, "Cos");
+
+            if (oCoses == null)
+            {
+                return "";
+            }
 
             foreach (var oCos in oCoses)
             {

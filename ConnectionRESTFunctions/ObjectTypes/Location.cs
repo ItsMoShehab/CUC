@@ -309,6 +309,14 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pLocations = pConnectionServer.GetObjectsFromJson<Location>(res.ResponseText, "ConnectionLocation");
 
+            if (pLocations == null)
+            {
+                pLocations = new List<Location>();
+                res.ErrorText = "Unable to parse JSON into Locations:" + res.ResponseText;
+                res.Success = false;
+                return res;
+            }
+
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
             foreach (var oObject in pLocations)
