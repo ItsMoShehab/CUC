@@ -93,6 +93,9 @@ namespace Cisco.UnityConnection.RestFunctions
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
 
+        //for checking on pending changes
+        public ConnectionPropertyList ChangeList { get { return _changedPropList; } }
+
         #endregion
 
 
@@ -760,6 +763,13 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pPortGroups = pConnectionServer.GetObjectsFromJson<PortGroup>(res.ResponseText);
 
+            if (pPortGroups == null)
+            {
+                pPortGroups = new List<PortGroup>();
+                res.ErrorText = "Failed parsing JSON into PortGroups:" + res.ResponseText;
+                res.Success = false;
+            }
+
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
             foreach (var oObject in pPortGroups)
@@ -789,6 +799,12 @@ namespace Cisco.UnityConnection.RestFunctions
         public static WebCallResult GetPortGroups(ConnectionServerRest pConnectionServer, out List<PortGroup> pPortGroups,
                                                   string pMediaSwitchObjectId)
         {
+            if (string.IsNullOrEmpty(pMediaSwitchObjectId))
+            {
+                pPortGroups=new List<PortGroup>();
+                return new WebCallResult {ErrorText = "Empty MediaSwitchObjectId passed to GetPortGroups"};
+            }
+
             return GetPortGroups(pConnectionServer, out pPortGroups, 1, 512,
                                  string.Format("query=(MediaSwitchObjectId is {0})", pMediaSwitchObjectId));
         }
@@ -881,6 +897,12 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
+            if (string.IsNullOrEmpty(pPortGroupObjectId))
+            {
+                res.ErrorText = "Empty PortGroupObjectId passed to UpdatePortGroup";
+                return res;
+            }
+
             //the update command takes a body in the request, construct it based on the name/value pair of properties passed in.  
             //at lest one such pair needs to be present
             if (pPropList == null || pPropList.Count < 1)
@@ -941,6 +963,15 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
+            //make sure that something is passed in for the required param
+            if (String.IsNullOrEmpty(pDisplayName)
+                | string.IsNullOrEmpty(pPhoneSystemObjectId)
+                | string.IsNullOrEmpty(pHostOrIpAddress))
+            {
+                res.ErrorText = "Empty value passed for one or more required parameters in AddPortGroup";
+                return res;
+            }
+
             //get template object Id
             string strMediaPortGroupTemplateObjectId;
             res = PortGroupTemplate.GetPortGroupTemplateObjectId(pConnectionServer, pPhoneIntegrationMethod, out strMediaPortGroupTemplateObjectId);
@@ -949,14 +980,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //make sure that something is passed in for the required param
-            if (String.IsNullOrEmpty(pDisplayName)
-                | string.IsNullOrEmpty(pPhoneSystemObjectId) 
-                | string.IsNullOrEmpty(pHostOrIpAddress))
-            {
-                res.ErrorText = "Empty value passed for one or more required parameters in AddPortGroup";
-                return res;
-            }
+           
 
             string strBody = "<PortGroup>";
 
@@ -1051,9 +1075,17 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             if (pConnectionServer == null)
             {
-                WebCallResult res = new WebCallResult();
-                res.ErrorText = "Null ConnectionServer referenced passed to DeletePortGroup";
-                return res;
+                return new WebCallResult
+                    {
+                        ErrorText = "Null ConnectionServer referenced passed to DeletePortGroup"
+                    };
+            }
+            if (string.IsNullOrEmpty(pObjectId))
+            {
+                return new WebCallResult
+                    {
+                        ErrorText = "Empty ObjectId passed to DeletePortGroup"
+                    };
             }
 
             return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "portgroups/" + pObjectId,

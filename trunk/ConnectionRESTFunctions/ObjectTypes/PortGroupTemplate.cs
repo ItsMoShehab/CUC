@@ -80,7 +80,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public string TemplateDescriptionDefault { get; private set; }
 
         [JsonProperty]
-        public TelephonyIntegrationMethodEnum CopyTelephonyIntegrationMethodEnum { get; private set; }
+        public TelephonyIntegrationMethodEnum CopyTelephonyIntegrationMethodEnum { get; set; }
 
         #endregion
 
@@ -225,14 +225,30 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that's not an error, just return an empty list
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            //if this is empty that means an error
+            if (string.IsNullOrEmpty(res.ResponseText))
+            {
+                res.Success = false;
+                pTemplates = new List<PortGroupTemplate>();
+                return res;
+            }
+            
+            //not an error, just return an empty list
+            if (res.TotalObjectCount == 0 || res.ResponseText.Length<20)
             {
                 pTemplates = new List<PortGroupTemplate>();
                 return res;
             }
 
             pTemplates = pConnectionServer.GetObjectsFromJson<PortGroupTemplate>(res.ResponseText);
+
+            if (pTemplates == null)
+            {
+                pTemplates= new List<PortGroupTemplate>();
+                res.ErrorText = "Failed to parse JSON into PortGroupTemplates:" + res.ResponseText;
+                res.Success = false;
+                return res;
+            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.

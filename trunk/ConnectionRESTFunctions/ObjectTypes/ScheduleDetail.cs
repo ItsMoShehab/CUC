@@ -185,7 +185,7 @@ namespace Cisco.UnityConnection.RestFunctions
             int iMinutesFromMidnight = (int)pDateTime.TimeOfDay.TotalMinutes;
 
             //end time (minutes from midnight) is stored as 0 if it means till end of day - adjust here.
-            if (this.EndTime == 0)
+            if (EndTime == 0 | EndOfDay)
             {
                 EndTime = 24 * 60; //end of day - 1440 minutes
             }
@@ -314,13 +314,18 @@ namespace Cisco.UnityConnection.RestFunctions
         public static WebCallResult GetScheduleDetails(ConnectionServerRest pConnectionServer, string pScheduleObjectId, 
             out List<ScheduleDetail> pScheduleDetails, int pPageNumber = 1, int pRowsPerPage = 20)
         {
-            WebCallResult res;
+            WebCallResult res = new WebCallResult();
             pScheduleDetails = new List<ScheduleDetail>();
 
             if (pConnectionServer == null)
             {
-                res = new WebCallResult();
                 res.ErrorText = "Null ConnectionServer referenced passed to GetScheduleDetails";
+                return res;
+            }
+
+            if (string.IsNullOrEmpty(pScheduleObjectId))
+            {
+                res.ErrorText = "Empty ScheduleObjectId passed to GetScheduleDetails";
                 return res;
             }
 
@@ -352,6 +357,14 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             pScheduleDetails = pConnectionServer.GetObjectsFromJson<ScheduleDetail>(res.ResponseText);
+
+            if (pScheduleDetails == null)
+            {
+                pScheduleDetails = new List<ScheduleDetail>();
+                res.Success = false;
+                res.ErrorText = "Failed parsing JSON into ScheduleDetails:" + res.ResponseText;
+                return res;
+            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.

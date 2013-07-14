@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using Cisco.UnityConnection.RestFunctions;
-using ConnectionCUPIFunctionsTest.Properties;
 using ConnectionCUPIFunctionsTest.UnitTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace ConnectionCUPIFunctionsTest
 {
@@ -33,16 +32,27 @@ namespace ConnectionCUPIFunctionsTest
 
         #region Class Creation Failures
 
-        /// <summary>
-        /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
-        /// </summary>
-        [TestMethod]
+         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void Constructor_NullConnectionServer_Failure()
         {
             PortGroupTemplate oTemp = new PortGroupTemplate(null);
             Console.WriteLine(oTemp);
         }
+
+         [TestMethod]
+         public void Constructor_EmptyObjectId_Success()
+         {
+             PortGroupTemplate oTemp = new PortGroupTemplate(_mockServer);
+             Console.WriteLine(oTemp.DumpAllProps());
+         }
+
+         [TestMethod]
+         public void Constructor_Base_Success()
+         {
+             PortGroupTemplate oTemp = new PortGroupTemplate();
+             Console.WriteLine(oTemp.ToString());
+         }
 
         #endregion
 
@@ -57,7 +67,7 @@ namespace ConnectionCUPIFunctionsTest
              Assert.IsFalse(res.Success, "Static call to GetPortGroupTemplateObjectId did not fail with: null ConnectionServer");
          }
 
-         [TestMethod]
+        [TestMethod]
         public void GetPortGroupTemplates_NullConnectionServer_Failure()
         {
             List<PortGroupTemplate> oList;
@@ -67,5 +77,132 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
+
+        #region Harness Tests
+
+         [TestMethod]
+        public void GetPortGroupTemplateObjectId_Success()
+         {
+             //setup so the fetch for port group templates returns a match on the integration method we're using (PIMG)
+             PortGroupTemplate oTemplate = new PortGroupTemplate();
+             oTemplate.CopyTelephonyIntegrationMethodEnum = TelephonyIntegrationMethodEnum.PIMG;
+             List<PortGroupTemplate> oList = new List<PortGroupTemplate>();
+             oList.Add(oTemplate);
+
+             _mockTransport.Setup(x => x.GetObjectsFromJson<PortGroupTemplate>(It.IsAny<string>(), It.IsAny<string>()))
+                           .Returns(oList);
+
+             //make sure all "gets" return true.
+             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
+                                    {
+                                        Success = true,
+                                        ResponseText = "dummy text long enough to be considered legitimate JSON body",
+                                        TotalObjectCount = 1
+                                    });
+
+             string strObjectId;
+             var res = PortGroupTemplate.GetPortGroupTemplateObjectId(_mockServer, TelephonyIntegrationMethodEnum.PIMG,out strObjectId);
+             Assert.IsTrue(res.Success,"Fetching port group template for integration method failed:"+res);
+         }
+
+         [TestMethod]
+         public void GGetPortGroupTemplates_IntegrationMethodNotFound_Failure()
+         {
+             //setup so the fetch for port group templates returns a match on the integration method we're using (PIMG)
+             PortGroupTemplate oTemplate = new PortGroupTemplate();
+             oTemplate.CopyTelephonyIntegrationMethodEnum = TelephonyIntegrationMethodEnum.PIMG;
+             List<PortGroupTemplate> oList = new List<PortGroupTemplate>();
+             oList.Add(oTemplate);
+
+             _mockTransport.Setup(x => x.GetObjectsFromJson<PortGroupTemplate>(It.IsAny<string>(), It.IsAny<string>()))
+                           .Returns(oList);
+
+             //make sure all "gets" return true.
+             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                    It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
+                                    {
+                                        Success = true,
+                                        ResponseText = "dummy text long enough to be considered legitimate JSON body",
+                                        TotalObjectCount = 1
+                                    });
+
+             string strObjectId;
+             var res = PortGroupTemplate.GetPortGroupTemplateObjectId(_mockServer, TelephonyIntegrationMethodEnum.SCCP, out strObjectId);
+             Assert.IsFalse(res.Success, "Fetching port group template for integration method not found should fail");
+         }
+
+
+         [TestMethod]
+         public void GetPortGroupTemplates_EmptyResult_Failure()
+         {
+             _mockTransport.Setup(
+                 x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                        It.IsAny<string>(), true)).Returns(new WebCallResult
+                                        {
+                                            Success = true,
+                                            ResponseText = ""
+                                        });
+
+             List<PortGroupTemplate> oTemplates;
+             var res = PortGroupTemplate.GetPortGroupTemplates(_mockServer, out oTemplates);
+             Assert.IsFalse(res.Success, "Calling GetPortGroupTemplates with EmptyResultText did not fail");
+
+         }
+
+         [TestMethod]
+         public void GetPortGroupTemplates_GarbageResponse_Failure()
+         {
+             BaseUnitTests.ClassInitialize(null);
+
+             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
+                                   It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
+                                   {
+                                       Success = true,
+                                       TotalObjectCount = 1,
+                                       ResponseText = "garbage result that will not be parsed out as call handler JSON data"
+                                   });
+
+             List<PortGroupTemplate> oTemplates;
+             var res = PortGroupTemplate.GetPortGroupTemplates(_mockServer, out oTemplates);
+             Assert.IsFalse(res.Success, "Calling GetPortGroupTemplates with garbage results should fail");
+             Assert.IsTrue(oTemplates.Count == 0, "Invalid result text should produce an empty list");
+         }
+
+
+         [TestMethod]
+         public void GetPortGroupTemplates_ErrorResponse_Failure()
+         {
+             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                     It.IsAny<string>(), true)).Returns(new WebCallResult
+                                     {
+                                         Success = false,
+                                         ResponseText = "error text",
+                                         StatusCode = 404
+                                     });
+             
+             List<PortGroupTemplate> oTemplates;
+             var res = PortGroupTemplate.GetPortGroupTemplates(_mockServer, out oTemplates);
+             Assert.IsFalse(res.Success, "Calling GetPortGroupTemplates with ErrorResponse did not fail");
+         }
+
+         [TestMethod]
+         public void GetPortGroupTemplates_ZeroCount_Success()
+         {
+             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
+                                     It.IsAny<string>(), true)).Returns(new WebCallResult
+                                     {
+                                         Success = true,
+                                         ResponseText = "junk text",
+                                         TotalObjectCount = 0
+                                     });
+
+             List<PortGroupTemplate> oTemplates;
+             var res = PortGroupTemplate.GetPortGroupTemplates(_mockServer, out oTemplates);
+             Assert.IsTrue(res.Success, "Calling GetPortGroupTemplates with ZeroCount failed:" + res);
+         }
+
+
+        #endregion
     }
 }

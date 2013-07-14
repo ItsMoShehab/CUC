@@ -92,6 +92,9 @@ namespace Cisco.UnityConnection.RestFunctions
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
 
+        //for checking on pending changes
+        public ConnectionPropertyList ChangeList { get { return _changedPropList; } }
+
         #endregion
 
 
@@ -161,7 +164,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _callLoopSupervisedTransferDetect; }
             set
             {
-                _changedPropList.Add("DisplayName", value);
+                _changedPropList.Add("CallLoopSupervisedTransferDetect", value);
                 _callLoopSupervisedTransferDetect = value;
             }
         }
@@ -578,6 +581,14 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pPhoneSystems = pConnectionServer.GetObjectsFromJson<PhoneSystem>(res.ResponseText);
 
+            if (pPhoneSystems == null)
+            {
+                pPhoneSystems = new List<PhoneSystem>();
+                res.ErrorText = "Could not parse JSON into PhoneSystems:" + res.ResponseText;
+                res.Success = false;
+                return res;
+            }
+
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
             foreach (var oObject in pPhoneSystems)
@@ -881,6 +892,14 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             pAssociations = pConnectionServer.GetObjectsFromJson<PhoneSystemAssociation>(res.ResponseText);
+
+            if (pAssociations == null)
+            {
+                pAssociations = new List<PhoneSystemAssociation>();
+                res.ErrorText = "Could not parse JSON into PhoneSystemAssociations:" + res.ResponseText;
+                res.Success = false;
+                return res;
+            }
 
             return res;
         }

@@ -52,6 +52,15 @@ namespace ConnectionCUPIFunctionsTest.UnitTests
             {
                 Console.WriteLine("Failed creating mock server instance:" + ex);
             }
+
+            _mockServer.RaiseErrorEvent(It.IsAny<string>());
+
+            _mockServer.ErrorEvents += MockServerOnErrorEvents;
+        }
+
+        private static void MockServerOnErrorEvents(object sender, ConnectionServerRest.LogEventArgs logEventArgs)
+        {
+            Console.WriteLine("Error event on mock server:"+logEventArgs.Line);
         }
 
         #endregion
