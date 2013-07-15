@@ -76,6 +76,9 @@ namespace Cisco.UnityConnection.RestFunctions
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
 
+        //for checking on pending changes
+        public ConnectionPropertyList ChangeList { get { return _changedPropList; } }
+
         #endregion
 
 
@@ -157,8 +160,8 @@ namespace Cisco.UnityConnection.RestFunctions
         [JsonProperty]
         public string RouteTargetHandlerDisplayName { get; private set; }
 
-        private RoutintRuleActionType _routeAction;
-        public RoutintRuleActionType RouteAction
+        private RoutingRuleActionType _routeAction;
+        public RoutingRuleActionType RouteAction
         {
             get { return _routeAction; }
             set
@@ -318,6 +321,14 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             pRoutingRules = pConnectionServer.GetObjectsFromJson<RoutingRule>(res.ResponseText);
+
+            if (pRoutingRules == null)
+            {
+                pRoutingRules = new List<RoutingRule>();
+                res.ErrorText = "Could not parse response JSON into RoutingRules:" + res.ResponseText;
+                res.Success = false;
+                return res;
+            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
@@ -733,7 +744,7 @@ namespace Cisco.UnityConnection.RestFunctions
                     return new WebCallResult
                     {
                         Success = false,
-                        ErrorText = "Empty ObjectId passed to GetRoutingRule"
+                        ErrorText = "Could not find routing rule by display name:"+pDisplayName
                     };
                 }
             }

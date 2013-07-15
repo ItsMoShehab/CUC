@@ -679,13 +679,7 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 string strConvertedWavFilePath = pConnectionServer.ConvertWavFileToPcm(pSourceLocalFilePath);
 
-                if (string.IsNullOrEmpty(strConvertedWavFilePath))
-                {
-                    res.ErrorText = "Failed converting WAV file into G711 format in SetPostGreetingRecordingWavFile.";
-                    return res;
-                }
-
-                if (File.Exists(strConvertedWavFilePath) == false)
+                if (string.IsNullOrEmpty(strConvertedWavFilePath) || File.Exists(strConvertedWavFilePath) == false)
                 {
                     res.ErrorText = "Converted G711 WAV file path not found in SetPostGreetingRecordingWavFile: " +
                                     strConvertedWavFilePath;

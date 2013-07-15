@@ -246,6 +246,14 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pServers = pConnectionServer.GetObjectsFromJson<VmsServer>(res.ResponseText);
 
+            if (pServers == null)
+            {
+                pServers=new List<VmsServer>();
+                res.ErrorText = "Could not parse JSON into VmsServers:" + res.ResponseText;
+                res.Success = false;
+                return res;
+            }
+
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
             foreach (var oObject in pServers)

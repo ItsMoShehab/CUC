@@ -366,12 +366,11 @@ namespace Cisco.UnityConnection.RestFunctions
         public static WebCallResult GetSearchSpaces(ConnectionServerRest pConnectionServer, out List<SearchSpace> pSearchSpaces, int pPageNumber = 1,
             int pRowsPerPage = 20, params string[] pClauses)
         {
-            WebCallResult res;
+            WebCallResult res = new WebCallResult();
             pSearchSpaces = null;
 
             if (pConnectionServer == null)
             {
-                res = new WebCallResult();
                 res.ErrorText = "Null ConnectionServer referenced passed to GetSearchSpaces";
                 return res;
             }
@@ -421,6 +420,8 @@ namespace Cisco.UnityConnection.RestFunctions
             if (pSearchSpaces == null)
             {
                 pSearchSpaces = new List<SearchSpace>();
+                res.ErrorText = "Could not parse response text into SearchSpaces:" + res.ResponseText;
+                res.Success = false;
                 return res;
             }
 
@@ -470,18 +471,21 @@ namespace Cisco.UnityConnection.RestFunctions
             if (string.IsNullOrEmpty(res.ResponseText))
             {
                 res.Success = false;
-                pPartitions = new List<Partition>();
                 return res;
             }
 
             //no error, just return an empty list
             if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
-                pPartitions= new List<Partition>();
                 return res;
             }
 
             List<SearchSpaceMember> oMembers = pConnectionServer.GetObjectsFromJson<SearchSpaceMember>(res.ResponseText);
+
+            if (oMembers == null)
+            {
+                return res;
+            }
 
             //create an instance of each partition found in the membership list
             foreach (var oMember in oMembers)

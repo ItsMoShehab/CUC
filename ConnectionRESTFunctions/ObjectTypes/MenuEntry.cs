@@ -324,6 +324,14 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pMenuEntries = pConnectionServer.GetObjectsFromJson<MenuEntry>(res.ResponseText);
 
+            if (pMenuEntries == null)
+            {
+                pMenuEntries = new List<MenuEntry>();
+                res.ErrorText = "Could not parse JSON into MenuEntry list:" + res.ResponseText;
+                res.Success = false;
+                return res;
+            }
+
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
             foreach (var oObject in pMenuEntries)
@@ -398,7 +406,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
             return pConnectionServer.GetCupiResponse(string.Format("{0}handlers/callhandlers/{1}/menuentries/{2}", pConnectionServer.BaseUrl, 
                 pCallHandlerObjectId, pKeyName),MethodType.PUT,strBody,false);
-
         }
 
         #endregion

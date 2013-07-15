@@ -484,7 +484,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
     public enum RoutingRuleFlag { Immutable, Deletable, Editable, EditableAndDeletable }
 
-    public enum RoutintRuleActionType { Ignore, Hangup, Goto, Error, TakeMsg, SkipGreeting, RestartGreeting, TransferAtContact, RouteFromNextRule }
+    public enum RoutingRuleActionType { Ignore, Hangup, Goto, Error, TakeMsg, SkipGreeting, RestartGreeting, TransferAtContact, RouteFromNextRule }
 
     public enum RoutingRuleCallType { Internal, External, Both }
 

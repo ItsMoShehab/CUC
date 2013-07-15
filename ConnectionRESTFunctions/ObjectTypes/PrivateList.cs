@@ -666,13 +666,7 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 string strConvertedWavFilePath = pConnectionServer.ConvertWavFileToPcm(pSourceLocalFilePath);
 
-                if (string.IsNullOrEmpty(strConvertedWavFilePath))
-                {
-                    res.ErrorText = "Failed converting WAV file into PCM format in SetPrivateListVoiceName.";
-                    return res;
-                }
-
-                if (File.Exists(strConvertedWavFilePath) == false)
+                if (string.IsNullOrEmpty(strConvertedWavFilePath) || File.Exists(strConvertedWavFilePath) == false)
                 {
                     res.ErrorText = "Converted PCM WAV file path not found in SetPrivateListVoiceName: " + strConvertedWavFilePath;
                     return res;
@@ -680,7 +674,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
                 //point the wav file we'll be uploading to the newly converted G711 WAV format file.
                 pSourceLocalFilePath = strConvertedWavFilePath;
-
             }
 
             //use the 8.5 and later voice name formatting here which simplifies things a great deal.
