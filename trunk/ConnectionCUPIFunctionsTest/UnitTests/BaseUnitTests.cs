@@ -22,18 +22,23 @@ namespace ConnectionCUPIFunctionsTest.UnitTests
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
         ///</summary>
-        public TestContext TestContext { get; set; }
+        public static TestContext TestContext { get; set; }
 
         #endregion
 
 
         #region Additional test attributes
 
-        //Use ClassInitialize to run code before running the first test in the class
+        public static void Reset()
+        {
+            ClassInitialize(TestContext);
+        }
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {
+            TestContext = testContext;
+
             //setup mock server interface 
             _mockTransport = new Mock<IConnectionRestCalls>();
 

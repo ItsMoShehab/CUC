@@ -103,8 +103,12 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //greeting stream files are fetched on the fly if referenced
             private List<DirectoryHandlerGreetingStreamFile> _greetingStreamFiles;
-            public List<DirectoryHandlerGreetingStreamFile> GetGreetingStreamFiles()
+            public List<DirectoryHandlerGreetingStreamFile> GetGreetingStreamFiles(bool pForceRefetchOfData=false)
             {
+                if (pForceRefetchOfData)
+                {
+                    _greetingStreamFiles = null;
+                }
                 //fetch greeting options only if they are referenced
                 if (_greetingStreamFiles == null)
                 {
@@ -637,6 +641,14 @@ namespace Cisco.UnityConnection.RestFunctions
 
                 pDirectoryHandlers = pConnectionServer.GetObjectsFromJson<DirectoryHandler>(res.ResponseText);
 
+                if (pDirectoryHandlers == null)
+                {
+                    pDirectoryHandlers= new List<DirectoryHandler>();
+                    res.ErrorText = "Unable to parse JSON text into DirectoryHandlers:" + res.ResponseText;
+                    res.Success = false;
+                    return res;
+                }
+
                 //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
                 //run through here and assign it for all instances.
                 foreach (var oObject in pDirectoryHandlers)
@@ -681,6 +693,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 int pPageNumber=1, int pRowsPerPage=20,params string[] pClauses)
             {
                 //tack on the paging items to the parameters list
+                if (pClauses == null)
+                {
+                    pClauses = new string[0];
+                }
                 var temp = pClauses.ToList();
                 temp.Add("pageNumber=" + pPageNumber);
                 temp.Add("rowsPerPage=" + pRowsPerPage);
@@ -1018,13 +1034,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 {
                     string strConvertedWavFilePath = pConnectionServer.ConvertWavFileToPcm(pSourceLocalFilePath);
 
-                    if (string.IsNullOrEmpty(strConvertedWavFilePath))
-                    {
-                        res.ErrorText = "Failed converting WAV file into G711 format in SetGreetingWavFile.";
-                        return res;
-                    }
-
-                    if (File.Exists(strConvertedWavFilePath) == false)
+                    if (string.IsNullOrEmpty(strConvertedWavFilePath) || File.Exists(strConvertedWavFilePath) == false)
                     {
                         res.ErrorText = "Converted G711 WAV file path not found in SetGreetingWavFile: " +
                                         strConvertedWavFilePath;

@@ -271,7 +271,7 @@ namespace ConnectionCUPIFunctionsTest
              _tempRule.LanguageCode = 1033;
              _tempRule.CallType = RoutingRuleCallType.Both;
              _tempRule.DisplayName = "UpdatedName" + Guid.NewGuid().ToString();
-             _tempRule.RouteAction = RoutintRuleActionType.Hangup;
+             _tempRule.RouteAction = RoutingRuleActionType.Hangup;
              _tempRule.State = RoutingRuleState.Inactive;
              _tempRule.Type = RoutingRuleType.System;
              _tempRule.Undeletable = false;

@@ -350,6 +350,14 @@ namespace Cisco.UnityConnection.RestFunctions
 
             pPartitions = pConnectionServer.GetObjectsFromJson<Partition>(res.ResponseText);
 
+            if (pPartitions == null)
+            {
+                pPartitions=new List<Partition>();
+                res.ErrorText = "Unable to parse JSON into Partitions:" + res.ResponseText;
+                res.Success = false;
+                return res;
+            }
+
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
             foreach (var oObject in pPartitions)
