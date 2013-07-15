@@ -360,7 +360,7 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res = new WebCallResult();
             res.Success = false;
 
-            pDistributionLists = null;
+            pDistributionLists = new List<DistributionList>();
 
             if (pConnectionServer == null)
             {
@@ -378,11 +378,9 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that means an error in this case
             if (string.IsNullOrEmpty(res.ResponseText))
             {
-                pDistributionLists = new List<DistributionList>();
+                res.ErrorText = "Empty response received";
                 res.Success = false;
                 return res;
             }

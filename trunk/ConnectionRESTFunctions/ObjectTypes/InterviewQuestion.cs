@@ -114,7 +114,7 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res = new WebCallResult();
             res.Success = false;
 
-            pInterviewQuestions = null;
+            pInterviewQuestions = new List<InterviewQuestion>();
 
             if (pConnectionServer == null)
             {
@@ -138,19 +138,16 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is an error
             if (string.IsNullOrEmpty(res.ResponseText))
             {
                 res.Success = false;
-                pInterviewQuestions = new List<InterviewQuestion>();
+                res.ErrorText = "Empty response received";
                 return res;
             }
 
             //not an error, just return an empty list
             if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
-                pInterviewQuestions=new List<InterviewQuestion>();
                 return res;
             }
 

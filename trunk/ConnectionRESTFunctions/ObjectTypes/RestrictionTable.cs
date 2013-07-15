@@ -313,10 +313,9 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that means an error in this case - should always be at least one template
             if (string.IsNullOrEmpty(res.ResponseText))
             {
+                res.ErrorText = "Empty response received";
                 res.Success = false;
                 return res;
             }

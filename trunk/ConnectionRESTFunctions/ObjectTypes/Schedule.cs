@@ -378,7 +378,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public static WebCallResult GetSchedules(ConnectionServerRest pConnectionServer, out List<Schedule> pSchedules, int pPageNumber = 1,
             int pRowsPerPage = 20, params string[] pClauses)
         {
-            pSchedules = null;
+            pSchedules = new List<Schedule>();
 
             if (pConnectionServer == null)
             {
@@ -416,7 +416,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //if this is empty that means an error in this case
             if (string.IsNullOrEmpty(res.ResponseText))
             {
-                pSchedules = new List<Schedule>();
+                res.ErrorText = "Empty response received";
                 res.Success = false;
                 return res;
             }
@@ -424,7 +424,6 @@ namespace Cisco.UnityConnection.RestFunctions
             //no error, just return an empty list
             if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
-                pSchedules = new List<Schedule>();
                 return res;
             }
 

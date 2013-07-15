@@ -2503,7 +2503,7 @@ namespace Cisco.UnityConnection.RestFunctions
             int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res;
-            pUserTemplates = null;
+            pUserTemplates = new List<UserTemplate>();
 
             if (pConnectionServer==null)
             {
@@ -2535,11 +2535,9 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that means an error 
             if (string.IsNullOrEmpty(res.ResponseText))
             {
-                pUserTemplates = new List<UserTemplate>();
+                res.ErrorText = "Empty response received";
                 res.Success = false;
                 return res;
             }
@@ -2547,7 +2545,6 @@ namespace Cisco.UnityConnection.RestFunctions
             //no error, just return an empty list
             if (res.TotalObjectCount == 0)
             {
-                pUserTemplates=new List<UserTemplate>();
                 return res;
             }
 

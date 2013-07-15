@@ -95,7 +95,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
             string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "import/users/ldap", pClauses);
 
-            //issue the command to the CUPI interface
             res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
@@ -103,10 +102,9 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty thats an error.
             if (string.IsNullOrEmpty(res.ResponseText))
             {
+                res.ErrorText = "Empty response received";
                 res.Success = false;
                 return res;
             }

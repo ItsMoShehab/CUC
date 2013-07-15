@@ -84,6 +84,9 @@ namespace Cisco.UnityConnection.RestFunctions
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
 
+        //used for allowing access to the pending change list from outside the class if necessary
+        public ConnectionPropertyList ChangeList { get { return _changedPropList; } }
+
         #endregion
 
 
@@ -262,6 +265,11 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         private WebCallResult GetPort(string pObjectId)
         {
+            if (string.IsNullOrEmpty(pObjectId))
+            {
+                return new WebCallResult {ErrorText = "Empty ObjectId encountered in GetPort"};
+            }
+
             string strUrl = string.Format("{0}ports/{1}", HomeServer.BaseUrl, pObjectId);
 
             //issue the command to the CUPI interface
@@ -392,23 +400,28 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that means an error
             if (string.IsNullOrEmpty(res.ResponseText))
             {
                 res.Success = false;
-                pPorts = new List<Port>();
+                res.ErrorText = "Empty response received";
                 return res;
             }
 
             //not an error, just return empty list
             if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
-                pPorts=new List<Port>();
                 return res;
             }
 
             pPorts = pConnectionServer.GetObjectsFromJson<Port>(res.ResponseText);
+
+            if (pPorts == null)
+            {
+                pPorts= new List<Port>();
+                res.ErrorText = "Could not parse JSON into Port objects:" + res.ResponseText;
+                res.Success = false;
+                return res;
+            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
@@ -668,6 +681,7 @@ namespace Cisco.UnityConnection.RestFunctions
             return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "ports/" + pObjectId,
                                             MethodType.DELETE, "");
         }
+
         #endregion
 
     }
