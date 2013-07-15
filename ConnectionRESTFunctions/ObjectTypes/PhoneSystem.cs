@@ -531,7 +531,7 @@ namespace Cisco.UnityConnection.RestFunctions
             int pPageNumber = 1, int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res;
-            pPhoneSystems = null;
+            pPhoneSystems = new List<PhoneSystem>();
 
             if (pConnectionServer==null)
             {
@@ -563,19 +563,16 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that means an error
             if (string.IsNullOrEmpty(res.ResponseText))
             {
                 res.Success = false;
-                pPhoneSystems = new List<PhoneSystem>();
+                res.ErrorText = "Empty response received";
                 return res;
             }
 
             //not an error, just return empty list
             if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
-                pPhoneSystems=new List<PhoneSystem>();
                 return res;
             }
 
@@ -877,11 +874,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that means an error
             if (string.IsNullOrEmpty(res.ResponseText))
             {
                 res.Success = false;
+                res.ErrorText = "Empty response received";
                 return res;
             }
 

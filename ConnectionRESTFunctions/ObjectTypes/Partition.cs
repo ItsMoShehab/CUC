@@ -299,7 +299,7 @@ namespace Cisco.UnityConnection.RestFunctions
             int pPageNumber = 1, int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res;
-            pPartitions = null;
+            pPartitions = new List<Partition>();
 
             if (pConnectionServer == null)
             {
@@ -332,11 +332,9 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that means an error in this case - should always be at least one partition
             if (string.IsNullOrEmpty(res.ResponseText))
             {
-                pPartitions = new List<Partition>();
+                res.ErrorText = "Empty response received";
                 res.Success = false;
                 return res;
             }
@@ -344,7 +342,6 @@ namespace Cisco.UnityConnection.RestFunctions
             //not an error, just return the empty list
             if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
-                pPartitions=new List<Partition>();
                 return res;
             }
 

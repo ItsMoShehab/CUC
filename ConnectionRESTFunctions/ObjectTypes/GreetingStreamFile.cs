@@ -386,7 +386,7 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res = new WebCallResult();
             res.Success = false;
 
-            pGreetingStreamFiles = null;
+            pGreetingStreamFiles = new List<GreetingStreamFile>();
 
             if (string.IsNullOrEmpty(pCallHandlerObjectId))
             {
@@ -411,16 +411,22 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that means an error 
             if (string.IsNullOrEmpty(res.ResponseText))
             {
-                pGreetingStreamFiles = new List<GreetingStreamFile>();
+                res.ErrorText = "Empty response received";
                 res.Success = false;
                 return res;
             }
 
             pGreetingStreamFiles = pConnectionServer.GetObjectsFromJson<GreetingStreamFile>(res.ResponseText);
+
+            if (pGreetingStreamFiles == null)
+            {
+                pGreetingStreamFiles = new List<GreetingStreamFile>();
+                res.ErrorText = "Could not parse JSON into GreetingStreamFile objects:" + res.ResponseText;
+                res.Success = false;
+                return res;
+            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.

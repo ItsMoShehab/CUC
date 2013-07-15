@@ -128,7 +128,7 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res = new WebCallResult();
             res.Success = false;
 
-            pCodecDefs = null;
+            pCodecDefs = new List<RtpCodecDef>();
 
             if (pConnectionServer == null)
             {
@@ -145,16 +145,28 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 return res;
             }
-
+            if (string.IsNullOrEmpty(res.ResponseText))
+            {
+                res.Success = false;
+                res.ErrorText = "Empty response recieved";
+                return res;
+            }
             //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
             //if this is empty that's not an error, just return an empty list
-            if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
+            if (res.ResponseText.Length<20 || res.TotalObjectCount == 0)
             {
-                pCodecDefs = new List<RtpCodecDef>();
                 return res;
             }
 
             pCodecDefs = pConnectionServer.GetObjectsFromJson<RtpCodecDef>(res.ResponseText);
+
+            if (pCodecDefs == null)
+            {
+                pCodecDefs = new List<RtpCodecDef>();
+                res.ErrorText = "Could not parse JSON into RtpCodecDef objects:" + res.ResponseText;
+                res.Success = false;
+                return res;
+            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.

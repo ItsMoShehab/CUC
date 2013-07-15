@@ -367,7 +367,7 @@ namespace Cisco.UnityConnection.RestFunctions
             int pRowsPerPage = 20, params string[] pClauses)
         {
             WebCallResult res = new WebCallResult();
-            pSearchSpaces = null;
+            pSearchSpaces = new List<SearchSpace>();
 
             if (pConnectionServer == null)
             {
@@ -399,11 +399,9 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that means an error in this case
             if (string.IsNullOrEmpty(res.ResponseText))
             {
-                pSearchSpaces = new List<SearchSpace>();
+                res.ErrorText = "Empty response received";
                 res.Success = false;
                 return res;
             }
@@ -411,7 +409,6 @@ namespace Cisco.UnityConnection.RestFunctions
             //not an error, just return empty list
             if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
-                pSearchSpaces= new List<SearchSpace>();
                 return res;
             }
 
@@ -465,11 +462,9 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-
-            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that means an error in this case
             if (string.IsNullOrEmpty(res.ResponseText))
             {
+                res.ErrorText = "Empty response received";
                 res.Success = false;
                 return res;
             }

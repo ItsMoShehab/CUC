@@ -325,7 +325,7 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res = new WebCallResult();
             res.Success = false;
 
-            pInterviewHandlers = null;
+            pInterviewHandlers = new List<InterviewHandler>();
 
             if (pConnectionServer == null)
             {
@@ -343,23 +343,28 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is an error
             if (string.IsNullOrEmpty(res.ResponseText))
             {
                 res.Success = false;
-                pInterviewHandlers = new List<InterviewHandler>();
+                res.ErrorText = "Empty response received";
                 return res;
             }
 
             //not an error, just return an empty list
             if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
-                pInterviewHandlers=new List<InterviewHandler>();
                 return res;
             }
 
             pInterviewHandlers = pConnectionServer.GetObjectsFromJson<InterviewHandler>(res.ResponseText);
+
+            if (pInterviewHandlers == null)
+            {
+                pInterviewHandlers = new List<InterviewHandler>();
+                res.Success = false;
+                res.ErrorText = "Empty response recieved";
+                return res;
+            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.

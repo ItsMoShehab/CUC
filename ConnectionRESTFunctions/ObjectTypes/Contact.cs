@@ -306,7 +306,7 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res = new WebCallResult();
             res.Success = false;
 
-            pContacts = null;
+            pContacts = new List<Contact>();
 
             if (pConnectionServer == null)
             {
@@ -324,23 +324,28 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
-            //if this is empty that's an error
             if (string.IsNullOrEmpty(res.ResponseText))
             {
                 res.Success = false;
-                pContacts = new List<Contact>();
+                res.ErrorText = "Empty response received";
                 return res;
             }
 
             //not an error, just return an empty list
             if (res.TotalObjectCount == 0 | res.ResponseText.Length < 25)
             {
-                pContacts=new List<Contact>();
                 return res;
             }
 
             pContacts = pConnectionServer.GetObjectsFromJson<Contact>(res.ResponseText);
+
+            if (pContacts == null)
+            {
+                pContacts= new List<Contact>();
+                res.ErrorText = "Unable to parse JSON into Contacts:" + res.ResponseText;
+                res.Success = false;
+                return res;
+            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
@@ -816,13 +821,7 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 strConvertedWavFilePath = pConnectionServer.ConvertWavFileToPcm(pSourceLocalFilePath);
 
-                if (string.IsNullOrEmpty(strConvertedWavFilePath))
-                {
-                    res.ErrorText = "Failed converting WAV file into PCM format in SetContactVoiceName.";
-                    return res;
-                }
-
-                if (File.Exists(strConvertedWavFilePath) == false)
+                if (string.IsNullOrEmpty(strConvertedWavFilePath)  || File.Exists(strConvertedWavFilePath) == false)
                 {
                     res.ErrorText = "Converted PCM WAV file path not found in SetContactVoiceName: " + strConvertedWavFilePath;
                     return res;
@@ -1043,6 +1042,11 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             List<Contact> oContacts = HomeServer.GetObjectsFromJson<Contact>(res.ResponseText);
+
+            if (oContacts == null)
+            {
+                return "";
+            }
 
             foreach (var oContact in oContacts)
             {
