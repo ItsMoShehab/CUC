@@ -356,6 +356,7 @@ namespace ConnectionCUPIFunctionsTest
 
         #endregion
 
+
         #region Harness Tests
 
         [TestMethod]

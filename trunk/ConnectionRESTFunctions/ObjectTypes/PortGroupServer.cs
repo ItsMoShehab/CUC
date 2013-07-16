@@ -92,6 +92,9 @@ namespace Cisco.UnityConnection.RestFunctions
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
 
+        //used to get to the pending change list if necessary
+        public ConnectionPropertyList ChangeList { get { return _changedPropList; } }
+
         #endregion
 
 
@@ -103,7 +106,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _hostOrIpAddress; }
             set
             {
-                _changedPropList.Add("HostOrIPAddress", value);
+                _changedPropList.Add("HostOrIpAddress", value);
                 _hostOrIpAddress = value;
             }
         }
@@ -114,7 +117,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _hostOrIpAddressV6; }
             set
             {
-                _changedPropList.Add("HostOrIPAddressV6", value);
+                _changedPropList.Add("HostOrIpAddressV6", value);
                 _hostOrIpAddressV6 = value;
             }
         }
@@ -400,6 +403,14 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             pPortGroupServers = pConnectionServer.GetObjectsFromJson<PortGroupServer>(res.ResponseText);
+
+            if (pPortGroupServers == null)
+            {
+                pPortGroupServers = new List<PortGroupServer>();
+                res.ErrorText = "Could not parse JSON into PortGroupServer objects:" + res.ResponseText;
+                res.Success = false;
+                return res;
+            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.

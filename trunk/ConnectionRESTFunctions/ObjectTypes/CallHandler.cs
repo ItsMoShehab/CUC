@@ -526,6 +526,11 @@ namespace Cisco.UnityConnection.RestFunctions
                 GetTransferOptions(out _transferOptions);
             }
 
+            if (_transferOptions != null && _transferOptions.Count == 0)
+            {
+                return null;
+            }
+
             return _transferOptions;
         }
 
