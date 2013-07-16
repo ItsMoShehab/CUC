@@ -39,6 +39,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //little bit of a hack - CUPI does not return TimeExpires values for null TimeExpires fields so we can only assume that it's abscence
             //means the greeting is active
             TimeExpires = DateTime.Parse("2200/1/1");
+            ClearPendingChanges();
         }
 
         /// <summary>
@@ -103,6 +104,9 @@ namespace Cisco.UnityConnection.RestFunctions
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
+
+        //used to review the list of properties to be changed
+        public ConnectionPropertyList ChangeList { get { return _changedPropList; } }
 
         #endregion
 
@@ -462,7 +466,7 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res = new WebCallResult();
             res.Success = false;
 
-            pTransferOptions = null;
+            pTransferOptions = new List<TransferOption>();
 
             if (pConnectionServer == null)
             {
@@ -480,16 +484,23 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
             //if this is empty thats an error - there should always be transfer options.
             if (string.IsNullOrEmpty(res.ResponseText) || res.TotalObjectCount == 0)
             {
-                pTransferOptions = new List<TransferOption>();
+                res.ErrorText = "No transfer options found for call handler";
                 res.Success = false;
                 return res;
             }
 
             pTransferOptions = pConnectionServer.GetObjectsFromJson<TransferOption>(res.ResponseText);
+
+            if (pTransferOptions == null)
+            {
+                pTransferOptions=new List<TransferOption>();
+                res.Success = false;
+                res.ErrorText = "Could not parse JSON into TransferOptions:" + res.ResponseText;
+                return res;
+            }
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
