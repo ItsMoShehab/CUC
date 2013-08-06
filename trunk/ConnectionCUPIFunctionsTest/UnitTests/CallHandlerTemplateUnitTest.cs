@@ -35,7 +35,7 @@ namespace ConnectionCUPIFunctionsTest
         #endregion
 
 
-        #region Class Creation Failures
+        #region Class Creation Tests
 
         /// <summary>
         /// Make sure an ArgumentException is thrown if a null ConnectionServer is passed in.
@@ -47,6 +47,8 @@ namespace ConnectionCUPIFunctionsTest
             CallHandlerTemplate oTestTemplate = new CallHandlerTemplate(null, "aaa");
             Console.WriteLine(oTestTemplate);
         }
+
+
 
 
         #endregion
