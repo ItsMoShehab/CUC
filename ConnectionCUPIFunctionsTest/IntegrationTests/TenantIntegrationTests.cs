@@ -28,7 +28,7 @@ namespace ConnectionCUPIFunctionsTest
             BaseIntegrationTests.MyClassInitialize(testContext);
 
             //create new handler with GUID in the name to ensure uniqueness
-            String strName = "Tenant_"+ Guid.NewGuid().ToString().Replace("-", "").Substring(0,13);
+            String strName = "Tenant_"+ Guid.NewGuid().ToString().Replace("-", "").Substring(0,10);
 
             WebCallResult res = Tenant.AddTenant(_connectionServer, strName, strName+".org", strName, out _tempTenant);
             Assert.IsTrue(res.Success, "Failed creating temporary tenant:" + res.ToString());

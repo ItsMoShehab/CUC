@@ -3,10 +3,10 @@
   <Profiles />
   <Settings>
     <Setting Name="ConnectionServer" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">192.168.0.188</Value>
+      <Value Profile="(Default)">192.168.0.187</Value>
     </Setting>
     <Setting Name="ConnectionLogin" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">CCMAdministrator</Value>
+      <Value Profile="(Default)">dbdude</Value>
     </Setting>
     <Setting Name="ConnectionPW" Type="System.String" Scope="Application">
       <Value Profile="(Default)">ecsbulab</Value>
