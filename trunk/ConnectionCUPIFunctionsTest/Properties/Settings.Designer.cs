@@ -25,7 +25,7 @@ namespace ConnectionCUPIFunctionsTest.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("192.168.0.188")]
+        [global::System.Configuration.DefaultSettingValueAttribute("192.168.0.187")]
         public string ConnectionServer {
             get {
                 return ((string)(this["ConnectionServer"]));
@@ -34,7 +34,7 @@ namespace ConnectionCUPIFunctionsTest.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("CCMAdministrator")]
+        [global::System.Configuration.DefaultSettingValueAttribute("dbdude")]
         public string ConnectionLogin {
             get {
                 return ((string)(this["ConnectionLogin"]));
