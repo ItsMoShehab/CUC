@@ -41,7 +41,14 @@ namespace ConnectionCUPIFunctionsTest
             if (_tempContact != null)
             {
                 WebCallResult res = _tempContact.Delete();
-                Assert.IsTrue(res.Success, "Failed to delete temporary contact on cleanup.");
+                if (res.Success == false)
+                {
+                    Console.WriteLine("Failed to delete temporary contact on cleanup!" + res);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Contact null in post class cleanup.");
             }
         }
 
