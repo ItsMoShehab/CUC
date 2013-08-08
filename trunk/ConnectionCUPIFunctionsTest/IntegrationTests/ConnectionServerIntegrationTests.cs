@@ -19,16 +19,34 @@ namespace ConnectionCUPIFunctionsTest
 
         #region Fields and Properties
 
+        private static InterviewHandler _tempInterviewer;
+
         #endregion
 
 
         #region Additional test attributes
 
-        //Use ClassInitialize to run code before running the first test in the class
         [ClassInitialize]
         public new static void MyClassInitialize(TestContext testContext)
         {
             BaseIntegrationTests.MyClassInitialize(testContext);
+
+            List<UserBase> tempUser;
+            UserBase.GetUsers(_connectionServer, out tempUser, 1, 1);
+            
+            string strAlias = "TempInterviewer_" + Guid.NewGuid().ToString().Replace("-", "");
+            var res = InterviewHandler.AddInterviewHandler(_connectionServer, strAlias, tempUser[0].ObjectId, "", null, out _tempInterviewer);
+            Assert.IsTrue(res.Success, "Failed creating temporary interviewer:" + res.ToString());
+        }
+
+        [ClassCleanup]
+        public static void MyClassCleanup()
+        {
+            if (_tempInterviewer != null)
+            {
+                var res = _tempInterviewer.Delete();
+                Assert.IsTrue(res.Success, "Failed to delete temporary interview handler on cleanup");
+            }
         }
 
         #endregion

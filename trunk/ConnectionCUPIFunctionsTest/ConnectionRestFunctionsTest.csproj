@@ -92,7 +92,8 @@
     <Compile Include="IntegrationTests\SearchSpaceAndPartitionIntegrationTests.cs" />
     <Compile Include="IntegrationTests\ServerResponseJsonParsingTests.cs" />
     <Compile Include="IntegrationTests\SmppProviderIntegrationTests.cs" />
-    <Compile Include="IntegrationTests\TenantIntegrationTests.cs" />
+    <Compile Include="TenantTests\ServerResponseJsonParsingTests.cs" />
+    <Compile Include="TenantTests\TenantIntegrationTests.cs" />
     <Compile Include="IntegrationTests\TimeZoneIntegrationTests.cs" />
     <Compile Include="IntegrationTests\TransferOptionIntegrationTests.cs" />
     <Compile Include="IntegrationTests\UserLdapIntegrationTests.cs" />

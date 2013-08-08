@@ -20,8 +20,7 @@ namespace ConnectionCUPIFunctionsTest
         private static Contact _tempContact;
         private static InterviewHandler _tempInterviewer;
         private static PostGreetingRecording _tempRecording;
-        private static Tenant _tempTenant;
-        
+       
         private static string _errorString;
 
         #endregion
@@ -44,7 +43,7 @@ namespace ConnectionCUPIFunctionsTest
             _connectionServer.ErrorEvents += ServerOnErrorEvents;
 
             //create new list with GUID in the name to ensure uniqueness
-            String strAlias = "TempUser_" + Guid.NewGuid().ToString().Replace("-", "");
+            String strAlias = "TempUserServerResp_" + Guid.NewGuid().ToString().Replace("-", "");
 
             //generate a random number and tack it onto the end of some zeros so we're sure to avoid any legit numbers on the system.
             Random random = new Random();
@@ -55,7 +54,7 @@ namespace ConnectionCUPIFunctionsTest
             var res = UserBase.AddUser(_connectionServer, "voicemailusertemplate", strAlias, strExtension, null, out _tempUser);
             Assert.IsTrue(res.Success, "Failed creating temporary user:" + res.ToString());
 
-            strAlias = "TempContact_" + Guid.NewGuid().ToString().Replace("-", "");
+            strAlias = "TempContactJsn_" + Guid.NewGuid().ToString().Replace("-", "");
             res = Contact.AddContact(_connectionServer, "systemcontacttemplate", strAlias, "", "", strAlias, null, out _tempContact);
             Assert.IsTrue(res.Success, "Failed creating temporary contact:" + res.ToString());
 
@@ -67,9 +66,6 @@ namespace ConnectionCUPIFunctionsTest
             res = PostGreetingRecording.AddPostGreetingRecording(_connectionServer, strAlias, out _tempRecording);
             Assert.IsTrue(res.Success, "Failed creating temporary post greeting recording:" + res.ToString());
 
-            strAlias = "Tenant_" + Guid.NewGuid().ToString().Replace("-", "").Substring(0, 13);
-            res = Tenant.AddTenant(_connectionServer, strAlias, strAlias + ".org", strAlias, out _tempTenant);
-            Assert.IsTrue(res.Success,"Failed to create temproary teannt:"+res);
         }
 
         [ClassCleanup]
@@ -98,11 +94,6 @@ namespace ConnectionCUPIFunctionsTest
                 Assert.IsTrue(res.Success,"Failed to delete temporary post greeting recording on cleanup");
             }
 
-            if (_tempTenant != null)
-            {
-                var res = _tempTenant.Delete();
-                Assert.IsTrue(res.Success,"Failed to delete temporary tenant on cleanup");
-            }
         }
 
         #endregion
@@ -581,16 +572,6 @@ namespace ConnectionCUPIFunctionsTest
             List<SmppProvider> oSmppProviders;
             var res = SmppProvider.GetSmppProviders(_connectionServer, out oSmppProviders, 1, 2);
             Assert.IsTrue(res.Success & oSmppProviders.Count > 0, "Failed to fetch SMPPPRovider:" + res);
-            Assert.IsTrue(string.IsNullOrEmpty(_errorString), _errorString);
-        }
-
-        [TestMethod]
-        public void Tenant_Test()
-        {
-            _errorString = "";
-            List<Tenant> oTenants;
-            var res = Tenant.GetTenants(_connectionServer, out oTenants);
-            Assert.IsTrue(res.Success & oTenants.Count > 0, "Failed to fetch Tenants:" + res);
             Assert.IsTrue(string.IsNullOrEmpty(_errorString), _errorString);
         }
 

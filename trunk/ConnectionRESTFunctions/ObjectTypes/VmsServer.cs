@@ -84,6 +84,9 @@ namespace Cisco.UnityConnection.RestFunctions
         public string IpAddress { get; private set; }
 
         [JsonProperty]
+        public string IpAddressV6 { get; private set; }
+
+        [JsonProperty]
         public string ObjectId { get; private set; }
 
         [JsonProperty]

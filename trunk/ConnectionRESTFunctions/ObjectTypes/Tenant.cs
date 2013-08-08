@@ -92,20 +92,9 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Tenant Properties
 
-        [JsonProperty]
-        public string ObjectId { get; private set; }
 
         [JsonProperty]
         public string Alias { get; private set; }
-
-        [JsonProperty]
-        public DateTime CreationDate { get; private set; }
-
-        [JsonProperty]
-        public string Description { get; private set; }
-
-        [JsonProperty]
-        public string SmtpDomain { get; private set; }
 
         [JsonProperty]
         public string AttributeObjectId { get; private set; }
@@ -114,14 +103,34 @@ namespace Cisco.UnityConnection.RestFunctions
         public TenantAttributeType AttributeType { get; private set; }
 
         [JsonProperty]
+        public DateTime CreationDate { get; private set; }
+
+        [JsonProperty]
+        public string Description { get; private set; }
+
+        [JsonProperty]
+        public int Language { get; private set; }
+
+        [JsonProperty]
         public string MailboxStoreObjectId { get; private set; }
+
+        [JsonProperty]
+        public string ObjectId { get; private set; }
 
         [JsonProperty]
         public string PhoneSystemObjectId { get; private set; }
 
         [JsonProperty]
         public string PartitionObjectId { get; private set; }
-        
+
+        [JsonProperty]
+        public string SmtpDomain { get; private set; }
+
+        [JsonProperty]
+        public string TimeZone { get; private set; }
+
+
+
         #endregion
 
 

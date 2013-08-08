@@ -34,7 +34,7 @@ namespace ConnectionCUPIFunctionsTest
             BaseIntegrationTests.MyClassInitialize(testContext);
 
             //create new list with GUID in the name to ensure uniqueness
-            String strUserAlias = "TempUser_" + Guid.NewGuid().ToString().Replace("-", "");
+            String strUserAlias = "TempUserMsgInt_" + Guid.NewGuid().ToString().Replace("-", "");
 
             //generate a random number and tack it onto the end of some zeros so we're sure to avoid any legit numbers on the system.
             Random random = new Random();
