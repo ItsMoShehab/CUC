@@ -1463,7 +1463,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (pConnectionServer == null)
             {
-                res.ErrorText = "Null ConnectionServer passed to UploadVoiceMessageResourceId on HttpFunctions.cs";
+                res.ErrorText = "Null ConnectionServer passed to UploadVoiceMessageResourceId on RestTransportFunctions.cs";
                 return res;
             }
 
