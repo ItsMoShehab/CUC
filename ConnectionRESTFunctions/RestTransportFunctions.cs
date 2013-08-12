@@ -78,12 +78,16 @@ namespace Cisco.UnityConnection.RestFunctions
         /// when attaching to Connection servers.
         /// Also sets up the global JsonSerializerSettings for raising an error on a missing property.
         /// </summary>
-        public RestTransportFunctions()
+        public RestTransportFunctions(bool pAllowSelfSignedCertificates=true)
         {
             DebugMode = false;
 
             //handle self signed certificates
-            ServicePointManager.ServerCertificateValidationCallback += ValidateRemoteCertificate;
+            if (pAllowSelfSignedCertificates)
+            {
+                ServicePointManager.ServerCertificateValidationCallback += ValidateRemoteCertificate;
+            }
+
             ServicePointManager.Expect100Continue = false;
             
             //Json serializer settings - we hook the event message for errors that is exposed via the errorevent we we can log missing properties

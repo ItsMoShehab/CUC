@@ -201,7 +201,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// default constructor - initalize everything to blank/0s and create a RestTransportFunctions instance
         /// if one is not provided.
         /// </summary>
-        public ConnectionServerRest(IConnectionRestCalls pTransportFunctions)
+        public ConnectionServerRest(IConnectionRestCalls pTransportFunctions, bool pAllowSelfSignedCertificates=true)
         {
             ServerName = "";
             LoginName = "";
@@ -211,7 +211,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (pTransportFunctions == null)
             {
-                _transportFunctions=new RestTransportFunctions();
+                _transportFunctions=new RestTransportFunctions(pAllowSelfSignedCertificates);
                 return;
             }
 
@@ -238,11 +238,16 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pLoginAsAdministrator">
         /// When validating the login credentials of a user (as opposed to an admin) pass this as false instead
         /// </param>
+        /// <param name="pAllowSelfSignedCertificates">
+        /// If passed as true the errors about self signed certificates will be suppressed - this is the default.  Passed as false 
+        /// only valid signed certificates will be accepted when authenticating with a server.
+        /// </param>
         /// <returns>
         /// Instance of the ConnectionServer class
         /// </returns>
-        public ConnectionServerRest (IConnectionRestCalls pTransportFunctions, string pServerName, string pLoginName, string pLoginPw, 
-            bool pLoginAsAdministrator=true) : this(pTransportFunctions)
+        public ConnectionServerRest (IConnectionRestCalls pTransportFunctions, string pServerName, string pLoginName, string pLoginPw,
+            bool pLoginAsAdministrator = true, bool pAllowSelfSignedCertificates = true)
+            : this(pTransportFunctions,pAllowSelfSignedCertificates)
         {
             BaseUrl = string.Format("https://{0}:8443/vmrest/", pServerName);
             Version = new ConnectionVersion(0,0,0,0,0);
@@ -282,20 +287,7 @@ namespace Cisco.UnityConnection.RestFunctions
             LoginPw = pLoginPw;
         }
 
-        /// <summary>
-        /// Hook the JSON.NET serialization error event and "pinwheel" it up as an error event off the server object.
-        /// Ignore all errors about URIs being missing - those are bogus since they're unnecessary.
-        /// </summary>
-        private void JsonParseError(object sender, ErrorEventArgs errorEventArgs)
-        {
-            if (errorEventArgs.ErrorContext.Member.ToString().ToLower().Contains("uri"))
-            {
-                return;
-            }
-            RaiseErrorEvent(string.Format("[ERROR] JSON serialization error: [{0}]:{1}", errorEventArgs.CurrentObject.GetType().Name,
-                    errorEventArgs.ErrorContext.Error.Message));
-        }
-
+        
 
         /// <summary>
         /// Constructor for the ConnectionServer class that allows the caller to provide the server name, login name and login password 
@@ -314,11 +306,16 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pLoginAsAdministrator">
         /// When validating the login credentials of a user (as opposed to an admin) pass this as false instead
         /// </param>
+        /// <param name="pAllowSelfSignedCertificates">
+        /// If passed as true the errors about self signed certificates will be suppressed - this is the default.  Passed as false 
+        /// only valid signed certificates will be accepted when authenticating with a server.
+        /// </param>
         /// <returns>
         /// Instance of the ConnectionServer class
         /// </returns>
-        public ConnectionServerRest(string pServerName, string pLoginName, string pLoginPw, bool pLoginAsAdministrator = true)
-            : this(null,pServerName,pLoginName,pLoginPw,pLoginAsAdministrator)
+        public ConnectionServerRest(string pServerName, string pLoginName, string pLoginPw,
+            bool pLoginAsAdministrator = true, bool pAllowSelfSignedCertificates=true)
+            : this(null, pServerName, pLoginName, pLoginPw, pLoginAsAdministrator, pAllowSelfSignedCertificates)
         {
         }
 
@@ -1233,6 +1230,21 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region Helper Methods
+
+        /// <summary>
+        /// Hook the JSON.NET serialization error event and "pinwheel" it up as an error event off the server object.
+        /// Ignore all errors about URIs being missing - those are bogus since they're unnecessary.
+        /// </summary>
+        private void JsonParseError(object sender, ErrorEventArgs errorEventArgs)
+        {
+            if (errorEventArgs.ErrorContext.Member.ToString().ToLower().Contains("uri"))
+            {
+                return;
+            }
+            RaiseErrorEvent(string.Format("[ERROR] JSON serialization error: [{0}]:{1}", errorEventArgs.CurrentObject.GetType().Name,
+                    errorEventArgs.ErrorContext.Error.Message));
+        }
+
 
         /// <summary>
         /// Generic method for fetching a list of objects from an Json - works for all class types
