@@ -201,5 +201,119 @@ namespace ConnectionCUPIFunctionsTest
             bool bTemp = "item6".ContainedInList("item1", "item2", "item3", "item4", "item5");
             Assert.IsFalse(bTemp, "Returned true incorrectly for list membership check");
         }
+
+        [TestMethod]
+        public void UriSafe_EmptyString()
+        {
+            string ret = "".UriSafe();
+            Assert.IsTrue(string.IsNullOrEmpty(ret), "Empty string to UriSafe should return empty string");
+        }
+
+        [TestMethod]
+        public void UriSafe_RemoveSpace()
+        {
+            string ret = "string with spaces".UriSafe();
+            Assert.IsFalse(ret.Contains(" "), "Spaces should be removed by UriSafe");
+        }
+
+        [TestMethod]
+        public void UriSafe_RemoveAndSign()
+        {
+            string ret = "string&with&Ands".UriSafe();
+            Assert.IsFalse(ret.Contains("&"), "And signs should be removed by UriSafe");
+        }
+
+        [TestMethod]
+        public void UriSafe_RemoveQuestionMark()
+        {
+            string ret = "string?with?QuestionMarks".UriSafe();
+            Assert.IsFalse(ret.Contains("?"), "Question marks should be removed by UriSafe");
+        }
+
+        [TestMethod]
+        public void UriSafe_RemoveSemiColon()
+        {
+            string ret = "string;with;SemiColons".UriSafe();
+            Assert.IsFalse(ret.Contains(";"), "Semi colons should be removed by UriSafe");
+        }
+
+        [TestMethod]
+        public void HtmlBodySafe_EmptyString()
+        {
+            string ret = "".HtmlBodySafe();
+            Assert.IsTrue(string.IsNullOrEmpty(ret), "Empty string input to HtmlBodySafe should return empty string");
+        }
+
+        [TestMethod]
+        public void HtmlBodySafe_RemoveAndSign()
+        {
+            string ret = "string&withAnds".HtmlBodySafe();
+            Assert.IsTrue(ret.Contains("&#38;"), "And signs should be replaced by &#38; by HtmlBodySafe");
+        }
+
+        [TestMethod]
+        public void TrimToEndOfToken_EmptyString()
+        {
+            string ret = "".TrimToEndOfToken("junk");
+            Assert.IsTrue(string.IsNullOrEmpty(ret), "Empty string to TrimToEndOfToken should return empty string");
+        }
+
+        [TestMethod]
+        public void TrimToEndOfToken_EmptyToken()
+        {
+            const string strString = "Junk";
+            string ret = strString.TrimToEndOfToken("");
+            Assert.IsTrue(ret.Equals(strString), "Empty token passed to TrimToEndOfToken should return original string");
+        }
+
+        [TestMethod]
+        public void TrimToEndOfToken_NoTokenMatch()
+        {
+            const string strString = "testing string with no token in it";
+            string ret = strString.TrimToEndOfToken("junk");
+            Assert.IsTrue(ret.Equals(strString), "If token does not appear in string, string should be returned unchanged");
+        }
+
+        [TestMethod]
+        public void TrimToEndOfToken_TokenMatch()
+        {
+            const string strString = "testing string with no token in it";
+            const string strExpected = "no token in it";
+            string ret = strString.TrimToEndOfToken("with ");
+            Assert.IsTrue(ret.Equals(strExpected), "String not trimed from token:" + ret);
+        }
+
+
+        [TestMethod]
+        public void TrimTokenFromEnd_EmptyString()
+        {
+            string ret = "".TrimTokenFromEnd("junk");
+            Assert.IsTrue(string.IsNullOrEmpty(ret), "Empty string to TrimTokenFromEnd should return empty string");
+        }
+
+        [TestMethod]
+        public void TrimTokenFromEnd_EmptyToken()
+        {
+            const string strString = "Junk";
+            string ret = strString.TrimTokenFromEnd("");
+            Assert.IsTrue(ret.Equals(strString), "Empty token passed to TrimTokenFromEnd should return original string");
+        }
+
+        [TestMethod]
+        public void TrimTokenFromEnd_TokenMatch()
+        {
+            const string strString = "testing string with no token in it";
+            const string strExpected = "testing string with no";
+            string ret = strString.TrimTokenFromEnd(" token in it");
+            Assert.IsTrue(ret.Equals(strExpected), "Token not trimmed form end:" + ret);
+        }
+
+        [TestMethod]
+        public void TrimTokenFromEnd_NoTokenFound()
+        {
+            const string strString = "testing string with no token in it";
+            string ret = strString.TrimTokenFromEnd("junk");
+            Assert.IsTrue(ret.Equals(strString), "If token not found original string should be returned:" + ret);
+        }
     }
 }
