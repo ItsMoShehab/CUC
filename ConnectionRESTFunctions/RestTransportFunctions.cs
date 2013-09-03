@@ -341,7 +341,6 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 pServer.LastSessionCookie = "";
                 pServer.TimeSessionCookieIssued = DateTime.Now;
-                return;
             }
 
 
