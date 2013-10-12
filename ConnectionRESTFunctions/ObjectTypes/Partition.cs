@@ -23,6 +23,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// The partition class is used only to provide an interface for user to select a partition from those configured on the Connection server.  You
     /// cannot create/edit/delete partitions through the ConnectionCUPIFunctions library. 
     /// </summary>
+    [Serializable]
     public class Partition :IUnityDisplayInterface
     {
 

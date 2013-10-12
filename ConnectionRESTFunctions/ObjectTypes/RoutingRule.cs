@@ -10,6 +10,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// Class for fetching, adding, editing and deleting routing rules.
     /// </summary>
+    [Serializable]
     public class RoutingRule :IUnityDisplayInterface
     {
 

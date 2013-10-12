@@ -9,6 +9,7 @@
 
 #endregion
 
+using System;
 using System.Reflection;
 using System.Text;
 using Newtonsoft.Json;
@@ -18,6 +19,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// simple read only class for values in a server instance that's returned as a member of a cluster
     /// </summary>
+    [Serializable]
     public class Server : IUnityDisplayInterface
     {
 

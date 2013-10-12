@@ -23,6 +23,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// You cannot add/delete or edit global users - only search them (alias/extension/first/last/display name etc...) to find their home server which 
     /// will then let you connection to that server for more robust API access to that user account. 
     /// </summary>
+    [Serializable]
     public class GlobalUser :IUnityDisplayInterface
     {
 

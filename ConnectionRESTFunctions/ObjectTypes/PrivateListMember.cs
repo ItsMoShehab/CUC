@@ -22,6 +22,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Class for fetching and enumerating private list members - creation of new members happens at the PrivateList
     /// class level, this is a read only construction.
     /// </summary>
+    [Serializable]
     public class PrivateListMember
     {
 

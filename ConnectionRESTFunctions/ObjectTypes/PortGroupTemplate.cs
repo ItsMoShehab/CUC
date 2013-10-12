@@ -22,6 +22,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// The ObjectIds for PortGroup templates are needed when creating new port groups - they setup the details for
     /// SIP vs SCCP vs PIMG/TIMG phone system integrations.
     /// </summary>
+    [Serializable]
     public class PortGroupTemplate
     {
 

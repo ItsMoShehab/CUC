@@ -28,6 +28,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// application is NOT designed to be thread safe so it's assumed you are communicating to one server at a time.  That said there is basic
     /// thread locking functionality put into the GetResponse method to prevent messy accidents.
     /// </summary>
+    [Serializable]
     public class RestTransportFunctions :IConnectionRestCalls
     {
 

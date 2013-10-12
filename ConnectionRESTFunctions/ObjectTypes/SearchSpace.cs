@@ -21,6 +21,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// Class that contains methods for finding, fetching, adding, updating and deleting search space object in Connection
     /// </summary>
+    [Serializable]
     public class SearchSpace :IUnityDisplayInterface
     {
 

@@ -22,6 +22,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// The restriction table class is used only to provide an interface for user to select restriction tables for assignment to COS 
     /// instances.  
     /// </summary>
+    [Serializable]
     public class RestrictionTable : IUnityDisplayInterface
     {
 

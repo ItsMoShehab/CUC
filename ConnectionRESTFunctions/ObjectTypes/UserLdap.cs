@@ -9,6 +9,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// When importing users via LDAP this class is used for fetching available users and actually doing the 
     /// user imports
     /// </summary>
+    [Serializable]
     public class UserLdap : IUnityDisplayInterface
     {
 

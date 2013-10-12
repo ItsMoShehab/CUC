@@ -24,6 +24,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// via the CUPI interface.  This class also contains a number of static and instance methods for finding, deleting, editing and listing
     /// Notification Devices.
     /// </summary>
+    [Serializable]
     public class NotificationDevice : IUnityDisplayInterface
     {
 

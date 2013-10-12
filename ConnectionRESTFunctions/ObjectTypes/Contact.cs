@@ -22,6 +22,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// Class for adding, editing, deleting and fetching/searching for contact objects in Connection.
     /// </summary>
+    [Serializable]
     public class Contact :IUnityDisplayInterface
     {
         

@@ -149,6 +149,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// with - this is not on by default, even for the administrator account you create during install - you must manually add it.
     /// Without the role the message list returned will always be empty.
     /// </summary>
+    [Serializable]
     public class UserMessage
     {
 

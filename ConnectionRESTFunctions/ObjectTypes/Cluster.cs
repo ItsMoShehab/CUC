@@ -19,6 +19,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// as opposed to instances of itself - one cluster instance needs to be created (no static methods) and 1 or 2 server(s) will be available in the 
     /// public Servers property (generic list) based on the cluster configuration.
     /// </summary>
+    [Serializable]
     public class Cluster
     {
 

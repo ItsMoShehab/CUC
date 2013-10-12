@@ -11,7 +11,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
@@ -19,6 +18,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// Class to hold all the data for Connection timezone definitions
     /// </summary>
+    [Serializable]
     public class ConnectionTimeZone
     {
 
@@ -79,6 +79,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Class that will fetch all the timezones defined on a Connection server and allow fetching timezone definitions from that collection
     /// by Timezone ID.
     /// </summary>
+    [Serializable]
     public class TimeZones
     {
 

@@ -9,6 +9,7 @@
 
 #endregion
 
+using System;
 using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
@@ -16,6 +17,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// simple read only class for providing lists of schedule set members
     /// </summary>
+    [Serializable]
     public class ScheduleSetMember
     {
 

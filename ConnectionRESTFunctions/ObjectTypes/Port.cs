@@ -23,6 +23,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// Class that provides methods for fetching details about ports, creating, updating and deleting them
     /// </summary>
+    [Serializable]
     public class Port
     {
 

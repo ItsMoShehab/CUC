@@ -24,6 +24,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// AddQuickSchedule static method that can add a schedule set associated schedule and associated schedule details to make
     /// a fully formed schedule set object and sub objects in one step for common scheduling needs.
     /// </summary>
+    [Serializable]
     public class ScheduleSet : IUnityDisplayInterface
     {
 

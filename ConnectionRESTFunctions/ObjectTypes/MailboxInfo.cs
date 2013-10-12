@@ -21,6 +21,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// NOTE: The administrator account you are authenticated with must have the "Mailbox Access Delegate Account" role for this to work.  This
     /// role is NOT applied to administrator accounts by default.    
     /// </summary>
+    [Serializable]
     public class MailboxInfo
     {
 

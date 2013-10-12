@@ -20,6 +20,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// Class that allows for the fetching, creating and deleting of codecs associated with port groups.
     /// </summary>
+    [Serializable]
     public class PortGroupCodec
     {
 

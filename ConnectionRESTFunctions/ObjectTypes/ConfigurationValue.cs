@@ -21,6 +21,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// Class that allows for fetching all or some or specific system configuration values.  This is a read only class currently.
     /// </summary>
+    [Serializable]
     public class ConfigurationValue
     {
 

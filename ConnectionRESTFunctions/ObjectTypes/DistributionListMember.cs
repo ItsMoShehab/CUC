@@ -24,6 +24,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// cannot fetch individual member - only the full list of members associated with a list can be created and returned. 
     /// You can add/remove members from a list going through the DistributionList class.  The DistributionListMember class here is for presentation of the membership
     /// </summary>
+    [Serializable]
     public class DistributionListMember : IUnityDisplayInterface
     {
 

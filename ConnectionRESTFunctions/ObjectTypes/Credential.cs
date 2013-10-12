@@ -19,6 +19,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// Read only class that provides methods to fetch TUI or GUI credentials for users
     /// </summary>
+    [Serializable]
     public class Credential
     {
 
