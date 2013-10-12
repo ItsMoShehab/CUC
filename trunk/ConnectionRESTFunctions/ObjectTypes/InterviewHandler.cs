@@ -24,6 +24,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// CUPI interface.  This class also contains a number of static and instance methods for finding and listing interview handlers.  At the time
     /// of this writing CUPI does not support creating, deleting or editing interview handlers or fetching/setting voice names.
     /// </summary>
+    [Serializable]
     public class InterviewHandler : IUnityDisplayInterface
     {
 

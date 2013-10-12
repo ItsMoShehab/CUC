@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
@@ -8,6 +10,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// to the function.
     /// We could use a prebuilt class such as a dictionary or hash table or the like but I prefer to be explicit with these classes thougout.
     /// </summary>
+    [Serializable]
     public class ConnectionObjectPropertyPair
     {
         public string PropertyName;

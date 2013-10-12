@@ -23,6 +23,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// The phone system class provides methods for fetching, creating, updtaing and deleting phone system objects in the Unity 
     /// Connection directory
     /// </summary>
+    [Serializable]
     public class PhoneSystem :IUnityDisplayInterface
     {
 

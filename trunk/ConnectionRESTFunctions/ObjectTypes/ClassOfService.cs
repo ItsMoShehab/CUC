@@ -23,6 +23,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// via the CUPI interface.  This class also contains a number of static and instance methods for finding, editing, adding, deleting
     /// and listing COS isntances.  
     /// </summary>
+    [Serializable]
     public class ClassOfService :IUnityDisplayInterface
     {
 

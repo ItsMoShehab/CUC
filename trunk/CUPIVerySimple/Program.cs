@@ -38,7 +38,7 @@ namespace CUPIVerySimple
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
-                connectionServer = new ConnectionServerRest ("lindborgload7.cisco.com", "CCMAdministrator", "ecsbulab");
+                connectionServer = new ConnectionServerRest ("192.168.0.178", "CCMAdministrator", "ecsbulab");
             }
 
             catch (Exception ex)
@@ -65,11 +65,19 @@ namespace CUPIVerySimple
             //the WebCallResult is the structure returned on most calls into the CUPIFunctions library.
             WebCallResult res;
 
+            CallHandler oMyCallHandler;
+            res = CallHandler.GetCallHandler(out oMyCallHandler, connectionServer, "", "Opening Greeting");
+
+            oMyCallHandler.FlagAllPropertiesForUpdate();
+
+            res = oMyCallHandler.Update();
+            Console.WriteLine(res);
+
             //fetch user with alias of "jlindborg" - we will be sending the message from his 
             //mailbox.
             UserFull oUserTestDude;
 
-            res = UserBase.GetUser(out oUserTestDude, connectionServer, "", "jlindborg");
+            res = UserBase.GetUser(out oUserTestDude, connectionServer, "", "operator");
             if (res.Success == false)
             {
                 Console.WriteLine(res);

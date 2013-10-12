@@ -20,6 +20,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// The SMPP Provider class is used only to provide an interface for user to select which provider to use when creating new SMS notification 
     /// devices. 
     /// </summary>
+    [Serializable]
     public class SmppProvider :IUnityDisplayInterface
     {
 

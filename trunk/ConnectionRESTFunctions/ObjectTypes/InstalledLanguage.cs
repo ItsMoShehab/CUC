@@ -9,6 +9,7 @@
 
 #endregion
 
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
@@ -19,6 +20,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Class that allows for a static method to fetch the list of installed languages for all purposes in Connection and returning it as a generic
     /// list of installed languages.
     /// </summary>
+    [Serializable]
     public class InstalledLanguage
     {
 

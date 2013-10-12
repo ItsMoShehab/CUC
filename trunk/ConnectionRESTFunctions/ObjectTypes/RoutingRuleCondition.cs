@@ -11,6 +11,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// condition, you simply delete them and add a new one with the properties you want.  Order does not matter as all 
     /// conditions must evaluate to true for the rule to fire.
     /// </summary>
+    [Serializable]
     public class RoutingRuleCondition
     {
         #region Constructors and Destructors

@@ -11,6 +11,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Class that provides methods to fetch and update questions associated with interview handlers (20 each).
     /// Includes methods to upload WAV file as recorded media for questions.
     /// </summary>
+    [Serializable]
     public class InterviewQuestion : IUnityDisplayInterface
     {
 

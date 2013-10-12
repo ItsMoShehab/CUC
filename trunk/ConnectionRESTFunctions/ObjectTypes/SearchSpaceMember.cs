@@ -9,6 +9,7 @@
 
 #endregion
 
+using System;
 using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
@@ -16,6 +17,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// Mapping class used to fetch partitions associated with a search space (if any)
     /// </summary>
+    [Serializable]
     public class SearchSpaceMember
     {
         public string ObjectId { get; set; }

@@ -25,7 +25,7 @@ namespace Cisco.UnityConnection.RestFunctions
     // Class to hold the Connection version information - this is gathered when the server is attached to along with a few other
     // commonly needed items such as the primary location object ID.
     #region Version Class
-
+    [Serializable]
     public class ConnectionVersion
     {
         public int Major;
@@ -97,6 +97,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Primary class for teh ConnectionRestFunctions library.  This is used to connect to and get/set data to and from a remote Connection
     /// server via the CUPI REST based web interface.
     /// </summary>
+    [Serializable]
     public class ConnectionServerRest
     {
 

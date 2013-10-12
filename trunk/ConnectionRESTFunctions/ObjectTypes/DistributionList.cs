@@ -24,6 +24,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// CUPI interface.  This class also contains a number of static and instance methods for finding, deleting, editing and listing 
     /// distribution lists.
     /// </summary>
+    [Serializable]
     public class DistributionList:IUnityDisplayInterface
     {
         #region Constructors and Destructors

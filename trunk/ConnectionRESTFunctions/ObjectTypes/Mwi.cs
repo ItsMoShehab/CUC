@@ -23,6 +23,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// via the CUPI interface.  This class also contains a number of static and instance methods for finding, deleting, editing and listing
     /// MWIs.
     /// </summary>
+    [Serializable]
     public class Mwi : IUnityDisplayInterface
     {
 

@@ -22,6 +22,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Read only class for fetching and listing notification templates - these are used when creating HTML notification devices
     /// in Connection 9.0 and later systems.
     /// </summary>
+    [Serializable]
     public class NotificationTemplate :IUnityDisplayInterface
     {
 

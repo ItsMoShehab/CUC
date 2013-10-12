@@ -24,6 +24,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// as all handlers associated with a tenant and setting additional COS and schedule objects to an existing 
     /// tenant.
     /// </summary>
+    [Serializable]
     public class Tenant : IUnityDisplayInterface
     {
 

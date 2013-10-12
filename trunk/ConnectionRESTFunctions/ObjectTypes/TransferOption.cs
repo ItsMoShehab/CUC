@@ -23,6 +23,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// via the CUPI interface.  This class also contains a number of static and instance methods for finding, editing and listing
     /// transfer rules.  You cannot add or remove transfer rules.
     /// </summary>
+    [Serializable]
     public class TransferOption
     {
 

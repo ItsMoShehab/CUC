@@ -18,6 +18,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// Read only class for fetching the list of supported RTP codecs from a Connection server.
     /// </summary>
+    [Serializable]
     public class RtpCodecDef
     {
 

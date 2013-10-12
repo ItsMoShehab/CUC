@@ -21,6 +21,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Read only class for fetching VMSServer(s) from a Connection server.  There will only ever be 1 or 2 of these in the 
     /// Unity Connection directory depending on if it's a cluster or a single server installation
     /// </summary>
+    [Serializable]
     public class VmsServer
     {
 

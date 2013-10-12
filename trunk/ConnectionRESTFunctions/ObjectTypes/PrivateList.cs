@@ -24,6 +24,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// the CUPI client interface.  This class also contains a number of static and instance methods for finding, deleting, editing and listing 
     /// private distribution lists.
     /// </summary>
+    [Serializable]
     public class PrivateList : IUnityDisplayInterface
     {
         #region Constructors and Destructors

@@ -19,12 +19,13 @@ using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
-        /// <summary>
-        /// The DirectoryHandler class contains all the properties associated with a directory Handler in Unity Connection that can be fetched via the 
-        /// CUPI interface.  This class also contains a number of static and instance methods for finding and listing directory handlers.  At the time
-        /// of this writing CUPI does not support creating, deleting or editing directory handlers or fetching/setting voice names.
-        /// </summary>
-        public class DirectoryHandler : IUnityDisplayInterface
+    /// <summary>
+    /// The DirectoryHandler class contains all the properties associated with a directory Handler in Unity Connection that can be fetched via the 
+    /// CUPI interface.  This class also contains a number of static and instance methods for finding and listing directory handlers.  At the time
+    /// of this writing CUPI does not support creating, deleting or editing directory handlers or fetching/setting voice names.
+    /// </summary>
+    [Serializable]    
+    public class DirectoryHandler : IUnityDisplayInterface
         {
 
             #region Constructors and Destructors

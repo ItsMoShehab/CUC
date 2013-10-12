@@ -23,6 +23,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// Read only class for fetching the post greeting recording instances off a Unity Connection installation
     /// </summary>
+    [Serializable]
     public class PostGreetingRecording :IUnityDisplayInterface
     {
 

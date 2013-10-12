@@ -20,6 +20,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// Read only class that lets you fetch restriction table patternss
     /// </summary>
+    [Serializable]
     public class RestrictionPattern
     {
 

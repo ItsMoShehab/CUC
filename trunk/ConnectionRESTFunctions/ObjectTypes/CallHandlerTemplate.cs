@@ -22,6 +22,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// The call handler template class is used only to provide an interface for user to select which template to use when creating new call 
     /// handlers.  
     /// </summary>
+    [Serializable]
     public class CallHandlerTemplate : IUnityDisplayInterface
     {
 

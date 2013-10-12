@@ -53,6 +53,8 @@
     <Compile Include="ConnectionPropertyList.cs" />
     <Compile Include="EnumExtensions.cs" />
     <Compile Include="IConnectionRestCalls.cs" />
+    <Compile Include="ObjectDeepClone.cs" />
+    <Compile Include="ObjectFlagAllProperties.cs" />
     <Compile Include="ObjectTypes\AlternateExtension.cs" />
     <Compile Include="ObjectTypes\CallHandler.cs" />
     <Compile Include="ConnectionServerRest.cs" />

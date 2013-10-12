@@ -22,6 +22,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Class that provides methods for fetching, adding, updating and deleting port group servers in the Unity Connection
     /// directory
     /// </summary>
+    [Serializable]
     public class PortGroupServer
     {
 

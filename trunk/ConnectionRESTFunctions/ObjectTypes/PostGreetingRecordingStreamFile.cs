@@ -24,6 +24,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// This class contains methods to fetch and set the greeting recordings for a specific language for a greeting.  There are no other
     /// properties on a greeting stream that can be edited.
     /// </summary>
+    [Serializable]
     public class PostGreetingRecordingStreamFile
     {
 

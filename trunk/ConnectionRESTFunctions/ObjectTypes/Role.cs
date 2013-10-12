@@ -19,6 +19,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Read only class for fetching all the roles defined on the Connection server and returning them as a generic list of 
     /// class objects.
     /// </summary>
+    [Serializable]
     public class Role : IUnityDisplayInterface
     {
 

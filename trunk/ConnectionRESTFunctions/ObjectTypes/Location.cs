@@ -22,6 +22,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// The Location class holds data about a Location.
     /// You cannot add/delete or edit locations - only search them - used mostly for finding other servers in a digital Connection network.
     /// </summary>
+    [Serializable]
     public class Location : IUnityDisplayInterface
     {
 

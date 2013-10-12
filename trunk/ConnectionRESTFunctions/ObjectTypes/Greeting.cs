@@ -23,6 +23,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// via the CUPI interface.  This class also contains a number of static and instance methods for finding, editing and listing
     /// greeting rules.  You cannot add or remove greeting rules.
     /// </summary>
+    [Serializable]
     public class Greeting :IUnityDisplayInterface
     {
 

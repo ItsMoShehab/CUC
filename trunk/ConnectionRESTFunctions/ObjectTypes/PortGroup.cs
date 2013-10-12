@@ -23,6 +23,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Class that provides methods for fetching, pdating, deleting and adding port groups in the Unity Connection
     /// directory.
     /// </summary>
+    [Serializable]
     public class PortGroup :IUnityDisplayInterface
     {
 

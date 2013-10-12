@@ -9,50 +9,95 @@ namespace Cisco.UnityConnection.RestFunctions
     /// constructed into HTML body strings in the form of "<PropertyName> PropertyValue </PropertyName>" as a list in the body when, say, updating
     /// values on a user object.
     /// </summary>
+    [Serializable]
     public class ConnectionPropertyList : List<ConnectionObjectPropertyPair>
     {
-        //base constructor
+        /// <summary>
+        /// base constructor
+        /// </summary>
         public ConnectionPropertyList()
         {
         }
 
-        //constructor that takes a property name/value pair
+        /// <summary>
+        /// constructor that takes a property name/value pair
+        /// </summary>
         public ConnectionPropertyList(string pPropertyName, string pPropertyValue)
         {
             Add(pPropertyName, pPropertyValue);
         }
 
-        //Add function allows a new name value pair to be added.
+        private void AddUniqueName(ConnectionObjectPropertyPair pPropertyPair)
+        {
+            if (pPropertyPair == null)
+            {
+                return;
+            }
+
+            //if the property already exists, simply update the value to the latest - last write wins here.
+            foreach (var oItem in this)
+            {
+                if (oItem.PropertyName.Equals(pPropertyPair.PropertyName))
+                {
+                    oItem.PropertyValue = pPropertyPair.PropertyValue;
+                    return;
+                }
+            }
+
+            Add(pPropertyPair);
+        }
+
+        /// <summary>
+        /// Add function allows a new name value pair to be added.
+        /// </summary>
+        /// <param name="pPropertyName">unique name of property for object</param>
+        /// <param name="pPropertyValue">Value to set property to</param>
         public void Add(string pPropertyName, string pPropertyValue)
         {
             ConnectionObjectPropertyPair oPair = new ConnectionObjectPropertyPair(pPropertyName, pPropertyValue);
-            Add(oPair);
+            AddUniqueName(oPair);
         }
 
-        //for adding an integer value
+        /// <summary>
+        /// Add function allows a new name value pair to be added.
+        /// </summary>
+        /// <param name="pPropertyName">unique name of property for object</param>
+        /// <param name="pPropertyValue">Value to set property to</param>
         public void Add(string pPropertyName, int pPropertyValue)
         {
             ConnectionObjectPropertyPair oPair = new ConnectionObjectPropertyPair(pPropertyName,pPropertyValue.ToString());
-            Add(oPair);
+            AddUniqueName(oPair);
         }
 
-        //for adding a boolean value - CUPI needs 0/1 passed instead of "true" or "false" here
+        /// <summary>
+        /// Add function allows a new name value pair to be added.
+        /// </summary>
+        /// <param name="pPropertyName">unique name of property for object</param>
+        /// <param name="pPropertyValue">Value to set property to</param>
         public void Add(string pPropertyName, bool pPropertyValue)
         {
             ConnectionObjectPropertyPair oPair = new ConnectionObjectPropertyPair(pPropertyName, ConnectionServerRest.BoolToString(pPropertyValue));
-            Add(oPair);
+            AddUniqueName(oPair);
         }
 
-        //for adding a date - Informix needs special formatting
+        /// <summary>
+        /// Add function allows a new name value pair to be added.
+        /// </summary>
+        /// <param name="pPropertyName">unique name of property for object</param>
+        /// <param name="pPropertyValue">Value to set property to</param>
         public void Add(string pPropertyName, DateTime pPropertyValue)
         {
             //The Informix time/date format is a little fussy...
             ConnectionObjectPropertyPair oPair = new ConnectionObjectPropertyPair(pPropertyName,
                                                             String.Format("{0:yyyy-MM-dd hh:mm:ss}", pPropertyValue));
-            Add(oPair);
+            AddUniqueName(oPair);
         }
 
-        //adding a nullable date - don't add if it's null
+        /// <summary>
+        /// Add function allows a new name value pair to be added.
+        /// </summary>
+        /// <param name="pPropertyName">unique name of property for object</param>
+        /// <param name="pPropertyValue">Value to set property to</param>
         public void Add(string pPropertyName, DateTime? pPropertyValue)
         {
             if (pPropertyValue == null)
@@ -62,29 +107,49 @@ namespace Cisco.UnityConnection.RestFunctions
             //The Informix time/date format is a little fussy...
             ConnectionObjectPropertyPair oPair = new ConnectionObjectPropertyPair(pPropertyName,
                                                             String.Format("{0:yyyy-MM-dd hh:mm:ss}",pPropertyValue));
-            Add(oPair);
+            AddUniqueName(oPair);
         }
 
-        //Returns true if the value exists and matches the value provided, false if not
+        /// <summary>
+        /// Returns true if the value exists and matches the value provided, false if not
+        /// </summary>
+        /// <param name="pPropertyName">Name of property to check for</param>
+        /// <param name="pValue">value to check for</param>
+        /// <returns>true if the property exists and the value matches</returns>
         public bool ValueExists(string pPropertyName, string pValue)
         {
             return (from oPair in this where oPair.PropertyName.Equals(pPropertyName) select oPair.PropertyValue.Equals(pValue)).FirstOrDefault();
         }
 
-        //Returns true if the value exists and matches the value provided, false if not
+        /// <summary>
+        /// Returns true if the value exists and matches the value provided, false if not
+        /// </summary>
+        /// <param name="pPropertyName">Name of property to check for</param>
+        /// <param name="pValue">value to check for</param>
+        /// <returns>true if the property exists and the value matches</returns>
         public bool ValueExists(string pPropertyName, int pValue)
         {
             return (from oPair in this where oPair.PropertyName.Equals(pPropertyName) select oPair.PropertyValue.Equals(pValue.ToString())).FirstOrDefault();
         }
 
-        //Returns true if the value exists and matches the value provided, false if not
+        /// <summary>
+        /// Returns true if the value exists and matches the value provided, false if not
+        /// </summary>
+        /// <param name="pPropertyName">Name of property to check for</param>
+        /// <param name="pValue">value to check for</param>
+        /// <returns>true if the property exists and the value matches</returns>
         public bool ValueExists(string pPropertyName, bool pValue)
         {
             string strValue= ConnectionServerRest.BoolToString(pValue);
             return (from oPair in this where oPair.PropertyName.Equals(pPropertyName) select oPair.PropertyValue.Equals(strValue)).FirstOrDefault();
         }
 
-        //Returns true if the value exists and matches the value provided, false if not
+        /// <summary>
+        /// Returns true if the value exists and matches the value provided, false if not
+        /// </summary>
+        /// <param name="pPropertyName">Name of property to check for</param>
+        /// <param name="pValue">value to check for</param>
+        /// <returns>true if the property exists and the value matches</returns>
         public bool ValueExists(string pPropertyName, DateTime pValue)
         {
             string strValue= String.Format("{0:yyyy-MM-dd hh:mm:ss}", pValue);

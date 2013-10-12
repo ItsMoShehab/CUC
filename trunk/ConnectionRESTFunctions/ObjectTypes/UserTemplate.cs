@@ -21,6 +21,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// The user template class provides the ability to enumerate, create, edit an delete user templates in the Connection directory.
     /// </summary>
+    [Serializable]
     public class UserTemplate : IUnityDisplayInterface
     {
 

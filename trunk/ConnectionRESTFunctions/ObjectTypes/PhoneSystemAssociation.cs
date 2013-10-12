@@ -9,6 +9,7 @@
 
 #endregion
 
+using System;
 using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
@@ -17,6 +18,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// Object for listing phone system associations for a media switch.  Very simple class with no constructors or 
     /// methods other than the ToStringOverride.  Currently used only in the PhoneSystem class.
     /// </summary>
+    [Serializable]
     public class PhoneSystemAssociation
     {
 
