@@ -130,7 +130,7 @@ namespace Cisco.UnityConnection.RestFunctions
         [JsonProperty]
         public string TimeZone { get; private set; }
 
-
+        public string PilotNumber { get; set; }
 
         #endregion
 
