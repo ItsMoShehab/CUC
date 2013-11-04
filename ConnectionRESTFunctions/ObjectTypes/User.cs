@@ -168,7 +168,7 @@ namespace Cisco.UnityConnection.RestFunctions
             HomeServer = pConnectionServer;
 
             //create a repository to keep track of changed properties on an instance of a user
-            _changedPropList = new ConnectionPropertyList();
+            ChangedPropList = new ConnectionPropertyList();
 
             if (pObjectId.Length == 0 & pAlias.Length == 0) return;
 
@@ -188,7 +188,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public UserBase()
         {
             //create a repository to keep track of changed properties on an instance of a user
-            _changedPropList = new ConnectionPropertyList();
+            ChangedPropList = new ConnectionPropertyList();
         }
 
 
@@ -204,12 +204,12 @@ namespace Cisco.UnityConnection.RestFunctions
         public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
-        internal readonly ConnectionPropertyList _changedPropList;
+        internal readonly ConnectionPropertyList ChangedPropList;
 
         /// <summary>
         /// list of pending property changes on object
         /// </summary>
-        public ConnectionPropertyList ChangeList { get { return _changedPropList; } }
+        public ConnectionPropertyList ChangeList { get { return ChangedPropList; } }
 
         /// <summary>
         /// used for displaying in grids and drop downs
@@ -236,7 +236,7 @@ namespace Cisco.UnityConnection.RestFunctions
             set
             {
                 _alias = value;
-                _changedPropList.Add("Alias", value);
+                ChangedPropList.Add("Alias", value);
             }
         }
 
@@ -259,7 +259,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _city; }
             set
             {
-                _changedPropList.Add("City", value);
+                ChangedPropList.Add("City", value);
                 _city = value;
             }
         }
@@ -271,7 +271,7 @@ namespace Cisco.UnityConnection.RestFunctions
             set
             {
                 _cosObjectId = value;
-                _changedPropList.Add("CosObjectId", value);
+                ChangedPropList.Add("CosObjectId", value);
             }
         }
 
@@ -285,7 +285,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _department; }
             set
             {
-                _changedPropList.Add("Department", value);
+                ChangedPropList.Add("Department", value);
                 _department = value;
             }
         }
@@ -297,7 +297,7 @@ namespace Cisco.UnityConnection.RestFunctions
             set
             {
                 _displayName = value;
-                _changedPropList.Add("DisplayName", value);
+                ChangedPropList.Add("DisplayName", value);
             }
         }
 
@@ -311,7 +311,7 @@ namespace Cisco.UnityConnection.RestFunctions
             set
             {
                 _dtmfAccessId = value;
-                _changedPropList.Add("DtmfAccessId", value);
+                ChangedPropList.Add("DtmfAccessId", value);
             }
         }
 
@@ -321,7 +321,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _employeeId; }
             set
             {
-                _changedPropList.Add("EmployeeId", value);
+                ChangedPropList.Add("EmployeeId", value);
                 _employeeId = value;
             }
         }
@@ -333,7 +333,7 @@ namespace Cisco.UnityConnection.RestFunctions
             set
             {
                 _firstName = value;
-                _changedPropList.Add("FirstName", value);
+                ChangedPropList.Add("FirstName", value);
             }
         }
 
@@ -348,7 +348,7 @@ namespace Cisco.UnityConnection.RestFunctions
             set
             {
                 _isVmEnrolled = value;
-                _changedPropList.Add("IsVmEnrolled", value);
+                ChangedPropList.Add("IsVmEnrolled", value);
             }
         }
 
@@ -363,7 +363,7 @@ namespace Cisco.UnityConnection.RestFunctions
             set
             {
                 _language = value;
-                _changedPropList.Add("Language", value);
+                ChangedPropList.Add("Language", value);
             }
         }
 
@@ -374,7 +374,7 @@ namespace Cisco.UnityConnection.RestFunctions
             set
             {
                 _lastName = value;
-                _changedPropList.Add("LastName", value);
+                ChangedPropList.Add("LastName", value);
             }
         }
 
@@ -389,7 +389,7 @@ namespace Cisco.UnityConnection.RestFunctions
             set
             {
                 _listInDirectory = value;
-                _changedPropList.Add("ListInDirectory", value);
+                ChangedPropList.Add("ListInDirectory", value);
             }
         }
 
@@ -420,7 +420,7 @@ namespace Cisco.UnityConnection.RestFunctions
             set
             {
                 _mediaSwitchObjectId = value;
-                _changedPropList.Add("MediaSwitchObjectId", value);
+                ChangedPropList.Add("MediaSwitchObjectId", value);
             }
         }
 
@@ -449,20 +449,21 @@ namespace Cisco.UnityConnection.RestFunctions
             set
             {
                 _partitionObjectId = value;
-                _changedPropList.Add("PartitionObjectId", value);
+                ChangedPropList.Add("PartitionObjectId", value);
             }
         }
 
         private string _smtpAddress;
         /// <summary>
-        /// SMTP address The full SMTP address for this object
+        /// SMTP address The full SMTP address for this object used internally by Connection.  The corporate email address
+        /// is stored on the EmailAddress property on the UserFull class.
         /// </summary>
         public string SmtpAddress
         {
             get { return _smtpAddress; }
             set
             {
-                _changedPropList.Add("SmtpAddress", value);
+                ChangedPropList.Add("SmtpAddress", value);
                 _smtpAddress = value;
             }
         }
@@ -474,7 +475,7 @@ namespace Cisco.UnityConnection.RestFunctions
             set
             {
                 _timeZone = value;
-                _changedPropList.Add("TimeZone", value);
+                ChangedPropList.Add("TimeZone", value);
             }
         }
 
@@ -485,7 +486,7 @@ namespace Cisco.UnityConnection.RestFunctions
             set
             {
                 _voiceNameRequired = value;
-                _changedPropList.Add("VoiceNameRequired", value);
+                ChangedPropList.Add("VoiceNameRequired", value);
             }
         }
 
@@ -1775,7 +1776,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //the above fetch will set the proeprties as "changed", need to clear them out here
-            _changedPropList.Clear();
+            ChangedPropList.Clear();
 
             return res;
         }
@@ -1897,7 +1898,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public void ClearPendingChanges()
         {
-            _changedPropList.Clear();
+            ChangedPropList.Clear();
         }
 
         /// <summary>
@@ -1913,7 +1914,7 @@ namespace Cisco.UnityConnection.RestFunctions
             WebCallResult res;
 
             //check if the handler intance has any pending changes, if not return false with an appropriate error message
-            if (!_changedPropList.Any())
+            if (!ChangedPropList.Any())
             {
                 res = new WebCallResult();
                 res.Success = false;
@@ -1921,7 +1922,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
             //just call the static method with the info from the instance 
-            res = UpdateUser(this.HomeServer, this.ObjectId, _changedPropList);
+            res = UpdateUser(this.HomeServer, this.ObjectId, ChangedPropList);
 
             //if the update goes through clear the queue of changed items
             if (res.Success)
@@ -2268,7 +2269,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _address; }
             set
             {
-                _changedPropList.Add("Address", value);
+                ChangedPropList.Add("Address", value);
                 _address = value;
             }
         }
@@ -2282,7 +2283,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _addressAfterRecord; }
             set
             {
-                _changedPropList.Add("AddressAfterRecord", value);
+                ChangedPropList.Add("AddressAfterRecord", value);
                 _addressAfterRecord = value;
             }
         }
@@ -2297,7 +2298,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _addressMode; }
             set
             {
-                _changedPropList.Add("AddressMode", (int) value);
+                ChangedPropList.Add("AddressMode", (int) value);
                 _addressMode = value;
             }
         }
@@ -2312,7 +2313,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _announceUpcomingMeetings; }
             set
             {
-                _changedPropList.Add("AnnounceUpcomingMeetings", value);
+                ChangedPropList.Add("AnnounceUpcomingMeetings", value);
                 _announceUpcomingMeetings = value;
             }
         }
@@ -2326,7 +2327,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _assistantRowsPerPage; }
             set
             {
-                _changedPropList.Add("AssistantRowsPerPage", value);
+                ChangedPropList.Add("AssistantRowsPerPage", value);
                 _assistantRowsPerPage = value;
             }
         }
@@ -2337,7 +2338,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _autoAdvanceMsgs; }
             set
             {
-                _changedPropList.Add("AutoAdvanceMsgs", value);
+                ChangedPropList.Add("AutoAdvanceMsgs", value);
                 _autoAdvanceMsgs = value;
             }
         }
@@ -2349,7 +2350,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _billingId; }
             set
             {
-                _changedPropList.Add("BillingId", value);
+                ChangedPropList.Add("BillingId", value);
                 _billingId = value;
             }
         }
@@ -2360,7 +2361,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _building; }
             set
             {
-                _changedPropList.Add("Building", value);
+                ChangedPropList.Add("Building", value);
                 _building = value;
             }
         }
@@ -2374,7 +2375,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _callAnswerTimeout; }
             set
             {
-                _changedPropList.Add("CallAnswerTimeout", value);
+                ChangedPropList.Add("CallAnswerTimeout", value);
                 _callAnswerTimeout = value;
             }
         }
@@ -2406,7 +2407,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _clientMatterCode; }
             set
             {
-                _changedPropList.Add("ClientMatterCode", value);
+                ChangedPropList.Add("ClientMatterCode", value);
                 _clientMatterCode = value;
             }
         }
@@ -2421,7 +2422,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _clockMode; }
             set
             {
-                _changedPropList.Add("ClockMode",(int) value);
+                ChangedPropList.Add("ClockMode",(int) value);
                 _clockMode = value;
             }
         }
@@ -2435,7 +2436,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _confirmationConfidenceThreshold; }
             set
             {
-                _changedPropList.Add("ConfirmationConfidenceThreshold", value);
+                ChangedPropList.Add("ConfirmationConfidenceThreshold", value);
                 _confirmationConfidenceThreshold = value;
             }
         }
@@ -2450,7 +2451,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _confirmDeleteMessage; }
             set
             {
-                _changedPropList.Add("ConfirmDeleteMessage", value);
+                ChangedPropList.Add("ConfirmDeleteMessage", value);
                 _confirmDeleteMessage = value;
             }
         }
@@ -2465,7 +2466,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _confirmDeleteDeletedMessage; }
             set
             {
-                _changedPropList.Add("ConfirmDeleteDeletedMessage", value);
+                ChangedPropList.Add("ConfirmDeleteDeletedMessage", value);
                 _confirmDeleteDeletedMessage = value;
             }
         }
@@ -2476,7 +2477,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _confirmDeleteMultipleMessages; }
             set
             {
-                _changedPropList.Add("ConfirmDeleteMultipleMessages", value);
+                ChangedPropList.Add("ConfirmDeleteMultipleMessages", value);
                 _confirmDeleteMultipleMessages = value;
             }
         }
@@ -2491,7 +2492,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _continuousAddMode; }
             set
             {
-                _changedPropList.Add("ContinuousAddMode", value);
+                ChangedPropList.Add("ContinuousAddMode", value);
                 _continuousAddMode = value;
             }
         }
@@ -2505,7 +2506,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _conversationName; }
             set
             {
-                _changedPropList.Add("ConversationName", value.Description());
+                ChangedPropList.Add("ConversationName", value.Description());
                 _conversationName = value;
             }
         }
@@ -2519,7 +2520,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _conversationTui; }
             set
             {
-                _changedPropList.Add("ConversationTui", value.Description());
+                ChangedPropList.Add("ConversationTui", value.Description());
                 _conversationTui = value;
             }
         }
@@ -2534,7 +2535,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _conversationVui; }
             set
             {
-                _changedPropList.Add("ConversationVui", value);
+                ChangedPropList.Add("ConversationVui", value);
                 _conversationVui = value;
             }
         }
@@ -2549,7 +2550,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _commandDigitTimeout; }
             set
             {
-                _changedPropList.Add("CommandDigitTimeout", value);
+                ChangedPropList.Add("CommandDigitTimeout", value);
                 _commandDigitTimeout = value;
             }
         }
@@ -2560,7 +2561,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _country; }
             set
             {
-                _changedPropList.Add("Country", value);
+                ChangedPropList.Add("Country", value);
                 _country = value;
             }
         }
@@ -2576,7 +2577,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _delayAfterGreeting; }
             set
             {
-                _changedPropList.Add("DelayAfterGreeting", value);
+                ChangedPropList.Add("DelayAfterGreeting", value);
                 _delayAfterGreeting = value;
             }
         }
@@ -2591,7 +2592,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _deletedMessageSortOrder; }
             set
             {
-                _changedPropList.Add("DeletedMessageSortOrder",(int) value);
+                ChangedPropList.Add("DeletedMessageSortOrder",(int) value);
                 _deletedMessageSortOrder = value;
             }
         }
@@ -2619,12 +2620,15 @@ namespace Cisco.UnityConnection.RestFunctions
         public string DtmfNameFirst { get; private set; }
 
         private string _emailAddress;
+        /// <summary>
+        /// The corprorate email address for the user (optional)
+        /// </summary>
         public string EmailAddress
         {
             get { return _emailAddress; }
             set
             {
-                _changedPropList.Add("EmailAddress", value);
+                ChangedPropList.Add("EmailAddress", value);
                 _emailAddress = value;
             }
         }
@@ -2636,7 +2640,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _enableMessageBookmark; }
             set
             {
-                _changedPropList.Add("EnableMessageBookmark", value);
+                ChangedPropList.Add("EnableMessageBookmark", value);
                 _enableMessageBookmark = value;
             }
         }
@@ -2651,7 +2655,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _enablePersonalRules; }
             set
             {
-                _changedPropList.Add("EnablePersonalRules", value);
+                ChangedPropList.Add("EnablePersonalRules", value);
                 _enablePersonalRules = value;
             }
         }
@@ -2665,7 +2669,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _enableMessageLocator; }
             set
             {
-                _changedPropList.Add("EnableMessageLocator", value);
+                ChangedPropList.Add("EnableMessageLocator", value);
                 _enableMessageLocator = value;
             }
         }
@@ -2676,7 +2680,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _enableSaveDraft; }
             set
             {
-                _changedPropList.Add("EnableSaveDraft", value);
+                ChangedPropList.Add("EnableSaveDraft", value);
                 _enableSaveDraft = value;
             }
         }
@@ -2688,7 +2692,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _enableVisualMessageLocator; }
             set
             {
-                _changedPropList.Add("EnableVisualMessageLocator", value);
+                ChangedPropList.Add("EnableVisualMessageLocator", value);
                 _enableVisualMessageLocator = value;
             }
         }
@@ -2702,7 +2706,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _enableTts; }
             set
             {
-                _changedPropList.Add("EnableTts", value);
+                ChangedPropList.Add("EnableTts", value);
                 _enableTts = value;
             }
         }
@@ -2713,7 +2717,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _encryptPrivateMessages; }
             set
             {
-                _changedPropList.Add("EncryptPrivateMessages", value);
+                ChangedPropList.Add("EncryptPrivateMessages", value);
                 _encryptPrivateMessages = value;
             }
         }
@@ -2727,7 +2731,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _enAltGreetDontRingPhone; }
             set
             {
-                _changedPropList.Add("EnAltGreetDontRingPhone", value);
+                ChangedPropList.Add("EnAltGreetDontRingPhone", value);
                 _enAltGreetDontRingPhone = value;
             }
         }
@@ -2741,7 +2745,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _enAltGreetPreventSkip; }
             set
             {
-                _changedPropList.Add("EnAltGreetPreventSkip", value);
+                ChangedPropList.Add("EnAltGreetPreventSkip", value);
                 _enAltGreetPreventSkip = value;
             }
         }
@@ -2755,7 +2759,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _enAltGreetPreventMsg; }
             set
             {
-                _changedPropList.Add("EnAltGreetPreventMsg", value);
+                ChangedPropList.Add("EnAltGreetPreventMsg", value);
                 _enAltGreetPreventMsg = value;
             }
         }
@@ -2769,7 +2773,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _enhancedSecurityAlias; }
             set
             {
-                _changedPropList.Add("EnhancedSecurityAlias", value);
+                ChangedPropList.Add("EnhancedSecurityAlias", value);
                 _enhancedSecurityAlias = value;
             }
         }
@@ -2784,7 +2788,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _exitAction; }
             set
             {
-                _changedPropList.Add("ExitAction", (int) value);
+                ChangedPropList.Add("ExitAction", (int) value);
                 _exitAction = value;
             }
         }
@@ -2795,7 +2799,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _exitCallActionObjectId; }
             set
             {
-                _changedPropList.Add("ExitCallActionObjectId", value);
+                ChangedPropList.Add("ExitCallActionObjectId", value);
                 _exitCallActionObjectId = value;
             }
         }
@@ -2806,7 +2810,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _exitTargetConversation; }
             set
             {
-                _changedPropList.Add("ExitTargetConversation", value.Description());
+                ChangedPropList.Add("ExitTargetConversation", value.Description());
                 _exitTargetConversation = value;
             }
         }
@@ -2817,7 +2821,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _exitTargetHandlerObjectId; }
             set
             {
-                _changedPropList.Add("ExitTargetHandlerObjectId", value);
+                ChangedPropList.Add("ExitTargetHandlerObjectId", value);
                 _exitTargetHandlerObjectId = value;
             }
         }
@@ -2828,7 +2832,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _faxServerObjectId; }
             set
             {
-                _changedPropList.Add("FaxServerObjectId", value);
+                ChangedPropList.Add("FaxServerObjectId", value);
                 _faxServerObjectId = value;
             }
         }
@@ -2842,7 +2846,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _firstDigitTimeout; }
             set
             {
-                _changedPropList.Add("FirstDigitTimeout", value);
+                ChangedPropList.Add("FirstDigitTimeout", value);
                 _firstDigitTimeout = value;
             }
         }
@@ -2856,7 +2860,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _forcedAuthorizationCode; }
             set
             {
-                _changedPropList.Add("ForcedAuthorizationCode", value);
+                ChangedPropList.Add("ForcedAuthorizationCode", value);
                 _forcedAuthorizationCode = value;
             }
         }
@@ -2870,7 +2874,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _greetByName; }
             set
             {
-                _changedPropList.Add("GreetByName", value);
+                ChangedPropList.Add("GreetByName", value);
                 _greetByName = value;
             }
         }
@@ -2884,7 +2888,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _inboxAutoRefresh; }
             set
             {
-                _changedPropList.Add("InboxAutoRefresh", value);
+                ChangedPropList.Add("InboxAutoRefresh", value);
                 _inboxAutoRefresh = value;
             }
         }
@@ -2895,7 +2899,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _inboxAutoResolveMessageRecipients; }
             set
             {
-                _changedPropList.Add("InboxAutoResolveMessageRecipients", value);
+                ChangedPropList.Add("InboxAutoResolveMessageRecipients", value);
                 _inboxAutoResolveMessageRecipients = value;
             }
         }
@@ -2906,7 +2910,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _inboxMessagesPerPage; }
             set
             {
-                _changedPropList.Add("InboxMessagesPerPage", value);
+                ChangedPropList.Add("InboxMessagesPerPage", value);
                 _inboxMessagesPerPage = value;
             }
         }
@@ -2917,7 +2921,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _initials; }
             set
             {
-                _changedPropList.Add("Initials", value);
+                ChangedPropList.Add("Initials", value);
                 _initials = value;
             }
         }
@@ -2931,7 +2935,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _interdigitDelay; }
             set
             {
-                _changedPropList.Add("InterdigitDelay", value);
+                ChangedPropList.Add("InterdigitDelay", value);
                 _interdigitDelay = value;
             }
         }
@@ -2942,7 +2946,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _isClockMode24Hour; }
             set
             {
-                _changedPropList.Add("IsClockMode24Hour", value);
+                ChangedPropList.Add("IsClockMode24Hour", value);
                 _isClockMode24Hour = value;
             }
         }
@@ -2958,7 +2962,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _isSetForVmEnrollment; }
             set
             {
-                _changedPropList.Add("IsSetForVmEnrollment", value);
+                ChangedPropList.Add("IsSetForVmEnrollment", value);
                 _isSetForVmEnrollment = value;
             }
         }
@@ -2978,7 +2982,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _jumpToMessagesOnLogin; }
             set
             {
-                _changedPropList.Add("JumpToMessagesOnLogin", value);
+                ChangedPropList.Add("JumpToMessagesOnLogin", value);
                 _jumpToMessagesOnLogin = value;
             }
         }
@@ -3014,7 +3018,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _manager; }
             set
             {
-                _changedPropList.Add("Manager", value);
+                ChangedPropList.Add("Manager", value);
                 _manager = value;
             }
         }
@@ -3029,7 +3033,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _messageLocatorSortOrder; }
             set
             {
-                _changedPropList.Add("MessageLocatorSortOrder", (int)value);
+                ChangedPropList.Add("MessageLocatorSortOrder", (int)value);
                 _messageLocatorSortOrder = value;
             }
         }
@@ -3043,7 +3047,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _messageTypeMenu; }
             set
             {
-                _changedPropList.Add("MessageTypeMenu", value);
+                ChangedPropList.Add("MessageTypeMenu", value);
                 _messageTypeMenu = value;
             }
         }
@@ -3059,7 +3063,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _nameConfirmation; }
             set
             {
-                _changedPropList.Add("NameConfirmation", value);
+                ChangedPropList.Add("NameConfirmation", value);
                 _nameConfirmation = value;
             }
         }
@@ -3074,7 +3078,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _newMessageSortOrder; }
             set
             {
-                _changedPropList.Add("NewMessageSortOrder",(int) value);
+                ChangedPropList.Add("NewMessageSortOrder",(int) value);
                 _newMessageSortOrder = value;
             }
         }
@@ -3089,7 +3093,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _newMessageStackOrder; }
             set
             {
-                _changedPropList.Add("NewMessageStackOrder", value);
+                ChangedPropList.Add("NewMessageStackOrder", value);
                 _newMessageStackOrder = value;
             }
         }
@@ -3107,7 +3111,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _pcaAddressBookRowsPerPage; }
             set
             {
-                _changedPropList.Add("PcaAddressBookRowsPerPage", value);
+                ChangedPropList.Add("PcaAddressBookRowsPerPage", value);
                 _pcaAddressBookRowsPerPage = value;
             }
         }
@@ -3121,7 +3125,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _pcaHomePage; }
             set
             {
-                _changedPropList.Add("PcaHomePage", value);
+                ChangedPropList.Add("PcaHomePage", value);
                 _pcaHomePage = value;
             }
         }
@@ -3132,7 +3136,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _postalCode; }
             set
             {
-                _changedPropList.Add("PostalCode", value);
+                ChangedPropList.Add("PostalCode", value);
                 _postalCode = value;
             }
         }
@@ -3147,7 +3151,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _promptSpeed; }
             set
             {
-                _changedPropList.Add("PromptSpeed", value);
+                ChangedPropList.Add("PromptSpeed", value);
                 _promptSpeed = value;
             }
         }
@@ -3162,7 +3166,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _promptVolume; }
             set
             {
-                _changedPropList.Add("PromptVolume", value);
+                ChangedPropList.Add("PromptVolume", value);
                 _promptVolume = value;
             }
         }
@@ -3176,7 +3180,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _readOnly; }
             set
             {
-                _changedPropList.Add("ReadOnly", value);
+                ChangedPropList.Add("ReadOnly", value);
                 _readOnly = value;
             }
         }
@@ -3190,7 +3194,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _recordUnknownCallerName; }
             set
             {
-                _changedPropList.Add("RecordUnknownCallerName", value);
+                ChangedPropList.Add("RecordUnknownCallerName", value);
                 _recordUnknownCallerName = value;
             }
         }
@@ -3204,7 +3208,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _repeatMenu; }
             set
             {
-                _changedPropList.Add("RepeatMenu", value);
+                ChangedPropList.Add("RepeatMenu", value);
                 _repeatMenu = value;
             }
         }
@@ -3215,7 +3219,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _retainUrgentMessageFlag; }
             set
             {
-                _changedPropList.Add("RetainUrgentMessageFlag", value);
+                ChangedPropList.Add("RetainUrgentMessageFlag", value);
                 _retainUrgentMessageFlag = value;
             }
         }
@@ -3229,7 +3233,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _ringPrimaryPhoneFirst; }
             set
             {
-                _changedPropList.Add("RingPrimaryPhoneFirst", value);
+                ChangedPropList.Add("RingPrimaryPhoneFirst", value);
                 _ringPrimaryPhoneFirst = value;
             }
         }
@@ -3243,7 +3247,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _routeNdrToSender; }
             set
             {
-                _changedPropList.Add("RouteNDRToSender", value);
+                ChangedPropList.Add("RouteNDRToSender", value);
                 _routeNdrToSender = value;
             }
         }
@@ -3258,7 +3262,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _savedMessageSortOrder; }
             set
             {
-                _changedPropList.Add("SavedMessageSortOrder", (int) value);
+                ChangedPropList.Add("SavedMessageSortOrder", (int) value);
                 _savedMessageSortOrder = value;
             }
         }
@@ -3273,7 +3277,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _savedMessageStackOrder; }
             set
             {
-                _changedPropList.Add("SavedMessageStackOrder", value);
+                ChangedPropList.Add("SavedMessageStackOrder", value);
                 _savedMessageStackOrder = value;
             }
         }
@@ -3287,7 +3291,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _saveMessageOnHangup; }
             set
             {
-                _changedPropList.Add("SaveMessageOnHangup", value);
+                ChangedPropList.Add("SaveMessageOnHangup", value);
                 _saveMessageOnHangup = value;
             }
         }
@@ -3302,7 +3306,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayAltGreetWarning; }
             set
             {
-                _changedPropList.Add("SayAltGreetWarning", value);
+                ChangedPropList.Add("SayAltGreetWarning", value);
                 _sayAltGreetWarning = value;
             }
         }
@@ -3313,7 +3317,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayAni; }
             set
             {
-                _changedPropList.Add("SayAni", value);
+                ChangedPropList.Add("SayAni", value);
                 _sayAni = value;
             }
         }
@@ -3324,7 +3328,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayAniAfter; }
             set
             {
-                _changedPropList.Add("SayAniAfter", value);
+                ChangedPropList.Add("SayAniAfter", value);
                 _sayAniAfter = value;
             }
         }
@@ -3335,7 +3339,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayCopiedNames; }
             set
             {
-                _changedPropList.Add("SayCopiedNames", value);
+                ChangedPropList.Add("SayCopiedNames", value);
                 _sayCopiedNames = value;
             }
         }
@@ -3346,7 +3350,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayDistributionList; }
             set
             {
-                _changedPropList.Add("SayDistributionList", value);
+                ChangedPropList.Add("SayDistributionList", value);
                 _sayDistributionList = value;
             }
         }
@@ -3357,7 +3361,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayMessageLength; }
             set
             {
-                _changedPropList.Add("SayMessageLength", value);
+                ChangedPropList.Add("SayMessageLength", value);
                 _sayMessageLength = value;
             }
         }
@@ -3368,7 +3372,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayMessageLengthAfter; }
             set
             {
-                _changedPropList.Add("SayMessageLengthAfter", value);
+                ChangedPropList.Add("SayMessageLengthAfter", value);
                 _sayMessageLengthAfter = value;
             }
         }
@@ -3380,7 +3384,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _saySenderAfter; }
             set
             {
-                _changedPropList.Add("SaySenderAfter", value);
+                ChangedPropList.Add("SaySenderAfter", value);
                 _saySenderAfter = value;
             }
         }
@@ -3391,7 +3395,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayMsgNumberAfter; }
             set
             {
-                _changedPropList.Add("SayMsgNumberAfter", value);
+                ChangedPropList.Add("SayMsgNumberAfter", value);
                 _sayMsgNumberAfter = value;
             }
         }
@@ -3403,7 +3407,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _saySenderExtensionAfter; }
             set
             {
-                _changedPropList.Add("SaySenderExtensionAfter", value);
+                ChangedPropList.Add("SaySenderExtensionAfter", value);
                 _saySenderExtensionAfter = value;
             }
         }
@@ -3415,7 +3419,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayMsgNumber; }
             set
             {
-                _changedPropList.Add("SayMsgNumber", value);
+                ChangedPropList.Add("SayMsgNumber", value);
                 _sayMsgNumber = value;
             }
         }
@@ -3426,7 +3430,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _saySender; }
             set
             {
-                _changedPropList.Add("SaySender", value);
+                ChangedPropList.Add("SaySender", value);
                 _saySender = value;
             }
         }
@@ -3437,7 +3441,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _saySenderExtension; }
             set
             {
-                _changedPropList.Add("SaySenderExtension", value);
+                ChangedPropList.Add("SaySenderExtension", value);
                 _saySenderExtension = value;
             }
         }
@@ -3448,7 +3452,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayTimestampAfter; }
             set
             {
-                _changedPropList.Add("SayTimestampAfter", value);
+                ChangedPropList.Add("SayTimestampAfter", value);
                 _sayTimestampAfter = value;
             }
         }
@@ -3459,7 +3463,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayTimestampBefore; }
             set
             {
-                _changedPropList.Add("SayTimestampBefore", value);
+                ChangedPropList.Add("SayTimestampBefore", value);
                 _sayTimestampBefore = value;
             }
         }
@@ -3470,7 +3474,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayTotalDraftMsg; }
             set
             {
-                _changedPropList.Add("SayTotalDraftMsg", value);
+                ChangedPropList.Add("SayTotalDraftMsg", value);
                 _sayTotalDraftMsg = value;
             }
         }
@@ -3482,7 +3486,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayTotalNew; }
             set
             {
-                _changedPropList.Add("SayTotalNew", value);
+                ChangedPropList.Add("SayTotalNew", value);
                 _sayTotalNew = value;
             }
         }
@@ -3493,7 +3497,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayTotalNewEmail; }
             set
             {
-                _changedPropList.Add("SayTotalNewEmail", value);
+                ChangedPropList.Add("SayTotalNewEmail", value);
                 _sayTotalNewEmail = value;
             }
         }
@@ -3504,7 +3508,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayTotalNewFax; }
             set
             {
-                _changedPropList.Add("SayTotalNewFax", value);
+                ChangedPropList.Add("SayTotalNewFax", value);
                 _sayTotalNewFax = value;
             }
         }
@@ -3515,7 +3519,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayTotalNewVoice; }
             set
             {
-                _changedPropList.Add("SayTotalNewVoice", value);
+                ChangedPropList.Add("SayTotalNewVoice", value);
                 _sayTotalNewVoice = value;
             }
         }
@@ -3526,7 +3530,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayTotalReceipts; }
             set
             {
-                _changedPropList.Add("SayTotalReceipts", value);
+                ChangedPropList.Add("SayTotalReceipts", value);
                 _sayTotalReceipts = value;
             }
         }
@@ -3537,7 +3541,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sayTotalSaved; }
             set
             {
-                _changedPropList.Add("SayTotalSaved", value);
+                ChangedPropList.Add("SayTotalSaved", value);
                 _sayTotalSaved = value;
             }
         }
@@ -3551,7 +3555,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _searchByExtensionSearchSpaceObjectId; }
             set
             {
-                _changedPropList.Add("SearchByExtensionSearchSpaceObjectId", value);
+                ChangedPropList.Add("SearchByExtensionSearchSpaceObjectId", value);
                 _searchByExtensionSearchSpaceObjectId = value;
             }
         }
@@ -3565,7 +3569,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _searchByNameSearchSpaceObjectId; }
             set
             {
-                _changedPropList.Add("SearchByNameSearchSpaceObjectId", value);
+                ChangedPropList.Add("SearchByNameSearchSpaceObjectId", value);
                 _searchByNameSearchSpaceObjectId = value;
             }
         }
@@ -3579,7 +3583,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sendBroadcastMsg; }
             set
             {
-                _changedPropList.Add("SendBroadcastMsg", value);
+                ChangedPropList.Add("SendBroadcastMsg", value);
                 _sendBroadcastMsg = value;
             }
         }
@@ -3595,7 +3599,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _sendMessageOnHangup; }
             set
             {
-                _changedPropList.Add("SendMessageOnHangup", (int)value);
+                ChangedPropList.Add("SendMessageOnHangup", (int)value);
                 _sendMessageOnHangup = value;
             }
         }
@@ -3610,7 +3614,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _skipForwardTime; }
             set
             {
-                _changedPropList.Add("SkipForwardTime", value);
+                ChangedPropList.Add("SkipForwardTime", value);
                 _skipForwardTime = value;
             }
         }
@@ -3624,7 +3628,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _skipPasswordForKnownDevice; }
             set
             {
-                _changedPropList.Add("SkipPasswordForKnownDevice", value);
+                ChangedPropList.Add("SkipPasswordForKnownDevice", value);
                 _skipPasswordForKnownDevice = value;
             }
         }
@@ -3639,7 +3643,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _skipReverseTime; }
             set
             {
-                _changedPropList.Add("SkipReverseTime", value);
+                ChangedPropList.Add("SkipReverseTime", value);
                 _skipReverseTime = value;
             }
         }
@@ -3658,7 +3662,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _speechCompleteTimeout; }
             set
             {
-                _changedPropList.Add("SpeechCompleteTimeout", value);
+                ChangedPropList.Add("SpeechCompleteTimeout", value);
                 _speechCompleteTimeout = value;
             }
         }
@@ -3674,7 +3678,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _speechConfidenceThreshold; }
             set
             {
-                _changedPropList.Add("SpeechConfidenceThreshold", value);
+                ChangedPropList.Add("SpeechConfidenceThreshold", value);
                 _speechConfidenceThreshold = value;
             }
         }
@@ -3693,7 +3697,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _speechIncompleteTimeout; }
             set
             {
-                _changedPropList.Add("SpeechIncompleteTimeout", value);
+                ChangedPropList.Add("SpeechIncompleteTimeout", value);
                 _speechIncompleteTimeout = value;
             }
         }
@@ -3708,7 +3712,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _speechSensitivity; }
             set
             {
-                _changedPropList.Add("SpeechSensitivity", value);
+                ChangedPropList.Add("SpeechSensitivity", value);
                 _speechSensitivity = value;
             }
         }
@@ -3723,7 +3727,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _speechSpeedVsAccuracy; }
             set
             {
-                _changedPropList.Add("SpeechSpeedVsAccuracy", value);
+                ChangedPropList.Add("SpeechSpeedVsAccuracy", value);
                 _speechSpeedVsAccuracy = value;
             }
         }
@@ -3738,7 +3742,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _speed; }
             set
             {
-                _changedPropList.Add("Speed", value);
+                ChangedPropList.Add("Speed", value);
                 _speed = value;
             }
         }
@@ -3749,7 +3753,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _state; }
             set
             {
-                _changedPropList.Add("State", value);
+                ChangedPropList.Add("State", value);
                 _state = value;
             }
         }
@@ -3763,7 +3767,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _synchScheduleObjectId; }
             set
             {
-                _changedPropList.Add("SynchScheduleObjectId", value);
+                ChangedPropList.Add("SynchScheduleObjectId", value);
                 _synchScheduleObjectId = value;
             }
         }
@@ -3774,7 +3778,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _title; }
             set
             {
-                _changedPropList.Add("Title", value);
+                ChangedPropList.Add("Title", value);
                 _title = value;
             }
         }
@@ -3789,7 +3793,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _undeletable; }
             set
             {
-                _changedPropList.Add("Undeletable", value);
+                ChangedPropList.Add("Undeletable", value);
                 _undeletable = value;
             }
         }
@@ -3803,7 +3807,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _updateBroadcastMsg; }
             set
             {
-                _changedPropList.Add("UpdateBroadcastMsg", value);
+                ChangedPropList.Add("UpdateBroadcastMsg", value);
                 _updateBroadcastMsg = value;
             }
         }
@@ -3817,7 +3821,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _useBriefPrompts; }
             set
             {
-                _changedPropList.Add("UseBriefPrompts", value);
+                ChangedPropList.Add("UseBriefPrompts", value);
                 _useBriefPrompts = value;
             }
         }
@@ -3831,7 +3835,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _useDefaultLanguage; }
             set
             {
-                _changedPropList.Add("UseDefaultLanguage", value);
+                ChangedPropList.Add("UseDefaultLanguage", value);
                 _useDefaultLanguage = value;
             }
         }
@@ -3845,7 +3849,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _useDefaultTimeZone; }
             set
             {
-                _changedPropList.Add("UseDefaultTimeZone", value);
+                ChangedPropList.Add("UseDefaultTimeZone", value);
                 _useDefaultTimeZone = value;
             }
         }
@@ -3859,7 +3863,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _useDynamicNameSearchWeight; }
             set
             {
-                _changedPropList.Add("UseDynamicNameSearchWeight", value);
+                ChangedPropList.Add("UseDynamicNameSearchWeight", value);
                 _useDynamicNameSearchWeight = value;
             }
         }
@@ -3873,7 +3877,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _useShortPollForCache; }
             set
             {
-                _changedPropList.Add("UseShortPollForCache", value);
+                ChangedPropList.Add("UseShortPollForCache", value);
                 _useShortPollForCache = value;
             }
         }
@@ -3887,24 +3891,24 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _useVui; }
             set
             {
-                _changedPropList.Add("UseVui", value);
+                ChangedPropList.Add("UseVui", value);
                 _useVui = value;
             }
         }
 
+        
+        private string _voiceName;
         /// <summary>
         /// The name of the WAV file containing the recorded audio (voice name, greeting, etc.) for the parent object.
         /// This value cannot be changed - use the SetUserVoiceName or GetUserVoiceName methods off the user object to
         /// get/set this WAV file.
         /// </summary>
-        private string _voiceName;
-
         public string VoiceName
         {
             get { return _voiceName; }
             set
             {
-                _changedPropList.Add("VoiceName", value);
+                ChangedPropList.Add("VoiceName", value);
                 _voiceName = value;
             }
         }
@@ -3919,7 +3923,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _volume; }
             set
             {
-                _changedPropList.Add("Volume", value);
+                ChangedPropList.Add("Volume", value);
                 _volume = value;
             }
         }
@@ -3933,7 +3937,7 @@ namespace Cisco.UnityConnection.RestFunctions
             get { return _xferString; }
             set
             {
-                _changedPropList.Add("XferString", value);
+                ChangedPropList.Add("XferString", value);
                 _xferString = value;
             }
         }
