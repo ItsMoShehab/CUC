@@ -790,8 +790,6 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             int iTemp;
 
-            pVersionString = "10.0.0.6TT12";
-
             string[] strVersionChunks = pVersionString.Split('.');
 
             if (strVersionChunks.Count()<3)
