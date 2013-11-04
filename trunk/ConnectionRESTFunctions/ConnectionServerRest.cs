@@ -271,7 +271,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 LoginName = "";
                 LoginPw = "";
                 BaseUrl = "";
-                throw new UnityConnectionRestException(res, "Login failed to Connection server:"+pServerName);
+                throw new UnityConnectionRestException(res, "Login failed to Connection server:"+pServerName+". Details="+res);
             }
 
             //register for error and logging events to the transport mechanism. 
@@ -789,6 +789,9 @@ namespace Cisco.UnityConnection.RestFunctions
         internal bool ParseVersionString(string pVersionString)
         {
             int iTemp;
+
+            pVersionString = "10.0.0.6TT12";
+
             string[] strVersionChunks = pVersionString.Split('.');
 
             if (strVersionChunks.Count()<3)
@@ -851,10 +854,10 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             else
             {
-                //just a digit or digits for the build
+                //just a digit or digits for the build or test throttle number - don't worry if this doesn't parse to a number
                 if (int.TryParse(strVersionChunks[3], out iTemp) == false)
                 {
-                    return false;
+                    return true;
                 }
     
                 Version.Build = iTemp;
