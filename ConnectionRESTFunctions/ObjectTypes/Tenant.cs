@@ -809,6 +809,24 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pPhoneSystemObjectId"></param>
+        /// <returns></returns>
+        public WebCallResult AddPhoneSystemToTenant(string pPhoneSystemObjectId)
+        {
+            string strBody = "<TenantPhoneSystem>";
+
+            //tack on the property value pair with appropriate tags
+            strBody += string.Format("<{0}>{1}</{0}>", "PhoneSystemObjectId", pPhoneSystemObjectId);
+
+            strBody += "</TenantPhoneSystem>";
+
+            string strUrl = string.Format("{0}tenants/{1}/phonesystems", HomeServer.BaseUrl, ObjectId);
+            return HomeServer.GetCupiResponse(strUrl, MethodType.POST, strBody, false);
+        }
+
         #endregion
 
 
