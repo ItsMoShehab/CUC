@@ -392,6 +392,14 @@ namespace Cisco.UnityConnection.RestFunctions
             //the only value we're interested in here is the lastResult - if it's 0 then playback finished ok.  
             object oValue;
 
+            if (res.JsonDictionary == null)
+            {
+                _homeServer.RaiseErrorEvent("Error playing back message via CUTI, null value returned for last result");
+                res.Success = false;
+                res.ErrorText = "Null result returned from play";
+                return res;
+            }
+
             res.JsonDictionary.TryGetValue("lastResult", out oValue);
             if (oValue==null)
             {
