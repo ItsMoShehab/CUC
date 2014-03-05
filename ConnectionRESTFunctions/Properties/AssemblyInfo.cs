@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Cisco Systems.")]
 [assembly: AssemblyProduct("CiscoUnityConnectionRESTFunctions")]
-[assembly: AssemblyCopyright("Copyright ©  2013")]
+[assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("Cisco Systems, Inc.")]
 [assembly: AssemblyCulture("")]
 
@@ -32,7 +32,7 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("3.0.30.0")]
-[assembly: AssemblyFileVersion("3.0.30.0")]
+[assembly: AssemblyVersion("3.0.31.0")]
+[assembly: AssemblyFileVersion("3.0.31.0")]
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("ConnectionCUPIFunctionsTest")]

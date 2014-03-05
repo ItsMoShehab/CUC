@@ -170,13 +170,6 @@ namespace ConnectionCUPIFunctionsTest
             }
 
         [TestMethod]
-        public void ParseVersionString_InvaliudBuildValue_Failure()
-        {
-            ConnectionServerRest oTempServer = new ConnectionServerRest(new RestTransportFunctions());
-            Assert.IsFalse(oTempServer.ParseVersionString("1.2.3.a"), "Invalid build");
-            }
-
-        [TestMethod]
         public void ParseVersionString_InvalidEsValue_Failure()
         {
             ConnectionServerRest oTempServer = new ConnectionServerRest(new RestTransportFunctions());
