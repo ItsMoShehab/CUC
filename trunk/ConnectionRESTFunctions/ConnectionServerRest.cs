@@ -33,6 +33,7 @@ namespace Cisco.UnityConnection.RestFunctions
         public int Build;
         public int Rev;
         public int Es;
+        public string EsStr;
 
         //constructor requires all values for version number - pass 0 for values that are not present.
         public ConnectionVersion(int pMajor, int pMinor, int pBuild, int pRev, int pEs) 
@@ -49,7 +50,7 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             if (Es>0)
             {
-                return string.Format("{0}.{1}({2}.{3}) ES {4}",Major,Minor,Rev, Build,Es);
+                return string.Format("{0}.{1}({2}.{3}) {4}",Major,Minor,Rev, Build,EsStr);
             }
             return string.Format("{0}.{1}({2}.{3})",Major,Minor,Rev,Build);
         }
@@ -847,7 +848,38 @@ namespace Cisco.UnityConnection.RestFunctions
                 //treat it as a failure here
                 if (int.TryParse(esChunks[1], out iTemp))
                 {
-                    Version.Es = iTemp;    
+                    Version.Es = iTemp;
+                    if (iTemp > 0)
+                    {
+                        Version.EsStr = "ES " + iTemp;
+                    }
+                }
+            }
+            else if (strVersionChunks[3].Contains("TT"))
+            {
+                //trim off the "ES" portion and drop the rest into the ES string for display purposes
+                iTemp = strVersionChunks[3].IndexOf("TT", 0);
+
+                string strEs = strVersionChunks[3].Substring(iTemp + 2);
+                
+
+                //the ES will not always be a number but if it is, store it in the EsInt field for comparison purposes
+                if (int.TryParse(strEs, out Version.Es) == false)
+                {
+                    //either no ES provided (base install) or the ES is not provided as a number
+                    Version.Es = 0;
+                }
+                else
+                {
+                    Version.EsStr = "TT " + strEs;
+                }
+
+                //the build will be on the begining (left) of the string before the ES if it's there
+                string strTemp = strVersionChunks[3].Substring(0, iTemp);
+                if (int.TryParse(strTemp, out Version.Build) == false)
+                {
+                    //common enough garbage in this field, don't log an error, just set it to 0
+                    Version.Build = 0;
                 }
             }
             else
