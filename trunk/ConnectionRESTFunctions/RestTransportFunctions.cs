@@ -49,7 +49,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public bool DebugMode { get; set; }
 
-        private int _httpTimeoutSeconds = 15;
+        private int _httpTimeoutSeconds = 25;
         /// <summary>
         /// Adjust the timeout for HTTP calls - defaults to 15 seconds at startup, can be adjusted here.
         /// Accepted values are 1 through 99 seconds.
