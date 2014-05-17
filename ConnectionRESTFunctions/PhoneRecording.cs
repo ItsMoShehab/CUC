@@ -11,6 +11,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
@@ -72,17 +73,22 @@ namespace Cisco.UnityConnection.RestFunctions
             _rings = pRings;
 
             WebCallResult res = AttachToPhone();
-
+            int iCounter = 0;
             if (res.Success)
             {
-                //see if we're connected
+                Thread.Sleep(200);
                 if (IsCallConnected())
                 {
                     return;
                 }
+                iCounter++;
+                if (iCounter > 4)
+                {
+                    throw new UnityConnectionRestException(res, "Failed to connect to phone" + res);
+                }
             }
 
-            throw new UnityConnectionRestException(res,"Failed to connect to phone");
+            throw new UnityConnectionRestException(res,"Failed to connect to phone"+res);
         }
 
         #endregion
