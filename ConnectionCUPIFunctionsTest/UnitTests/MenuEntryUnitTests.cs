@@ -62,6 +62,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void Constructor_EmptyKeyName_Success()
         {
+            Reset();
             MenuEntry oTest = new MenuEntry(_mockServer, "ParentObjectId");
             Console.WriteLine(oTest.SelectionDisplayString);
             Console.WriteLine(oTest.UniqueIdentifier);
@@ -70,6 +71,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void Constructor_Success()
         {
+            Reset();
             MenuEntry oTest = new MenuEntry(_mockServer, "ParentObjectId","1");
             Console.WriteLine(oTest);
         }
@@ -78,6 +80,7 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(UnityConnectionRestException))]
         public void Constructor_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
@@ -242,6 +245,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetMenuEntries_EmptyResult_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                                        It.IsAny<string>(), true)).Returns(new WebCallResult
                                        {
@@ -258,6 +262,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetMenuEntries_GarbageResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                   It.IsAny<string>(), true)).Returns(new WebCallResult
                                   {
@@ -276,6 +281,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetMenuEntries_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
@@ -295,6 +301,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetMenuEntries_ZeroCount_Success()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
@@ -311,6 +318,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetMenuEnty_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
@@ -327,6 +335,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void UpdateMenuEntry_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
@@ -352,6 +361,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void Update_ErrorResponse_Failure()
         {
+            Reset();
             var oMenuEntry = new MenuEntry(_mockServer, "ObjectId");
             oMenuEntry.Locked = false;
             
@@ -377,6 +387,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetMenuEntry_GarbageResponse_Failure()
         {
+            Reset();
             var oMenuEntry = new MenuEntry(_mockServer, "ObjectId");
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                   It.IsAny<string>(), true)).Returns(new WebCallResult
@@ -394,6 +405,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void RefetchMenuEntryData_ErrorResponse_Failure()
         {
+            Reset();
             var oMenuEntry = new MenuEntry(_mockServer, "ObjectId");
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult

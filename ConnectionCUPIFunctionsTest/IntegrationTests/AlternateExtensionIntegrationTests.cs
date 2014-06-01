@@ -66,7 +66,7 @@ namespace ConnectionCUPIFunctionsTest
         public void AddAndFetchAlternateExtension()
         {
             AlternateExtension oAltExt;
-            string strExtension = Guid.NewGuid().ToString().Replace("-", "");
+            string strExtension = Guid.NewGuid().ToString().Replace("-", "").Substring(0,10);
             var res = AlternateExtension.AddAlternateExtension(_connectionServer, _tempUser.ObjectId, 1,strExtension, out oAltExt);
             Assert.IsTrue(res.Success,"Failed to create new alternate extension:"+res);
 
@@ -101,7 +101,7 @@ namespace ConnectionCUPIFunctionsTest
         public void AlternateExtensions_AddDelete()
         {
             //Add an alternate extension
-            string strExtension = Guid.NewGuid().ToString().Replace("-", "");
+            string strExtension = Guid.NewGuid().ToString().Replace("-", "").Substring(0, 10);
             WebCallResult res = AlternateExtension.AddAlternateExtension(_connectionServer, _tempUser.ObjectId, 1, strExtension);
             Assert.IsTrue(res.Success, "Failed adding alternate extension to user:" + res.ToString());
 

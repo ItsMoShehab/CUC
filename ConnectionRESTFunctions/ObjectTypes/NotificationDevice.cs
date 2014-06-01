@@ -11,7 +11,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -158,7 +157,6 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private string _conversation;
         /// <summary>
         /// The name of the Conversation Cisco Unity Connection will use when calling the subscriber to notify of new messages. 
         /// This normally does not need to be edited - phone notificaiton types use SubNoitify and you do not have to set this, the 
@@ -166,12 +164,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public string Conversation
         {
-            get { return _conversation; }
-            set
-            {
-                _changedPropList.Add("Conversation", value);
-                _conversation = value;
-            }
+            get { return Conversation; }
         }
 
         private bool _detectTransferLoop;
@@ -185,15 +178,12 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
-        private string _deviceName;
+        /// <summary>
+        /// Read only device name - can't be changed after creation
+        /// </summary>
         public string DeviceName
         {
-            get { return _deviceName; }
-            set 
-            {
-                _changedPropList.Add("DeviceName", value);
-                _deviceName = value; 
-            }
+            get { return DeviceName; }
         }
 
         private int _dialDelay;

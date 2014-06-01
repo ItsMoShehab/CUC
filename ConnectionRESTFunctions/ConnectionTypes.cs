@@ -425,7 +425,8 @@ namespace Cisco.UnityConnection.RestFunctions
         Pager = 2,
         Phone = 1,
         Sms = 6,
-        Smtp = 4
+        Smtp = 4,
+        Http = 8
     }
 
     /// <summary>

@@ -43,6 +43,10 @@ namespace Cisco.UnityConnection.RestFunctions
             Build = pBuild;
             Rev = pRev;
             Es = pEs;
+            if (Es > 0)
+            {
+                EsStr = "ES " + Es;
+            }
         }
 
         //displays version in a readable format for logging and display purposes.
@@ -1592,7 +1596,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Array of strings representing seperate clauses such as "rowsPerPage=10" for instance.
         /// </param>
         /// <returns>
-        /// Update URI with clauses tacked on with ? and & seperators as appropriate - the same URI is returned that is passed in
+        /// Update URI with clauses tacked on with ? and ampersand seperators as appropriate - the same URI is returned that is passed in
         /// if there are no clauses in the params list.
         /// </returns>
         public static string AddClausesToUri(string pUri, params string[] pClauses)

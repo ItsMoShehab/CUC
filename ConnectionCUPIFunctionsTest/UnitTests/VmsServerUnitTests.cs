@@ -43,6 +43,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void Constructor_EmptyObjectId_Success()
         {
+            Reset();
             VmsServer oTemp = new VmsServer(_mockServer);
             Console.WriteLine(oTemp.ToString());
             Console.WriteLine(oTemp.DumpAllProps());
@@ -51,6 +52,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void Constructor_ObjectId_Success()
         {
+            Reset();
             VmsServer oTemp = new VmsServer(_mockServer,"ObjectId");
             Console.WriteLine(oTemp.ToString());
         }
@@ -58,6 +60,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void Constructor_Default_Success()
         {
+            Reset();
             VmsServer oTemp = new VmsServer();
             Console.WriteLine(oTemp.ToString());
         }
@@ -66,6 +69,7 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(UnityConnectionRestException))]
         public void Constructor_ObjectId_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                    It.IsAny<string>(), true)).Returns(new WebCallResult
                                    {
@@ -100,6 +104,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetVmsServers_EmptyResult_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                                        It.IsAny<string>(), true)).Returns(new WebCallResult
                                        {
@@ -115,6 +120,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetVmsServers_GarbageResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                   It.IsAny<string>(), true)).Returns(new WebCallResult
                                   {
@@ -133,6 +139,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetVmsServers_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
@@ -152,6 +159,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetVmsServers_ZeroCount_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {

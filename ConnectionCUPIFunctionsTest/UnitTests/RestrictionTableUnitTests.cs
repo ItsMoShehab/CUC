@@ -51,6 +51,7 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(UnityConnectionRestException))]
         public void RestrictionTable_Constructor_EmptyObjectId_Failure()
         {
+            Reset();
             RestrictionTable oTest = new RestrictionTable(_mockServer, "", "bogusDisplayName");
             Console.WriteLine(oTest);
         }
@@ -62,6 +63,7 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(ArgumentException))]
         public void RestrictionTable_Constructor_NullConnectionServerWithObjectIds_Failure()
         {
+            Reset();
             RestrictionPattern oTest = new RestrictionPattern(null,"bogus","bogus");
             Console.WriteLine(oTest);
         }
@@ -73,6 +75,7 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(ArgumentException))]
         public void RestrictionPattern_Constructor_EmptyObjectId_Failure()
         {
+            Reset();
             RestrictionPattern oTest = new RestrictionPattern(_mockServer, "", "bogus");
             Console.WriteLine(oTest);
         }

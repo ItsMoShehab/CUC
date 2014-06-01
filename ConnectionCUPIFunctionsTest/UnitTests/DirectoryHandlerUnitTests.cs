@@ -731,6 +731,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetDirectoryHandlers_EmptyResult_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                                        It.IsAny<string>(), true)).Returns(new WebCallResult
                                        {
@@ -747,6 +748,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetDirectoryHandlers_GarbageResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                   It.IsAny<string>(), true)).Returns(new WebCallResult
                                   {
@@ -765,6 +767,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetDirectoryHandlers_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
@@ -781,6 +784,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetDirectoryHandlers_ZeroCount_Success()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
@@ -797,6 +801,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetDirectoryHandler_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
@@ -813,6 +818,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void AddDirectoryHandler_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
@@ -828,6 +834,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void DeleteDirectoryHandler_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.DELETE, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
                                     {
@@ -844,6 +851,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void UpdateDirectoryHandler_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.DELETE, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
                                     {
@@ -862,6 +870,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void SetGreetingWavFile_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
                                     {
@@ -877,6 +886,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void SetGreetingWavFile_InvalidWavFile_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
                                     {

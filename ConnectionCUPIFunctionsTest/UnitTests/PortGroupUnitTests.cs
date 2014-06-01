@@ -62,6 +62,7 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(UnityConnectionRestException))]
         public void Constructor_FetchByInvalidName_Failure()
         {
+            Reset();
             PortGroup oPorts = new PortGroup(_mockServer, "","Invalid Name");
             Console.WriteLine(oPorts);
         }
@@ -212,6 +213,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetPortGroups_EmptyResult_Failure()
         {
+            Reset();
             //empty results
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                                        It.IsAny<string>(), true)).Returns(new WebCallResult
@@ -228,6 +230,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetPortGroups_GarbageResponse_Failure()
         {
+            Reset();
             //garbage response
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                   It.IsAny<string>(), true)).Returns(new WebCallResult
@@ -247,6 +250,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetPortGroups_ErrorResponse_Failure()
         {
+            Reset();
             //error response
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
@@ -264,6 +268,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetPortGroups_ZeroCount_Success()
         {
+            Reset();
             //error response
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
@@ -283,6 +288,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetPortGroups_MediaSwitchObjectId_ErrorResponse_Failure()
         {
+            Reset();
             //error response
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
@@ -300,6 +306,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetPortGroup_ErrorResponse_Failure()
         {
+            Reset();
             //error response
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
@@ -318,7 +325,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void UpdatePortGroup_ErrorResponse_Failure()
         {
-            
+            Reset();
             //error response
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.POST, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
@@ -338,7 +345,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void AddPortGroup_ErrorResponse_Failure()
         {
-
+            Reset();
             //setup so the fetch for port group templates returns a match on the integration method we're using (PIMG)
             PortGroupTemplate oTemplate = new PortGroupTemplate();
             oTemplate.CopyTelephonyIntegrationMethodEnum = TelephonyIntegrationMethodEnum.PIMG;
@@ -375,7 +382,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void DeletePortGroup_ErrorResponse_Failure()
         {
-
+            Reset();
             //error response
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
