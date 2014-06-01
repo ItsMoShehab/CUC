@@ -15,6 +15,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.IO;
+using Cisco.UnityConnection.RestFunctions.ObjectTypes;
 using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
@@ -101,6 +102,16 @@ namespace Cisco.UnityConnection.RestFunctions
 
         //for checking on pending changes
         public ConnectionPropertyList ChangeList { get { return _changedPropList; } }
+
+        public List<CallHandlerOwner> Owners
+        {
+            get
+            {
+                List<CallHandlerOwner> oOwners;
+                CallHandlerOwner.GetCallHandlerOwners(HomeServer, this.ObjectId, out oOwners);
+                return oOwners;
+            }
+        }
 
         #endregion
 
@@ -1225,6 +1236,111 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
 
+        /// <summary>
+        /// Adds an addtional user or public distribution list as an owner to a call handler.  For version of Unity Connection prior to 
+        /// the 10.5(1) release only user can be owners - distribution lists were not added until the 10.5 release.
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        //public static WebCallResult AddCallHandlerOwner(ConnectionServerRest pConnectionServer,string pCallHandlerObjectId,
+        //    string pUserObjectId, string pDistributionListObjectId)
+        //{
+        //    WebCallResult res = new WebCallResult();
+        //    res.Success = false;
+        //    if (pConnectionServer == null)
+        //    {
+        //        res.ErrorText = "Null ConnectionServer referenced passed to AddCallHandlerOwner";
+        //        return res;
+        //    }
+
+        //    if (string.IsNullOrEmpty(pCallHandlerObjectId))
+        //    {
+        //        res.ErrorText = "Empty CallHandlerObjectId passed to AddCallHandlerOwner";
+        //        return res;
+        //    }
+
+        //    if (string.IsNullOrEmpty(pUserObjectId) && string.IsNullOrEmpty(pDistributionListObjectId))
+        //    {
+        //        res.ErrorText = "Empty UserObjectId and DistributionListObjectId passed to AddCallHandlerOwner";
+        //        return res;
+        //    }
+
+        //    //collect the role ID for the greetings administrator
+        //    string strRoleObjectId = Role.GetObjectIdFromName(pConnectionServer, "Greeting Administrator");
+
+        //    string strUrl = string.Format(@"{0}handlers/callhandlers/{1}/callhandlerowners", pConnectionServer.BaseUrl, pCallHandlerObjectId);
+
+        //    string strBody = "<CallhandlerOwner>";
+
+        //    if (!string.IsNullOrEmpty(pUserObjectId))
+        //    {
+        //        strBody += string.Format("<{0}>{1}</{0}>", "UserObjectId", pUserObjectId);
+        //    }
+        //    else
+        //    {
+        //        strBody += string.Format("<{0}>{1}</{0}>", "DistributionListObjectId", pDistributionListObjectId);
+        //    }
+
+        //    strBody += string.Format("<{0}>{1}</{0}>", "RoleObjectId", strRoleObjectId);
+        //    strBody += "</CallhandlerOwner>";
+
+        //    res = pConnectionServer.GetCupiResponse(strUrl, MethodType.PUT,strBody);
+
+        //    return res;
+        //}
+
+
+        /// <summary>
+        /// Returns a geric list of the CallHandlerOwner object representing the list of users and (for 10.5 and later) public 
+        /// distribution lists that are owners for the identified call handler.
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult GetCallHandlerOwners(ConnectionServerRest pConnectionServer,string pCallHandlerObjectId, 
+            out List<CallHandlerOwner> pOwners, int pPageNumber=1, int pRowsPerPage=20)
+        {
+            return CallHandlerOwner.GetCallHandlerOwners(pConnectionServer, pCallHandlerObjectId, out pOwners, pPageNumber,pRowsPerPage);
+        }
+
+
+        /// <summary>
+        /// Removes an owner of a call handler - either a user or a distribution list (lists were not added until the 10.5 release of
+        /// Unity Connection).
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        //public static WebCallResult DeleteCallHandlerOwner(ConnectionServerRest pConnectionServer, string pCallHandlerObjectId,
+        //    string pOwnerObjectId)
+        //{
+        //    WebCallResult res = new WebCallResult();
+        //    res.Success = false;
+        //    if (pConnectionServer == null)
+        //    {
+        //        res.ErrorText = "Null ConnectionServer referenced passed to DeleteCallHandlerOwner";
+        //        return res;
+        //    }
+
+        //    if (string.IsNullOrEmpty(pCallHandlerObjectId))
+        //    {
+        //        res.ErrorText = "Empty CallHandlerObjectId passed to DeleteCallHandlerOwner";
+        //        return res;
+        //    }
+
+        //    if (string.IsNullOrEmpty(pOwnerObjectId))
+        //    {
+        //        res.ErrorText = "Empty OwnerObjectId passed to DeleteCallHandlerOwner";
+        //        return res;
+        //    }
+
+        //    string strUrl = string.Format(@"{0}handlers/callhandlers/{1}/callhandlerowners/{2}", pConnectionServer.BaseUrl, 
+        //        pCallHandlerObjectId,pOwnerObjectId);
+
+        //    return pConnectionServer.GetCupiResponse(strUrl, MethodType.DELETE,null);
+        //}
+
         #endregion
 
 
@@ -1276,12 +1392,10 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
 
-
         //Fills the current instance of CallHandler in with properties fetched from the server.
         private WebCallResult GetCallHandler(string pObjectId, string pDisplayName="", bool pIsUserTemplateHandler=false)
         {
             string strUrl;
-            WebCallResult res;
 
             //when fetching a handler use the query construct in both cases so the XML parsing is identical
             if (!string.IsNullOrEmpty(pObjectId))
@@ -1313,7 +1427,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //issue the command to the CUPI interface
-            res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
+            WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
             if (res.Success == false)
             {
@@ -1646,6 +1760,44 @@ namespace Cisco.UnityConnection.RestFunctions
             return res;
         }
 
+
+        /// <summary>
+        /// Returns a list of CallHandlerOwner objects as a generic list in the out parameter corresponding to the list of owners
+        /// (either users or, in Connection 10.5 and later distribution lists).  This list can be empty as call handler owners are
+        /// optional.
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public WebCallResult GetOwners(out List<CallHandlerOwner> pOwners, int pPageNumber=1, int pRowsPerPage=20)
+        {
+            return GetCallHandlerOwners(HomeServer, ObjectId, out pOwners, pPageNumber, pRowsPerPage);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pUserObjectId"></param>
+        /// <param name="pDistributionListObjectId"></param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        //public WebCallResult AddOwner(string pUserObjectId, string pDistributionListObjectId)
+        //{
+        //    return AddCallHandlerOwner(HomeServer, ObjectId, pUserObjectId, pDistributionListObjectId);
+        //}
+
+        /// <summary>
+        /// Deletes the owner of a call handler from the owners list.  Can be a user objectId or, in Connection 10.5 and later a 
+        /// public distribution list objectId
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        //public WebCallResult DeleteOwner(string pOwnerObjectId)
+        //{
+        //    return DeleteCallHandlerOwner(HomeServer, ObjectId, pOwnerObjectId);
+        //}
         #endregion
 
     }

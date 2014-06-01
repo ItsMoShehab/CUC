@@ -46,6 +46,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void Partition_Constructor_EmptyOBjectIdAndName_Success()
         {
+            Reset();
             Partition oTest = new Partition(_mockServer);
             Console.WriteLine(oTest.ToString());
             Console.WriteLine(oTest.DumpAllProps());
@@ -56,6 +57,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void Partition_Constructor_ObjectId_Success()
         {
+            Reset();
             Partition oTest = new Partition(_mockServer,"ObjectId");
             Console.WriteLine(oTest);
         }
@@ -64,6 +66,7 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(UnityConnectionRestException))]
         public void Partition_Constructor_DisplayNameNotFound_Success()
         {
+            Reset();
             Partition oTest = new Partition(_mockServer, "","Name");
             Console.WriteLine(oTest);
         }
@@ -83,6 +86,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void SearchSpace_Constructor_EmptyObjectIdAndName_Success()
         {
+            Reset();
             SearchSpace oTest = new SearchSpace(_mockServer);
             Console.WriteLine(oTest.ToString());
             Console.WriteLine(oTest.DumpAllProps());
@@ -100,6 +104,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void SearchSpace_Constructor_ObjectId_Success()
         {
+            Reset();
             SearchSpace oTest = new SearchSpace(_mockServer,"ObjectId");
             Console.WriteLine(oTest);
         }
@@ -108,9 +113,9 @@ namespace ConnectionCUPIFunctionsTest
         [ExpectedException(typeof(UnityConnectionRestException))]
         public void SearchSpace_Constructor_DisplayNameNotFound_Success()
         {
+            Reset();
             SearchSpace oTest = new SearchSpace(_mockServer, "","Name");
             Console.WriteLine(oTest);
-
         }
 
         #endregion
@@ -121,6 +126,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetSearchSpaceMembers_EmptyResponse_EmptyListReturn()
         {
+            Reset();
             SearchSpace oSpace = new SearchSpace(_mockServer, "ObjectId");
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                       It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
@@ -283,6 +289,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetSearchSpaces_EmptyResult_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                                        It.IsAny<string>(), true)).Returns(new WebCallResult
                                        {
@@ -298,6 +305,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetSearchSpaces_GarbageResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                   It.IsAny<string>(), true)).Returns(new WebCallResult
                                   {
@@ -316,6 +324,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetSearchSpaces_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
@@ -332,6 +341,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetSearchSpaces_ZeroCount_Success()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
@@ -348,6 +358,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void AddSearchSpace_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.POST, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
                                     {
@@ -365,6 +376,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void DeleteSearchSpace_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.DELETE, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
                                     {
@@ -380,6 +392,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void UpdateSearchSpace_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.PUT, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
                                     {
@@ -395,6 +408,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void AddSearchSpaceMember_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.POST, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
                                     {
@@ -410,6 +424,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void DeleteSearchSpaceMember_ErrorResponse_Failure()
         {
+            Reset();
             BaseUnitTests.Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.DELETE, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
@@ -426,6 +441,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void RefetchSearchSpaceData_EmptyClassData_Failure()
         {
+            Reset();
             SearchSpace oSpace = new SearchSpace(_mockServer);
             var res = oSpace.RefetchSearchSpaceData();
             Assert.IsFalse(res.Success,"Calling RefetchSearchSpaceData from empty class instance should fail");
@@ -434,6 +450,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void Delete_EmptyClassData_Failure()
         {
+            Reset();
             SearchSpace oSpace = new SearchSpace(_mockServer);
             var res = oSpace.Delete();
             Assert.IsFalse(res.Success, "Calling Delete from empty class instance should fail");
@@ -442,6 +459,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void Update_EmptyClassData_Failure()
         {
+            Reset();
             SearchSpace oSpace = new SearchSpace(_mockServer);
             var res = oSpace.Update("New Name","New Description");
             Assert.IsFalse(res.Success, "Calling Update from empty class instance should fail");
@@ -470,6 +488,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetPartitions_EmptyResult_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                                        It.IsAny<string>(), true)).Returns(new WebCallResult
                                        {
@@ -485,6 +504,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetPartitions_GarbageResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                   It.IsAny<string>(), true)).Returns(new WebCallResult
                                   {
@@ -503,6 +523,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetPartitions_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
@@ -519,6 +540,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetPartitions_ZeroCount_Success()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {

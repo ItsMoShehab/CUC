@@ -38,7 +38,7 @@ namespace CUPIVerySimple
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
-                connectionServer = new ConnectionServerRest ("192.168.0.178", "CCMAdministrator", "ecsbulab");
+                connectionServer = new ConnectionServerRest ("192.168.0.199", "CCMAdministrator", "ecsbulab");
             }
 
             catch (Exception ex)
@@ -68,11 +68,12 @@ namespace CUPIVerySimple
             CallHandler oMyCallHandler;
             res = CallHandler.GetCallHandler(out oMyCallHandler, connectionServer, "", "Opening Greeting");
 
-            oMyCallHandler.FlagAllPropertiesForUpdate();
-
-            res = oMyCallHandler.Update();
-            Console.WriteLine(res);
-
+            var oOwners= oMyCallHandler.Owners;
+            foreach (var oOwner in oOwners)
+            {
+                Console.WriteLine(oOwner);
+            }
+            
             //fetch user with alias of "jlindborg" - we will be sending the message from his 
             //mailbox.
             UserFull oUserTestDude;
@@ -83,6 +84,7 @@ namespace CUPIVerySimple
                 Console.WriteLine(res);
                 return;
             }
+
 
             //notification device
             NotificationDevice oNotDevice;

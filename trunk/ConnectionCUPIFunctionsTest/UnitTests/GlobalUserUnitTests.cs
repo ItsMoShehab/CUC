@@ -98,6 +98,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetUser_ObjectId_Success()
         {
+            Reset();
             GlobalUser oGlobalUser;
             var res = GlobalUser.GetUser(out oGlobalUser, _mockServer, Guid.NewGuid().ToString());
             Assert.IsTrue(res.Success, "Calling GetUser with objectId failed:"+res);
@@ -110,6 +111,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetUsers_ZeroResults_Success()
         {
+            Reset();
             //zero results
             _mockTransport.Setup(
                 x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
@@ -128,6 +130,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetUsers_EmptyResult_Failure()
         {
+            Reset();
             //empty results
             _mockTransport.Setup(
                 x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
@@ -146,6 +149,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetUsers_GarbageResult_Failure()
         {
+            Reset();
             //garbage response
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                   It.IsAny<string>(), true)).Returns(new WebCallResult
@@ -164,6 +168,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetUsers_ErrorResponse_Failure()
         {
+            Reset();
             //error response
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
@@ -184,6 +189,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetUser_EmptyResult_Failure()
         {
+            Reset();
             //empty results
             _mockTransport.Setup(
                 x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
@@ -202,6 +208,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetUser_GarbageResult_Failure()
         {
+            Reset();
             //garbage response
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                   It.IsAny<string>(), true)).Returns(new WebCallResult
@@ -220,6 +227,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetUser_ErrorResponse_Failure()
         {
+            Reset();
             //error response
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult

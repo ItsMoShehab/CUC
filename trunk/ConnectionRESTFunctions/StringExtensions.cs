@@ -69,7 +69,7 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// Currently only found one character that throws off params in body and thats &.
+        /// Currently only found one character that throws off params in body and thats at symbol
         /// Might find more with testing though so adding it here.
         /// </summary>
         /// <param name="pString"></param>

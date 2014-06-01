@@ -68,6 +68,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void RoutingRule_Constructor_ObjectId_Success()
         {
+            Reset();
             RoutingRule oTemp = new RoutingRule(_mockServer, "ObjectId");
             Console.WriteLine(oTemp);
         }
@@ -449,6 +450,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetRoutingRules_EmptyResult_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                                        It.IsAny<string>(), true)).Returns(new WebCallResult
                                        {
@@ -465,6 +467,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetRoutingRules_GarbageResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                   It.IsAny<string>(), true)).Returns(new WebCallResult
                                   {
@@ -483,6 +486,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetRoutingRules_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
@@ -499,6 +503,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetRoutingRules_ZeroCount_Success()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
@@ -515,6 +520,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetRoutingRule_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
@@ -531,6 +537,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void AddRoutingRule_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
                                     {
@@ -546,6 +553,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void DeleteRoutingRule_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.DELETE, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
                                     {
@@ -563,6 +571,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void UpdateRoutingRule_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.PUT, It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
                                     {
@@ -580,6 +589,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void UpdateOrderOfAllRoutingRules_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
                                     {
@@ -597,6 +607,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void AddRoutingRuleCondition_ErrorResponse_Failure()
         {
+            Reset();
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), It.IsAny<bool>())).Returns(new WebCallResult
                                     {
@@ -614,6 +625,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void RefetchRoutingRuleData_ErrorResponse_Failure()
         {
+            Reset();
             RoutingRule oRule = new RoutingRule(_mockServer, "");
 
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
@@ -639,6 +651,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void Update_ErrorResponse_Failure()
         {
+            Reset();
             RoutingRule oRule = new RoutingRule(_mockServer, "");
             oRule.UseCallLanguage = false;
 
