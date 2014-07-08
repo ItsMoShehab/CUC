@@ -354,10 +354,40 @@ namespace Cisco.UnityConnection.RestFunctions
                 if ((!string.IsNullOrEmpty(cookie)) && (cookie.IndexOf("JSESSIONID=") > 0))
                 {
                     pServer.TimeSessionCookieIssued = DateTime.Now;
-                    pServer.LastSessionCookie = cookie;
+                    
+                    string strTemp= ConstructCookieString(pResponse.Headers);
+                    if (string.IsNullOrEmpty(strTemp))
+                    {
+                        pServer.LastSessionCookie = cookie;
+                    }
+                    else
+                    {
+                        pServer.LastSessionCookie = strTemp;
+                    }
                     RaiseDebugEvent("Setting new cookie:" + cookie);
                 }
             }
+        }
+
+        private string ConstructCookieString(WebHeaderCollection pHeaders)
+        {
+            string strNewCookie = "";
+            //return "";
+            var oVar = pHeaders.GetValues("Set-Cookie");
+            if (oVar == null)
+            {
+                return "";
+            }
+            foreach (string oHeader in oVar)
+            {
+                if ((oHeader.Contains("JSESSION") | oHeader.Contains("REQUEST_TOKEN_KEY")) && !oHeader.Contains("expires"))
+                {
+                    strNewCookie += oHeader + ";";    
+                }
+                
+            }
+
+            return strNewCookie;
         }
 
 
