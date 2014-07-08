@@ -344,14 +344,13 @@ namespace Cisco.UnityConnection.RestFunctions
                 pServer.TimeSessionCookieIssued = DateTime.Now;
             }
 
-
+            var oCookies = pResponse.Cookies;
+            Console.WriteLine(oCookies);
             //if the server set a session cookie in the header, return it here
             var cookie = pResponse.Headers["Set-Cookie"];
             if (cookie != null)
             {
-
-                //if the response includes a new JSESSIONID (and/or JSESSIONIDSSO) update the cookie.
-                if ((!string.IsNullOrEmpty(cookie)) && (cookie.IndexOf("JSESSIONID=") > 0))
+                if (cookie.Contains("JSESSIONID=") || cookie.Contains("JSESSIONIDSSO="))
                 {
                     pServer.TimeSessionCookieIssued = DateTime.Now;
                     
@@ -380,7 +379,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             foreach (string oHeader in oVar)
             {
-                if ((oHeader.Contains("JSESSION") | oHeader.Contains("REQUEST_TOKEN_KEY")) && !oHeader.Contains("expires"))
+                if ((oHeader.Contains("JSESSION") | oHeader.Contains("REQUEST_TOKEN_KEY")) && !oHeader.ToLower().Contains("expires"))
                 {
                     strNewCookie += oHeader + ";";    
                 }
