@@ -344,9 +344,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 pServer.TimeSessionCookieIssued = DateTime.Now;
             }
 
-            var oCookies = pResponse.Cookies;
-            Console.WriteLine(oCookies);
-            //if the server set a session cookie in the header, return it here
+            //if the response header contains updated session IDs that we need to add to future request headsers
+            //parse it out here.
             var cookie = pResponse.Headers["Set-Cookie"];
             if (cookie != null)
             {
@@ -357,26 +356,32 @@ namespace Cisco.UnityConnection.RestFunctions
                     string strTemp= ConstructCookieString(pResponse.Headers);
                     if (string.IsNullOrEmpty(strTemp))
                     {
-                        pServer.LastSessionCookie = cookie;
+                        RaiseErrorEvent("No cookie construction returned from ConstructCookieString in RestTransportFunctions.cs");
                     }
                     else
                     {
                         pServer.LastSessionCookie = strTemp;
+                        RaiseDebugEvent("Setting new cookie:" + cookie);
                     }
-                    RaiseDebugEvent("Setting new cookie:" + cookie);
                 }
             }
         }
 
+        /// <summary>
+        /// Pull all session IDs and token keys out of the response header that are not marked expired and include it into 
+        /// a single string to add to request headers moving forward.
+        /// </summary>
         private string ConstructCookieString(WebHeaderCollection pHeaders)
         {
             string strNewCookie = "";
-            //return "";
             var oVar = pHeaders.GetValues("Set-Cookie");
             if (oVar == null)
             {
                 return "";
             }
+
+            //add all session and token key values that are not expired into the cookie container that will be added to the 
+            //request headers moving forward.
             foreach (string oHeader in oVar)
             {
                 if ((oHeader.Contains("JSESSION") | oHeader.Contains("REQUEST_TOKEN_KEY")) && !oHeader.ToLower().Contains("expires"))

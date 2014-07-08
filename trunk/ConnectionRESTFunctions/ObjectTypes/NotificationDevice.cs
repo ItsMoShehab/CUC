@@ -157,16 +157,15 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
+        
         /// <summary>
         /// The name of the Conversation Cisco Unity Connection will use when calling the subscriber to notify of new messages. 
         /// This normally does not need to be edited - phone notificaiton types use SubNoitify and you do not have to set this, the 
         /// back end stored procedure does it for you.
         /// </summary>
-        public string Conversation
-        {
-            get { return Conversation; }
-        }
-
+          [JsonProperty]
+        public string Conversation { get; private set; }
+        
         private bool _detectTransferLoop;
         public bool DetectTransferLoop
         {
@@ -181,10 +180,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <summary>
         /// Read only device name - can't be changed after creation
         /// </summary>
-        public string DeviceName
-        {
-            get { return DeviceName; }
-        }
+          [JsonProperty]
+        public string DeviceName { get; private set; }
 
         private int _dialDelay;
         /// <summary>
