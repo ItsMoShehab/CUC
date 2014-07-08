@@ -38,7 +38,7 @@ namespace CUPIVerySimple
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
-                connectionServer = new ConnectionServerRest ("192.168.0.199", "CCMAdministrator", "ecsbulab");
+                connectionServer = new ConnectionServerRest ("192.168.0.188", "CCMAdministrator", "ecsbulab");
             }
 
             catch (Exception ex)
@@ -84,6 +84,14 @@ namespace CUPIVerySimple
                 Console.WriteLine(res);
                 return;
             }
+
+            List<NotificationDevice> omyDevices;
+            omyDevices = oUserTestDude.NotificationDevices(true);
+            foreach (var myDevice in omyDevices)
+            {
+                Console.WriteLine(myDevice);
+            }
+            Console.WriteLine(res);
 
 
             //notification device
