@@ -11,7 +11,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -351,6 +353,7 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 if (cookie.Contains("JSESSIONID=") || cookie.Contains("JSESSIONIDSSO="))
                 {
+
                     pServer.TimeSessionCookieIssued = DateTime.Now;
                     
                     string strTemp= ConstructCookieString(pResponse.Headers);
@@ -374,12 +377,12 @@ namespace Cisco.UnityConnection.RestFunctions
         private string ConstructCookieString(WebHeaderCollection pHeaders)
         {
             string strNewCookie = "";
-            var oVar = pHeaders.GetValues("Set-Cookie");
+            var oVar = GetCookieStrings(pHeaders);
             if (oVar == null)
             {
                 return "";
             }
-
+            
             //add all session and token key values that are not expired into the cookie container that will be added to the 
             //request headers moving forward.
             foreach (string oHeader in oVar)
@@ -392,6 +395,19 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             return strNewCookie;
+        }
+
+        /// <summary>
+        /// get the list of "Set-Cookie" headers into an array of strings and return it
+        /// </summary>
+        private IEnumerable<string> GetCookieStrings(WebHeaderCollection pHeaders)
+        {
+            var oHeaders = pHeaders.GetValues("Set-Cookie");
+            if (oHeaders == null)
+            {
+                return null;
+            }
+            return oHeaders;
         }
 
 
@@ -416,18 +432,27 @@ namespace Cisco.UnityConnection.RestFunctions
         /// If passed as true the resquest is formed as a JSON request and the results are assumed to be in the same format.  If the default of 
         /// false is passed it's sent as XML and the response is assumed to be the same.
         ///  </param>
+        /// <param name="pSetHeaderStrings">
+        /// if you wish to add new header items to the request you can pass them in as a list of strings
+        /// </param>
+        /// <param name="pCheckRequestBodyString">
+        /// By default the body is checked for special characters and replaced with escape codes as needed - pass as false to skip that.
+        /// </param>
         /// <returns>
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
         /// with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        private WebCallResult GetHttpResponse(string pUrl, MethodType pMethod, ConnectionServerRest pConnectionServer,
-                        string pRequestBody, bool pIsJson = false)
+        public WebCallResult GetHttpResponse(string pUrl, MethodType pMethod, ConnectionServerRest pConnectionServer,
+                        string pRequestBody, bool pIsJson = false, Dictionary<string,string> pSetHeaderStrings = null, bool pCheckRequestBodyString = true)
         {
             WebCallResult res = new WebCallResult();
             HttpWebResponse response = null;
 
-            pRequestBody = pRequestBody.HtmlBodySafe();
-
+            if (pCheckRequestBodyString)
+            {
+                pRequestBody = pRequestBody.HtmlBodySafe();
+            }
+            
             //store the request parts in the resonse structure for ease of reference for error logging and such.
             res.Url = EscapeCharactersInUrl(pUrl);
             res.Method = pMethod.ToString();
@@ -440,7 +465,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 try
                 {
                     HttpWebRequest request = WebRequest.Create(pUrl) as HttpWebRequest;
-
+                    
                     if (request == null)
                     {
                         res.ErrorText ="Error - null returned for WebRequest create in GetResponse on RestTransportFunctions.cs using URL=" +pUrl;
@@ -458,8 +483,6 @@ namespace Cisco.UnityConnection.RestFunctions
                     request.Timeout = HttpTimeoutSeconds * 1000;
                     request.Headers.Add("Cache-Control", "no-cache");
 
-                    AddCredentialsAndTokens(ref request,pConnectionServer);
-
                     if (pIsJson)
                     {
                         request.ContentType = @"application/json";
@@ -470,6 +493,48 @@ namespace Cisco.UnityConnection.RestFunctions
                         request.ContentType = @"application/xml";
                         request.Accept = "application/xml, */*";
                     }
+
+                    
+
+                    if (pSetHeaderStrings != null)
+                    {
+                        foreach (var strTemp in pSetHeaderStrings)
+                        {
+                            if (strTemp.Key.Equals("Content-Type",StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                request.ContentType = strTemp.Value;
+                                continue;
+                            }
+
+                            if (strTemp.Key.Equals("Accept", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                request.Accept = strTemp.Value;
+                                continue;
+                            }
+
+                            if (strTemp.Key.Equals("referer", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                request.Referer = strTemp.Value;
+                                continue;
+                            }
+
+                            try
+                            {
+                                request.Headers.Add(strTemp.Key, strTemp.Value);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex);
+                            }
+                        }
+                    }
+
+                    if (pConnectionServer != null)
+                    {
+                        AddCredentialsAndTokens(ref request,pConnectionServer);
+                    }
+
+                    
 
                     //not all requests have a body - add it only if it's passed in as non empty
                     if (!String.IsNullOrEmpty(pRequestBody))
@@ -484,8 +549,18 @@ namespace Cisco.UnityConnection.RestFunctions
                     //issue the request to the server.
                     try
                     {
+                        request.AllowAutoRedirect = false;
                         response = request.GetResponse() as HttpWebResponse;
-                        FetchCookieDetails(response,pConnectionServer);
+                        
+                        if (pConnectionServer != null)
+                        {
+                            FetchCookieDetails(response,pConnectionServer);
+                        }
+                        
+                        if (response != null)
+                        {
+                            res.SetCookieStrings = GetCookieStrings(response.Headers);
+                        }
                     }
                     catch (WebException ex)
                     {

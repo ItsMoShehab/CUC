@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
 {
@@ -16,20 +16,76 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public struct WebCallResult
     {
+        /// <summary>
+        /// True if the HTTP call is successful
+        /// </summary>
         public bool Success;
-        public string ResponseText; //raw text returned from the server's HTTP interface.
-        public string ErrorText;    //human readable error reason (if any)
-        public int StatusCode;      //HTTP status code = 200 (OK), 204 (accepted) etc...
-        public string StatusDescription;  //Additional status info sent by server (if any)
-        public XElement XmlElement;  //raw text result parsed into XML elements for easy processing.
-        public Dictionary<string, object> JsonDictionary; //raw text result parsed into dictionary if the response is JSON.
-        public int TotalObjectCount; //for GET operations, even if returing only some users via paging, the total number is always returned.
-        public string Url;           //Full URL that was sent to the server.
-        public string Method;        //Method used (POST, PUT, GET...)
-        public string RequestBody;   //Request body that was sent to the server.
-        public string Misc;         //string to hold other data the calling/caller may wish to log such as full paths to file names processed and such.
-        public string ReturnedObjectId; //for all new object creation the objectID of the new object is returned here.
+        
+        /// <summary>
+        /// raw text returned from the server's HTTP interface.
+        /// </summary>
+        public string ResponseText; 
 
+        /// <summary>
+        /// human readable error reason (if any)
+        /// </summary>
+        public string ErrorText;
+        
+        /// <summary>
+        /// HTTP status code = 200 (OK), 204 (accepted) etc...
+        /// </summary>
+        public int StatusCode;      
+        
+        /// <summary>
+        /// Additional status info sent by server (if any)
+        /// </summary>
+        public string StatusDescription;  
+        
+        /// <summary>
+        /// raw text result parsed into XML elements for easy processing.
+        /// </summary>
+        public XElement XmlElement;  
+        
+        /// <summary>
+        /// raw text result parsed into dictionary if the response is JSON.  Null if not JSON content.
+        /// </summary>
+        public Dictionary<string, object> JsonDictionary; 
+
+        /// <summary>
+        /// for GET operations, even if returing only some users via paging, the total number is always returned.
+        /// </summary>
+        public int TotalObjectCount; 
+        
+        /// <summary>
+        /// Full URL that was sent to the server.
+        /// </summary>
+        public string Url;           
+        
+        /// <summary>
+        /// Method used (POST, PUT, GET...)
+        /// </summary>
+        public string Method;        
+        
+        /// <summary>
+        /// Request body that was sent to the server.
+        /// </summary>
+        public string RequestBody;   
+        
+        /// <summary>
+        /// string to hold other data the calling/caller may wish to log such as full paths to file names processed and such.
+        /// </summary>
+        public string Misc;         
+        
+        /// <summary>
+        /// for all new object creation the objectID of the new object is returned here.
+        /// </summary>
+        public string ReturnedObjectId; 
+        
+        /// <summary>
+        /// If the response header contains any "set-cookie" items they are included in this list
+        /// </summary>
+        public IEnumerable<string> SetCookieStrings; 
+        
         /// <summary>
         /// dumps the entire contents of the WebCallREsult excpept for the XElement object (which is just a parsed version of the ResponseText) and
         /// returns it as a formatted string for logging and display purposes.
@@ -55,6 +111,15 @@ namespace Cisco.UnityConnection.RestFunctions
             if (!string.IsNullOrEmpty(Misc))
                 strRet.AppendLine("    Misc data:" + Misc);
 
+            if (SetCookieStrings != null && SetCookieStrings.Any())
+            {
+                strRet.AppendLine("    Set Cookie Data:");
+                foreach (string strline in SetCookieStrings)
+                {
+                    strRet.AppendLine("        " + strline);
+                }
+            }
+
             return strRet.ToString();
         }
     }
@@ -64,6 +129,9 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public class UnityConnectionRestException : Exception
     {
+        /// <summary>
+        /// Constructor takes the WebCallResult instance and an optional description
+        /// </summary>
         public UnityConnectionRestException(WebCallResult pWebCallResult, string pDescription = "")
             : base(pDescription)
         {
@@ -71,7 +139,14 @@ namespace Cisco.UnityConnection.RestFunctions
             Description = pDescription;
         }
 
+        /// <summary>
+        /// The details of the call and results when a web exception is thrown
+        /// </summary>
         public WebCallResult WebCallResult { get; private set; }
+        
+        /// <summary>
+        /// Optional error description when an exception is thrown making a web call
+        /// </summary>
         public string Description { get; private set; }
     }
 
@@ -79,7 +154,9 @@ namespace Cisco.UnityConnection.RestFunctions
     /// list of possible methods supported by CUPI for getting/setting properties. 
     /// </summary>
 // ReSharper disable InconsistentNaming
+// ReSharper disable CSharpWarnings::CS1591
     public enum MethodType { PUT, POST, GET, DELETE }
+// ReSharper restore CSharpWarnings::CS1591
 // ReSharper restore InconsistentNaming
 
     /// <summary>
@@ -87,6 +164,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public enum HttpStatusCode
     {
+        // ReSharper disable CSharpWarnings::CS1591
         Ok = 200,
         Created = 201,
         ChangeAccepted = 204,
@@ -101,6 +179,7 @@ namespace Cisco.UnityConnection.RestFunctions
         Gone = 410,
         UnsupportedMediaType = 415,
         ServerError = 500
+        // ReSharper restore CSharpWarnings::CS1591
     }
 
     #endregion
@@ -129,8 +208,14 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Events
 
+        /// <summary>
+        /// event raised when an error occurs in the ConnectionRestCalls class instance
+        /// </summary>
         event RestTransportFunctions.LoggingEventHandler ErrorEvents;
 
+        /// <summary>
+        /// event raised when debug is enabled and a debug item is triggered in the ConnectionRestCalls class instance
+        /// </summary>
         event RestTransportFunctions.LoggingEventHandler DebugEvents;
 
         #endregion
@@ -179,6 +264,40 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         #region Http Call Methods
+
+        /// <summary>
+        /// Primary method for sending/fetching data to and from the Connection server via CUPI.  
+        /// </summary>
+        /// <param name="pUrl">
+        /// Full URL to send to Connection - format should look like:
+        /// https://{Connection Server Name}:8443/vmrest/users
+        /// </param>
+        /// <param name="pMethod">
+        /// GET, PUT, POST, DELETE method type
+        /// </param>
+        /// <param name="pConnectionServer">
+        /// Instance of the ConnectionServer class - if passed as NULL it's a generic HTTP call to a remote server that is not assumed to be 
+        /// a ConnectionServer API.
+        /// </param>
+        /// <param name="pRequestBody">
+        /// If the command (for instance a POST) include the need for a post body for additional data, include it here.  Not all commands
+        /// require this (GET calls for instance).
+        /// </param>
+        /// <param name="pIsJson">
+        /// If passed as true the resquest is formed as a JSON request and the results are assumed to be in the same format.  If the default of 
+        /// false is passed it's sent as XML and the response is assumed to be the same.
+        ///  </param>
+        /// <param name="pSetHeaderStrings">
+        /// If you want to add one or more request header items you can pass them in as a list of strings.  Defaults to Null
+        /// </param>
+        /// <param name="pCheckRequestBodyString">
+        /// By default the body is checked for special characters and replaced with escape codes as needed - pass as false to skip that.
+        /// </param>        /// <returns>
+        /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
+        /// with the call so the calling party can easily log details in the event of a failure.
+        /// </returns>
+        WebCallResult GetHttpResponse(string pUrl, MethodType pMethod, ConnectionServerRest pConnectionServer,
+            string pRequestBody, bool pIsJson = false, Dictionary<string,string> pSetHeaderStrings=null, bool pCheckRequestBodyString=true);
 
         /// <summary>
         /// Primary method for sending/fetching data to and from the Connection server via CUPI - tries to parse results returned 
