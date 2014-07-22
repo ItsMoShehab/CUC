@@ -358,6 +358,39 @@ namespace Cisco.UnityConnection.RestFunctions
             return _transportFunctions.GetCupiResponse(pUrl, pMethod, this, pRequestBody, pJsonResponse);
         }
 
+        /// <summary>
+        /// Special method for doing raw HTTP calls to target servers that may or may not be Connection servers  Results are contained in the WebCallResult 
+        /// class returned.
+        /// </summary>
+        /// <param name="pUrl">
+        /// Full URL to send to server - format should look like:
+        /// https://{Server Name}/path/
+        /// </param>
+        /// <param name="pMethod">
+        /// GET, PUT, POST, DELETE method type
+        /// </param>
+        /// <param name="pRequestBody">
+        /// If the command (for instance a POST) include the need for a post body for additional data, include it here.  Not all commands
+        /// require this (GET calls for instance).
+        /// </param>
+        /// <param name="pJsonResponse">
+        /// Defaults to getting JSON body as a response, if passed as false XML will be requested instead.
+        /// </param>
+        /// <param name="pSetHeaderStrings">
+        /// If you want to add one or more headers in the request you can pass them in as a list of strings - defaults to NULL
+        /// </param>
+        /// <param name="pCheckRequestBodyString">
+        /// By default the body is checked for special characters and replaced with escape codes as needed - pass as false to skip that.
+        /// </param>        
+        /// <returns>
+        /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... 
+        /// associated with the call so the calling party can easily log details in the event of a failure.
+        /// </returns>
+        public WebCallResult GetHttpResponse(string pUrl, MethodType pMethod, string pRequestBody,bool pJsonResponse = true, 
+            Dictionary<string,string> pSetHeaderStrings = null, bool pCheckRequestBodyString=true)
+        {
+            return _transportFunctions.GetHttpResponse(pUrl, pMethod, null, pRequestBody,pJsonResponse,pSetHeaderStrings,pCheckRequestBodyString);
+        }
 
         /// <summary>
         /// Overload for the GetCupiResponse that takes a simple string/string dictionary that is assumed to be the body of a 

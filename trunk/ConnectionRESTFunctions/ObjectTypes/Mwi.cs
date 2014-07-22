@@ -491,8 +491,6 @@ namespace Cisco.UnityConnection.RestFunctions
                                                             string pUserObjectId, 
                                                             string pObjectId)
         {
-            WebCallResult res;
-
             if (pConnectionServer == null)
             {
                 return new WebCallResult {ErrorText = "Null ConnectionServer referenced passed to DeleteMwiDevice"};

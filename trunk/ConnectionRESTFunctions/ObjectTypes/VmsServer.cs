@@ -65,6 +65,9 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Fields and Properties
 
+        /// <summary>
+        /// The Connection server this object instance is pulled from 
+        /// </summary>
         public ConnectionServerRest HomeServer;
 
         #endregion
