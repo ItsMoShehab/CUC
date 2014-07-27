@@ -11,9 +11,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -123,8 +121,14 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public class LogEventArgs : EventArgs
         {
+            /// <summary>
+            /// string to output to the log
+            /// </summary>
             public string Line { get; set; }
 
+            /// <summary>
+            /// Constructor requires line of text to be output to log be included
+            /// </summary>
             public LogEventArgs(string pLine)
             {
                 Line = pLine;
@@ -438,12 +442,16 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pCheckRequestBodyString">
         /// By default the body is checked for special characters and replaced with escape codes as needed - pass as false to skip that.
         /// </param>
+        /// <param name="pBlockBodyOutputForDebug">
+        /// If passed as true the body content is not included in the debug output - useful if the body contains password data or the like.
+        /// </param>        
         /// <returns>
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
         /// with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
         public WebCallResult GetHttpResponse(string pUrl, MethodType pMethod, ConnectionServerRest pConnectionServer,
-                        string pRequestBody, bool pIsJson = false, Dictionary<string,string> pSetHeaderStrings = null, bool pCheckRequestBodyString = true)
+                        string pRequestBody, bool pIsJson = false, Dictionary<string,string> pSetHeaderStrings = null, bool pCheckRequestBodyString = true,
+            bool pBlockBodyOutputForDebug=false)
         {
             WebCallResult res = new WebCallResult();
             HttpWebResponse response = null;
@@ -476,7 +484,14 @@ namespace Cisco.UnityConnection.RestFunctions
                     RaiseDebugEvent("**** Sending to server ****");
                     RaiseDebugEvent("    URI:" + request.RequestUri);
                     RaiseDebugEvent("    Method:" + pMethod);
-                    RaiseDebugEvent("    Body:" + pRequestBody);
+                    if (pBlockBodyOutputForDebug)
+                    {
+                        RaiseDebugEvent("    Body: {blocked content}");
+                    }
+                    else
+                    {
+                        RaiseDebugEvent("    Body:" + pRequestBody);
+                    }
                     
                     request.Method = pMethod.ToString();
                     request.KeepAlive = true;
