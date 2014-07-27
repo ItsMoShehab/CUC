@@ -18,7 +18,7 @@ namespace ConnectionCUPIFunctionsTest
         // ReSharper disable HeuristicUnreachableCode
 
         #region Fields and Properties
-
+       
         private static CallHandler _tempHandler;
 
         #endregion

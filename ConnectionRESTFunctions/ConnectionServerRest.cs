@@ -129,6 +129,9 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         //values set at class creation time that are read only externally
+        /// <summary>
+        /// Full version values for the Connection server attached
+        /// </summary>
         public ConnectionVersion Version { get; private set; }
         public  string ServerName { get; private set; }
         public  string LoginName { get; private set; }
@@ -381,15 +384,19 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </param>
         /// <param name="pCheckRequestBodyString">
         /// By default the body is checked for special characters and replaced with escape codes as needed - pass as false to skip that.
-        /// </param>        
+        /// </param>
+        /// <param name="pBlockBodyOutputForDebug">
+        /// Passed as true the body content will not be included in the debug output - defaults to false.
+        /// </param>
         /// <returns>
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... 
         /// associated with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
-        public WebCallResult GetHttpResponse(string pUrl, MethodType pMethod, string pRequestBody,bool pJsonResponse = true, 
-            Dictionary<string,string> pSetHeaderStrings = null, bool pCheckRequestBodyString=true)
+        public WebCallResult GetHttpResponse(string pUrl, MethodType pMethod, string pRequestBody,bool pJsonResponse = true,
+            Dictionary<string, string> pSetHeaderStrings = null, bool pCheckRequestBodyString = true, bool pBlockBodyOutputForDebug=false)
         {
-            return _transportFunctions.GetHttpResponse(pUrl, pMethod, null, pRequestBody,pJsonResponse,pSetHeaderStrings,pCheckRequestBodyString);
+            return _transportFunctions.GetHttpResponse(pUrl, pMethod, null, pRequestBody,pJsonResponse,pSetHeaderStrings,
+                pCheckRequestBodyString,pBlockBodyOutputForDebug);
         }
 
         /// <summary>
