@@ -188,6 +188,16 @@ namespace Cisco.UnityConnection.RestFunctions
             return res;
         }
 
+        /// <summary>
+        /// return a complete list of timezones defined on the target Unity Connection server
+        /// </summary>
+        /// <returns>
+        /// return all the timezones homed on target Connection in a dictionary form.
+        /// </returns>
+        public Dictionary<int, ConnectionTimeZone> GetListOfTimeZones()
+        {
+            return _timeZones;
+        }
 
         #endregion
 
