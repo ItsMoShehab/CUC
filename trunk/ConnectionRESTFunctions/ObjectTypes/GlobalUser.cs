@@ -57,7 +57,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             HomeServer = pConnectionServer;
 
-            if (pObjectId.Length == 0 & pAlias.Length == 0) return;
+            if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pAlias)) return;
 
             //if the ObjectId or Alias are passed in then fetch the data on the fly and fill out this instance
             WebCallResult res = GetGlobalUser(pObjectId, pAlias);

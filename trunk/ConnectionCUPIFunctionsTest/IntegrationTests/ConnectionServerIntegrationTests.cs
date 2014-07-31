@@ -143,12 +143,12 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success, "Failed to fetch directory handlers:" + res);
             Assert.IsTrue(oDirHandlers.Count > 0, "Failed to find any directory handlers");
 
-            string strRet = _connectionServer.GetActionDescription(ActionTypes.GoTo, ConversationNames.Ad,
+            string strRet = _connectionServer.GetActionDescription(ActionTypes.GoTo, ConversationNames.AD,
                                                             oDirHandlers[0].ObjectId);
             Assert.IsTrue(strRet.ToLower().Contains("route to name lookup handler:"),
                           "Directory handler route description not correct:" + strRet);
 
-            strRet = _connectionServer.GetActionDescription(ActionTypes.GoTo, ConversationNames.Ad, "bogus");
+            strRet = _connectionServer.GetActionDescription(ActionTypes.GoTo, ConversationNames.AD, "bogus");
             Assert.IsTrue(strRet.ToLower().Contains("invalid link"),
                           "Directory handler route description not correct for missing link:"
                           + strRet);

@@ -60,7 +60,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             HomeServer = pConnectionServer;
 
-            if (pObjectId.Length == 0 & pAlias.Length == 0)
+            if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pAlias))
             {
                 return;
             }

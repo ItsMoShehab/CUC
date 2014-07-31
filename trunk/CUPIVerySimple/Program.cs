@@ -64,15 +64,6 @@ namespace CUPIVerySimple
 
             //the WebCallResult is the structure returned on most calls into the CUPIFunctions library.
             WebCallResult res;
-
-            CallHandler oMyCallHandler;
-            res = CallHandler.GetCallHandler(out oMyCallHandler, connectionServer, "", "Opening Greeting");
-
-            var oOwners= oMyCallHandler.Owners;
-            foreach (var oOwner in oOwners)
-            {
-                Console.WriteLine(oOwner);
-            }
             
             //fetch user with alias of "jlindborg" - we will be sending the message from his 
             //mailbox.

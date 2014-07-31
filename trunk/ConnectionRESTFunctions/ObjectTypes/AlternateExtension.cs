@@ -74,7 +74,7 @@ namespace Cisco.UnityConnection.RestFunctions
             UserObjectId = pUserObjectId;
 
             //if the user passed in a specific ObjectId then go load that extenson up, otherwise just return an empty instance.
-            if (pObjectId.Length == 0) return;
+            if (string.IsNullOrEmpty(pObjectId)) return;
 
             //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
             WebCallResult res = GetAlternateExtension(pObjectId);

@@ -73,7 +73,7 @@ namespace Cisco.UnityConnection.RestFunctions
             CallHandlerObjectId = pCallHandlerObjectId;
 
             //if the user passed in a specific ObjectId then go load that menu entry up, otherwise just return an empty instance.
-            if (pKey.Length == 0) return;
+            if (string.IsNullOrEmpty(pKey)) return;
 
             //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
             WebCallResult res = GetMenuEntry(pKey);

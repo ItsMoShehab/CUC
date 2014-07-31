@@ -1186,14 +1186,21 @@ namespace Cisco.UnityConnection.RestFunctions
                 string strObjectId = pObjectId;
                 if (string.IsNullOrEmpty(pObjectId))
                 {
-                    strObjectId = GetObjectIdFromName(pDisplayName);
+                    int iCount;
+                    strObjectId = GetObjectIdFromName(pDisplayName, out iCount);
                     if (string.IsNullOrEmpty(strObjectId))
                     {
-                        return new WebCallResult
+                        var oRes = new WebCallResult();
+                        oRes.Success = false;
+                        if (iCount>1)
                         {
-                            Success = false,
-                            ErrorText = "No directory handler found for name=" + pDisplayName
-                        };
+                            oRes.ErrorText = "More than one directory handler found for name=" + pDisplayName;
+                        }
+                        else
+                        {
+                            oRes.ErrorText = "No directory handler found for name=" + pDisplayName;
+                        }
+                        return oRes;
                     }
                 }
 
@@ -1230,25 +1237,30 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
 
-            /// <summary>
-            /// Fetch the ObjectId of a directory handler by it's name.  Empty string returned if not match is found.
-            /// </summary>
-            /// <param name="pName">
-            /// name of the directory handler to find
-            /// </param>
-            /// <returns>
-            /// ObjectId of directory handler if found or empty string if not.
-            /// </returns>
-            private string GetObjectIdFromName(string pName)
+        /// <summary>
+        /// Fetch the ObjectId of a directory handler by it's name.  Empty string returned if not match is found.
+        /// </summary>
+        /// <param name="pName">
+        /// name of the directory handler to find
+        /// </param>
+        /// <param name="pCount">
+        /// The count of items returned from search by name - duplicate names are possible
+        /// </param>
+        /// <returns>
+        /// ObjectId of directory handler if found or empty string if not.
+        /// </returns>
+        private string GetObjectIdFromName(string pName, out int pCount)
             {
+                pCount = 0;
                 // string strUrl = string.Format("{0}coses/?query=(DisplayName is {1})", HomeServer.BaseUrl, pCosName);
                 string strUrl = string.Format("{0}handlers/directoryhandlers/?query=(DisplayName is {1})", HomeServer.BaseUrl, pName.UriSafe());
 
                 //issue the command to the CUPI interface
                 WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
-                if (res.Success == false || res.TotalObjectCount == 0)
+                if (res.Success == false || res.TotalObjectCount != 1)
                 {
+                    pCount = res.TotalObjectCount;
                     return "";
                 }
 

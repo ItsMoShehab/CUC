@@ -170,7 +170,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //create a repository to keep track of changed properties on an instance of a user
             ChangedPropList = new ConnectionPropertyList();
 
-            if (pObjectId.Length == 0 & pAlias.Length == 0) return;
+            if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pAlias)) return;
 
             //if the ObjectId or Alias are passed in then fetch the data on the fly and fill out this instance
             WebCallResult res = GetUser(pObjectId, pAlias);
@@ -1761,6 +1761,13 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 res.Success = false;
                 res.ErrorText = string.Format("No user found with alias={0} or objectI=d={1}", pAlias, pObjectId);
+                return res;
+            }
+
+            if (res.TotalObjectCount > 1)
+            {
+                res.Success = false;
+                res.ErrorText = string.Format("More than one user found with alias={0} or objectI=d={1}", pAlias, pObjectId);
                 return res;
             }
 

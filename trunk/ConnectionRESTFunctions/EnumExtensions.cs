@@ -9,6 +9,9 @@ namespace Cisco.UnityConnection.RestFunctions
     /// </summary>
     public static class EnumExtensions
     {
+        /// <summary>
+        /// Returns enum property values back for easy management
+        /// </summary>
         public static string Description(this Enum value)
         {
             var enumType = value.GetType();

@@ -463,7 +463,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //you need an ObjectId and/or a display name - both being blank is not acceptable
-            if ((pObjectId.Length == 0) & (pDisplayName.Length == 0))
+            if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pDisplayName)))
             {
                 res.ErrorText = "Empty ObjectId and display name passed to GetInterviewHandler";
                 return res;
@@ -1036,6 +1036,13 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 res.Success = false;
                 res.ErrorText="Interviewer not found by objectId="+pObjectId+" or name="+pDisplayName;
+                return res;
+            }
+
+            if (res.TotalObjectCount > 1)
+            {
+                res.Success = false;
+                res.ErrorText = "More than one interviewer found by objectId=" + pObjectId + " or name=" + pDisplayName;
                 return res;
             }
 

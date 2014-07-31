@@ -248,11 +248,18 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success, "Failed to fetch notification templates:" + res);
             Assert.IsTrue(oHtmlTemplates.Count > 0, "No HTML templates found");
 
+            string strDisplayName = Guid.NewGuid().ToString();
             res = NotificationDevice.AddHtmlDevice(_connectionServer, _tempUser.ObjectId,
                                                    oHtmlTemplates[0].NotificationTemplateId,
-                                                   Guid.NewGuid().ToString(), "blah@fun.com","NewVoiceMail" , true);
+                                                   strDisplayName, "blah@fun.com","NewVoiceMail" , true);
             Assert.IsTrue(res.Success, "Failed to create new HTML notification device:" + res);
 
+            NotificationDevice oDevice;
+            res = NotificationDevice.GetNotificationDeivce(_connectionServer, _tempUser.ObjectId, "", strDisplayName,out oDevice);
+            Assert.IsTrue(res.Success, "Failed to fetch newly created HTML notification device:" + res);
+
+            res= oDevice.Delete();
+            Assert.IsTrue(res.Success, "Failed to delete new HTML notification device:" + res);
         }
 
         [TestMethod]
