@@ -55,7 +55,7 @@ namespace Cisco.UnityConnection.RestFunctions
             HomeServer = pConnectionServer;
 
             //if the user passed in a specific ObjectId or display name then go load that contact up, otherwise just return an empty instance.
-            if ((pObjectId.Length == 0) & (pAlias.Length == 0)) return;
+            if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pAlias))) return;
 
             //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
             WebCallResult res = GetContact(pObjectId, pAlias);
@@ -440,7 +440,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //you need an objectID and/or an alias - both being blank is not acceptable
-            if ((pObjectId.Length == 0) & (pAlias.Length == 0))
+            if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pAlias)))
             {
                 res.ErrorText = "Empty objectId and alias name passed to GetContact";
                 return res;

@@ -56,7 +56,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             HomeServer = pConnectionServer;
 
-            if (pObjectId.Length == 0 & pDisplayName.Length == 0) return;
+            if (string.IsNullOrEmpty(pObjectId) & string.IsNullOrEmpty(pDisplayName)) return;
 
             //if the ObjectId or display name are passed in then fetch the data on the fly and fill out this instance
             WebCallResult res = GetLocation(pObjectId, pDisplayName);
@@ -477,14 +477,21 @@ namespace Cisco.UnityConnection.RestFunctions
             string strObjectId = pObjectId;
             if (string.IsNullOrEmpty(pObjectId))
             {
-                strObjectId = GetObjectIdFromName(pDisplayName);
+                int iCount;
+                strObjectId = GetObjectIdFromName(pDisplayName, out iCount);
                 if (string.IsNullOrEmpty(strObjectId))
                 {
-                    return new WebCallResult
-                        {
-                            Success = false,
-                            ErrorText = "No location found for host address=" + pDisplayName
-                        };
+                    WebCallResult oRes = new WebCallResult();
+                    oRes.Success = false;
+                    if (iCount > 1)
+                    {
+                        oRes.ErrorText = "More than one location found for host address=" + pDisplayName;
+                    }
+                    else
+                    {
+                        oRes.ErrorText = "No location found for host address=" + pDisplayName;
+                    }
+                    return oRes;
                 }
             }
 
@@ -500,19 +507,24 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pName">
         /// name of the location to find
         /// </param>
+        /// <param name="pCount">
+        /// count of locations found
+        /// </param>
         /// <returns>
         /// ObjectId of location if found or empty string if not.
         /// </returns>
-        private string GetObjectIdFromName(string pName)
+        private string GetObjectIdFromName(string pName, out int pCount)
         {
+            pCount = 0;
             // string strUrl = string.Format("{0}coses/?query=(DisplayName is {1})", HomeServer.BaseUrl, pCosName);
             string strUrl = string.Format("{0}locations/connectionlocations/?query=(DisplayName is {1})", HomeServer.BaseUrl, pName.UriSafe());
 
             //issue the command to the CUPI interface
             WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
-            if (res.Success == false || res.TotalObjectCount == 0)
+            if (res.Success == false || res.TotalObjectCount != 1)
             {
+                pCount = res.TotalObjectCount;
                 return "";
             }
 

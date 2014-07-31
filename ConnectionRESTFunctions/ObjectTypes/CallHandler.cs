@@ -71,7 +71,7 @@ namespace Cisco.UnityConnection.RestFunctions
             HomeServer = pConnectionServer;
 
             //if the user passed in a specific ObjectId or display name then go load that handler up, otherwise just return an empty instance.
-            if ((pObjectId.Length == 0) & (pDisplayName.Length==0)) return;
+            if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pDisplayName))) return;
 
             //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
             WebCallResult res = GetCallHandler(pObjectId,pDisplayName,pIsUserTemplateHandler);
@@ -88,21 +88,33 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Fields and Properties
 
-        //used for displaying in grids and drop downs
+        /// <summary>
+        /// used for displaying in grids and drop downs
+        /// </summary>
         public string SelectionDisplayString { get { return DisplayName; } }
 
-        //used for displaying/selecting in grids/dropdowns
+        /// <summary>
+        /// used for displaying/selecting in grids/dropdowns
+        /// </summary>
         public string UniqueIdentifier { get { return ObjectId; } }
 
-        //reference to the ConnectionServer object used to create this call handler instance.
+        /// <summary>
+        /// reference to the ConnectionServer object used to create this call handler instance.
+        /// </summary>
         public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
 
-        //for checking on pending changes
+        /// <summary>
+        /// for checking on pending changes
+        /// </summary>
         public ConnectionPropertyList ChangeList { get { return _changedPropList; } }
 
+        /// <summary>
+        /// Returning a list (0 or more) users or, in later versions of Connection public distribution lists that 
+        /// are identified as owners of a call handler.
+        /// </summary>
         public List<CallHandlerOwner> Owners
         {
             get
@@ -767,7 +779,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //you need an objectID and/or a display name - both being blank is not acceptable
-            if ((pObjectId.Length==0) & (pDisplayName.Length==0))
+            if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pDisplayName)))
             {
                 res.ErrorText = "Empty objectId and display name passed to GetCallHandler";
                 return res;
@@ -1437,6 +1449,13 @@ namespace Cisco.UnityConnection.RestFunctions
             if (res.TotalObjectCount == 0)
             {
                 res.ErrorText = "Call handler not found";
+                res.Success = false;
+                return res;
+            }
+
+            if (res.TotalObjectCount > 1)
+            {
+                res.ErrorText = "More than one call handler returned on search";
                 res.Success = false;
                 return res;
             }

@@ -95,19 +95,27 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Fields and Properties
 
-        //used for displaying in grids and drop downs
+        /// <summary>
+        /// used for displaying in grids and drop downs
+        /// </summary>
         public string SelectionDisplayString { get { return DisplayName; } }
 
-        //used for displaying/selecting in grids/dropdowns
+        /// <summary>
+        /// used for displaying/selecting in grids/dropdowns
+        /// </summary>
         public string UniqueIdentifier { get { return ObjectId; } }
 
-        //reference to the ConnectionServer object used to create this notificationd evice instance.
+        /// <summary>
+        /// reference to the ConnectionServer object used to create this notificationd evice instance.
+        /// </summary>
         public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
         private readonly ConnectionPropertyList _changedPropList;
 
-        //for checking on pending changes
+        /// <summary>
+        /// for checking on pending changes
+        /// </summary>
         public ConnectionPropertyList ChangeList { get { return _changedPropList; } }
 
         #endregion
@@ -916,8 +924,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += "</HtmlDevice>";
 
-            res =
-                pConnectionServer.GetCupiResponse(string.Format("{0}users/{1}/notificationdevices/htmldevices", pConnectionServer.BaseUrl, 
+            res =pConnectionServer.GetCupiResponse(string.Format("{0}users/{1}/notificationdevices/htmldevices", pConnectionServer.BaseUrl, 
                 pUserObjectId),MethodType.POST, strBody,false);
 
             //if the call went through then the ObjectId will be returned in the URI form.
@@ -1569,6 +1576,9 @@ namespace Cisco.UnityConnection.RestFunctions
                     break;
                 case NotificationDeviceTypes.Smtp:
                     strUrl = string.Format("{0}users/{1}/notificationdevices/smtpdevices/{2}", pConnectionServer.BaseUrl, pUserObjectId, pObjectId);
+                    break;
+                case NotificationDeviceTypes.Http:
+                    strUrl = string.Format("{0}users/{1}/notificationdevices/htmldevices/{2}", pConnectionServer.BaseUrl, pUserObjectId, pObjectId);
                     break;
                 default:
                     pConnectionServer.RaiseErrorEvent("Invalid device type encountered in GetUrlPathForDeviceType:"+pDeviceType.ToString());

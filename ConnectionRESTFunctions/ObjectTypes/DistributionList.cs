@@ -56,7 +56,7 @@ namespace Cisco.UnityConnection.RestFunctions
             HomeServer = pConnectionServer;
 
             //if the user passed in a specific ObjectId or display name then go load that list up, otherwise just return an empty instance.
-            if ((pObjectId.Length == 0) & (pAlias.Length == 0)) return;
+            if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pAlias))) return;
 
             //if the ObjectId is passed in then fetch the data on the fly and fill out this instance
             WebCallResult res = GetDistributionList(pObjectId, pAlias);
@@ -640,7 +640,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //you need an objectID and/or a display name - both being blank is not acceptable
-            if ((pObjectId.Length == 0) & (pAlias.Length == 0))
+            if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pAlias)))
             {
                 res.ErrorText = "Empty objectId and alias passed to GetDistributionList";
                 return res;
@@ -1143,7 +1143,14 @@ namespace Cisco.UnityConnection.RestFunctions
                 res= GetObjectIdForListByAlias(pAlias);
                 if (res.Success==false)
                 {
-                    res.ErrorText = string.Format("Could not find ObjectId from Alias={0} in GetDistributionList.",pAlias);
+                    if (res.TotalObjectCount > 1)
+                    {
+                        res.ErrorText = string.Format("More than one list found for Alias={0} in GetDistributionList.", pAlias);
+                    }
+                    else
+                    {
+                        res.ErrorText = string.Format("Could not find ObjectId from Alias={0} in GetDistributionList.",pAlias);
+                    }
                     return res;
                 }
 

@@ -574,7 +574,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //you need an objectID and/or a display name - both being blank is not acceptable
-            if ((pObjectId.Length == 0) & (pDisplayName.Length == 0))
+            if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pDisplayName)))
             {
                 res.ErrorText = "Empty objectId and DisplayName passed to GetCallHandlerTemplate";
                 return res;
@@ -910,14 +910,21 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (string.IsNullOrEmpty(pObjectId))
             {
-                strObjectId = GetObjectIdFromName(pDisplayName);
+                int iCount;
+                strObjectId = GetObjectIdFromName(pDisplayName, out iCount);
                 if (string.IsNullOrEmpty(strObjectId))
                 {
-                    return new WebCallResult
-                        {
-                            Success = false,
-                            ErrorText = "Empty ObjectId passed to GetHandlerTemplate"
-                        };
+                    WebCallResult oRes = new WebCallResult();
+                    oRes.Success = false;
+                    if (iCount > 1)
+                    {
+                        oRes.ErrorText = "More than one template found for display name=" + pDisplayName;
+                    }
+                    else
+                    {
+                        oRes.ErrorText = "No template found for display name="+pDisplayName;
+                    }
+                    return oRes;
                 }
             }
 
@@ -934,18 +941,23 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pName">
         /// Name of the template to find
         /// </param>
+        /// <param name="pCount">
+        /// Total number of templates found
+        /// </param>
         /// <returns>
         /// ObjectId of template if found or empty string if not.
         /// </returns>
-        private string GetObjectIdFromName(string pName)
+        private string GetObjectIdFromName(string pName, out int pCount)
         {
+            pCount = 0;
             string strUrl = string.Format("{0}callhandlertemplates/?query=(DisplayName is {1})", HomeServer.BaseUrl, pName.UriSafe());
 
             //issue the command to the CUPI interface
             WebCallResult res = HomeServer.GetCupiResponse(strUrl, MethodType.GET, "");
 
-            if (res.Success == false || res.TotalObjectCount ==0)
+            if (res.Success == false || res.TotalObjectCount !=1)
             {
+                pCount = res.TotalObjectCount;
                 return "";
             }
 

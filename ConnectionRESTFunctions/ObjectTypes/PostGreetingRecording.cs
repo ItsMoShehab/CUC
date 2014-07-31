@@ -467,7 +467,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //you need an objectID and/or a display name - both being blank is not acceptable
-            if ((pObjectId.Length == 0) & (pDisplayName.Length == 0))
+            if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pDisplayName)))
             {
                 res.ErrorText = "Empty objectId and display name passed to GetPostGreetingRecording";
                 return res;

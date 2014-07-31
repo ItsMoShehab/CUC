@@ -149,7 +149,7 @@ namespace Cisco.UnityConnection.RestFunctions
     [JsonConverter(typeof(StringEnumConverter))]
     public enum ConversationNames
     {
-        Ad,
+        AD,
         PHTransfer,
         PHGreeting,
         PHInterview,

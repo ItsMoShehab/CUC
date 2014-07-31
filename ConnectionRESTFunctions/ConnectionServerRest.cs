@@ -1232,7 +1232,7 @@ namespace Cisco.UnityConnection.RestFunctions
                                 return "Alternate contact number";
                             case ConversationNames.BroadcastMessageAdministrator:
                                 return "Broadcast message administrator";
-                            case ConversationNames.Ad:
+                            case ConversationNames.AD:
                                 {
                                     //Alpha Directory (what we used to call Name Lookup Handlers) - this requires a name lookup handler target 
                                     //to load - fetch that handler here so we can showt he display name here.
