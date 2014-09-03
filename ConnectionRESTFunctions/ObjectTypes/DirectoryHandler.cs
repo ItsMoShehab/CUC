@@ -116,7 +116,10 @@ namespace Cisco.UnityConnection.RestFunctions
                     var res =GetGreetingStreamFiles(out _greetingStreamFiles);
                     if (!res.Success)
                     {
-                        HomeServer.RaiseErrorEvent("Failed fetching greeting streams in GetGreetingStreamFiles:"+res);
+                        if (HomeServer != null)
+                        {
+                            HomeServer.RaiseErrorEvent("Failed fetching greeting streams in GetGreetingStreamFiles:"+res);
+                        }
                     }
                 }
 

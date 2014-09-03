@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using Cisco.UnityConnection.RestFunctions;
 using ConnectionCUPIFunctionsTest.IntegrationTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -109,8 +111,6 @@ namespace ConnectionCUPIFunctionsTest
 
             Console.WriteLine(_connectionServer.GetActionDescription(oMenu.Action, oMenu.TargetConversation, oMenu.TargetHandlerObjectId));
 
-
-
         }
 
 
@@ -141,9 +141,6 @@ namespace ConnectionCUPIFunctionsTest
             res = _tempHandler.Update();
             Assert.IsFalse(res.Success,"Setting call handler to illegal primary extension did not fail:"+res);
 
-            
-
-
             _tempHandler.ClearPendingChanges();
 
             _tempHandler.AfterMessageAction = ActionTypes.GoTo;
@@ -153,6 +150,34 @@ namespace ConnectionCUPIFunctionsTest
 
             Assert.IsTrue(res.Success,"Failed setting after message action to loop back to self:"+res);
         }
+
+        [TestMethod]
+        public void AddEditDeleteCallHandler_OwnerTests()
+        {
+            List<CallHandlerOwner> oOwners;
+            var res=_tempHandler.GetOwners(out oOwners);
+            Assert.IsTrue(res.Success, "Call to fetch owners on new call handler should not fail:"+res);
+            Assert.IsTrue(oOwners.Count==0,"New call handler should report zero owners");
+
+            UserBase oUser;
+            res = UserBase.GetUser(out oUser, _connectionServer, "", "operator");
+            Assert.IsTrue(res.Success,"Fetching operator user should not fail:"+res);
+
+            res = _tempHandler.AddOwner(oUser.ObjectId, "");
+            Assert.IsTrue(res.Success,"Adding user as owner for temp call handler should not fail:"+res);
+
+            res = _tempHandler.GetOwners(out oOwners);
+            Assert.IsTrue(res.Success, "Call to fetch owners on new call handler should not fail:" + res);
+            Assert.IsTrue(oOwners.Count == 1, "Owners count should be 1 after adding user to owner list");
+            Console.WriteLine(oOwners.First().ToString());
+
+            res = _tempHandler.DeleteOwner(oOwners.First().ObjectId);
+            Assert.IsTrue(res.Success, "Call to delete owner on new call handler should not fail:" + res);
+            res = _tempHandler.GetOwners(out oOwners);
+            Assert.IsTrue(res.Success, "Call to fetch owners on new call handler should not fail:" + res);
+            Assert.IsTrue(oOwners.Count == 0, "Owners count should be 0 after removing owner from list");
+        }
+
 
         [TestMethod]
         public void AddEditDeleteCallHandler_VoiceNameTests()

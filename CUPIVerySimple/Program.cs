@@ -1,7 +1,6 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Cisco.UnityConnection.RestFunctions;
 using SimpleLogger;
 
@@ -39,7 +38,7 @@ namespace CUPIVerySimple
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
-                connectionServer = new ConnectionServerRest ("192.168.0.199", "CCMAdministrator", "ecsbulab");
+                connectionServer = new ConnectionServerRest ("192.168.0.197", "CCMAdministrator", "ecsbulab");
             }
 
             catch (Exception ex)
@@ -66,28 +65,7 @@ namespace CUPIVerySimple
             //the WebCallResult is the structure returned on most calls into the CUPIFunctions library.
             WebCallResult res;
 
-            CallHandler oTestHandler;
-            res=CallHandler.GetCallHandler(out oTestHandler, connectionServer, "", "Opening Greeting");
-            Console.WriteLine(res);
-
-            List<CallHandlerOwner> oOwners;
-            res = CallHandlerOwner.GetCallHandlerOwners(connectionServer, oTestHandler.ObjectId, out oOwners);
-            Console.WriteLine(res);
-
-            UserBase oTempUser;
-            res = UserBase.GetUser(out oTempUser, connectionServer, "", "operator");
-            Console.WriteLine(res);
-            res=oTestHandler.AddOwner(oTempUser.ObjectId,"");
-            Console.WriteLine(res);
-
-            res =CallHandlerOwner.GetCallHandlerOwners(connectionServer, oTestHandler.ObjectId, out oOwners);
-            Console.WriteLine(res);
-
-            res=oTestHandler.DeleteOwner(oOwners.First().ObjectId);
-            Console.WriteLine(res);
-
-            //fetch user with alias of "jlindborg" - we will be sending the message from his 
-            //mailbox.
+            //fetch user with alias of "operator" - we will be sending the message from his mailbox.
             UserFull oUserTestDude;
 
             res = UserBase.GetUser(out oUserTestDude, connectionServer, "", "operator");
@@ -96,24 +74,6 @@ namespace CUPIVerySimple
                 Console.WriteLine(res);
                 return;
             }
-
-            List<NotificationDevice> omyDevices;
-            omyDevices = oUserTestDude.NotificationDevices(true);
-            foreach (var myDevice in omyDevices)
-            {
-                Console.WriteLine(myDevice);
-            }
-            Console.WriteLine(res);
-
-
-            //notification device
-            NotificationDevice oNotDevice;
-            res = NotificationDevice.AddSmtpDevice(connectionServer, oUserTestDude.ObjectId, "New SMTP Device",
-                                                   "testaddress@funtimes.com", "AllMessage",true );
-            res = NotificationDevice.GetNotificationDeivce(connectionServer, oUserTestDude.ObjectId,
-                                                           "", "New SMTP Device", out oNotDevice);
-            Console.WriteLine(res);
-
 
             List<UserMessage> oUserMessages;
             res = UserMessage.GetMessages(connectionServer, oUserTestDude.ObjectId, out oUserMessages);
@@ -210,7 +170,7 @@ namespace CUPIVerySimple
 
             UserFull oUser;
 
-            res = UserFull.AddUser(connectionServer, "voicemailusertemplate", "TestUserAlias", "80001", null,out oUser);
+            res = UserBase.AddUser(connectionServer, "voicemailusertemplate", "TestUserAlias", "80001", null,out oUser);
 
             if (res.Success == false)
             {

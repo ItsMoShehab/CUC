@@ -33,7 +33,7 @@ namespace ConnectionCUPIFunctionsTest
                                        It.IsAny<Dictionary<string, string>>())).Returns(new WebCallResult
                                        {
                                            Success = true,
-                                           ResponseText = "vmrest/calls/123"
+                                           ResponseText = "vmrest/calls/123\n"
                                        });
 
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),

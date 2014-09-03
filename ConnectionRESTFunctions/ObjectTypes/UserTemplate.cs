@@ -260,7 +260,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 var res= GetPrimaryCallHandler(out _primaryCallHandler);
                 if (!res.Success)
                 {
-                    HomeServer.RaiseErrorEvent("Error fetching primary call handler:"+res);
+                    if (HomeServer != null)
+                    {
+                        HomeServer.RaiseErrorEvent("Error fetching primary call handler:"+res);
+                    }
                 }
             }
 

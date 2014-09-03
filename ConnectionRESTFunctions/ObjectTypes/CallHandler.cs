@@ -1293,10 +1293,10 @@ namespace Cisco.UnityConnection.RestFunctions
                 strBody += string.Format("<{0}>{1}</{0}>", "DistributionListObjectId", pDistributionListObjectId);
             }
 
-            //strBody += string.Format("<{0}>{1}</{0}>", "RoleObjectId", strRoleObjectId);
+            strBody += string.Format("<{0}>{1}</{0}>", "RoleObjectId", strRoleObjectId);
             strBody += "</CallhandlerOwner>";
 
-            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.POST, strBody);
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.POST, strBody,false);
 
             return res;
         }
