@@ -20,7 +20,7 @@ namespace ConnectionCUPIFunctionsTest
         #region Additional test attributes
 
         [ClassInitialize]
-        public static void MyClassInitialize(TestContext testContext)
+        public new static void MyClassInitialize(TestContext testContext)
         {
             BaseIntegrationTests.MyClassInitialize(testContext);
         }

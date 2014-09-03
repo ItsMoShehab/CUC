@@ -97,7 +97,11 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (_partitions == null)
             {
-                GetPartitions(out _partitions);
+                var res =GetPartitions(out _partitions);
+                if (!res.Success)
+                {
+                    HomeServer.RaiseErrorEvent("Error fetching partitions from GetSearchSpaceMembers:"+res);
+                }
             }
 
             return _partitions;

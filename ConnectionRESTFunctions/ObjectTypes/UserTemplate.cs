@@ -79,13 +79,19 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Fields and Properties
 
-        //used for displaying in grids and drop downs
+        /// <summary>
+        /// used for displaying in grids and drop downs
+        /// </summary>
         public string SelectionDisplayString { get { return DisplayName; } }
 
-        //used for displaying/selecting in grids/dropdowns
+        /// <summary>
+        /// used for displaying/selecting in grids/dropdowns
+        /// </summary>
         public string UniqueIdentifier { get { return ObjectId; } }
 
-        //reference to the ConnectionServer object used to create this object instance.
+        /// <summary>
+        /// reference to the ConnectionServer object used to create this object instance.
+        /// </summary>
         public ConnectionServerRest HomeServer { get; private set; }
 
         //used to keep track of which properties have been updated
@@ -251,7 +257,11 @@ namespace Cisco.UnityConnection.RestFunctions
             //fetch the primary call handler only if it's asked for.
             if (_primaryCallHandler == null)
             {
-                GetPrimaryCallHandler(out _primaryCallHandler);
+                var res= GetPrimaryCallHandler(out _primaryCallHandler);
+                if (!res.Success)
+                {
+                    HomeServer.RaiseErrorEvent("Error fetching primary call handler:"+res);
+                }
             }
 
             return _primaryCallHandler;

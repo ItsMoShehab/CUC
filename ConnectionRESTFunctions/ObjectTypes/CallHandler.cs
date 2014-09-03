@@ -15,7 +15,6 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.IO;
-using Cisco.UnityConnection.RestFunctions.ObjectTypes;
 using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
@@ -1255,52 +1254,52 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        //public static WebCallResult AddCallHandlerOwner(ConnectionServerRest pConnectionServer,string pCallHandlerObjectId,
-        //    string pUserObjectId, string pDistributionListObjectId)
-        //{
-        //    WebCallResult res = new WebCallResult();
-        //    res.Success = false;
-        //    if (pConnectionServer == null)
-        //    {
-        //        res.ErrorText = "Null ConnectionServer referenced passed to AddCallHandlerOwner";
-        //        return res;
-        //    }
+        public static WebCallResult AddCallHandlerOwner(ConnectionServerRest pConnectionServer, string pCallHandlerObjectId,
+            string pUserObjectId, string pDistributionListObjectId)
+        {
+            WebCallResult res = new WebCallResult();
+            res.Success = false;
+            if (pConnectionServer == null)
+            {
+                res.ErrorText = "Null ConnectionServer referenced passed to AddCallHandlerOwner";
+                return res;
+            }
 
-        //    if (string.IsNullOrEmpty(pCallHandlerObjectId))
-        //    {
-        //        res.ErrorText = "Empty CallHandlerObjectId passed to AddCallHandlerOwner";
-        //        return res;
-        //    }
+            if (string.IsNullOrEmpty(pCallHandlerObjectId))
+            {
+                res.ErrorText = "Empty CallHandlerObjectId passed to AddCallHandlerOwner";
+                return res;
+            }
 
-        //    if (string.IsNullOrEmpty(pUserObjectId) && string.IsNullOrEmpty(pDistributionListObjectId))
-        //    {
-        //        res.ErrorText = "Empty UserObjectId and DistributionListObjectId passed to AddCallHandlerOwner";
-        //        return res;
-        //    }
+            if (string.IsNullOrEmpty(pUserObjectId) && string.IsNullOrEmpty(pDistributionListObjectId))
+            {
+                res.ErrorText = "Empty UserObjectId and DistributionListObjectId passed to AddCallHandlerOwner";
+                return res;
+            }
 
-        //    //collect the role ID for the greetings administrator
-        //    string strRoleObjectId = Role.GetObjectIdFromName(pConnectionServer, "Greeting Administrator");
+            //collect the role ID for the greetings administrator
+            string strRoleObjectId = Role.GetObjectIdFromName(pConnectionServer, "Greeting Administrator");
 
-        //    string strUrl = string.Format(@"{0}handlers/callhandlers/{1}/callhandlerowners", pConnectionServer.BaseUrl, pCallHandlerObjectId);
+            string strUrl = string.Format(@"{0}handlers/callhandlers/{1}/callhandlerowners", pConnectionServer.BaseUrl, pCallHandlerObjectId);
 
-        //    string strBody = "<CallhandlerOwner>";
+            string strBody = "<CallhandlerOwner>";
 
-        //    if (!string.IsNullOrEmpty(pUserObjectId))
-        //    {
-        //        strBody += string.Format("<{0}>{1}</{0}>", "UserObjectId", pUserObjectId);
-        //    }
-        //    else
-        //    {
-        //        strBody += string.Format("<{0}>{1}</{0}>", "DistributionListObjectId", pDistributionListObjectId);
-        //    }
+            if (!string.IsNullOrEmpty(pUserObjectId))
+            {
+                strBody += string.Format("<{0}>{1}</{0}>", "UserObjectId", pUserObjectId);
+            }
+            else
+            {
+                strBody += string.Format("<{0}>{1}</{0}>", "DistributionListObjectId", pDistributionListObjectId);
+            }
 
-        //    strBody += string.Format("<{0}>{1}</{0}>", "RoleObjectId", strRoleObjectId);
-        //    strBody += "</CallhandlerOwner>";
+            //strBody += string.Format("<{0}>{1}</{0}>", "RoleObjectId", strRoleObjectId);
+            strBody += "</CallhandlerOwner>";
 
-        //    res = pConnectionServer.GetCupiResponse(strUrl, MethodType.PUT,strBody);
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.POST, strBody);
 
-        //    return res;
-        //}
+            return res;
+        }
 
 
         /// <summary>
@@ -1324,34 +1323,34 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        //public static WebCallResult DeleteCallHandlerOwner(ConnectionServerRest pConnectionServer, string pCallHandlerObjectId,
-        //    string pOwnerObjectId)
-        //{
-        //    WebCallResult res = new WebCallResult();
-        //    res.Success = false;
-        //    if (pConnectionServer == null)
-        //    {
-        //        res.ErrorText = "Null ConnectionServer referenced passed to DeleteCallHandlerOwner";
-        //        return res;
-        //    }
+        public static WebCallResult DeleteCallHandlerOwner(ConnectionServerRest pConnectionServer, string pCallHandlerObjectId,
+            string pOwnerObjectId)
+        {
+            WebCallResult res = new WebCallResult();
+            res.Success = false;
+            if (pConnectionServer == null)
+            {
+                res.ErrorText = "Null ConnectionServer referenced passed to DeleteCallHandlerOwner";
+                return res;
+            }
 
-        //    if (string.IsNullOrEmpty(pCallHandlerObjectId))
-        //    {
-        //        res.ErrorText = "Empty CallHandlerObjectId passed to DeleteCallHandlerOwner";
-        //        return res;
-        //    }
+            if (string.IsNullOrEmpty(pCallHandlerObjectId))
+            {
+                res.ErrorText = "Empty CallHandlerObjectId passed to DeleteCallHandlerOwner";
+                return res;
+            }
 
-        //    if (string.IsNullOrEmpty(pOwnerObjectId))
-        //    {
-        //        res.ErrorText = "Empty OwnerObjectId passed to DeleteCallHandlerOwner";
-        //        return res;
-        //    }
+            if (string.IsNullOrEmpty(pOwnerObjectId))
+            {
+                res.ErrorText = "Empty OwnerObjectId passed to DeleteCallHandlerOwner";
+                return res;
+            }
 
-        //    string strUrl = string.Format(@"{0}handlers/callhandlers/{1}/callhandlerowners/{2}", pConnectionServer.BaseUrl, 
-        //        pCallHandlerObjectId,pOwnerObjectId);
+            string strUrl = string.Format(@"{0}handlers/callhandlers/{1}/callhandlerowners/{2}", pConnectionServer.BaseUrl,
+                pCallHandlerObjectId, pOwnerObjectId);
 
-        //    return pConnectionServer.GetCupiResponse(strUrl, MethodType.DELETE,null);
-        //}
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.DELETE, null);
+        }
 
         #endregion
 
@@ -1794,17 +1793,18 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         /// <summary>
-        /// 
+        /// Adds a user or a public distribution list as an owner of a call handler.  Distribution lists can only be added in 
+        /// Unity Connection 10.5 or later.
         /// </summary>
         /// <param name="pUserObjectId"></param>
         /// <param name="pDistributionListObjectId"></param>
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        //public WebCallResult AddOwner(string pUserObjectId, string pDistributionListObjectId)
-        //{
-        //    return AddCallHandlerOwner(HomeServer, ObjectId, pUserObjectId, pDistributionListObjectId);
-        //}
+        public WebCallResult AddOwner(string pUserObjectId, string pDistributionListObjectId)
+        {
+            return AddCallHandlerOwner(HomeServer, ObjectId, pUserObjectId, pDistributionListObjectId);
+        }
 
         /// <summary>
         /// Deletes the owner of a call handler from the owners list.  Can be a user objectId or, in Connection 10.5 and later a 
@@ -1813,10 +1813,10 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        //public WebCallResult DeleteOwner(string pOwnerObjectId)
-        //{
-        //    return DeleteCallHandlerOwner(HomeServer, ObjectId, pOwnerObjectId);
-        //}
+        public WebCallResult DeleteOwner(string pOwnerObjectId)
+        {
+            return DeleteCallHandlerOwner(HomeServer, ObjectId, pOwnerObjectId);
+        }
         #endregion
 
     }

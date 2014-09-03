@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using Cisco.UnityConnection.RestFunctions;
-using ConnectionCUPIFunctionsTest.Properties;
 using ConnectionCUPIFunctionsTest.UnitTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -28,7 +26,7 @@ namespace ConnectionCUPIFunctionsTest
         [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
-            BaseUnitTests.ClassInitialize(testContext);
+            ClassInitialize(testContext);
         }
 
         #endregion
@@ -112,7 +110,6 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void AddPortGroupCodec_EmptyPortGroupObjectId_Failure()
         {
-            PortGroupCodec oPortGroupCodec;
             var res = PortGroupCodec.AddPortGroupCodec(_mockServer, "", "rtpobjectid", 20, 1);
             Assert.IsFalse(res.Success, "Static call to AddPortGroupCodec did not fail with empty media port objectId");
         }
@@ -120,7 +117,6 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void AddPortGroupCodec_EmptyRtpDefObjectId_Failure()
         {
-            PortGroupCodec oPortGroupCodec;
             var res = PortGroupCodec.AddPortGroupCodec(_mockServer, "portgroupid", "", 20, 1);
             Assert.IsFalse(res.Success, "Static call to AddPortGroupCodec did not fail with empty objectid");
         }

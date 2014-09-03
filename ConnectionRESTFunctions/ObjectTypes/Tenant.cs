@@ -116,21 +116,28 @@ namespace Cisco.UnityConnection.RestFunctions
         public string MailboxStoreObjectId { get; private set; }
 
         [JsonProperty]
+        public string MediaSwitchObjectId { get; private set; }
+
+        [JsonProperty]
+        public string Name { get; private set; }
+
+        [JsonProperty]
         public string ObjectId { get; private set; }
+
+        [JsonProperty]
+        public string PartitionObjectId { get; private set; }
 
         [JsonProperty]
         public string PhoneSystemObjectId { get; private set; }
 
         [JsonProperty]
-        public string PartitionObjectId { get; private set; }
+        public string PilotNumber { get; private set; }
 
         [JsonProperty]
         public string SmtpDomain { get; private set; }
 
         [JsonProperty]
         public string TimeZone { get; private set; }
-
-        public string PilotNumber { get; set; }
 
         #endregion
 
@@ -620,7 +627,7 @@ namespace Cisco.UnityConnection.RestFunctions
         //used for fetching list of COS IDs off tenant
         private class TenantCos
         {
-            public string CosURI { get; set; }
+            public string CosUri { get; set; }
         }
 
         /// <summary>
@@ -635,6 +642,9 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </param>
         /// <param name="pRowsPerPage">
         /// Results to return per page, default to 20
+        /// </param>
+        /// <param name="pClauses">
+        /// list of 0 or more query clauses that can be added to the search call such as "query=(displayname is mydisplayname)"
         /// </param>
         /// <returns>
         /// Instance of the WebCallResult class with details of the call and response from the server.
@@ -686,7 +696,7 @@ namespace Cisco.UnityConnection.RestFunctions
             foreach (var oCos in oCoses)
             {
                 ClassOfService oNewCos;
-                res = ClassOfService.GetClassOfService(out oNewCos, HomeServer,oCos.CosURI.Replace("/vmrest/coses/", ""));
+                res = ClassOfService.GetClassOfService(out oNewCos, HomeServer,oCos.CosUri.Replace("/vmrest/coses/", ""));
 
                 if (res.Success == false)
                 {
@@ -732,7 +742,7 @@ namespace Cisco.UnityConnection.RestFunctions
         //used for getting list of phone systems off tenant.
         private class TenantPhoneSystem
         {
-            public string PhoneSystemURI { get; set; }
+            public string PhoneSystemUri { get; set; }
         }
 
         /// <summary>
@@ -795,7 +805,7 @@ namespace Cisco.UnityConnection.RestFunctions
             foreach (var oPhone in pPhones)
             {
                 PhoneSystem oNewPhoneSystem;
-                res = PhoneSystem.GetPhoneSystem(out oNewPhoneSystem, HomeServer, oPhone.PhoneSystemURI.Replace("/vmrest/phonesystems/", ""));
+                res = PhoneSystem.GetPhoneSystem(out oNewPhoneSystem, HomeServer, oPhone.PhoneSystemUri.Replace("/vmrest/phonesystems/", ""));
 
                 if (res.Success == false)
                 {
@@ -835,7 +845,7 @@ namespace Cisco.UnityConnection.RestFunctions
         //used for fetching list of schedules off tenant
         private class TenantScheduleSet
         {
-            public string ScheduleSetURI { get; set; }
+            public string ScheduleSetUri { get; set; }
         }
 
         /// <summary>
@@ -850,6 +860,9 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </param>
         /// <param name="pRowsPerPage">
         /// Results to return per page, default to 20
+        /// </param>
+        /// <param name="pClauses">
+        /// list of 0 or more query clauses that can be added to the search call such as "query=(displayname is mydisplayname)"
         /// </param>
         /// <returns>
         /// Instance of the WebCallResult class with details of the call and response from the server.
@@ -889,8 +902,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             int iHoldTotalCount = res.TotalObjectCount;
 
-            List<TenantScheduleSet> pSchedules;
-            pSchedules = HomeServer.GetObjectsFromJson<TenantScheduleSet>(res.ResponseText, "TenantScheduleSet");
+            List<TenantScheduleSet> pSchedules = HomeServer.GetObjectsFromJson<TenantScheduleSet>(res.ResponseText, "TenantScheduleSet");
 
             if (pSchedules == null)
             {
@@ -902,7 +914,7 @@ namespace Cisco.UnityConnection.RestFunctions
             foreach (var oSchedule in pSchedules)
             {
                 ScheduleSet oNewSchedule;
-                res = ScheduleSet.GetScheduleSet(out oNewSchedule, HomeServer, oSchedule.ScheduleSetURI.Replace("/vmrest/schedulesets/", ""));
+                res = ScheduleSet.GetScheduleSet(out oNewSchedule, HomeServer, oSchedule.ScheduleSetUri.Replace("/vmrest/schedulesets/", ""));
 
                 if (res.Success == false)
                 {
@@ -1101,7 +1113,6 @@ namespace Cisco.UnityConnection.RestFunctions
         #endregion //related object methods
 
         #endregion //instance objects
-
       
     }
 }

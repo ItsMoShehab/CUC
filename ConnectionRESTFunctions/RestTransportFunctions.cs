@@ -555,9 +555,11 @@ namespace Cisco.UnityConnection.RestFunctions
                     if (!String.IsNullOrEmpty(pRequestBody))
                     {
                         using (Stream requestStream = request.GetRequestStream())
-                        using (StreamWriter writer = new StreamWriter(requestStream))
                         {
-                            writer.Write(pRequestBody);
+                            using (StreamWriter writer = new StreamWriter(requestStream))
+                            {
+                                writer.Write(pRequestBody);
+                            }
                         }
                     }
 

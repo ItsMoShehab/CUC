@@ -90,7 +90,11 @@ namespace Cisco.UnityConnection.RestFunctions
             //fetch greeting options only if they are referenced
             if (_greetingStreamFiles == null)
             {
-                GetGreetingStreamFiles(out _greetingStreamFiles);
+                var res =GetGreetingStreamFiles(out _greetingStreamFiles);
+                if (!res.Success)
+                {
+                    HomeServer.RaiseErrorEvent("Error fetching greeting stream files:"+res);
+                }
             }
 
             return _greetingStreamFiles;

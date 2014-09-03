@@ -101,8 +101,8 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void AlternateExtension_Test()
         {
-            var res = AlternateExtension.AddAlternateExtension(_connectionServer, _tempUser.ObjectId, 1,
-                                                               Guid.NewGuid().ToString().Replace("-", ""));
+            string strExtension = "SIP:" + Guid.NewGuid().ToString().Replace("-", "").Substring(0, 8) + "@test.com";
+            var res = AlternateExtension.AddAlternateExtension(_connectionServer, _tempUser.ObjectId, 1,strExtension);
             Assert.IsTrue(res.Success,"Failed to create alternate extension for testing");
 
             _errorString = "";

@@ -161,8 +161,10 @@ namespace Cisco.UnityConnection.RestFunctions
         [JsonProperty]
         public string CallHandlerObjectId { get; private set; }
 
-        private bool _enableTransfer;
+        [JsonProperty]
+        public bool Enabled { get; private set; }
 
+        private bool _enableTransfer;
         /// <summary>
         /// A flag indicating when an extension is dialed at the greeting and the extension is not available whether to transfer to another extension.
         /// This is seperate from enabling/disabling the greeting rule itself which is done with the TimeExpires value.
@@ -174,6 +176,22 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 _changedPropList.Add("EnableTransfer", value);
                 _enableTransfer = value;
+            }
+        }
+
+        private bool _enablePersonalVideoRecording;
+
+        /// <summary>
+        /// A flag indicating if the user is allowed to record their greeting as a video - requires COS to be configured to 
+        /// allow it.
+        /// </summary>
+        public bool EnablePersonalVideoRecording
+        {
+            get { return _enablePersonalVideoRecording; }
+            set
+            {
+                _changedPropList.Add("EnablePersonalVideoRecording", value);
+                _enablePersonalVideoRecording = value;
             }
         }
 
@@ -220,6 +238,23 @@ namespace Cisco.UnityConnection.RestFunctions
                 _playRecordMessagePrompt = value;
             }
         }
+
+        private bool _playRecordVideoMessagePrompt;
+
+        /// <summary>
+        /// A flag indicating if the user will play the video version of their recording or not - requires COS to be configured to 
+        /// allow it.
+        /// </summary>
+        public bool PlayRecordVideoMessagePrompt
+        {
+            get { return _playRecordVideoMessagePrompt; }
+            set
+            {
+                _changedPropList.Add("PlayRecordVideoMessagePrompt", value);
+                _playRecordVideoMessagePrompt = value;
+            }
+        }
+
 
         private PlayWhatTypes _playWhat;
 
@@ -791,7 +826,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //determine if we're active based on that.
             bool bActive = this.TimeExpires>DateTime.Now;
 
-            return string.Format("Greeting type={0}, Play What={1} ({2}), enabled={3}", GreetingType, (int)PlayWhat, PlayWhat.ToString(),bActive);
+            return string.Format("Greeting type={0}, Play What={1} ({2}), enabled={3}", GreetingType, (int)PlayWhat, PlayWhat,bActive);
         }
 
 

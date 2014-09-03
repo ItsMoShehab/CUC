@@ -285,7 +285,6 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void GetScheduleDetails_GarbageResponse_Failure()
         {
-            List<CallHandler> oHandlers;
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), MethodType.GET, It.IsAny<ConnectionServerRest>(),
                                   It.IsAny<string>(), true)).Returns(new WebCallResult
                                   {

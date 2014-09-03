@@ -295,7 +295,6 @@ namespace ConnectionCUPIFunctionsTest
                                         ResponseText = "error text",
                                     });
 
-            ClassOfService oCos;
             var res = ClassOfService.DeleteClassOfService(_mockServer, "ObjectId");
             Assert.IsFalse(res.Success, "Calling DeleteClassOfService with ErrorResponse did not fail");
         }

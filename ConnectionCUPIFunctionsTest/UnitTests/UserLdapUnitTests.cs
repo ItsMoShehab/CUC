@@ -184,7 +184,6 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void ImportLdapUser_GarbageResults_Failure()
         {
-            UserFull oUser;
             //garbage response
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                                   It.IsAny<string>(), true)).Returns(new WebCallResult
@@ -200,7 +199,6 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void ImportLdapUser_ErrorResponse_Failure()
         {
-            UserFull oUser;
             //error response
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                                     It.IsAny<string>(), true)).Returns(new WebCallResult
@@ -218,7 +216,6 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void ImportLdapUser_ReturnedObjectId_Success()
         {
-            UserFull oUser;
             //return objectId
             _mockTransport.Setup(x => x.GetCupiResponse(It.IsAny<string>(), It.IsAny<MethodType>(), It.IsAny<ConnectionServerRest>(),
                 It.IsAny<string>(), true)).Returns(new WebCallResult

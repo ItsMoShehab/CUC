@@ -37,6 +37,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             UserBase oTest = null;
 
+            // ReSharper disable once ExpressionIsAlwaysNull
             var oCopy = ObjectDeepClone.Clone(oTest);
             Assert.IsTrue(oCopy==null, "Null clone should return null without exception");
         }
@@ -45,9 +46,10 @@ namespace ConnectionCUPIFunctionsTest
         public void NonSerializableTest_Failure()
         {
             NonSerializableClass oTest = new NonSerializableClass();
-
+            
             try
             {
+                // ReSharper disable once UnusedVariable
                 var oCopy = oTest.Clone();
             }
             catch (Exception ex)
@@ -61,7 +63,8 @@ namespace ConnectionCUPIFunctionsTest
 
     public class NonSerializableClass
     {
-        private string strString;
-        private int iInt;
+        // ReSharper disable UnusedField.Compiler
+        private string _strString;
+        private int _iInt;
     }
 }

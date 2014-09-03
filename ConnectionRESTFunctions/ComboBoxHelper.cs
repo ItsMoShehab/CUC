@@ -108,7 +108,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                pObject = (T)(IUnityDisplayInterface)pComboBox.SelectedValue;
+                pObject = (T)pComboBox.SelectedValue;
             }
             catch (Exception ex)
             {

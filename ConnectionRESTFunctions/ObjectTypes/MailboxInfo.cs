@@ -199,7 +199,6 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public WebCallResult GetFolderMessageCounts(out int pInboxCount, out int pDeletedItemsCount,out int pSentItemsCount)
         {
-            pInboxCount = 0;
             pSentItemsCount = 0;
             pDeletedItemsCount = 0;
 
@@ -219,10 +218,15 @@ namespace Cisco.UnityConnection.RestFunctions
         private class Folder
         {
             [JsonProperty]
-            public string DisplayName { get; private set; }
+            private string DisplayName { get; set; }
             
             [JsonProperty]
             public int MessageCount { get; private set; }
+
+            public override string ToString()
+            {
+                return string.Format("Message folder:{0}, count={1}", DisplayName, MessageCount);
+            }
         }
 
         public enum FolderTypes {inbox, deleted, sent}

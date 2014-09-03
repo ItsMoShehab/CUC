@@ -245,20 +245,15 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns></returns>
         public static Encoding DetectEncoding(this string pString)
         {
-            string strContents;
-
             byte[] byteArray = Encoding.ASCII.GetBytes( pString );
             MemoryStream stream = new MemoryStream(byteArray);
-            // open the file with the stream-reader: 
+            
             using (StreamReader reader = new StreamReader(stream, true))
             {
-                // read the contents of the file into a string 
-                strContents = reader.ReadToEnd();
+                reader.ReadToEnd();
 
-                // return the encoding. 
                 return reader.CurrentEncoding;
-            } 
-
+            }
         }
 
         /// <summary>

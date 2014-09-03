@@ -1148,7 +1148,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 using (Process exeProcess = Process.Start(startInfo))
                 {
                     //30 seconds is much more than enough, even if the file is enormous
-                    exeProcess.WaitForExit(30000);
+                    if (exeProcess != null) exeProcess.WaitForExit(30000);
                 }
             }
             catch (Exception ex)
@@ -1424,7 +1424,8 @@ namespace Cisco.UnityConnection.RestFunctions
             pUser = null;
             try
             {
-                new ConnectionServerRest(_transportFunctions, this.ServerName, pLoginName, pPassword, false);
+                var oServer= new ConnectionServerRest(_transportFunctions, this.ServerName, pLoginName, pPassword, false);
+                RaiseDebugEvent("Authenticated user "+pLoginName+"  against server:"+oServer);
             }
             catch 
             {
@@ -1456,7 +1457,8 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             try
             {
-                new ConnectionServerRest(_transportFunctions,this.ServerName, pLoginName, pPassword, false);
+                var oServer =new ConnectionServerRest(_transportFunctions,this.ServerName, pLoginName, pPassword, false);
+                RaiseDebugEvent("Authenticated user " + pLoginName + "  against server:" + oServer);
             }
             catch 
             {
@@ -1652,9 +1654,9 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //Tack on all the search/query/page clauses here if any are passed in.  If an empty string is passed in account
             //for it here.
-            for (int iCounter = 0; iCounter < pClauses.Length; iCounter++)
+            foreach (string strClause in pClauses)
             {
-                if (pClauses[iCounter].Length == 0)
+                if (strClause.Length == 0)
                 {
                     continue;
                 }
@@ -1672,7 +1674,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 }
                 
                 //special case the query and sort parameters
-                retUri += pClauses[iCounter].UriSafe();
+                retUri += strClause.UriSafe();
             }
 
             return retUri;
