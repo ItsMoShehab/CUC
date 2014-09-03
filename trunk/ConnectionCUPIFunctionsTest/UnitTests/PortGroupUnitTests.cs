@@ -373,7 +373,6 @@ namespace ConnectionCUPIFunctionsTest
                                         StatusCode = 404
                                     });
 
-            PortGroup oPortGroup;
             var res = PortGroup.AddPortGroup(_mockServer,"display name","PhoneSysteId","HostAddress", TelephonyIntegrationMethodEnum.PIMG);
             Assert.IsFalse(res.Success, "Calling AddPortGroup with ErrorResponse did not fail");
         }

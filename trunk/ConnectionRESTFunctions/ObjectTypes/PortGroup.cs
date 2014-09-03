@@ -355,6 +355,28 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
+        private string _sipAuthenticateAsUser;
+        public string SipAuthenticateAsUser
+        {
+            get { return _sipAuthenticateAsUser; }
+            set
+            {
+                _changedPropList.Add("SipAuthenticateAsUser", value);
+                _sipAuthenticateAsUser = value;
+            }
+        }
+
+        private string _sipAuthenticatePassword;
+        public string SipAuthenticatePassword
+        {
+            get { return _sipAuthenticatePassword; }
+            set
+            {
+                _changedPropList.Add("SipAuthenticatePassword", value);
+                _sipAuthenticatePassword = value;
+            }
+        }
+
         private bool _sipDoSRTP;
         public bool SipDoSRTP
         {

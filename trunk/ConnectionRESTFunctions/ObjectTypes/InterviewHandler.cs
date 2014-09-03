@@ -117,7 +117,11 @@ namespace Cisco.UnityConnection.RestFunctions
             //fetch transfer options only if they are referenced
             if (_questions == null)
             {
-                GetInterviewQuestions(out _questions);
+                var res= GetInterviewQuestions(out _questions);
+                if (!res.Success)
+                {
+                    HomeServer.RaiseErrorEvent("Failed fetching interview questions in GetInterviewQuestions:"+res);
+                }
             }
 
             return _questions;

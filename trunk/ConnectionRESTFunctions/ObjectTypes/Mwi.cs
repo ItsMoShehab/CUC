@@ -618,8 +618,6 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public WebCallResult Update(bool pRefetchDataAfterSuccessfulUpdate = false)
         {
-            WebCallResult res;
-
             //check if the extension intance has any pending changes, if not return false with an appropriate error message
             if (!_changedPropList.Any())
             {
@@ -632,7 +630,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //just call the static method with the info from the instance 
-            res = UpdateMwi(HomeServer, UserObjectId, ObjectId, _changedPropList);
+            WebCallResult res = UpdateMwi(HomeServer, UserObjectId, ObjectId, _changedPropList);
 
             //if the update went through then clear the changed properties list.
             if (res.Success)

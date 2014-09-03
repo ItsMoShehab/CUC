@@ -10,7 +10,6 @@
 #endregion
 
 using System;
-using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
 {

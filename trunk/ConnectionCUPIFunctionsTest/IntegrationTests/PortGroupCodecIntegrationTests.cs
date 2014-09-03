@@ -71,8 +71,6 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void AddPortGroupCodec_InvalidPortGroupId_Failure()
         {
-            PortGroupCodec oPortGroupCodec;
-
             var res = PortGroupCodec.AddPortGroupCodec(_connectionServer, "portgroupid", "objectid", 20, 1);
             Assert.IsFalse(res.Success, "Static call to AddPortGroupCodec did not fail with invalid port group Id and objectid");
         }

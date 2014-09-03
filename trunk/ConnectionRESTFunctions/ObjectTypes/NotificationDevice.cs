@@ -1450,8 +1450,6 @@ namespace Cisco.UnityConnection.RestFunctions
                                                             string pObjectId, 
                                                             NotificationDeviceTypes pDeviceType)
         {
-            WebCallResult res;
-
             if (pConnectionServer == null)
             {
                 return new WebCallResult
@@ -1473,7 +1471,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //if empty comes back it's because it didn't recognize the device type
             if (String.IsNullOrEmpty(strUrl))
             {
-                res = new WebCallResult();
+                WebCallResult res = new WebCallResult();
                 res.ErrorText = "Invalid device type passed to DeleteNotificationDevice:" + pDeviceType.ToString();
                 return res;
             }

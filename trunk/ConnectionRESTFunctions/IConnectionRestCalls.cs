@@ -127,6 +127,7 @@ namespace Cisco.UnityConnection.RestFunctions
     /// <summary>
     /// wrap an exception type so we can pass back the WebCallResult class in an exception when necessary
     /// </summary>
+    [Serializable]
     public class UnityConnectionRestException : Exception
     {
         /// <summary>

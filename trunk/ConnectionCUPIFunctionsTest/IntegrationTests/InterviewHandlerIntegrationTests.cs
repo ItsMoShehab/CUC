@@ -230,20 +230,16 @@ namespace ConnectionCUPIFunctionsTest
          }
 
 
+
         [TestMethod]
-        public void SetVoiceName_Success()
+        public void SetVoiceName_GetVoiceName_Success()
         {
             //upload a voice name to the handler
             var res = _tempHandler.SetVoiceName("Dummy.wav", true);
             Assert.IsTrue(res.Success, "Updating voice name on new call handler failed: " + res.ToString());
-       }
 
-
-        [TestMethod]
-        public void GetVoiceName_Success()
-        {
             //download the wav file we just uploaded
-            var res = _tempHandler.GetVoiceName("DummyDownload.wav");
+            res = _tempHandler.GetVoiceName("DummyDownload.wav");
             Assert.IsTrue(res.Success, "Downloading voice name for call handler failed:" + res.ToString());
         }
 

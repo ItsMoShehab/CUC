@@ -11,7 +11,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -958,7 +957,6 @@ namespace Cisco.UnityConnection.RestFunctions
             //don't return failure here - there may be no messages and that's ok.
             if (res.XmlElement == null || res.XmlElement.HasElements == false)
             {
-                res.Success = true;
                 return res;
             }
 

@@ -16,6 +16,11 @@ using System.Threading;
 namespace Cisco.UnityConnection.RestFunctions
 {
     /// <summary>
+    /// When initiating a TRAP call on 10.5.2 or later you can indicate it's a video or audio only call.
+    /// </summary>
+    public enum CallType {Audio, Video}
+    
+    /// <summary>
     /// Allows you to use the phone as a media device.  Recordings created via this class are stored in the media recordings
     /// table on the Connection server where you can apply them to voice names, greetings or message attachments as needed.
     /// This is an alternative to uploading a local WAV file from the hard drive via HTTP.
@@ -25,8 +30,9 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Fields and Properties
 
-        private readonly ConnectionServerRest _homeServer;
+        private ConnectionServerRest _homeServer;
         private readonly string _phoneNumber;
+        private readonly CallType _callType;
         private readonly int _rings = 4;
         private int _callId;
 
@@ -36,11 +42,16 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public string RecordingResourceId { get; private set; }
 
+        /// <summary>
+        /// In Unity Connection 10.5.2 and later video recording is an option via the phone - if it's a video recording both a RecordingResourceId
+        /// and a SessionId will be returned - both are needed for updating the greeting and initiating a playback.
+        /// </summary>
+        public string RecordingSessionId { get; private set; }
+
         #endregion
 
 
         #region Constructors and Destructors
-
 
         /// <summary>
         /// Constructor for the PhoneRecording class - this sets up the phone connection, dials the phone and waits for it to 
@@ -56,7 +67,11 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pRings">
         /// The number of rings to wait for - defaults to 4
         /// </param>
-        public PhoneRecording(ConnectionServerRest pConnectionServer, string pPhoneNumberToDial, int pRings=4)
+        /// <param name="pCallType">
+        /// In Connection 10.5.2 and later video recording and playback is possible if the system is configured properly.  Defaults
+        /// to audio only
+        /// </param>
+        public PhoneRecording(ConnectionServerRest pConnectionServer, string pPhoneNumberToDial, int pRings=4,CallType pCallType = CallType.Audio )
         {
             if (pConnectionServer == null)
             {
@@ -70,6 +85,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             _homeServer = pConnectionServer;
             _phoneNumber = pPhoneNumberToDial;
+            _callType = pCallType;
             _rings = pRings;
 
             WebCallResult res = AttachToPhone();
@@ -110,6 +126,11 @@ namespace Cisco.UnityConnection.RestFunctions
            
             oParams.Add("number",_phoneNumber);
             oParams.Add("maximumRings", _rings.ToString());
+
+            if (_homeServer.Version.IsVersionAtLeast(10, 5, 2, 0))
+            {
+                oParams.Add("callType", _callType.ToString());
+            }
  
             WebCallResult res = _homeServer.GetCupiResponse(strUrl, MethodType.POST, oParams);
             if (res.Success==false)
@@ -133,17 +154,32 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //get the trailing number after the last "/"
             int iPos = res.ResponseText.LastIndexOf('/');
+            int iPos2 = res.ResponseText.LastIndexOf('\n');
 
             if (res.ResponseText.Length-1<=iPos)
             {
                 return res;
             }
 
-            string strId = res.ResponseText.Substring(iPos+1);
+            string strId = res.ResponseText.Substring(iPos + 1, iPos2 - iPos);
 
             if (int.TryParse(strId,out _callId)==false)
             {
                 return res;
+            }
+
+            //if we requested video and didn't get it, fail the call.
+            if (_homeServer.Version.IsVersionAtLeast(10, 5, 2, 0))
+            {
+                object oValue;
+                if (res.JsonDictionary.TryGetValue("callType", out oValue))
+                {
+                    if (!oValue.ToString().ToLower().Equals(_callType.ToString().ToLower()))
+                    {
+                        res.ErrorText = "Failed to get video chanel on TRAP request";
+                        return res;
+                    }
+                }
             }
 
             res.Success = true;
@@ -250,10 +286,19 @@ namespace Cisco.UnityConnection.RestFunctions
                 res.ErrorText = "Invalid resource ID resturned from play";
                 return res;
             }
-
-            res.Success = true;
             RecordingResourceId = oValue.ToString();
 
+            res.JsonDictionary.TryGetValue("sessionId", out oValue);
+            if (oValue == null || string.IsNullOrEmpty(oValue.ToString()))
+            {
+                //no error - may not be a video enabled system.
+            }
+            else
+            {
+                RecordingSessionId = oValue.ToString();    
+            }
+
+            res.Success = true;
             return res;
         }
 
@@ -264,8 +309,11 @@ namespace Cisco.UnityConnection.RestFunctions
         /// This is a blocking call, it will not return until the stream has completed playing or the call is terminated.  Depending on your 
         /// application you may want to call this from a background thread.
         /// </summary>
-        /// <param name="pStreamFileId">
+        /// <param name="pResourceId">
         /// The stream file Id to play out the phone interface.
+        /// </param>
+        /// <param name="pSessionId">
+        /// if it's a video recording a sessionID is required in addition to the resource Id to play back.
         /// </param>
         /// <param name="pSpeed">
         /// Speed value - 50, 100, 150, 200 - 100 is normal speed, 50 is half etc...
@@ -276,11 +324,11 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResult class with the results of the call.
         /// </returns>
-        public WebCallResult PlayStreamFile(string pStreamFileId="", int pSpeed=100, int pVolume = 100)
+        public WebCallResult PlayStreamFile(string pResourceId="", string pSessionId="", int pSpeed=100, int pVolume = 100)
         {
             WebCallResult res = new WebCallResult();
 
-            if (string.IsNullOrEmpty(pStreamFileId) && string.IsNullOrEmpty(RecordingResourceId))
+            if (string.IsNullOrEmpty(pResourceId) && string.IsNullOrEmpty(RecordingResourceId))
             {
                 res.Success = false;
                 res.ErrorText =
@@ -288,7 +336,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            string strStreamFileId = string.IsNullOrEmpty(pStreamFileId) ? RecordingResourceId : pStreamFileId;
+            string strStreamFileId = string.IsNullOrEmpty(pResourceId) ? RecordingResourceId : pResourceId;
 
             string strUrl = string.Format("{0}calls/{1}", _homeServer.BaseUrl, _callId);
 
@@ -297,6 +345,12 @@ namespace Cisco.UnityConnection.RestFunctions
             oParams.Add("op", "PLAY");
             oParams.Add("resourceType", "STREAM");
             oParams.Add("resourceId", strStreamFileId);
+            
+            if (!string.IsNullOrEmpty(pSessionId))
+            {
+                oParams.Add("sessionId",pSessionId);
+            }
+            
             oParams.Add("speed", pSpeed.ToString());
             oParams.Add("volume", pVolume.ToString());
             oParams.Add("startPosition", "0");
@@ -318,7 +372,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 res.Success = false;
                 if (oValue != null)
                 {
-                    res.ErrorText = "Result returned from play=" + oValue.ToString();
+                    res.ErrorText = "Result returned from play=" + oValue;
                 }
                 else
                 {
@@ -417,7 +471,7 @@ namespace Cisco.UnityConnection.RestFunctions
             if (oValue.ToString().Equals("0") == false)
             {
                 res.Success = false;
-                res.ErrorText = "Result returned from play=" + oValue.ToString();
+                res.ErrorText = "Result returned from play=" + oValue;
                 return res;
             }
 
@@ -429,7 +483,18 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public void Dispose()
         {
-            HangUp();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        // The bulk of the clean-up code is implemented in Dispose(bool)
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                HangUp();
+                _homeServer = null;
+            }
         }
 
         #endregion
