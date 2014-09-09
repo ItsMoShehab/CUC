@@ -340,13 +340,24 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pDescription">
         /// Description of new tenant
         /// </param>
+        /// <param name="pPilotNumber">
+        /// if passed as blank string a seperate phone sytem will be created for the tenant, otherwise it will "share" the 
+        /// same base phone system as all other tenants and route based on pilot number matching - only for 10.5.2 and later.
+        /// </param>
+        /// <param name="pMediaSwitchObjectId">
+        /// When a pilot number is provided, a corresponding media switch ObjectId string must also be provided - this indicates
+        /// which switch is being "shared" with the pilot number - currently it's an "either or" setup, you cannot mix trunk
+        /// and pilot based routing between tenants on a single installation.
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
         public static WebCallResult AddTenant(ConnectionServerRest pConnectionServer,
                                                     string pAlias,
                                                     string pSmtpDomain,
-                                                    string pDescription)
+                                                    string pDescription,
+                                                    string pPilotNumber,
+                                                    string pMediaSwitchObjectId)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -363,12 +374,23 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
+            if (!string.IsNullOrEmpty(pPilotNumber) & string.IsNullOrEmpty(pMediaSwitchObjectId))
+            {
+                res.ErrorText ="Empty media switch ObjectId value passed with pilot number - both must be provided for pilot routing.";
+                return res;
+            }
+
             //create an empty property list if it's passed as null since we use it below
             var oPropList = new ConnectionPropertyList();
 
             oPropList.Add("Alias", pAlias);
             oPropList.Add("SmtpDomain", pSmtpDomain);
             oPropList.Add("Description", pDescription);
+            if (!string.IsNullOrEmpty(pPilotNumber))
+            {
+                oPropList.Add("PilotNumber",pPilotNumber);
+                oPropList.Add("MediaSwitchObjectId",pMediaSwitchObjectId);
+            }
 
             string strBody = "<Tenant>";
 
@@ -409,6 +431,15 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pDescription">
         /// Description of new tenant
         /// </param>
+        /// <param name="pPilotNumber">
+        /// if passed as blank string a seperate phone sytem will be created for the tenant, otherwise it will "share" the 
+        /// same base phone system as all other tenants and route based on pilot number matching - only for 10.5.2 and later.
+        /// </param>
+        /// <param name="pMediaSwitchObjectId">
+        /// When a pilot number is provided, a corresponding media switch ObjectId string must also be provided - this indicates
+        /// which switch is being "shared" with the pilot number - currently it's an "either or" setup, you cannot mix trunk
+        /// and pilot based routing between tenants on a single installation.
+        /// </param>
         /// <param name="pTenant">
         /// Instance of the newly created tenant is passed back on this out param
         /// </param>
@@ -419,10 +450,12 @@ namespace Cisco.UnityConnection.RestFunctions
                                               string pAlias,
                                               string pSmtpDomain,
                                               string pDescription,
+                                              string pPilotNumber,
+                                              string pMediaSwitchObjectId,
                                               out Tenant pTenant)
         {
             pTenant = null;
-            var res = AddTenant(pConnectionServer, pAlias, pSmtpDomain, pDescription);
+            var res = AddTenant(pConnectionServer, pAlias, pSmtpDomain, pDescription,pPilotNumber,pMediaSwitchObjectId);
 
             if (res.Success)
             {

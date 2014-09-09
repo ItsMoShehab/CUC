@@ -97,7 +97,7 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void AddTenant_NullConnectionServer_Failure()
         {
-            WebCallResult res = Tenant.AddTenant(null, "alias", "domain", "description");
+            WebCallResult res = Tenant.AddTenant(null, "alias", "domain", "description","","");
             Assert.IsFalse(res.Success,"");
 
            }
@@ -105,14 +105,14 @@ namespace ConnectionCUPIFunctionsTest
         [TestMethod]
         public void AddTenant_EmptyAlias_Failure()
         {
-            var res = Tenant.AddTenant(_mockServer, "", "domain", "description");
+            var res = Tenant.AddTenant(_mockServer, "", "domain", "description","","");
             Assert.IsFalse(res.Success, "");
         }
 
         [TestMethod]
         public void AddTenant_EmptyDomain_Failure()
         {
-            var res = Tenant.AddTenant(_mockServer, "alias", "", "description");
+            var res = Tenant.AddTenant(_mockServer, "alias", "", "description", "", "");
             Assert.IsFalse(res.Success, "");
         }
 

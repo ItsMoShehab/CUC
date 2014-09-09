@@ -39,7 +39,7 @@ namespace ConnectionCUPIFunctionsTest
             _connectionServer.ErrorEvents += ServerOnErrorEvents;
 
             string strAlias = "Tenant" + Guid.NewGuid().ToString().Replace("-", "").Substring(0, 13);
-            var res = Tenant.AddTenant(_connectionServer, strAlias, strAlias + ".org", strAlias, out _tempTenant);
+            var res = Tenant.AddTenant(_connectionServer, strAlias, strAlias + ".org", strAlias, "","",out _tempTenant);
             Assert.IsTrue(res.Success, "Failed to create temproary teannt:" + res);
         }
 
