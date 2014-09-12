@@ -792,7 +792,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //construct the full URL to call for updating the greeting to a stream file id
-            string strUrl = string.Format(@"{0}handlers/callhandlers/{1}/treetings/{2}/greetingstreamfiles/{3}", 
+            string strUrl = string.Format(@"{0}handlers/callhandlers/{1}/greetings/{2}/greetingstreamfiles/{3}", 
                     pConnectionServer.BaseUrl,pCallHandlerObjectId, pGreetingType, pLanguageId);
 
             Dictionary<string, string> oParams = new Dictionary<string, string>();
