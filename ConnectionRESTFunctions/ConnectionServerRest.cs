@@ -601,16 +601,49 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Logging and Error Events
 
+        [NonSerialized]
+        private LoggingEventHandler _errorEvents;
+
         /// <summary>
         /// Event handle for external clients to register with so they can get logging events on errors and warnings that happen
         /// within this class.
         /// </summary>
-        public event LoggingEventHandler ErrorEvents;
+        public event LoggingEventHandler ErrorEvents
+        {
+            add
+            {
+                _errorEvents += value;
+            }
+            remove 
+            {
+                if (_errorEvents != null)
+                {
+                    _errorEvents -= value;
+                } 
+            }
+        }
+
+        [NonSerialized]
+        private LoggingEventHandler _debugEvents;
+
 
         /// <summary>
         /// Debug events can be registered for and recieved to view raw send/response text
         /// </summary>
-        public event LoggingEventHandler DebugEvents;
+        public event LoggingEventHandler DebugEvents
+        {
+            add
+            {
+                _debugEvents += value;
+            }
+            remove 
+            {
+                if (_debugEvents != null)
+                {
+                    _debugEvents -= value;
+                } 
+            }
+        }
 
         /// <summary>
         /// The RestTransportFunctions class sends errors and warnings encountered in the class as an event that's raised which 
@@ -647,7 +680,7 @@ namespace Cisco.UnityConnection.RestFunctions
         internal void RaiseErrorEvent(string pLine)
         {
             //notify registered clients 
-            LoggingEventHandler handler = ErrorEvents;
+            LoggingEventHandler handler = _errorEvents;
 
             if (handler != null)
             {
@@ -667,7 +700,7 @@ namespace Cisco.UnityConnection.RestFunctions
             if (DebugMode == false) return;
 
             //notify registered clients
-            LoggingEventHandler handler = DebugEvents;
+            LoggingEventHandler handler = _debugEvents;
 
             if (handler != null)
             {
@@ -693,7 +726,6 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             RaiseDebugEvent(logEventArgs.Line);
         }
-
 
 
         #endregion

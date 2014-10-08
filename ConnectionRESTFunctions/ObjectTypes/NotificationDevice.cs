@@ -610,7 +610,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetNotificationDeivce(ConnectionServerRest pConnectionServer, string pUserObjectId, string pObjectId,string pDisplayName, 
+        public static WebCallResult GetNotificationDevice(ConnectionServerRest pConnectionServer, string pUserObjectId, string pObjectId,string pDisplayName, 
             out NotificationDevice pNotificationDevice)
         {
             WebCallResult res = new WebCallResult();
@@ -620,7 +620,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (pConnectionServer == null)
             {
-                res.ErrorText = "Null Connection server object passed to GetNotificationDeivce";
+                res.ErrorText = "Null Connection server object passed to GetNotificationDevice";
                 return res;
             }
 
@@ -642,7 +642,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             catch (Exception ex)
             {
-                res.ErrorText = "Failed to fetch device in GetNotificationDeivce:" + ex.Message;
+                res.ErrorText = "Failed to fetch device in GetNotificationDevice:" + ex.Message;
             }
 
             return res;
@@ -844,7 +844,7 @@ namespace Cisco.UnityConnection.RestFunctions
              var res = AddSmtpDevice(pConnectionServer, pUserObjectId, pDeviceDisplayName, pSmtpAddress, pEventList, pActivated);
              if (res.Success)
              {
-                 res = GetNotificationDeivce(pConnectionServer, pUserObjectId, res.ReturnedObjectId,"",out pDevice);
+                 res = GetNotificationDevice(pConnectionServer, pUserObjectId, res.ReturnedObjectId,"",out pDevice);
              }
 
              return res;
@@ -986,7 +986,7 @@ namespace Cisco.UnityConnection.RestFunctions
             var res = AddHtmlDevice(pConnectionServer, pUserObjectId, pTemplateObjectId, pDeviceDisplayName, pSmtpAddress, pEventList, pActivated);
             if (res.Success)
             {
-                res = GetNotificationDeivce(pConnectionServer, pUserObjectId, res.ReturnedObjectId, "", out pDevice);
+                res = GetNotificationDevice(pConnectionServer, pUserObjectId, res.ReturnedObjectId, "", out pDevice);
             }
             return res;
         }
@@ -1143,7 +1143,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 pRecipientAddress,pSenderAddress,pEventList,pActivated);
             if (res.Success)
             {
-                res = GetNotificationDeivce(pConnectionServer, pUserObjectId, res.ReturnedObjectId, "", out pDevice);
+                res = GetNotificationDevice(pConnectionServer, pUserObjectId, res.ReturnedObjectId, "", out pDevice);
             }
             return res;
         }
@@ -1282,7 +1282,7 @@ namespace Cisco.UnityConnection.RestFunctions
             var res = AddPhoneDevice(pConnectionServer, pUserObjectId, pDeviceDisplayName,pMediaSwitchObjectId,pPhoneNumber,pEventList,pActivated);
             if (res.Success)
             {
-                res = GetNotificationDeivce(pConnectionServer, pUserObjectId, res.ReturnedObjectId, "", out pDevice);
+                res = GetNotificationDevice(pConnectionServer, pUserObjectId, res.ReturnedObjectId, "", out pDevice);
             }
             return res;
         }
@@ -1421,7 +1421,7 @@ namespace Cisco.UnityConnection.RestFunctions
             var res = AddPagerDevice(pConnectionServer, pUserObjectId, pDeviceDisplayName, pMediaSwitchObjectId,pPhoneNumber,pEventList,pActivated);
             if (res.Success)
             {
-                res = GetNotificationDeivce(pConnectionServer, pUserObjectId, res.ReturnedObjectId, "", out pDevice);
+                res = GetNotificationDevice(pConnectionServer, pUserObjectId, res.ReturnedObjectId, "", out pDevice);
             }
             return res;
         }

@@ -206,17 +206,17 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success, "Failed to fetch notification devices for operator:" + res);
 
             //fetch the single device returned as the first in the list from the last test
-            res = NotificationDevice.GetNotificationDeivce(_connectionServer, _tempUser.ObjectId, oDevices.First().ObjectId, "", out oDevice);
+            res = NotificationDevice.GetNotificationDevice(_connectionServer, _tempUser.ObjectId, oDevices.First().ObjectId, "", out oDevice);
             Assert.IsTrue(res.Success, "Failed to fetch notification device for operator:" + res);
 
             }
 
         [TestMethod]
-        public void GetNotificationDeivce_InvalidObjectId_Failure()
+        public void GetNotificationDevice_InvalidObjectId_Failure()
         {
             NotificationDevice oDevice;
 
-            var res = NotificationDevice.GetNotificationDeivce(_connectionServer, _tempUser.ObjectId, "aaa", "", out oDevice);
+            var res = NotificationDevice.GetNotificationDevice(_connectionServer, _tempUser.ObjectId, "aaa", "", out oDevice);
             Assert.IsFalse(res.Success, "Invalid objectID should fail");
         }
 
@@ -236,7 +236,7 @@ namespace ConnectionCUPIFunctionsTest
             Console.WriteLine(oDevices[0].DumpAllProps());
 
             NotificationDevice oDevice;
-            var res= NotificationDevice.GetNotificationDeivce(_connectionServer,_tempUser.ObjectId,"", oDevices[0].DisplayName,out oDevice);
+            var res= NotificationDevice.GetNotificationDevice(_connectionServer,_tempUser.ObjectId,"", oDevices[0].DisplayName,out oDevice);
             Assert.IsTrue(res.Success,"Failed to fetch notificaiton device by name:"+res);
         }
 
@@ -255,7 +255,7 @@ namespace ConnectionCUPIFunctionsTest
             Assert.IsTrue(res.Success, "Failed to create new HTML notification device:" + res);
 
             NotificationDevice oDevice;
-            res = NotificationDevice.GetNotificationDeivce(_connectionServer, _tempUser.ObjectId, "", strDisplayName,out oDevice);
+            res = NotificationDevice.GetNotificationDevice(_connectionServer, _tempUser.ObjectId, "", strDisplayName,out oDevice);
             Assert.IsTrue(res.Success, "Failed to fetch newly created HTML notification device:" + res);
 
             res= oDevice.Delete();
