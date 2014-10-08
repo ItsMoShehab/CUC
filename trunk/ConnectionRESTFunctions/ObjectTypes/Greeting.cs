@@ -769,6 +769,40 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
         public static WebCallResult SetGreetingRecordingToStreamFile(ConnectionServerRest pConnectionServer,
+            string pStreamFileResourceName,
+            string pCallHandlerObjectId,
+            GreetingTypes pGreetingType,
+            int pLanguageId)
+        {
+            return SetGreetingRecordingToStreamFile(pConnectionServer, pStreamFileResourceName, pCallHandlerObjectId,
+                pGreetingType.ToString(), pLanguageId);
+        }
+
+        /// <summary>
+        /// If you have a recording stream already recorded and in the stream files table on the Connection server (for instance
+        /// you are using the telephone as a media device) you can assign a greeting stream file directly to a greeting using this 
+        /// method instead of uploading a WAV file from the local hard drive.
+        /// </summary>
+        /// <param name="pConnectionServer" type="ConnectionServer">
+        ///   The Connection server that houses the greeting to be updated      
+        /// </param>
+        /// <param name="pStreamFileResourceName" type="string">
+        ///  the unique identifier (usually GUID.wav type construction) for the greeting stream to be assigned.
+        /// </param>
+        /// <param name="pCallHandlerObjectId"> 
+        /// The GUID identifying the call handler that owns the greeting being edited.
+        /// </param>
+        /// <param name="pGreetingType">
+        /// The greeting type being edited (Standard, Off Hours, Alternate, Busy, Internal, Holiday, Error).
+        /// </param>
+        /// <param name="pLanguageId">
+        /// The language ID of the WAV file being uploaded (for US English this is 1033).  The LanguageCodes enum defined in the ConnectionTypes
+        /// class can be helpful here.  The language must be installed and active on the Connection server for this to be allowed.
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult SetGreetingRecordingToStreamFile(ConnectionServerRest pConnectionServer,
                                                      string pStreamFileResourceName,
                                                      string pCallHandlerObjectId,                                         
                                                      string pGreetingType,

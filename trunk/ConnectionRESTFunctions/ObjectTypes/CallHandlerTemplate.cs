@@ -312,6 +312,17 @@ namespace Cisco.UnityConnection.RestFunctions
             }
         }
 
+        private string _postGreetingRecordingObjectId;
+        public string PostGreetingRecordingObjectId
+        {
+            get { return _postGreetingRecordingObjectId; }
+            set
+            {
+                _postGreetingRecordingObjectId = value;
+                _changedPropList.Add("PostGreetingRecordingObjectId", value);
+            }
+        }
+
         //Contacts cannot yet be a recipient - read only property for now
         [JsonProperty]
         public string RecipientContactObjectId { get; private set; }
