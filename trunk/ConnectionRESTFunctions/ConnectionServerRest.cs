@@ -1150,7 +1150,14 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             //create a temporary file with a GUID file name in the temporary folder for the local OS install.
             string strConvertedWavFilePath = Path.GetTempFileName() + ".wav";
+            RaiseDebugEvent("Temporary file path generated for ConvertWavFileToPCM="+strConvertedWavFilePath);
+            RaiseDebugEvent("WAV file to convert path for ConvertWavFileToPCM="+pPathToWavFile);
 
+            if (!File.Exists(pPathToWavFile))
+            {
+                RaiseErrorEvent("Could not find WAV file to convert:"+pPathToWavFile);
+                return "";
+            }
 
             // Use ProcessStartInfo class - this lets us set properties, hide the "box" window and wait for the process to complete before 
             //continuing.
@@ -1160,23 +1167,31 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //When running in Unit Test mode MSTest struggles to get additional files copied over to the on-the-fly context folder properly so
             //sub folders are not recreated - check to see if the wavcopy.exe is in the folder we're currently operating in (unit test mode) or
-            //a sub folder called WavConvert (production mode).  This is the only concession we have to make in production code to get unit tests
-            //to run smoothly so it's not the end of the world.
+            //a sub folder called WavConvert (production mode).  Also must handle running as a service which requires we fetch the base directory 
+            //of the executable associated with the service to get the correct file offset.
+            string temp = AppDomain.CurrentDomain.BaseDirectory;
             if (File.Exists(@"WAVConvert\wavcopy.exe"))
             {
                 startInfo.FileName = @"WAVConvert\wavcopy.exe";
             }
+            else if (File.Exists("wavcopy.exe"))
+            {
+                startInfo.FileName = "wavcopy.exe";
+            }
+            else if (File.Exists(Path.Combine(temp,@"WAVConvert\wavcopy.exe")))
+            {
+                startInfo.FileName = Path.Combine(temp, @"WAVConvert\wavcopy.exe");
+            }
             else
             {
-                startInfo.FileName = @"wavcopy.exe";
+                RaiseErrorEvent("Could not find path to wavcopy.exe binary in ConvertWavFileToPcm");
+                return "";
             }
-            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
 
-            //Connection is happier with PCM at 8Khz, 16 bit and mono - to rip the wav file into that format if requested.
+            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
             startInfo.Arguments = string.Format("\"{0}\" \"{1}\" -pcm:8000,16,1", pPathToWavFile, strConvertedWavFilePath);
             try
             {
-                // Start the process with the info we specified.
                 using (Process exeProcess = Process.Start(startInfo))
                 {
                     //30 seconds is much more than enough, even if the file is enormous
@@ -1190,7 +1205,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 RaiseErrorEvent("Error converting WAV file to PCM:"+ex);
                 strConvertedWavFilePath = "";
             }
-
+            RaiseDebugEvent("Converted WAV file copied to:" + strConvertedWavFilePath);
             return strConvertedWavFilePath;
 
         }
