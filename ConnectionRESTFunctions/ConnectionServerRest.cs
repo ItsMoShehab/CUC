@@ -1170,23 +1170,29 @@ namespace Cisco.UnityConnection.RestFunctions
             //a sub folder called WavConvert (production mode).  Also must handle running as a service which requires we fetch the base directory 
             //of the executable associated with the service to get the correct file offset.
             string temp = AppDomain.CurrentDomain.BaseDirectory;
+            RaiseDebugEvent("Current path in ConvertWavFileToPcm="+temp);
             if (File.Exists(@"WAVConvert\wavcopy.exe"))
             {
                 startInfo.FileName = @"WAVConvert\wavcopy.exe";
             }
-            else if (File.Exists("wavcopy.exe"))
-            {
-                startInfo.FileName = "wavcopy.exe";
-            }
             else if (File.Exists(Path.Combine(temp,@"WAVConvert\wavcopy.exe")))
             {
                 startInfo.FileName = Path.Combine(temp, @"WAVConvert\wavcopy.exe");
+            }
+            else if (File.Exists(Path.Combine(temp, "wavcopy.exe")))
+            {
+                startInfo.FileName = Path.Combine(temp, "wavcopy.exe");
+            }
+            else if (File.Exists("wavcopy.exe"))
+            {
+                startInfo.FileName = "wavcopy.exe";
             }
             else
             {
                 RaiseErrorEvent("Could not find path to wavcopy.exe binary in ConvertWavFileToPcm");
                 return "";
             }
+            RaiseDebugEvent("Path to wav convert binary="+startInfo.FileName);
 
             startInfo.WindowStyle = ProcessWindowStyle.Hidden;
             startInfo.Arguments = string.Format("\"{0}\" \"{1}\" -pcm:8000,16,1", pPathToWavFile, strConvertedWavFilePath);
