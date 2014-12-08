@@ -57,6 +57,8 @@ namespace Cisco.UnityConnection.RestFunctions
             //keep track of the home Connection server this tenant is created on.
             HomeServer = pConnectionServer;
 
+            _changedPropList = new ConnectionPropertyList();
+
             //if the user passed in a specific ObjectId or alias then go load that tenant up, otherwise just return an empty instance.
             if ((string.IsNullOrEmpty(pObjectId)) & (string.IsNullOrEmpty(pAlias))) return;
 
@@ -87,12 +89,20 @@ namespace Cisco.UnityConnection.RestFunctions
         public string SelectionDisplayString { get { return Description; }}
         
         public string UniqueIdentifier { get { return ObjectId; } }
-        
+
+        //used to keep track of which properties have been updated
+        private readonly ConnectionPropertyList _changedPropList;
+
+        /// <summary>
+        /// for checking on pending changes
+        /// </summary>
+        public ConnectionPropertyList ChangeList { get { return _changedPropList; } }
+
+
         #endregion
 
 
         #region Tenant Properties
-
 
         [JsonProperty]
         public string Alias { get; private set; }
@@ -106,8 +116,17 @@ namespace Cisco.UnityConnection.RestFunctions
         [JsonProperty]
         public DateTime CreationDate { get; private set; }
 
+        private string _description;
         [JsonProperty]
-        public string Description { get; private set; }
+        public string Description 
+        {
+            get { return _description; } 
+            set
+            {
+                _changedPropList.Add("Description", value);
+                _description = value;
+            } 
+        }
 
         [JsonProperty]
         public int Language { get; private set; }
@@ -118,8 +137,17 @@ namespace Cisco.UnityConnection.RestFunctions
         [JsonProperty]
         public string MediaSwitchObjectId { get; private set; }
 
+        private string _name;
         [JsonProperty]
-        public string Name { get; private set; }
+        public string Name
+        {
+            get { return _name; }
+            set
+            {
+                _changedPropList.Add("Name", value);
+                _name = value;
+            }
+        }
 
         [JsonProperty]
         public string ObjectId { get; private set; }
@@ -133,8 +161,17 @@ namespace Cisco.UnityConnection.RestFunctions
         [JsonProperty]
         public string PilotNumber { get; private set; }
 
+        private string _smtpDomain;
         [JsonProperty]
-        public string SmtpDomain { get; private set; }
+        public string SmtpDomain
+        {
+            get { return _smtpDomain; }
+            set
+            {
+                _changedPropList.Add("SmtpDomain", value);
+                _smtpDomain = value;
+            }
+        }
 
         [JsonProperty]
         public string TimeZone { get; private set; }
@@ -211,6 +248,7 @@ namespace Cisco.UnityConnection.RestFunctions
             foreach (var oObject in pTenants)
             {
                 oObject.HomeServer = pConnectionServer;
+                oObject.ClearPendingChanges();
             }
 
             return res;
@@ -309,6 +347,7 @@ namespace Cisco.UnityConnection.RestFunctions
             try
             {
                 pTenant = new Tenant(pConnectionServer, pObjectId, pAlias);
+                pTenant.ClearPendingChanges();
                 res.Success = true;
             }
             catch (UnityConnectionRestException ex)
@@ -508,6 +547,59 @@ namespace Cisco.UnityConnection.RestFunctions
                                             MethodType.DELETE, "");
         }
 
+        /// <summary>
+        /// Allows one or more properties on a handler to be udpated (for instance display name/DTMFAccessID etc...).  The caller needs to construct a list
+        /// of property names and new values using the ConnectionPropertyList class's "Add" method.  At least one property pair needs to be passed in 
+        /// but as many as are desired can be included in a single call.
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Reference to the ConnectionServer object that points to the home server where the handler is homed.
+        /// </param>
+        /// <param name="pObjectId">
+        /// The unqiue GUID identifying the handler to be updated.
+        /// </param>
+        /// <param name="pPropList">
+        /// List ConnectionProperty pairs that identify a handler property name and a new value for that property to apply to the handler being updated.
+        /// This is passed in as a ConnectionPropertyList instance which contains 1 or more ConnectionProperty instances.  At least one property
+        /// pair needs to be included for the funtion to execute.
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult UpdateTenant(ConnectionServerRest pConnectionServer, string pObjectId, ConnectionPropertyList pPropList)
+        {
+            WebCallResult res = new WebCallResult();
+            res.Success = false;
+
+            if (pConnectionServer == null)
+            {
+                res.ErrorText = "Null ConnectionServer referenced passed to UpdateTenant";
+                return res;
+            }
+
+            //the update command takes a body in the request, construct it based on the name/value pair of properties passed in.  
+            //at lest one such pair needs to be present
+            if (pPropList.Count < 1)
+            {
+                res.ErrorText = "empty property list passed to UpdateTenant";
+                return res;
+            }
+
+            string strBody = "<Tenant>";
+
+            foreach (var oPair in pPropList)
+            {
+                //tack on the property value pair with appropriate tags
+                strBody += string.Format("<{0}>{1}</{0}>", oPair.PropertyName, oPair.PropertyValue);
+            }
+
+            strBody += "</Tenant>";
+
+            return pConnectionServer.GetCupiResponse(pConnectionServer.BaseUrl + "tenants/" + pObjectId,MethodType.PUT, strBody, false);
+
+        }
+
+
         #endregion
 
 
@@ -600,7 +692,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 res.ErrorText = "Failure populating class instance form JSON response:" + ex;
                 res.Success = false;
             }
-
+            this.ClearPendingChanges();
             return res;
         }
 
@@ -640,6 +732,52 @@ namespace Cisco.UnityConnection.RestFunctions
 
 
         /// <summary>
+        /// If the call handler object has andy pending updates that have not yet be comitted, this will clear them out.
+        /// </summary>
+        public void ClearPendingChanges()
+        {
+            _changedPropList.Clear();
+        }
+
+
+        /// <summary>
+        /// Allows one or more properties on a handler to be udpated (for instance display name, DTMFAccessID etc...).  The caller needs to construct a list
+        /// of property names and new values using the ConnectionPropertyList class's "Add" method.  At least one property pair needs to be passed in 
+        /// but as many as are desired can be included in a single call.
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public WebCallResult Update(bool pRefetchDataAfterSuccessfulUpdate = false)
+        {
+            WebCallResult res;
+
+            //check if the handler intance has any pending changes, if not return false with an appropriate error message
+            if (!_changedPropList.Any())
+            {
+                res = new WebCallResult();
+                res.Success = false;
+                res.ErrorText = string.Format("Update called but there are no pending changes for tenant {0}", this);
+                return res;
+            }
+
+            //just call the static method with the info from the instance 
+            res = UpdateTenant(HomeServer, ObjectId, _changedPropList);
+
+            //if the update went through then clear the changed properties list.
+            if (res.Success)
+            {
+                _changedPropList.Clear();
+                if (pRefetchDataAfterSuccessfulUpdate)
+                {
+                    return RefetchTenantData();
+                }
+            }
+
+            return res;
+        }
+
+        /// <summary>
         /// Remove a tenant from the directory.
         /// WARNING! This removes all objects related to the tenant!
         /// </summary>
@@ -651,7 +789,17 @@ namespace Cisco.UnityConnection.RestFunctions
             return DeleteTenant(HomeServer, ObjectId);
         }
 
-
+        /// <summary>
+        /// Pull the data from the Connection server for this object again - if changes have been made externaly this will 
+        /// "refresh" the object
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResult class.
+        /// </returns>
+        public WebCallResult RefetchTenantData()
+        {
+            return GetTenant(this.ObjectId, this.Alias);
+        }
         #region Related Tenant Object Methods
 
 
