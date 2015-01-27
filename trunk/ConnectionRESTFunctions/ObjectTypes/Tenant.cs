@@ -158,8 +158,17 @@ namespace Cisco.UnityConnection.RestFunctions
         [JsonProperty]
         public string PhoneSystemObjectId { get; private set; }
 
+        private string _pilotNumber;
         [JsonProperty]
-        public string PilotNumber { get; private set; }
+        public string PilotNumber
+        {
+            get { return _pilotNumber; }
+            set
+            {
+                _changedPropList.Add("PilotNumber", value);
+                _pilotNumber = value;
+            }
+        }
 
         private string _smtpDomain;
         [JsonProperty]
@@ -736,6 +745,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public void ClearPendingChanges()
         {
+            if (_changedPropList == null) return;
             _changedPropList.Clear();
         }
 
