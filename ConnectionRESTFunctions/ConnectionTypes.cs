@@ -37,6 +37,14 @@ namespace Cisco.UnityConnection.RestFunctions
         Invalid=99
     }
 
+    public enum MessageHandlerAction
+    {
+        Reject=0,
+        Deliver=1,
+        Relay=2,
+        AcceptAndRelay=3
+    }
+
     /// <summary>
     /// When addressing messages using touch tones in the subscriber conversation Connection can default to starting with the last name, 
     /// starting with the first name or using the target's extension number.

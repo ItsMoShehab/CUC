@@ -397,6 +397,10 @@ namespace Cisco.UnityConnection.RestFunctions
         /// which switch is being "shared" with the pilot number - currently it's an "either or" setup, you cannot mix trunk
         /// and pilot based routing between tenants on a single installation.
         /// </param>
+        /// <param name="pObjectId">
+        /// UUID will be used for the tenant if passed in and unique - if not passed in (default) Connection will create it's own
+        /// UUID for the new tenant.
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResult class.
         /// </returns>
@@ -405,7 +409,8 @@ namespace Cisco.UnityConnection.RestFunctions
                                                     string pSmtpDomain,
                                                     string pDescription,
                                                     string pPilotNumber,
-                                                    string pMediaSwitchObjectId)
+                                                    string pMediaSwitchObjectId,
+                                                    string pObjectId="")
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -438,6 +443,10 @@ namespace Cisco.UnityConnection.RestFunctions
             {
                 oPropList.Add("PilotNumber",pPilotNumber);
                 oPropList.Add("MediaSwitchObjectId",pMediaSwitchObjectId);
+            }
+            if (!string.IsNullOrEmpty(pObjectId))
+            {
+                oPropList.Add("ObjectId",pObjectId);
             }
 
             string strBody = "<Tenant>";
@@ -508,6 +517,67 @@ namespace Cisco.UnityConnection.RestFunctions
             if (res.Success)
             {
                 //fetc the instance of the tenant just created.
+                try
+                {
+                    pTenant = new Tenant(pConnectionServer, res.ReturnedObjectId);
+                }
+                catch (Exception)
+                {
+                    res.Success = false;
+                    res.ErrorText = "Could not find newly created tenant by objectId:" + res;
+                }
+            }
+
+            return res;
+        }
+
+        /// <summary>
+        /// Create a new tenant
+        /// </summary>
+        /// <param name="pConnectionServer">
+        /// Connection server to add the tenant to
+        /// </param>
+        /// <param name="pAlias">
+        /// alias of the new tenant
+        /// </param>
+        /// <param name="pSmtpDomain">
+        /// SMTP Domain of the new tenant
+        /// </param>
+        /// <param name="pDescription">
+        /// Description of new tenant
+        /// </param>
+        /// <param name="pPilotNumber">
+        /// if passed as blank string a seperate phone sytem will be created for the tenant, otherwise it will "share" the 
+        /// same base phone system as all other tenants and route based on pilot number matching - only for 10.5.2 and later.
+        /// </param>
+        /// <param name="pMediaSwitchObjectId">
+        /// When a pilot number is provided, a corresponding media switch ObjectId string must also be provided - this indicates
+        /// which switch is being "shared" with the pilot number - currently it's an "either or" setup, you cannot mix trunk
+        /// and pilot based routing between tenants on a single installation.
+        /// </param>
+        /// <param name="pObjectId">
+        /// UUID will be used for the tenant if passed in and unique - if not passed in (default) Connection will create it's own
+        /// UUID for the new tenant.
+        /// </param>        /// <param name="pTenant">
+        /// Instance of the newly created tenant is passed back on this out param
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResult class.
+        /// </returns>
+        public static WebCallResult AddTenant(ConnectionServerRest pConnectionServer,
+                                              string pAlias,
+                                              string pSmtpDomain,
+                                              string pDescription,
+                                              string pPilotNumber,
+                                              string pMediaSwitchObjectId,
+                                              string pObjectId,
+                                              out Tenant pTenant)
+        {
+            pTenant = null;
+            var res = AddTenant(pConnectionServer, pAlias, pSmtpDomain, pDescription, pPilotNumber, pMediaSwitchObjectId, pObjectId);
+
+            if (res.Success)
+            {
                 try
                 {
                     pTenant = new Tenant(pConnectionServer, res.ReturnedObjectId);

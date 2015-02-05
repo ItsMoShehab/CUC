@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Cisco.UnityConnection.RestFunctions;
+using Cisco.UnityConnection.RestFunctions.ObjectTypes;
 using SimpleLogger;
 
 namespace CUPIVerySimple
@@ -38,7 +39,7 @@ namespace CUPIVerySimple
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
-                connectionServer = new ConnectionServerRest ("192.168.0.197", "CCMAdministrator", "ecsbulab");
+                connectionServer = new ConnectionServerRest ("192.168.0.221", "CCMAdministrator", "password");
             }
 
             catch (Exception ex)

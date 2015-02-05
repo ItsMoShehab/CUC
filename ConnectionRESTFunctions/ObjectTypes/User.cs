@@ -15,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Cisco.UnityConnection.RestFunctions.ObjectTypes;
 using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
@@ -138,7 +139,6 @@ namespace Cisco.UnityConnection.RestFunctions
     {
 
         #region Constructors and Destructors
-
 
         /// <summary>
         /// Creates a new instance of the UserBase class.  Requires you pass a handle to a ConnectionServer object which will be used for fetching and 
@@ -2195,6 +2195,15 @@ namespace Cisco.UnityConnection.RestFunctions
             return res;
         }
 
+
+        /// <summary>
+        /// Get the message handler data (accept, accept and relay, reject settings for voicemail, email, fax and notifications).
+        /// </summary>
+        public WebCallResult GetMessageHandler(out MessageHandler pMessageHandler)
+        {
+            WebCallResult res=new WebCallResult();
+            return MessageHandler.GetMessageHandler(this.HomeServer, this.ObjectId, out pMessageHandler);
+        }
 
         #endregion
 
