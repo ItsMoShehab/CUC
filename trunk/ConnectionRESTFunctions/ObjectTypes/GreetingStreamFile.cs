@@ -431,6 +431,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
             //run through here and assign it for all instances.
+            pGreetingStreamFiles.RemoveAll(oGreetingStreams => oGreetingStreams == null);
             foreach (var oObject in pGreetingStreamFiles)
             {
                 oObject.HomeServer = pConnectionServer;
@@ -637,7 +638,7 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             StringBuilder strBuilder = new StringBuilder();
 
-            PropertyInfo[] oProps = this.GetType().GetProperties();
+            PropertyInfo[] oProps = GetType().GetProperties();
 
             foreach (PropertyInfo oProp in oProps)
             {

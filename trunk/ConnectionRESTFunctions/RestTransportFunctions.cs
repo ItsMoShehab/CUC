@@ -407,10 +407,6 @@ namespace Cisco.UnityConnection.RestFunctions
         private IEnumerable<string> GetCookieStrings(WebHeaderCollection pHeaders)
         {
             var oHeaders = pHeaders.GetValues("Set-Cookie");
-            if (oHeaders == null)
-            {
-                return null;
-            }
             return oHeaders;
         }
 
@@ -555,11 +551,9 @@ namespace Cisco.UnityConnection.RestFunctions
                     if (!String.IsNullOrEmpty(pRequestBody))
                     {
                         using (Stream requestStream = request.GetRequestStream())
+                        using (StreamWriter writer = new StreamWriter(requestStream))
                         {
-                            using (StreamWriter writer = new StreamWriter(requestStream))
-                            {
-                                writer.Write(pRequestBody);
-                            }
+                            writer.Write(pRequestBody);
                         }
                     }
 
@@ -1467,32 +1461,29 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                FileStream fileStream = new FileStream(pPathToLocalWav, FileMode.Open, FileAccess.Read);
-                Stream memStream = new MemoryStream();
-                memStream.Write(postHeaderBytes, 0, postHeaderBytes.Length);
-
-                //add the wav file onto the HTTP 1KB at a time.
-                byte[] buffer = new byte[1024];
-                int bytesRead;
-                while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) != 0)
+                using (FileStream fileStream = new FileStream(pPathToLocalWav, FileMode.Open, FileAccess.Read))
+                using (Stream memStream = new MemoryStream())
                 {
-                    memStream.Write(buffer, 0, bytesRead);
+                    memStream.Write(postHeaderBytes, 0, postHeaderBytes.Length);
+
+                    //add the wav file onto the HTTP 1KB at a time.
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) != 0)
+                    {
+                        memStream.Write(buffer, 0, bytesRead);
+                    }
+
+                    memStream.Write(boundaryBytes, 0, boundaryBytes.Length);
+
+                    webrequest.ContentLength = memStream.Length;
+                    Stream requestStream = webrequest.GetRequestStream();
+
+                    memStream.Position = 0;
+                    byte[] tempBuffer = new byte[memStream.Length];
+                    memStream.Read(tempBuffer, 0, tempBuffer.Length);
+                    requestStream.Write(tempBuffer, 0, tempBuffer.Length);
                 }
-
-                memStream.Write(boundaryBytes, 0, boundaryBytes.Length);
-
-                fileStream.Close();
-
-                webrequest.ContentLength = memStream.Length;
-                Stream requestStream = webrequest.GetRequestStream();
-
-                memStream.Position = 0;
-                byte[] tempBuffer = new byte[memStream.Length];
-                memStream.Read(tempBuffer, 0, tempBuffer.Length);
-                memStream.Close();
-
-                requestStream.Write(tempBuffer, 0, tempBuffer.Length);
-                requestStream.Close();
             }
             catch (Exception ex)
             {
