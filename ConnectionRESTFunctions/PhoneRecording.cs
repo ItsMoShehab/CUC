@@ -155,6 +155,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //get the trailing number after the last "/"
             int iPos = res.ResponseText.LastIndexOf('/');
             int iPos2 = res.ResponseText.LastIndexOf('\n');
+            if (iPos2 < 0) iPos2 = res.ResponseText.Length-1;
 
             if (res.ResponseText.Length-1<=iPos)
             {
