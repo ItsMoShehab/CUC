@@ -2224,13 +2224,17 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #region Constructors and Destructors
 
+        /// <summary>
+        /// Empty constructor needed for JSON object loading
+        /// </summary>
+        public UserFull()
+        {}
 
         /// <summary>
         /// Create an empty instance of the class - for testing purposes
         /// </summary>
         public UserFull(ConnectionServerRest pConnectionServer):base(pConnectionServer)
         {
-            //only for testing
         }
 
         /// <summary>
