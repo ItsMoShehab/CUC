@@ -826,8 +826,26 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //construct the full URL to call for updating the greeting to a stream file id
-            string strUrl = string.Format(@"{0}handlers/callhandlers/{1}/greetings/{2}/greetingstreamfiles/{3}", 
-                    pConnectionServer.BaseUrl,pCallHandlerObjectId, pGreetingType, pLanguageId);
+            //string strUrl = string.Format(@"{0}handlers/callhandlers/{1}/greetings/{2}/greetingstreamfiles/{3}",
+            //        pConnectionServer.BaseUrl, pCallHandlerObjectId, pGreetingType, pLanguageId);
+
+
+            //string strBody = "<GreetingStreamFile>";
+            //strBody += string.Format("<{0}>{1}</{0}", "StreamFile", pStreamFileResourceName);
+            //strBody += string.Format("<{0}>{1}</{0}", "CallHandlerObjectId",pCallHandlerObjectId);
+            //strBody += string.Format("<{0}>{1}</{0}", "GreetingType", pGreetingType);
+            //strBody += string.Format("<{0}>{1}</{0}", "LanguageCode", pLanguageId);
+            //strBody += "</GreetingStreamFile>";
+
+            //Dictionary<string, string> oParams = new Dictionary<string, string>();
+            //oParams.Add("GreetingType", pGreetingType);
+            //oParams.Add("CallHandlerObjectId", pCallHandlerObjectId);
+            //oParams.Add("StreamFile", pStreamFileResourceName);
+            //oParams.Add("LanguageCode", pLanguageId.ToString());
+
+            //return pConnectionServer.GetCupiResponse(strUrl, MethodType.PUT, strBody, false);
+            string strUrl = string.Format(@"{0}handlers/callhandlers/{1}/greetings/{2}/greetingstreamfiles/{3}/audio",
+                    pConnectionServer.BaseUrl, pCallHandlerObjectId, pGreetingType, pLanguageId);
 
             Dictionary<string, string> oParams = new Dictionary<string, string>();
 
