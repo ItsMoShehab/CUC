@@ -39,7 +39,7 @@ namespace CUPIVerySimple
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
-                connectionServer = new ConnectionServerRest ("192.168.0.221", "CCMAdministrator", "password");
+                connectionServer = new ConnectionServerRest ("lindborgload8", "CCMAdministrator", "ecsbulab");
             }
 
             catch (Exception ex)
@@ -66,15 +66,52 @@ namespace CUPIVerySimple
             //the WebCallResult is the structure returned on most calls into the CUPIFunctions library.
             WebCallResult res;
 
+            //ScheduleSet oScheduleSet;
+            //res = ScheduleSet.AddScheduleSet(connectionServer, "Jeffs Schedule Set",connectionServer.PrimaryLocationObjectId, "", out oScheduleSet);
+            //Console.WriteLine(res);
+
+            //Schedule oStandardSchedule;
+            //res = Schedule.AddSchedule(connectionServer, "Jeffs Base Schedule",
+            //    connectionServer.PrimaryLocationObjectId, "", false, out oStandardSchedule);
+            //Console.WriteLine(res);
+
+            //oStandardSchedule.AddScheduleDetail("M-F 8-5", Schedule.GetMinutesFromTimeParts(8, 0),
+            //    Schedule.GetMinutesFromTimeParts(17, 0), true, true, true, true, true, false, false);
+
+            //res = oScheduleSet.AddScheduleSetMember(oStandardSchedule.ObjectId);
+            //Console.WriteLine(res);
+
+
+            //Schedule oHolidaySchedule;
+            //res=Schedule.AddSchedule(connectionServer, "Every Other Saturday 8-12", connectionServer.PrimaryLocationObjectId, "",true,out oHolidaySchedule);
+            //Console.WriteLine(res);
+
+            //DateTime oFirstSaturday = new DateTime(2015,5,16).ToUniversalTime();
+            //for (int iCounter=0;iCounter<20;iCounter++)
+            //{
+            //    DateTime oDate = oFirstSaturday.AddDays(iCounter*14);
+            //    oHolidaySchedule.AddScheduleDetail("Saturday "+oDate.ToShortDateString(), Schedule.GetMinutesFromTimeParts(8, 0),
+            //        Schedule.GetMinutesFromTimeParts(12, 0), false, false, false, false, false, true,false, oDate, oDate);
+            //}
+
+            //res = oScheduleSet.AddScheduleSetMember(oHolidaySchedule.ObjectId,true);
+            //Console.WriteLine(res);
+
             //fetch user with alias of "operator" - we will be sending the message from his mailbox.
             UserFull oUserTestDude;
 
-            res = UserBase.GetUser(out oUserTestDude, connectionServer, "", "operator");
+            res = UserBase.GetUser(out oUserTestDude, connectionServer, "", "jlindborg");
             if (res.Success == false)
             {
                 Console.WriteLine(res);
                 return;
             }
+
+            //List<Greeting>oGreetings = oUserTestDude.PrimaryCallHandler().GetGreetings();
+            //Console.WriteLine(oGreetings.Count);
+            Greeting oTestGreeting;
+            oUserTestDude.PrimaryCallHandler().GetGreeting(GreetingTypes.Alternate, out oTestGreeting);
+            Console.WriteLine(oTestGreeting);
 
             List<UserMessage> oUserMessages;
             res = UserMessage.GetMessages(connectionServer, oUserTestDude.ObjectId, out oUserMessages);

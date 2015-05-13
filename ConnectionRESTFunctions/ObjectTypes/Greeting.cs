@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Newtonsoft.Json;
 
@@ -475,6 +476,8 @@ namespace Cisco.UnityConnection.RestFunctions
                 oObject.HomeServer = pConnectionServer;
                 oObject.CallHandlerObjectId = pCallHandlerObjectId;
                 oObject.ClearPendingChanges();
+                oObject.Enabled= oObject.UpdateEnabledStatus();
+                Console.WriteLine(oObject);
             }
 
             return res;
@@ -825,25 +828,6 @@ namespace Cisco.UnityConnection.RestFunctions
                 return res;
             }
 
-            //construct the full URL to call for updating the greeting to a stream file id
-            //string strUrl = string.Format(@"{0}handlers/callhandlers/{1}/greetings/{2}/greetingstreamfiles/{3}",
-            //        pConnectionServer.BaseUrl, pCallHandlerObjectId, pGreetingType, pLanguageId);
-
-
-            //string strBody = "<GreetingStreamFile>";
-            //strBody += string.Format("<{0}>{1}</{0}", "StreamFile", pStreamFileResourceName);
-            //strBody += string.Format("<{0}>{1}</{0}", "CallHandlerObjectId",pCallHandlerObjectId);
-            //strBody += string.Format("<{0}>{1}</{0}", "GreetingType", pGreetingType);
-            //strBody += string.Format("<{0}>{1}</{0}", "LanguageCode", pLanguageId);
-            //strBody += "</GreetingStreamFile>";
-
-            //Dictionary<string, string> oParams = new Dictionary<string, string>();
-            //oParams.Add("GreetingType", pGreetingType);
-            //oParams.Add("CallHandlerObjectId", pCallHandlerObjectId);
-            //oParams.Add("StreamFile", pStreamFileResourceName);
-            //oParams.Add("LanguageCode", pLanguageId.ToString());
-
-            //return pConnectionServer.GetCupiResponse(strUrl, MethodType.PUT, strBody, false);
             string strUrl = string.Format(@"{0}handlers/callhandlers/{1}/greetings/{2}/greetingstreamfiles/{3}/audio",
                     pConnectionServer.BaseUrl, pCallHandlerObjectId, pGreetingType, pLanguageId);
 
@@ -876,9 +860,9 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             //there's no "Active" item included in the greeting information from the server which is unfortunate - need to pull the TimeExpires property and
             //determine if we're active based on that.
-            bool bActive = this.TimeExpires>DateTime.Now;
+            //bool bActive = this.TimeExpires>DateTime.Now;
 
-            return string.Format("Greeting type={0}, Play What={1} ({2}), enabled={3}", GreetingType, (int)PlayWhat, PlayWhat,bActive);
+            return string.Format("Greeting type={0}, Play What={1} ({2}), enabled={3}", GreetingType, (int)PlayWhat, PlayWhat,Enabled);
         }
 
 
@@ -956,11 +940,24 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //all the updates above will flip pending changes into the queue - clear that here.
-            this.ClearPendingChanges();
+            ClearPendingChanges();
+
+            Enabled= UpdateEnabledStatus();
 
             return res;
         }
-      
+
+        private bool UpdateEnabledStatus()
+        {
+            if (Enabled) return false;
+
+            if (TimeExpires.Year == 1)
+            {
+                return true;
+            }
+            return TimeExpires > DateTime.Now;
+        }
+
         //helper function to fetch all greeting stream files associated with this greeting (if any).
         //If there are no custom recorded greetings the pGreetingStreamFiles out param is returned as null.
         private WebCallResult GetGreetingStreamFiles(out List<GreetingStreamFile> pGreetingStreamFiles)

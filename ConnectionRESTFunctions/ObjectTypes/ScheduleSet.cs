@@ -303,12 +303,15 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pScheduleObjectId">
         /// Schedule to add as a member
         /// </param>
+        /// <param name="pIsHoliday">
+        /// Pass as true for Holiday schedules
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResult class
         /// </returns>
-        public WebCallResult AddScheduleSetMember(string pScheduleObjectId)
+        public WebCallResult AddScheduleSetMember(string pScheduleObjectId, bool pIsHoliday=false)
         {
-            return AddScheduleSetMember(this.HomeServer, this.ObjectId, pScheduleObjectId);
+            return AddScheduleSetMember(this.HomeServer, this.ObjectId, pScheduleObjectId,pIsHoliday);
         }
 
         /// <summary>
@@ -764,12 +767,16 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pScheduleObjectId">
         /// Schedule to add as a member
         /// </param>
+        /// <param name="pIsHoliday">
+        /// pass as true for Holiday schedules
+        /// </param>
         /// <returns>
         /// Instance of the WebCallResult class
         /// </returns>
         public static WebCallResult AddScheduleSetMember(ConnectionServerRest pConnectionServer,
                                                  string pScheduleSetObjectId,
-                                                 string pScheduleObjectId)
+                                                 string pScheduleObjectId, 
+                                                 bool pIsHoliday=false)
         {
             WebCallResult res = new WebCallResult();
             res.Success = false;
@@ -790,6 +797,10 @@ namespace Cisco.UnityConnection.RestFunctions
 
             strBody += string.Format("<{0}>{1}</{0}>", "ScheduleSetObjectId", pScheduleSetObjectId);
             strBody += string.Format("<{0}>{1}</{0}>", "ScheduleObjectId", pScheduleObjectId);
+            if (pIsHoliday)
+            {
+                strBody += string.Format("<{0}>{1}</{0}>", "Exclude", "true");
+            }
 
             strBody += "</ScheduleSetMember>";
 
