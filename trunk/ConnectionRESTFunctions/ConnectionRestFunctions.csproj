@@ -72,6 +72,7 @@
     <Compile Include="ObjectTypes\DirectoryHandlerGreetingStreamFile.cs" />
     <Compile Include="ObjectTypes\DistributionList.cs" />
     <Compile Include="ObjectTypes\MessageHandler.cs" />
+    <Compile Include="ObjectTypes\ExternalService.cs" />
     <Compile Include="ObjectTypes\UserLdap.cs" />
     <Compile Include="RestTransportFunctions.cs" />
     <Compile Include="ObjectTypes\DistributionListMember.cs" />
