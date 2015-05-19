@@ -949,7 +949,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
         private bool UpdateEnabledStatus()
         {
-            if (Enabled) return false;
+            if (Enabled) return true;
 
             if (TimeExpires.Year == 1)
             {
