@@ -357,7 +357,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             //get the list of roles - this is a static list of 9 items currently but may expand later.
             List<Role> oRoles;
-            res = Role.GetRoles(pConnectionServer, out oRoles);
+            res = Role.GetRolesForSystem(pConnectionServer, out oRoles);
 
             if (res.Success == false)
             {

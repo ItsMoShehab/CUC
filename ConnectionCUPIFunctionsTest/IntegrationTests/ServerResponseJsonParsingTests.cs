@@ -489,7 +489,7 @@ namespace ConnectionCUPIFunctionsTest
         {
             _errorString = "";
             List<Role> oRoles;
-            var res = Role.GetRoles(_connectionServer, out oRoles);
+            var res = Role.GetRolesForSystem(_connectionServer, out oRoles);
             Assert.IsTrue(res.Success, "Failed to fetch role:" + res);
             Assert.IsTrue(string.IsNullOrEmpty(_errorString), _errorString);
         }

@@ -63,7 +63,7 @@ namespace ConnectionCUPIFunctionsTest
         public void GetRoles_Success()
         {
             List<Role> oRoles;
-            WebCallResult res = Role.GetRoles(_connectionServer, out oRoles);
+            WebCallResult res = Role.GetRolesForSystem(_connectionServer, out oRoles);
             Assert.IsTrue(res.Success, "Failed to fetch roles list:" + res);
             Assert.IsTrue(oRoles.Count > 0, "No roles returned from server");
 

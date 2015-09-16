@@ -489,6 +489,20 @@ namespace Cisco.UnityConnection.RestFunctions
 
     public enum ResetStatusEnum{NotRequired=0, Required=100, InProgress=101}
 
+    public enum RoleName
+    {
+        AudioTextAdministrator,
+        GreetingAdministrator,
+        HelpDeskAdministrator,
+        Technician,
+        UserAdministrator,
+        SystemAdministrator,
+        RemoteAdministrator,
+        MailboxAccessDelegateAccount,
+        AuditAdministrator,
+        TenantAdministrator
+    }
+    
     public enum RoutingRuleType { Unknown, Direct, Forwarded, System }
 
     public enum RoutingRuleFlag { Immutable, Deletable, Editable, EditableAndDeletable }

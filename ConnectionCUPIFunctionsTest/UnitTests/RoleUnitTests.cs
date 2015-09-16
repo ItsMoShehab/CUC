@@ -126,8 +126,8 @@ namespace ConnectionCUPIFunctionsTest
                     ResponseText = ""
                 });
 
-            var res = Role.GetRoles(_mockServer, out oRoles, "EmptyResultText");
-            Assert.IsFalse(res.Success, "Calling GetRoles with EmptyResultText should fail");
+            var res = Role.GetRolesForSystem(_mockServer, out oRoles, "EmptyResultText");
+            Assert.IsFalse(res.Success, "Calling GetRolesForSystem with EmptyResultText should fail");
             Assert.IsTrue(oRoles.Count == 0, "Empty result text shoudl produce empty list of roles");
 
             }
@@ -144,8 +144,8 @@ namespace ConnectionCUPIFunctionsTest
                                       ResponseText = "garbage result"
                                   });
 
-            var res = Role.GetRoles(_mockServer, out oRoles, "InvalidResultText");
-            Assert.IsFalse(res.Success, "Calling GetRoles with InvalidResultText should fail");
+            var res = Role.GetRolesForSystem(_mockServer, out oRoles, "InvalidResultText");
+            Assert.IsFalse(res.Success, "Calling GetRolesForSystem with InvalidResultText should fail");
             Assert.IsTrue(oRoles.Count==0,"Invalid result text should produce empty list of roles");
 
             }
@@ -163,8 +163,8 @@ namespace ConnectionCUPIFunctionsTest
                                         StatusCode = 404
                                     });
 
-            var res = Role.GetRoles(_mockServer, out oRoles, "ErrorResponse");
-            Assert.IsFalse(res.Success, "Calling GetRoles with ErrorResponse should fail");
+            var res = Role.GetRolesForSystem(_mockServer, out oRoles, "ErrorResponse");
+            Assert.IsFalse(res.Success, "Calling GetRolesForSystem with ErrorResponse should fail");
         }
 
         #endregion

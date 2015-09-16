@@ -11,6 +11,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Text;
 using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions
@@ -48,6 +50,26 @@ namespace Cisco.UnityConnection.RestFunctions
             if (res.Success == false)
             {
                 throw new UnityConnectionRestException(res,string.Format("Failed to fetch role by ObjectId={0} or Name={1}", pObjectId, pRoleName));
+            }
+        }
+
+        /// <summary>
+        /// Constructor requires ConnectionServer object where the role is defined.  Optionally you can pass the enum of the role you want to
+        /// populate the class instance with
+        /// </summary>
+        public Role(ConnectionServerRest pConnectionServer, RoleName pRoleName)
+        {
+            if (pConnectionServer == null)
+            {
+                throw new ArgumentException("Null ConnectionServer referenced pasted to Role construtor");
+            }
+
+            HomeServer = pConnectionServer;
+
+            WebCallResult res = GetRole(pRoleName);
+            if (res.Success == false)
+            {
+                throw new UnityConnectionRestException(res, string.Format("Failed to fetch role by enum={0}", pRoleName));
             }
         }
 
@@ -96,7 +118,8 @@ namespace Cisco.UnityConnection.RestFunctions
         #endregion
 
 
-        #region Methods
+        #region Instance Methods
+
 
         /// <summary>
         /// Returns a string with the name and description of the role
@@ -105,9 +128,59 @@ namespace Cisco.UnityConnection.RestFunctions
         public override string ToString()
         {
             return string.Format("{0} [{1}]", RoleName, RoleDescription);
-            
+
         }
 
+
+        /// <summary>
+        /// Dumps out all the properties associated with the instance of the greeting object in "name=value" format - each pair is on its
+        /// own line in the string returned.
+        /// </summary>
+        /// <param name="pPrefix">
+        /// Optional parameter for a sting that will preceed each name/value pair as it's dumped out.  This can be useful for indenting an object's
+        /// property dump when writing to a log file for instance.
+        /// </param>
+        /// <returns>
+        /// string containing all the name value pairs defined in the alternate extension object instance.
+        /// </returns>
+        public string DumpAllProps(string pPrefix = "")
+        {
+            StringBuilder strBuilder = new StringBuilder();
+
+            PropertyInfo[] oProps = this.GetType().GetProperties();
+
+            foreach (PropertyInfo oProp in oProps)
+            {
+                strBuilder.AppendFormat("{0}{1} = {2}\n", pPrefix, oProp.Name, oProp.GetValue(this, BindingFlags.GetProperty, null, null, null));
+            }
+
+            return strBuilder.ToString();
+        }
+
+
+        /// <summary>
+        /// Fetch a role by RoleName enum value and fill current object with the values of that role
+        /// </summary>
+        /// <param name="pName">
+        /// RoleName enum value for the role to find
+        /// </param>
+        /// <returns>
+        /// WebCallResults instance.
+        /// </returns>
+        private WebCallResult GetRole(RoleName pName)
+        {
+            string strRoleName = GetRoleName(pName);
+            if (string.IsNullOrEmpty(strRoleName))
+            {
+                WebCallResult oRes = new WebCallResult
+                    {
+                        Success = false,
+                        ErrorText = "Invalid role name value passed to GetRole on Role.cs:" + pName
+                    };
+                return oRes;
+            }
+            return GetRole("", strRoleName);
+        }
 
         /// <summary>
         /// Fetch a role by objectId or name and fill the properties (if found) of the current class instance with what's found
@@ -158,6 +231,50 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             return res;
+        }
+
+        #endregion
+
+
+        #region Static Methods
+
+
+        /// <summary>
+        /// Fetch a role by RoleName enum value and fill current object with the values of that role
+        /// </summary>
+        /// <param name="pName">
+        /// RoleName enum value for the role to find
+        /// </param>
+        /// <returns>
+        /// WebCallResults instance.
+        /// </returns>
+        private static string GetRoleName(RoleName pName)
+        {
+            switch (pName)
+            {
+                case RestFunctions.RoleName.AudioTextAdministrator:
+                    return "Audio Text Administrator";
+                case RestFunctions.RoleName.AuditAdministrator:
+                    return "Audit Administrator";
+                case RestFunctions.RoleName.GreetingAdministrator:
+                    return "Greeting Administrator";
+                case RestFunctions.RoleName.HelpDeskAdministrator:
+                    return "Help Desk Administrator";
+                case RestFunctions.RoleName.MailboxAccessDelegateAccount:
+                    return "Mailbox Access Delegate Account";
+                case RestFunctions.RoleName.RemoteAdministrator:
+                    return "Remote Administrator";
+                case RestFunctions.RoleName.SystemAdministrator:
+                    return "System Administrator";
+                case RestFunctions.RoleName.Technician:
+                    return "Technician";
+                case RestFunctions.RoleName.TenantAdministrator:
+                    return "Tenant Administrator";
+                case RestFunctions.RoleName.UserAdministrator:
+                    return "User Administrator";
+                default:
+                    return "";
+            }
         }
 
         /// <summary>
@@ -216,15 +333,14 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <returns>
         /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
         /// </returns>
-        public static WebCallResult GetRoles(ConnectionServerRest pConnectionServer, out List<Role> pRoles, params string[] pClauses)
+        public static WebCallResult GetRolesForSystem(ConnectionServerRest pConnectionServer, out List<Role> pRoles, params string[] pClauses)
         {
             WebCallResult res;
             pRoles = new List<Role>();
 
             if (pConnectionServer == null)
             {
-                res = new WebCallResult();
-                res.ErrorText = "Null ConnectionServer referenced passed to GetRoles";
+                res = new WebCallResult {ErrorText = "Null ConnectionServer referenced passed to GetRolesForSystem",Success = false};
                 return res;
             }
 
@@ -257,6 +373,237 @@ namespace Cisco.UnityConnection.RestFunctions
 
             return res;
         }
+
+
+        /// <summary>
+        ///  Adds a role assignment to a user.  Returns a failure response if that user already has the role assigned to them.
+        /// </summary>
+        /// <param name="pConnectionServer" type="Cisco.UnityConnection.RestFunctions.ConnectionServerRest">
+        /// Connection server that the user being edited lives on.
+        /// </param>
+        /// <param name="pUserObjectId" type="string">
+        /// Unique ID of the user to add the role to    
+        /// </param>
+        /// <param name="pRoleObjectId" type="string">
+        /// Unique ID of the role to add to the user
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult AddRoleToUser(ConnectionServerRest pConnectionServer,string pUserObjectId, string pRoleObjectId)
+        {
+            WebCallResult res = new WebCallResult {Success = false};
+
+            if (pConnectionServer == null)
+            {
+                res.ErrorText = "Null ConnectionServer referenced passed to AddRoleToUser";
+                return res;
+            }
+
+            if (string.IsNullOrEmpty(pUserObjectId))
+            {
+                res.ErrorText = "Empty user ObjectId passed to AddRoleToUser";
+                return res;
+            }
+
+            if (string.IsNullOrEmpty(pRoleObjectId))
+            {
+                res.ErrorText = "Empty role ObjectId passed to AddRoleToUser";
+                return res;
+            }
+
+            string strBody = "<UserRole>";
+            strBody += string.Format("<RoleObjectId>{0}</RoleObjectId>", pRoleObjectId);
+            strBody += "</UserRole>";
+
+            return pConnectionServer.GetCupiResponse(string.Format("{0}users/{1}/userroles", pConnectionServer.BaseUrl,pUserObjectId), 
+                MethodType.POST, strBody, false);
+        }
+
+        /// <summary>
+        ///  Adds a role assignment to a user.  Returns a failure response if that user already has the role assigned to them.
+        /// </summary>
+        /// <param name="pConnectionServer" type="Cisco.UnityConnection.RestFunctions.ConnectionServerRest">
+        /// Connection server that the user being edited lives on.
+        /// </param>
+        /// <param name="pUserObjectId" type="string">
+        /// Unique ID of the user to add the role to    
+        /// </param>
+        /// <param name="pRoleName" type="string">
+        /// value from the RoleName enum representing the role to add to the user
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult AddRoleToUser(ConnectionServerRest pConnectionServer, string pUserObjectId,RoleName pRoleName)
+        {
+            string strRoleName = GetRoleName(pRoleName);
+            if (string.IsNullOrEmpty(strRoleName))
+            {
+                WebCallResult res = new WebCallResult
+                {
+                    Success = false,
+                    ErrorText = "Invalid role enum value passed to AddRoleToUser:" + pRoleName
+                };
+                return res;
+            }
+
+            string strRoleObjectId = GetObjectIdFromName(pConnectionServer, strRoleName);
+            if (string.IsNullOrEmpty(strRoleObjectId))
+            {
+                WebCallResult res = new WebCallResult
+                {
+                    Success = false,
+                    ErrorText = "Could not find role ObjectId by name in AddRoleToUser:" + strRoleName
+                };
+                return res;
+            }
+            return AddRoleToUser(pConnectionServer, pUserObjectId, strRoleObjectId);
+        }
+
+
+        /// <summary>
+        ///  Removes a role assignment from a user.  Returns a failure response if that user does not have the role assigned to them.
+        /// </summary>
+        /// <param name="pConnectionServer" type="Cisco.UnityConnection.RestFunctions.ConnectionServerRest">
+        /// Connection server that the user being edited lives on.
+        /// </param>
+        /// <param name="pUserObjectId" type="string">
+        /// Unique ID of the user to remove the role from
+        /// </param>
+        /// <param name="pRoleObjectId" type="string">
+        /// unique Id of the role to remove from the user - this is the unique id of the user's role mapping, not the id of the role in the system.
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult RemoveRoleFromUser(ConnectionServerRest pConnectionServer, string pUserObjectId, string pRoleObjectId)
+        {
+            WebCallResult res = new WebCallResult { Success = false };
+
+            if (pConnectionServer == null)
+            {
+                res.ErrorText = "Null ConnectionServer referenced passed to RemoveRoleFromUser";
+                return res;
+            }
+
+            if (string.IsNullOrEmpty(pUserObjectId))
+            {
+                res.ErrorText = "Empty user ObjectId passed to RemoveRoleFromUser";
+                return res;
+            }
+
+            if (string.IsNullOrEmpty(pRoleObjectId))
+            {
+                res.ErrorText = "Empty role ObjectId passed to RemoveRoleFromUser";
+                return res;
+            }
+
+            return pConnectionServer.GetCupiResponse(string.Format("{0}users/{1}/userroles/{2}", pConnectionServer.BaseUrl, pUserObjectId,pRoleObjectId),
+                MethodType.DELETE, "", false);
+        }
+
+        /// <summary>
+        ///  Removes a role assignment from a user.  Returns a failure response if that user does not have the role assigned to them.
+        /// </summary>
+        /// <param name="pConnectionServer" type="Cisco.UnityConnection.RestFunctions.ConnectionServerRest">
+        /// Connection server that the user being edited lives on.
+        /// </param>
+        /// <param name="pUserObjectId" type="string">
+        /// Unique ID of the user to remove the role from
+        /// </param>
+        /// <param name="pRoleName" type="string">
+        /// value from the RoleName enum representing the role to add to the user
+        /// </param>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+
+        public static WebCallResult RemoveRoleFromUser(ConnectionServerRest pConnectionServer, string pUserObjectId,RoleName pRoleName)
+        {
+            WebCallResult res = new WebCallResult
+            {
+                Success = false
+            };
+            string strRoleName = GetRoleName(pRoleName);
+            if (string.IsNullOrEmpty(strRoleName))
+            {
+                res.ErrorText = "Invalid role enum value passed to RemoveRoleFromUser:" + pRoleName;
+                return res;
+            }
+
+            List<Role> oRoles;
+            res = Role.GetRolesForUser(pConnectionServer, pUserObjectId, out oRoles);
+            if (!res.Success) return res;
+            foreach (var oRole in oRoles)
+            {
+                if (oRole.RoleName == strRoleName)
+                {
+                    return RemoveRoleFromUser(pConnectionServer, pUserObjectId, oRole.ObjectId);
+                }
+            }
+            res.ErrorText = "Role not assigned to user";
+            return res;
+        }
+
+        /// <summary>
+        /// Returns a list of role objects that are assigned to the user - an empty list is returned if the user has no roles    
+        /// </summary>
+        /// <param name="pConnectionServer" type="Cisco.UnityConnection.RestFunctions.ConnectionServerRest">
+        ///  ConnectionServer the user is hosted on
+        /// </param>
+        /// <param name="pUserObjectId" type="string">
+        ///  Unique Id of the user to get the roles for
+        /// </param>
+        /// <param name="pRoles">
+        ///  List of Role objects corresponding to the roles assigned to the user.  Can return empty list.
+        /// </param>
+        /// <returns>
+        ///  Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public static WebCallResult GetRolesForUser(ConnectionServerRest pConnectionServer, string pUserObjectId, out List<Role> pRoles)
+        {
+            WebCallResult res;
+            pRoles = new List<Role>();
+
+            if (pConnectionServer == null)
+            {
+                res = new WebCallResult { ErrorText = "Null ConnectionServer referenced passed to GetRolesForUser", Success = false };
+                return res;
+            }
+
+            res= pConnectionServer.GetCupiResponse(string.Format("{0}users/{1}/userroles", pConnectionServer.BaseUrl, pUserObjectId),MethodType.GET, "");
+
+            if (res.Success == false)
+            {
+                return res;
+            }
+
+            //if the call was successful the JSON dictionary should always be populated with something, but just in case do a check here.
+            //if this is empty that means an error in this case - a 0 count list is ok, though
+            if (string.IsNullOrEmpty(res.ResponseText))
+            {
+                res.Success = false;
+                return res;
+            }
+            if (res.TotalObjectCount == 0)
+            {
+                res.Success = true;
+                return res;
+            }
+
+            pRoles = pConnectionServer.GetObjectsFromJson<Role>(res.ResponseText,"UserRole");
+
+            //the ConnectionServer property is not filled in in the default class constructor used by the Json parser - 
+            //run through here and assign it for all instances.
+            foreach (var oObject in pRoles)
+            {
+                oObject.HomeServer = pConnectionServer;
+            }
+
+            return res;
+        }
+
 
         #endregion
 
