@@ -1368,11 +1368,13 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         private void JsonParseError(object sender, ErrorEventArgs errorEventArgs)
         {
-            if (errorEventArgs.ErrorContext.Member.ToString().ToLower().Contains("uri"))
+            if (errorEventArgs.ErrorContext.Member!=null && errorEventArgs.ErrorContext.Member.ToString().ToLower().Contains("uri"))
             {
                 return;
             }
-            RaiseErrorEvent(string.Format("[ERROR] JSON serialization error: [{0}]:{1}", errorEventArgs.CurrentObject.GetType().Name,
+            string strErrorName = "";
+            if (errorEventArgs.CurrentObject != null) strErrorName = errorEventArgs.CurrentObject.GetType().Name;
+            RaiseErrorEvent(string.Format("[ERROR] JSON serialization error: [{0}]:{1}", strErrorName,
                     errorEventArgs.ErrorContext.Error.Message));
         }
 

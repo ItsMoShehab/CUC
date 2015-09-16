@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using Cisco.UnityConnection.RestFunctions;
-using Cisco.UnityConnection.RestFunctions.ObjectTypes;
 using SimpleLogger;
 
 namespace CUPIVerySimple
@@ -39,7 +38,7 @@ namespace CUPIVerySimple
             //attach to server - insert your Connection server name/IP address and login information here.
             try
             {
-                connectionServer = new ConnectionServerRest ("ConnectionServer", "CCMAdministrator", "password");
+                connectionServer = new ConnectionServerRest("connection server", "login", "password");
             }
 
             catch (Exception ex)
@@ -66,7 +65,7 @@ namespace CUPIVerySimple
             //the WebCallResult is the structure returned on most calls into the CUPIFunctions library.
             WebCallResult res;
 
-            //fetch user with alias of "operator" - we will be sending the message from his mailbox.
+            //fetch user with alias of "operator"
             UserFull oUserTestDude;
 
             res = UserBase.GetUser(out oUserTestDude, connectionServer, "", "operator");
@@ -179,7 +178,6 @@ namespace CUPIVerySimple
                 Console.WriteLine("Failed creating new user:" + res.ToString());
                 Console.Read();
                 Environment.Exit(1);
-                return;
             }
             Console.WriteLine("\n\rUser created, new ObjectId=" + oUser.ObjectId);
 
