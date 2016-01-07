@@ -134,7 +134,7 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             var strBuilder = new StringBuilder();
 
-            PropertyInfo[] oProps = this.GetType().GetProperties();
+            PropertyInfo[] oProps = GetType().GetProperties();
 
             foreach (PropertyInfo oProp in oProps)
             {

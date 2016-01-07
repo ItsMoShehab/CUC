@@ -42,7 +42,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pDisplayName">
         /// Optional display name for the restriction table to load. 
         /// </param>
-        public RestrictionTable(ConnectionServerRest pConnectionServer, string pObjectId = "", string pDisplayName = "")
+        public RestrictionTable(ConnectionServerRest pConnectionServer, string pObjectId = "", string pDisplayName = "") : this()
         {
             if (pConnectionServer == null)
             {
@@ -72,11 +72,10 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </summary>
         public RestrictionTable()
         {
-
+            _changedPropList = new ConnectionPropertyList();
         }
 
         #endregion
-
        
         #region Fields and Properties
 
@@ -85,11 +84,17 @@ namespace Cisco.UnityConnection.RestFunctions
 
         //used for displaying/selecting in grids/dropdowns
         public string UniqueIdentifier { get { return ObjectId; } }
-
+        
+        //used to keep track of which properties have been updated
+        private readonly ConnectionPropertyList _changedPropList;
 
         public ConnectionServerRest HomeServer { get; private set; }
 
         private List<RestrictionPattern> _restrictionPatterns;
+
+        //for checking on pending changes
+        public ConnectionPropertyList ChangeList { get { return _changedPropList; } }
+
         /// <summary>
         /// Lazy fetch for restriction patterns associated with a table - this needs to be implemented as a method instead of a 
         /// property so that if a grid is bound to the generic list of objects it doesn't "lazy fetch" it for display purposes resulting
@@ -118,17 +123,35 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #endregion
 
-
         #region RestrictionTable Properties
 
         [JsonProperty]
         public DateTime CreationTime { get; private set; }
 
-        [JsonProperty]
-        public bool DefaultBlocked { get; private set; }
+        private bool _defaultBlocked;
 
         [JsonProperty]
-        public string DisplayName { get; private set; }
+        public bool DefaultBlocked
+        {
+            get { return _defaultBlocked; }
+            set
+            {
+                _changedPropList.Add("DefaultBlocked",value);
+                _defaultBlocked = value;
+            }
+        }
+
+        private string _displayName;
+        [JsonProperty]
+        public string DisplayName
+        {
+            get { return _displayName; }
+            set
+            {
+                _changedPropList.Add("DisplayName", value);
+                _displayName = value;
+            }
+        }
 
         [JsonProperty]
         public string LocationObjectId { get; private set; }
@@ -136,17 +159,35 @@ namespace Cisco.UnityConnection.RestFunctions
         [JsonProperty]
         public string ObjectId { get; private set; }
 
+        private int _maxDigits;
         [JsonProperty]
-        public int MaxDigits { get; private set; }
+        public int MaxDigits
+        {
+            get { return _maxDigits; }
+            set
+            {
+                _changedPropList.Add("MaxDigits", value);
+                _maxDigits = value;
+            }
+        }
 
+
+        private int _minDigits;
         [JsonProperty]
-        public int MinDigits { get; private set; }
+        public int MinDigits
+        {
+            get { return _minDigits; }
+            set
+            {
+                _changedPropList.Add("MinDigits", value);
+                _minDigits = value;
+            }
+        }
 
         [JsonProperty]
         public bool Undeletable { get; private set; }
 
         #endregion
-
 
         #region Instance Methods
 
@@ -178,6 +219,26 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             return strBuilder.ToString();
+        }
+
+        /// <summary>
+        /// If the restriction table object has any pending updates that have not yet be comitted, this will clear them out.
+        /// </summary>
+        public void ClearPendingChanges()
+        {
+            _changedPropList.Clear();
+        }
+
+        public int GetNextSequenceNumber()
+        {
+            if (_restrictionPatterns==null || _restrictionPatterns.Count==0) return 0;
+            int iCount = 0;
+            foreach (var oPattern in _restrictionPatterns)
+            {
+                if (oPattern.SequenceNumber > iCount) iCount = oPattern.SequenceNumber;
+            }
+
+            return iCount+1;
         }
 
         /// <summary>
@@ -249,8 +310,56 @@ namespace Cisco.UnityConnection.RestFunctions
             return "";
         }
 
-        #endregion
+        /// <summary>
+        /// Allows one or more properties on a restriction table to be udpated.  The caller needs to construct a list of property names and new 
+        /// values using the ConnectionPropertyList class's "Add" method.  At least one property pair needs to be passed in but as many as are 
+        /// desired can be included in a single call.
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResults class containing details of the items sent and recieved from the CUPI interface.
+        /// </returns>
+        public WebCallResult Update(bool pRefetchDataAfterSuccessfulUpdate = false)
+        {
+            WebCallResult res;
 
+            if (!_changedPropList.Any())
+            {
+                res = new WebCallResult();
+                res.Success = false;
+                res.ErrorText = string.Format("Update called but there are no pending changes for restriction table entry:{0}, objectid=[{1}]",this, ObjectId);
+                return res;
+            }
+
+            res = UpdateRestrictionTable(HomeServer, this, _changedPropList );
+
+            if (res.Success)
+            {
+                _changedPropList.Clear();
+                if (pRefetchDataAfterSuccessfulUpdate)
+                {
+                    return RefetchRestrictionTable();
+                }
+            }
+
+            return res;
+        }
+
+        
+
+        /// <summary>
+        /// Pull the data from the Connection server for this object again - if changes have been made external this will 
+        /// "refresh" the object
+        /// </summary>
+        /// <returns>
+        /// Instance of the WebCallResult class.
+        /// </returns>
+        public WebCallResult RefetchRestrictionTable()
+        {
+            return GetRestrictionTable(this.ObjectId);
+        }
+
+
+        #endregion
 
         #region Static Methods
 
@@ -281,12 +390,11 @@ namespace Cisco.UnityConnection.RestFunctions
         public static WebCallResult GetRestrictionTables(ConnectionServerRest pConnectionServer, out List<RestrictionTable> pRestrictionTables,
             int pPageNumber = 1, int pRowsPerPage = 20, params string[] pClauses)
         {
-            WebCallResult res;
+            WebCallResult res = new WebCallResult { Success = false };
             pRestrictionTables = new List<RestrictionTable>();
 
             if (pConnectionServer == null)
             {
-                res = new WebCallResult();
                 res.ErrorText = "Null ConnectionServer referenced passed to GetRestrictionTables";
                 return res;
             }
@@ -339,7 +447,96 @@ namespace Cisco.UnityConnection.RestFunctions
             return res;
         }
 
-        #endregion
+        public static WebCallResult GetRestrictionTable(ConnectionServerRest pConnectionServer, string pRestrictionTableObjectId, out RestrictionTable pRestrictionTable)
+        {
+            WebCallResult res = new WebCallResult { Success = false };
+            pRestrictionTable = null;
+            if (pConnectionServer == null)
+            {
+                res.ErrorText = "Null ConnectionServer referenced passed to GetRestrictionTable";
+                return res;
+            }
 
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "restrictiontables/"+pRestrictionTableObjectId);
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.GET, "");
+
+            if (res.Success == false)
+            {
+                return res;
+            }
+
+            if (string.IsNullOrEmpty(res.ResponseText))
+            {
+                res.ErrorText = "Empty response received";
+                res.Success = false;
+                return res;
+            }
+
+            try
+            {
+                pRestrictionTable = JsonConvert.DeserializeObject<RestrictionTable>(res.ResponseText);
+                pRestrictionTable.HomeServer = pConnectionServer;
+            }
+            catch (Exception ex)
+            {
+                res.ErrorText="Could not convert response text into a RestrictionTable object:"+ex;
+                res.Success = false;
+                return res;
+            }
+
+            return res;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pConnectionServer"></param>
+        /// <param name="pRestrictionTable"></param>
+        /// <param name="pPropList"></param>
+        /// <returns></returns>
+        public static WebCallResult UpdateRestrictionTable(ConnectionServerRest pConnectionServer, RestrictionTable pRestrictionTable, ConnectionPropertyList pPropList)
+        {
+            WebCallResult res = new WebCallResult {Success = false};
+            if (pConnectionServer == null)
+            {
+                res.ErrorText = "Null ConnectionServer referenced passed to UpdateRestrictionTable";
+                return res;
+            }
+
+            if (pRestrictionTable == null)
+            {
+                res.ErrorText = "Null RestrictionTable passed to UpdateRestrictionTable";
+                return res;
+            }
+
+            string strBody = "<RestrictionTable>";
+
+            foreach (var oPair in pPropList)
+            {
+                strBody += string.Format("<{0}>{1}</{0}>", oPair.PropertyName, oPair.PropertyValue);
+            }
+
+            strBody += "</RestrictionTable>";
+
+            string strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "restrictiontables/" + pRestrictionTable.ObjectId);
+            res = pConnectionServer.GetCupiResponse(strUrl, MethodType.PUT, strBody, false);
+            if (res.Success == false)
+            {
+                return res;
+            }
+
+            strBody = "<RestrictionPattern>";
+            foreach (RestrictionPattern oPattern in pRestrictionTable.RestrictionPatterns())
+            {
+                strBody += string.Format("<{0}>{1}</{0}>", "ObjectId", oPattern.ObjectId);
+            }
+            strBody += "</RestrictionPattern>";
+            strUrl = ConnectionServerRest.AddClausesToUri(pConnectionServer.BaseUrl + "restrictiontables/" + pRestrictionTable.ObjectId+"/restrictionpatterns");
+            return pConnectionServer.GetCupiResponse(strUrl, MethodType.PUT,strBody,false);
+        }
+
+
+        #endregion
     }
 }
