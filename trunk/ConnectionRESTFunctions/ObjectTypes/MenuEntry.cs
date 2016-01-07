@@ -87,7 +87,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #endregion
 
-
         #region Fields and Properties
 
         //used for displaying in grids and drop downs
@@ -106,7 +105,6 @@ namespace Cisco.UnityConnection.RestFunctions
         public ConnectionPropertyList ChangeList { get { return _changedPropList; } }
 
         #endregion
-
 
         #region MenuEntry Properties
 
@@ -216,7 +214,6 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         #endregion
-
 
         #region Static Methods
 
@@ -411,7 +408,6 @@ namespace Cisco.UnityConnection.RestFunctions
 
         #endregion
 
-
         #region Instance Methods
 
         /// <summary>
@@ -561,6 +557,5 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         #endregion
-
     }
 }

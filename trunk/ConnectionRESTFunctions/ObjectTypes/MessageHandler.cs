@@ -18,6 +18,7 @@ using Newtonsoft.Json;
 
 namespace Cisco.UnityConnection.RestFunctions.ObjectTypes
 {
+    [Serializable]
     public class MessageHandler
     {
         #region Constructors and Destructors
