@@ -143,13 +143,6 @@ namespace CUPIFastStart
                 //if we're paging through a result set, incrament the count for the current page by 1 - if this is a single set or the first page the
                 //_currentPage++ is set to 0 and this runs it to 1 which is the first page (it's 1 based, not zero based).
                 _currentPage++;
-                if (strQuery.Length > 0)
-                {
-                    strQuery += "&";
-                }
-
-                //limit the rows returned to what's selected on the form's drop down control 
-                strQuery += string.Format("rowsPerPage={0}&pageNumber={1}", iRowsPerPage, _currentPage);
             }
             else
             {
@@ -158,11 +151,8 @@ namespace CUPIFastStart
                 _currentPage = 0;
             }
 
-            //fetching the data via HTTP can take a bit - disable the controls on the form until the fetch returns.  A more sophisticated
-            //background thread approach to fetching data is beyond the scope of this framework.
             DisableFormControls();
-
-            res = CallHandler.GetCallHandlers(GlobalItems.CurrentConnectionServer, out oHandlers, strQuery);
+            res = CallHandler.GetCallHandlers(GlobalItems.CurrentConnectionServer, out oHandlers, _currentPage, iRowsPerPage, strQuery);
 
             EnableFormControls();
 
