@@ -3027,7 +3027,15 @@ namespace Cisco.UnityConnection.RestFunctions
         public string LdapCcmUserId { get; private set; }
 
         [JsonProperty]
-        public LdapType LdapType { get; private set; }
+        public LdapType LdapType
+        {
+            get { return _ldapType; }
+            set
+            {
+                ChangedPropList.Add("LdapType", (int)value);
+                _ldapType = value;
+            }
+        }
 
         /// <summary>
         /// The distinguished name of the mailbox.
@@ -3953,6 +3961,8 @@ namespace Cisco.UnityConnection.RestFunctions
         }
 
         private string _xferString;
+        private LdapType _ldapType;
+
         /// <summary>
         /// The cross-server transfer extension. If NULL, the user's primary extension is used
         /// </summary>

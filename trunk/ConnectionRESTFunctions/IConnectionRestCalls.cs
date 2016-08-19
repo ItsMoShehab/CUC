@@ -298,13 +298,16 @@ namespace Cisco.UnityConnection.RestFunctions
         /// <param name="pBlockBodyOutputForDebug">
         /// If passed as true the body content is not included in the debug output - useful if the body contains password data or the like.
         /// </param>
+        /// <param name="pIsAxl">
+        /// If making a call to SOAP AXL interfaces pass as true.
+        /// </param>
         /// /// <returns>
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
         /// with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
         WebCallResult GetHttpResponse(string pUrl, MethodType pMethod, ConnectionServerRest pConnectionServer,
             string pRequestBody, bool pIsJson = false, Dictionary<string,string> pSetHeaderStrings=null, bool pCheckRequestBodyString=true, 
-            bool pBlockBodyOutputForDebug=false);
+            bool pBlockBodyOutputForDebug=false, bool pIsAxl=false);
 
         /// <summary>
         /// Primary method for sending/fetching data to and from the Connection server via CUPI - tries to parse results returned 
