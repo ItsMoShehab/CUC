@@ -56,6 +56,7 @@
     <Compile Include="ComboBoxHelper.cs" />
     <Compile Include="ConnectionObjectPropertyPair.cs" />
     <Compile Include="ConnectionPropertyList.cs" />
+    <Compile Include="CommunicationManagerSoap.cs" />
     <Compile Include="EnumExtensions.cs" />
     <Compile Include="IConnectionRestCalls.cs" />
     <Compile Include="ObjectDeepClone.cs" />

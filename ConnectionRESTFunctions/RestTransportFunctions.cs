@@ -440,14 +440,17 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </param>
         /// <param name="pBlockBodyOutputForDebug">
         /// If passed as true the body content is not included in the debug output - useful if the body contains password data or the like.
-        /// </param>        
+        /// </param>
+        /// <param name="pIsAxl">
+        /// If making a SOAP AXL call, pass as true - defaults to false.
+        /// </param>
         /// <returns>
         /// An instance of the WebCallResult class is returned containing the success of the call, return codes, raw return text etc... associated
         /// with the call so the calling party can easily log details in the event of a failure.
         /// </returns>
         public WebCallResult GetHttpResponse(string pUrl, MethodType pMethod, ConnectionServerRest pConnectionServer,
                         string pRequestBody, bool pIsJson = false, Dictionary<string,string> pSetHeaderStrings = null, bool pCheckRequestBodyString = true,
-            bool pBlockBodyOutputForDebug=false)
+            bool pBlockBodyOutputForDebug=false, bool pIsAxl=false)
         {
             WebCallResult res = new WebCallResult();
             HttpWebResponse response = null;
@@ -501,8 +504,16 @@ namespace Cisco.UnityConnection.RestFunctions
                     }
                     else
                     {
-                        request.ContentType = @"application/xml";
-                        request.Accept = "application/xml, */*";
+                        if (pIsAxl)
+                        {
+                            request.ContentType = @"text/xml;charset=UTF-8";
+                            request.Accept = "text/xml, */*";
+                        }
+                        else
+                        {
+                            request.ContentType = @"application/xml";
+                            request.Accept = "application/xml, */*";
+                        }
                     }
 
                     
