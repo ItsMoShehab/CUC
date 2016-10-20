@@ -3014,17 +3014,31 @@ namespace Cisco.UnityConnection.RestFunctions
         //cannot change LDAP properties
         /// <summary>
         /// The pkid of associated end user in the sleeping SeaDragon database.
-        /// Cannot be set or edited.
         /// </summary>
         [JsonProperty]
-        public string LdapCcmPkid { get; private set; }
-        
+        public string LdapCcmPkid
+        {
+            get { return _ldapCcmPkid; }
+            set
+            {
+                ChangedPropList.Add("LdapCcmPkid", value);
+                _ldapCcmPkid = value; 
+            }
+        }
+
         /// <summary>
         /// The userid of associated end user in the sleeping SeaDragon database.
-        /// Cannot be set or edited
         /// </summary>
         [JsonProperty]
-        public string LdapCcmUserId { get; private set; }
+        public string LdapCcmUserId
+        {
+            get { return _ldapCcmUserId; }
+            set
+            {
+                ChangedPropList.Add("LdapCcmUserId", value);
+                _ldapCcmUserId = value; 
+            }
+        }
 
         [JsonProperty]
         public LdapType LdapType
@@ -3962,6 +3976,8 @@ namespace Cisco.UnityConnection.RestFunctions
 
         private string _xferString;
         private LdapType _ldapType;
+        private string _ldapCcmPkid;
+        private string _ldapCcmUserId;
 
         /// <summary>
         /// The cross-server transfer extension. If NULL, the user's primary extension is used

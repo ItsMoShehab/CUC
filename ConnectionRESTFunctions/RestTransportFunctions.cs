@@ -79,7 +79,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// when attaching to Connection servers.
         /// Also sets up the global JsonSerializerSettings for raising an error on a missing property.
         /// </summary>
-        public RestTransportFunctions(bool pAllowSelfSignedCertificates=true)
+        public RestTransportFunctions(bool pAllowSelfSignedCertificates=true, bool pForceSslConnection=false)
         {
             DebugMode = false;
 
@@ -90,7 +90,16 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             ServicePointManager.Expect100Continue = false;
-            
+
+            if (pForceSslConnection)
+            {
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3;
+            }
+            else
+            {
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+            }
+
             //Json serializer settings - we hook the event message for errors that is exposed via the errorevent we we can log missing properties
             //situations and the like.
             JsonSerializerSettings = new JsonSerializerSettings();
@@ -608,6 +617,14 @@ namespace Cisco.UnityConnection.RestFunctions
                             res.StatusCode = -1;
                             RaiseErrorEvent(res.ToString());
                             return res;
+                        }
+                        else if (ex.Status == WebExceptionStatus.SecureChannelFailure)
+                        {
+                            res.ErrorText = "Could not create SSL/TLS secure channel";
+                            res.ResponseText = "Could not create SSL/TLS secure channel";
+                            res.StatusDescription = "Could not create SSL/TLS secure channel";
+                            res.StatusCode = -1;
+                            RaiseErrorEvent(res.ToString());
                         }
                         else
                         {
@@ -1276,7 +1293,7 @@ namespace Cisco.UnityConnection.RestFunctions
                 webReq.Method = "PUT";
                 webReq.ContentLength = buffer.Length;
                 webReq.ContentType = "audio/wav";
-
+                webReq.Timeout = 120000;
                 RaiseDebugEvent("**** Sending to server ****");
                 RaiseDebugEvent("    URI:" + webReq.RequestUri);
                 RaiseDebugEvent("    Method: PUT");
@@ -1405,7 +1422,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (string.IsNullOrEmpty(pPathToLocalWav) || !File.Exists(pPathToLocalWav))
             {
-                res.ErrorText = "Invalid path to local WAV passed to UploadVoiceMessageWav on RestTransportFunctions.cs:"+pPathToLocalWav;
+                res.ErrorText = "Invalid path to local WAV passed to UploadVoiceMessageWav on RestTransportFunctions.cs:" + pPathToLocalWav;
                 RaiseErrorEvent(res.ErrorText);
                 return res;
             }
@@ -1458,12 +1475,14 @@ namespace Cisco.UnityConnection.RestFunctions
             sb.AppendLine("Content-Type: application/json");
             sb.AppendLine();
             sb.AppendLine(pRecipientJsonString);
-            
-            //WAV attachment section
-            sb.AppendLine("--" + boundary);
-            sb.AppendLine("Content-Type: audio/wav");
-            sb.AppendLine();
 
+            //WAV attachment section
+            if (!string.IsNullOrEmpty(pPathToLocalWav))
+            {
+                sb.AppendLine("--" + boundary);
+                sb.AppendLine("Content-Type: audio/wav");
+                sb.AppendLine();
+            }
             byte[] postHeaderBytes = Encoding.UTF8.GetBytes(sb.ToString());
 
             // Build the trailing boundary string as a byte array
@@ -1472,20 +1491,24 @@ namespace Cisco.UnityConnection.RestFunctions
 
             try
             {
-                using (FileStream fileStream = new FileStream(pPathToLocalWav, FileMode.Open, FileAccess.Read))
                 using (Stream memStream = new MemoryStream())
                 {
                     memStream.Write(postHeaderBytes, 0, postHeaderBytes.Length);
 
-                    //add the wav file onto the HTTP 1KB at a time.
-                    byte[] buffer = new byte[1024];
-                    int bytesRead;
-                    while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) != 0)
+                    if (!string.IsNullOrEmpty(pPathToLocalWav))
                     {
-                        memStream.Write(buffer, 0, bytesRead);
+                        using (FileStream fileStream = new FileStream(pPathToLocalWav, FileMode.Open, FileAccess.Read))
+                        {
+                            //add the wav file onto the HTTP 1KB at a time.
+                            byte[] buffer = new byte[1024];
+                            int bytesRead;
+                            while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) != 0)
+                            {
+                                memStream.Write(buffer, 0, bytesRead);
+                            }
+                        }
+                        memStream.Write(boundaryBytes, 0, boundaryBytes.Length);
                     }
-
-                    memStream.Write(boundaryBytes, 0, boundaryBytes.Length);
 
                     webrequest.ContentLength = memStream.Length;
                     Stream requestStream = webrequest.GetRequestStream();
@@ -1498,11 +1521,11 @@ namespace Cisco.UnityConnection.RestFunctions
             }
             catch (Exception ex)
             {
-                res.ErrorText = "Failed processing wav file in UploadVoiceMessageWav on RestTransportFunctions.cs: " + ex;
+                res.ErrorText =
+                    "Failed processing wav file in UploadVoiceMessageWav on RestTransportFunctions.cs: " + ex;
                 RaiseErrorEvent(res.ErrorText);
                 return res;
             }
-
             //this can fail or many reasons but the details sent back from the server are not very helpful unfortunately.
             try
             {

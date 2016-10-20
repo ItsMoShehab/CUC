@@ -12,6 +12,7 @@
 using System;
 using System.Windows.Forms;
 using Cisco.UnityConnection.RestFunctions;
+using PasswordReset.Properties;
 
 namespace PWReset
 {
@@ -88,9 +89,10 @@ namespace PWReset
             //the application.  Save this server name in the XML settings and default to it when we run again.  If you want to get fancy
             //you can change this to a list function and keep track of all the servers you've connected to and even the login/PW pairs for 
             //each, however that's beyond the scope of this sample application.
-            Properties.Settings.Default.LastServerName = txtServerName.Text;
-            Properties.Settings.Default.LastLoginName = txtUserName.Text;
-            Properties.Settings.Default.Save();
+            Settings.Default.LastServerName = txtServerName.Text;
+            Settings.Default.LastLoginName = txtUserName.Text;
+            Settings.Default.Save();
+            
 
             //indicate the user has hit ok and the login is valid
             this.DialogResult = DialogResult.OK;
@@ -125,14 +127,14 @@ namespace PWReset
         //blank if it's not there" option.
         private void FormLogin_Load(object sender, EventArgs e)
         {
-            if (Properties.Settings.Default.LastServerName.Length>0)
+            if (Settings.Default.LastServerName.Length>0)
             {
-                this.txtServerName.Text = Properties.Settings.Default.LastServerName;
+                this.txtServerName.Text = Settings.Default.LastServerName;
             }
 
-            if (Properties.Settings.Default.LastServerName.Length>0)
+            if (Settings.Default.LastServerName.Length>0)
             {
-                this.txtUserName.Text = Properties.Settings.Default.LastLoginName;
+                this.txtUserName.Text = Settings.Default.LastLoginName;
             }
         }
 
