@@ -210,7 +210,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// default constructor - initalize everything to blank/0s and create a RestTransportFunctions instance
         /// if one is not provided.
         /// </summary>
-        public ConnectionServerRest(IConnectionRestCalls pTransportFunctions, bool pAllowSelfSignedCertificates=true)
+        public ConnectionServerRest(IConnectionRestCalls pTransportFunctions, bool pAllowSelfSignedCertificates=true, bool pForceSslConnection=false)
         {
             ServerName = "";
             LoginName = "";
@@ -220,7 +220,7 @@ namespace Cisco.UnityConnection.RestFunctions
 
             if (pTransportFunctions == null)
             {
-                _transportFunctions=new RestTransportFunctions(pAllowSelfSignedCertificates);
+                _transportFunctions = new RestTransportFunctions(pAllowSelfSignedCertificates, pForceSslConnection);
                 return;
             }
 
@@ -255,8 +255,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Instance of the ConnectionServer class
         /// </returns>
         public ConnectionServerRest (IConnectionRestCalls pTransportFunctions, string pServerName, string pLoginName, string pLoginPw,
-            bool pLoginAsAdministrator = true, bool pAllowSelfSignedCertificates = true)
-            : this(pTransportFunctions,pAllowSelfSignedCertificates)
+            bool pLoginAsAdministrator = true, bool pAllowSelfSignedCertificates = true, bool pForceSslConnection = false)
+            : this(pTransportFunctions,pAllowSelfSignedCertificates,pForceSslConnection)
         {
             BaseUrl = string.Format("https://{0}:8443/vmrest/", pServerName);
             Version = new ConnectionVersion(0,0,0,0,0);
@@ -323,8 +323,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// Instance of the ConnectionServer class
         /// </returns>
         public ConnectionServerRest(string pServerName, string pLoginName, string pLoginPw,
-            bool pLoginAsAdministrator = true, bool pAllowSelfSignedCertificates=true)
-            : this(null, pServerName, pLoginName, pLoginPw, pLoginAsAdministrator, pAllowSelfSignedCertificates)
+            bool pLoginAsAdministrator = true, bool pAllowSelfSignedCertificates=true, bool pForceSslConnection = false)
+            : this(null, pServerName, pLoginName, pLoginPw, pLoginAsAdministrator, pAllowSelfSignedCertificates, pForceSslConnection)
         {
         }
 

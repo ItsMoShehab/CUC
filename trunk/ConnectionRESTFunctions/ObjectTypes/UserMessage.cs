@@ -610,6 +610,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         private static string ConstructRecipientJsonStringFromRecipients(params MessageAddress[] pMessageAddresses)
         {
+           // return "{ \"Recipient\":[{\"Type\":\"TO\",\"Address\":{\"DtmfAccessId\":\"3311\",\"Type\":\"SUBSCRIBER\"}}]}";
+
             StringBuilder strJson = new StringBuilder("{\"Recipient\":[");
 
             foreach (MessageAddress oAddress in pMessageAddresses)
@@ -1555,7 +1557,32 @@ namespace Cisco.UnityConnection.RestFunctions
             return HomeServer.UploadVoiceMessageWav(pPathToWavFile, strMessageJsonString,UserObjectId,strRecipientJsonString,strUri);
         }
 
+        public WebCallResult ForwardMessageNoIntro(string pSubject, bool pUrgent, SensitivityType pSensitivityType, bool pSecure, bool pReadReceipt,
+            bool pDeliveryReceipt, params MessageAddress[] pRecipients)
+        {
+            WebCallResult res = new WebCallResult();
+            res.Success = false;
 
+            if (!pRecipients.Any())
+            {
+                res.ErrorText = "No recipients included in ForwardMessageLocalWav call";
+                return res;
+            }
+
+            //construct the JSON strings needed in the message details and the message addressing sections of the upload message 
+            //API call for Connection
+            string strRecipientJsonString = ConstructRecipientJsonStringFromRecipients(pRecipients);
+            string strMessageJsonString = ConstructMessageDetailsJsonString(pSubject, pUrgent, pSecure, pSensitivityType,
+                                                                            false, pReadReceipt, pDeliveryReceipt,
+                                                                            true, CallerId);
+
+            //use the URI that indicates to forward the message with all other attachments
+            string strUri = string.Format("{0}messages?messageid={1}&userobjectid={2}", HomeServer.BaseUrl,
+                MsgId, UserObjectId);
+
+            //forward message
+            return HomeServer.UploadVoiceMessageWav("", strMessageJsonString, UserObjectId, strRecipientJsonString, strUri);
+        }
         /// <summary>
         /// Forward an existing message to one or more recipients - optionally include a wav file reference as an introduction.  The introduction
         /// can be recorded using CUTI on the server and referenced via a ResourceId provided by the PhoneRecording class.
