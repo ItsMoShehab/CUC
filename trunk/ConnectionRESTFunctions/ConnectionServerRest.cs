@@ -251,6 +251,9 @@ namespace Cisco.UnityConnection.RestFunctions
         /// If passed as true the errors about self signed certificates will be suppressed - this is the default.  Passed as false 
         /// only valid signed certificates will be accepted when authenticating with a server.
         /// </param>
+        /// <param name="pForceSslConnection">When connecting to older Connection versions (9.x and earlier) it's necessary to force 
+        /// SSL3 connection types because Windows no longer supports anything other than TLS which those older versions don't support.
+        /// Passing this as true forces Windows to allow this.</param>
         /// <returns>
         /// Instance of the ConnectionServer class
         /// </returns>
@@ -296,7 +299,7 @@ namespace Cisco.UnityConnection.RestFunctions
             LoginPw = pLoginPw;
         }
 
-        
+
 
         /// <summary>
         /// Constructor for the ConnectionServer class that allows the caller to provide the server name, login name and login password 
@@ -319,7 +322,10 @@ namespace Cisco.UnityConnection.RestFunctions
         /// If passed as true the errors about self signed certificates will be suppressed - this is the default.  Passed as false 
         /// only valid signed certificates will be accepted when authenticating with a server.
         /// </param>
-        /// <returns>
+        /// <param name="pForceSslConnection">When connecting to older Connection versions (9.x and earlier) it's necessary to force 
+        /// SSL3 connection types because Windows no longer supports anything other than TLS which those older versions don't support.
+        /// Passing this as true forces Windows to allow this.</param>
+        /// <returns>        
         /// Instance of the ConnectionServer class
         /// </returns>
         public ConnectionServerRest(string pServerName, string pLoginName, string pLoginPw,
@@ -761,8 +767,8 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         private WebCallResult LoginToConnectionServer(string pServerName, string pLoginName, string pLoginPw, bool pIncludeServers)
         {
-            this.LoginName = pLoginName;
-            this.LoginPw = pLoginPw;
+            LoginName = pLoginName;
+            LoginPw = pLoginPw;
 
             WebCallResult ret = GetVersionInfo(pServerName);
             if (ret.Success == false)
@@ -771,7 +777,7 @@ namespace Cisco.UnityConnection.RestFunctions
             }
 
             //the servers method was not in prior to 9.0
-            if (!this.Version.IsVersionAtLeast(9, 0, 1, 0))
+            if (!Version.IsVersionAtLeast(9, 0, 1, 0))
             {
                 return ret;
             }
@@ -934,7 +940,7 @@ namespace Cisco.UnityConnection.RestFunctions
             else if (strVersionChunks[3].Contains("TT"))
             {
                 //trim off the "ES" portion and drop the rest into the ES string for display purposes
-                iTemp = strVersionChunks[3].IndexOf("TT", 0);
+                iTemp = strVersionChunks[3].IndexOf("TT", 0, StringComparison.InvariantCultureIgnoreCase);
 
                 string strEs = strVersionChunks[3].Substring(iTemp + 2);
                 
@@ -1479,7 +1485,7 @@ namespace Cisco.UnityConnection.RestFunctions
             pUser = null;
             try
             {
-                var oServer= new ConnectionServerRest(_transportFunctions, this.ServerName, pLoginName, pPassword, false);
+                var oServer= new ConnectionServerRest(_transportFunctions, ServerName, pLoginName, pPassword, false);
                 RaiseDebugEvent("Authenticated user "+pLoginName+"  against server:"+oServer);
             }
             catch 
@@ -1512,7 +1518,7 @@ namespace Cisco.UnityConnection.RestFunctions
         {
             try
             {
-                var oServer =new ConnectionServerRest(_transportFunctions,this.ServerName, pLoginName, pPassword, false);
+                var oServer =new ConnectionServerRest(_transportFunctions,ServerName, pLoginName, pPassword, false);
                 RaiseDebugEvent("Authenticated user " + pLoginName + "  against server:" + oServer);
             }
             catch 
@@ -1571,7 +1577,7 @@ namespace Cisco.UnityConnection.RestFunctions
             //select the one that matches the Connection server's IP address we're connected to
             foreach (var oServer in oList)
             {
-                if (oServer.HomeServer.ServerName == this.ServerName )
+                if (oServer.HomeServer.ServerName == ServerName )
                 {
                     return oServer;
                 }
@@ -1598,7 +1604,7 @@ namespace Cisco.UnityConnection.RestFunctions
         /// </returns>
         public string GetCucaUrlForObject(ConnectionObjectType pObjectType, string strObjectId)
         {
-            string strUrl = "https://" + this.ServerName + ":8443/cuadmin/";
+            string strUrl = "https://" + ServerName + ":8443/cuadmin/";
 
             switch (pObjectType)
             {
@@ -1659,7 +1665,7 @@ namespace Cisco.UnityConnection.RestFunctions
                     break;
                 case ConnectionObjectType.PersonalCallTransferRule:
                     //PCA "hop" link is constructed a bit differently
-                    strUrl = "https://" + this.ServerName + ":8443/ciscopca/runas.do?userid=" + strObjectId + "&startat=unitycallroutingrules/rulesets.do";
+                    strUrl = "https://" + ServerName + ":8443/ciscopca/runas.do?userid=" + strObjectId + "&startat=unitycallroutingrules/rulesets.do";
                     break;
                 case ConnectionObjectType.SystemContact:
                 case ConnectionObjectType.VpimContact:
